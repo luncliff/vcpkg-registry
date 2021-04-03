@@ -2,37 +2,13 @@
 
 ### References
 
-* https://vcpkg.readthedocs.io/en/latest/specifications/registries/
 * https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/
+* https://github.com/microsoft/vcpkg/blob/master/docs/specifications/ports-overlay.md
+* https://github.com/microsoft/vcpkg/blob/master/docs/specifications/registries.md
+* https://github.com/northwindtraders/vcpkg-registry
+* https://github.com/microsoft/vcpkg-tool
 
 ## How To
-
-### Setup
-
-```console
-user@host:~$ git clone https://github.com/microsoft/vcpkg
-...
-user@host:~$ pushd ./vcpkg/
-~/vcpkg ~
-user@host:~/vcpkg$ git clone https://github.com/luncliff/vcpkg-registry registry
-...
-user@host:~/vcpkg$ tree -L 1 ./registry
-./registry
-├── README.md
-├── ports
-└── versions
-
-2 directories, 1 file
-```
-
-Then bootstrap the [vcpkg-tool](https://github.com/microsoft/vcpkg-tool).
-
-```console
-user@host:~/vcpkg$ ./bootstrap-vcpkg.sh
-...
-```
-
-### Use
 
 Run the help command for the description
 
@@ -48,14 +24,54 @@ Options:
 ...
 ```
 
-#### Search
+### Setup
+
+#### Windows
+
+> TBA
+
+#### Mac/Linux
+
+```console
+user@host:~$ git clone https://github.com/microsoft/vcpkg
+...
+user@host:~$ pushd ./vcpkg/
+~/vcpkg ~
+user@host:~/vcpkg$ git clone https://github.com/luncliff/vcpkg-registry registry
+...
+user@host:~/vcpkg$ tree -L 2 ./registry/
+./registry/
+├── README.md
+├── ports
+│   ├── lua
+│   └── nsync
+├── vcpkg-configuration.json
+└── versions
+    └── baseline.json
+
+```
+
+Then bootstrap the [vcpkg-tool](https://github.com/microsoft/vcpkg-tool).
+
+```console
+user@host:~/vcpkg$ ./bootstrap-vcpkg.sh
+...
+```
+
+For registry customization, configure your [vcpkg-configuration.json](https://github.com/microsoft/vcpkg/blob/master/docs/specifications/registries.md). If you don't have one, you can simply create a symlink to the file in this repo.
+
+```console
+user@host:~/vcpkg$ ln -s ./registry/vcpkg-configuration.json ./vcpkg-configuration.json
+```
+
+### Search
 
 ```console
 user@host:~/vcpkg$ ./vcpkg search nsync --overlay-ports=registry/ports
 nsync                1.24.0           ...
 ```
 
-#### Install
+### Install
 
 Remove the port from the default registry.  
 For example, remove the `nsync` related things under `versions/` folder, then try the install without any options.
