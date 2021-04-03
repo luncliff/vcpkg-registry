@@ -3,6 +3,10 @@
         "nsync": {
             "baseline": "1.24.0",
             "port-version": 0
+        },
+        "lua": {
+            "baseline": "5.3.5",
+            "port-version": 6
         }
     }
 }
