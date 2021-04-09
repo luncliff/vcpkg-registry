@@ -160,7 +160,7 @@ The following packages will be built and installed:
 Detecting compiler hash for triplet x64-osx...
 Could not locate cached archive: /Users/user/.cache/vcpkg/archives/1a/1a78479217231fdfb06605d33607532000273de1.zip
 Starting package 1/1: lua:x64-osx
-...
+```
 
 After the installation, you can `list` the packages.
 
