@@ -127,6 +127,23 @@ There are cache files under `/Users/$(whoami)/.cache/vcpkg/registries`.
 
 ### Install
 
+#### with Triplets
+
+Currently there are 4 triplets for each of Android architectures. Check https://github.com/microsoft/vcpkg/blob/master/docs/users/android.md for their roles.
+
+```console
+user@host:~/vcpkg$ ./vcpkg install vulkan:arm64-android --overlay-triplets=registry/triplets
+...
+Starting package 1/1: vulkan:arm64-android
+Building package vulkan[core]:arm64-android...
+-- [OVERLAY] Loading triplet configuration from: /Users/user/dev/vcpkg/registry/triplets/arm64-android.cmake
+-- Using NDK_HOST_TAG: darwin-x86_64
+-- Using NDK_DIR_NAME: 23.0.7196353
+-- Using ENV{VULKAN_SDK}: /Users/user/Library/Android/sdk/ndk/23.0.7196353/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr
+-- 
+-- Querying VULKAN_SDK Enviroment variable
+```
+
 #### with Overlay
 
 Remove the port from the default registry.  
