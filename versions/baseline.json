@@ -5,8 +5,8 @@
             "port-version": 0
         },
         "lua": {
-            "baseline": "5.3.5",
-            "port-version": 6
+            "baseline": "5.3.6",
+            "port-version": 0
         },
         "icu": {
             "baseline": "67.1",

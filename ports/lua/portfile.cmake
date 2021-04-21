@@ -1,59 +1,42 @@
+
+set(LUA_VERSION 5.3.6)
+
 vcpkg_download_distfile(ARCHIVE
-    URLS "https://www.lua.org/ftp/lua-5.3.5.tar.gz"
-    FILENAME "lua-5.3.5.tar.gz"
-    SHA512 4f9516acc4659dfd0a9e911bfa00c0788f0ad9348e5724fe8fb17aac59e9c0060a64378f82be86f8534e49c6c013e7488ad17321bafcc787831d3d67406bd0f4
+    URLS "https://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz"
+    FILENAME "lua-${LUA_VERSION}.tar.gz"
+    SHA512 ccc380d5e114d54504de0bfb0321ca25ec325d6ff1bfee44b11870b660762d1a9bf120490c027a0088128b58bb6b5271bbc648400cab84d2dc22b512c4841681
 )
 vcpkg_extract_source_archive_ex(
     OUT_SOURCE_PATH SOURCE_PATH
     ARCHIVE ${ARCHIVE}
-    PATCHES vs2015-impl-c99.patch
+    PATCHES
+        fix-ios-system.patch
 )
-
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt DESTINATION ${SOURCE_PATH})
 
-vcpkg_configure_cmake(
-    SOURCE_PATH ${SOURCE_PATH}
-    PREFER_NINJA
-    OPTIONS
-        -DCOMPILE_AS_CPP=OFF
-    OPTIONS_DEBUG
-        -DSKIP_INSTALL_HEADERS=ON
-        -DSKIP_INSTALL_TOOLS=ON
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+        cpp     BUILD_FOR_CXX
+        tools   BUILD_TOOLS
 )
 
-vcpkg_install_cmake()
-
-set(ENABLE_LUA_CPP 0)
-if("cpp" IN_LIST FEATURES)
-    set(ENABLE_LUA_CPP 1)
-    vcpkg_configure_cmake(
-        SOURCE_PATH ${SOURCE_PATH}
-        PREFER_NINJA
-        OPTIONS
-            -DCOMPILE_AS_CPP=ON
-        OPTIONS_DEBUG
-            -DSKIP_INSTALL_HEADERS=ON
-            -DSKIP_INSTALL_TOOLS=ON
-    )
-
-    vcpkg_install_cmake()
-endif()
-
+vcpkg_cmake_configure(
+    SOURCE_PATH ${SOURCE_PATH}
+    OPTIONS
+        -DLUA_VERSION=${LUA_VERSION}
+        ${FEATURE_OPTIONS}
+)
+vcpkg_cmake_install()
 vcpkg_copy_pdbs()
+vcpkg_cmake_config_fixup()
 
-vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/tools/lua)
-
-if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
-    if(VCPKG_TARGET_IS_WINDOWS)
-        file(READ ${CURRENT_PACKAGES_DIR}/include/luaconf.h LUA_CONF_H)
-        string(REPLACE "defined(LUA_BUILD_AS_DLL)" "1" LUA_CONF_H "${LUA_CONF_H}")
-        file(WRITE ${CURRENT_PACKAGES_DIR}/include/luaconf.h "${LUA_CONF_H}")
-    endif()
+if("tools" IN_LIST FEATURES)
+    vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/tools/lua)
 endif()
 
-# Handle post-build CMake instructions
-configure_file(${CMAKE_CURRENT_LIST_DIR}/vcpkg-cmake-wrapper.cmake.in  ${CURRENT_PACKAGES_DIR}/share/${PORT}/vcpkg-cmake-wrapper.cmake @ONLY)
-file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/usage DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT})
-
-# Handle copyright
+# see http://www.lua.org/copyright.html
 file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/COPYRIGHT DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
+file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include
+                    ${CURRENT_PACKAGES_DIR}/debug/share
+)
+

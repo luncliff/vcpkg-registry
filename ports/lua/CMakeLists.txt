@@ -1,118 +1,166 @@
-# Lua can be compiled as either C or C++.
-# Default configuration is C, set COMPILE_AS_CPP to ON to use C++.
-# See http://stackoverflow.com/questions/13560945/c-and-c-library-using-longjmp for why would you want to do that.
-# Primary differences:
-# - Exceptions will be used instead of setjmp/longjmp
-# - The name mangling for functions will be C++ instead of C.
-#     - This is a source-incompatible change because extern "C" is chosen by the including application.
-# - The lua.hpp header will not be available.
+cmake_minimum_required(VERSION 3.8)
+project(lua LANGUAGES C CXX VERSION ${LUA_VERSION})
 
-PROJECT ( lua )
+option(BUILD_FOR_CXX    "Build for C++" OFF)
+option(BUILD_TOOLS      "Build Lua interpreter / compiler" OFF)
 
+include(GNUInstallDirs)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-
-SET (HDR_LIBLUA
-src/lapi.h src/lauxlib.h src/lcode.h src/lctype.h src/ldebug.h src/ldo.h src/lfunc.h
-src/lgc.h src/llex.h src/llimits.h src/lmem.h src/lobject.h src/lopcodes.h src/lparser.h
-src/lstate.h src/lstring.h src/ltable.h src/ltm.h src/lua.h src/luaconf.h src/lualib.h
-src/lundump.h src/lvm.h src/lzio.h
+add_library(lua
+    src/lapi.h src/lauxlib.h src/lcode.h src/lctype.h src/ldebug.h src/ldo.h src/lfunc.h
+    src/lgc.h src/llex.h src/llimits.h src/lmem.h src/lobject.h src/lopcodes.h src/lparser.h
+    src/lstate.h src/lstring.h src/ltable.h src/ltm.h src/lua.h src/luaconf.h src/lualib.h
+    src/lundump.h src/lvm.h src/lzio.h
 )
 
-# Build Libraries
-SET (SRC_LIBLUA
-src/lapi.c src/lauxlib.c src/lbaselib.c src/lbitlib.c src/lcode.c src/lcorolib.c
-src/lctype.c src/ldblib.c src/ldebug.c src/ldo.c src/ldump.c src/lfunc.c src/lgc.c
-src/linit.c src/liolib.c src/llex.c src/lmathlib.c src/lmem.c src/loadlib.c src/lobject.c
-src/lopcodes.c src/loslib.c src/lparser.c src/lstate.c src/lstring.c src/lstrlib.c
-src/ltable.c src/ltablib.c src/ltm.c src/lundump.c src/lutf8lib.c src/lvm.c src/lzio.c
+list(APPEND headers
+    src/lualib.h
+    src/lua.h
+    src/luaconf.h
+    src/lauxlib.h
+)
+if(NOT BUILD_FOR_CXX)
+    list(APPEND headers src/lua.hpp) # extern "C" wrapper
+endif()
+
+set_target_properties(lua
+PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    PUBLIC_HEADER "${headers}"
 )
 
-IF (COMPILE_AS_CPP)
-    SET_SOURCE_FILES_PROPERTIES(${SRC_LIBLUA} src/lua.c src/luac.c PROPERTIES LANGUAGE CXX)
-ELSE ()
-    SET (CMAKE_C_STANDARD 99)
-ENDIF ()
-
-# append headers to sources to make them show up in MSVC GUI
-LIST(APPEND SRC_LIBLUA ${HDR_LIBLUA})
-
-IF (WIN32)
-    # remove warnings
-    ADD_DEFINITIONS (-D_CRT_SECURE_NO_WARNINGS )
-ENDIF ()
-
-IF (UNIX)
-    ADD_DEFINITIONS (-DLUA_USE_POSIX)
-    FIND_LIBRARY (LIB_MATH NAMES m)
-    IF (LIB_MATH)
-        LINK_LIBRARIES (${LIB_MATH})
-    ENDIF ()
-ENDIF ()
-
-#DLL
-ADD_LIBRARY ( lua ${SRC_LIBLUA} )
-SET_PROPERTY (TARGET lua PROPERTY POSITION_INDEPENDENT_CODE ON)
-IF (COMPILE_AS_CPP)
-    SET_TARGET_PROPERTIES(lua PROPERTIES OUTPUT_NAME "lua-c++")
-ENDIF()
-
-IF (BUILD_SHARED_LIBS AND WIN32)
-    TARGET_COMPILE_DEFINITIONS (lua PUBLIC -DLUA_BUILD_AS_DLL )
-ENDIF ()
-
-IF (UNIX)
-    IF (APPLE)
-        TARGET_COMPILE_DEFINITIONS (lua PUBLIC -DLUA_USE_DLOPEN)
-    ELSE ()
-        FIND_LIBRARY (LIB_DLOPEN NAMES dl)
-        IF (LIB_DLOPEN)
-            TARGET_COMPILE_DEFINITIONS (lua PUBLIC -DLUA_USE_DLOPEN)
-            TARGET_LINK_LIBRARIES (lua ${LIB_DLOPEN})
-        ENDIF ()
-    ENDIF ()
-ENDIF ()
-
-INSTALL ( TARGETS lua
-    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+target_include_directories(lua
+PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-IF (NOT DEFINED SKIP_INSTALL_TOOLS)
-    ADD_EXECUTABLE ( luac src/luac.c ${SRC_LIBLUA} ) # compiler uses non-exported APIs, so must include sources directly.
-    ADD_EXECUTABLE ( luai src/lua.c )  # interpreter
-    TARGET_LINK_LIBRARIES ( luai lua )
-    SET_TARGET_PROPERTIES ( luai PROPERTIES OUTPUT_NAME lua PDB_NAME luai )
-    IF (UNIX)
-        IF (CMAKE_SYSTEM_NAME STREQUAL FreeBSD)
-            SET (_LIB_READLINE_NAME edit)
-        ELSE ()
-            SET (_LIB_READLINE_NAME readline)
-        ENDIF ()
-        FIND_LIBRARY (LIB_READLINE NAMES ${_LIB_READLINE_NAME})
-        IF (LIB_READLINE)
-            TARGET_COMPILE_DEFINITIONS (luai PUBLIC -DLUA_USE_READLINE)
-            TARGET_LINK_LIBRARIES(luai ${LIB_READLINE})
-            IF (_LIB_READLINE_NAME STREQUAL edit)
-                TARGET_INCLUDE_DIRECTORIES (luai PUBLIC /usr/include/edit)
-            ENDIF ()
-        ENDIF ()
-    ENDIF ()
-    INSTALL ( TARGETS luai luac RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools/lua )
-ENDIF ()
+list(APPEND sources
+    src/lapi.c src/lauxlib.c src/lbaselib.c src/lbitlib.c src/lcode.c src/lcorolib.c
+    src/lctype.c src/ldblib.c src/ldebug.c src/ldo.c src/ldump.c src/lfunc.c src/lgc.c
+    src/linit.c src/liolib.c src/llex.c src/lmathlib.c src/lmem.c src/loadlib.c src/lobject.c
+    src/lopcodes.c src/loslib.c src/lparser.c src/lstate.c src/lstring.c src/lstrlib.c
+    src/ltable.c src/ltablib.c src/ltm.c src/lundump.c src/lutf8lib.c src/lvm.c src/lzio.c
+)
+target_sources(lua
+PRIVATE
+    ${sources}
+)
 
-IF (NOT DEFINED SKIP_INSTALL_HEADERS)
-    INSTALL(
-        FILES
-            src/lualib.h
-            src/lua.h
-            src/luaconf.h
-            src/lauxlib.h
-        DESTINATION include
+if(BUILD_FOR_CXX)
+    set_target_properties(lua
+    PROPERTIES
+        CXX_STANDARD 11
     )
-    # If using C++, don't install extern "C" wrapper.
-    IF (NOT COMPILE_AS_CPP)
-        INSTALL(FILES src/lua.hpp DESTINATION include)
-    ENDIF ()
-ENDIF ()
+    set_source_files_properties(${sources}
+    PROPERTIES
+        LANGUAGE CXX
+    )
+else()
+    set_target_properties(lua
+    PROPERTIES
+        C_STANDARD 11
+    )
+endif()
+
+if(WIN32)
+    target_compile_definitions(lua
+    PRIVATE
+        _CRT_SECURE_NO_WARNINGS
+    )
+    if(BUILD_SHARED_LIBS)
+        target_compile_definitions(lua
+        PUBLIC
+            LUA_BUILD_AS_DLL
+        )
+    endif()
+else()
+    target_compile_definitions(lua
+    PRIVATE
+        LUA_USE_DLOPEN
+    )
+    target_link_libraries(lua
+    PRIVATE
+        ${CMAKE_DL_LIBS}
+    )
+endif()
+
+if(UNIX OR ANDROID)
+    find_library(LIB_MATH NAMES m)
+    if(LIB_MATH)
+        target_link_libraries(lua
+        PRIVATE
+            ${LIB_MATH}
+        )
+    endif()
+endif()
+
+install(TARGETS lua
+        EXPORT lua-config
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+install(EXPORT lua-config
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}
+)
+
+include(CMakePackageConfigHelpers)
+set(VERSION_FILE_PATH   ${CMAKE_BINARY_DIR}/cmake/lua-config-version.cmake)
+write_basic_package_version_file(${VERSION_FILE_PATH}
+    VERSION         ${PROJECT_VERSION}
+    COMPATIBILITY   SameMinorVersion
+)
+install(FILES   ${VERSION_FILE_PATH} 
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}
+)
+
+if(BUILD_TOOLS)
+    if(BUILD_FOR_CXX)
+        set_source_files_properties(src/luac.c src/lua.c
+        PROPERTIES
+            LANGUAGE CXX
+        )
+    endif()
+    # compiler. uses non-exported APIs
+    add_executable(luac src/luac.c)
+    target_include_directories(luac
+    PRIVATE
+        src
+    )
+    target_link_libraries(luac
+    PRIVATE
+        lua
+    )
+    # interpreter
+    add_executable(luai src/lua.c)
+    target_link_libraries(luai
+    PRIVATE
+        lua
+    )
+    if(UNIX)
+        if(CMAKE_SYSTEM_NAME STREQUAL FreeBSD)
+            find_library(LIB_READLINE NAMES edit)
+            target_include_directories(luai
+            PRIVATE
+                /usr/include/edit
+            )
+        else()
+            find_library(LIB_READLINE NAMES readline)
+        endif()
+        if(LIB_READLINE)
+            target_compile_definitions(luai
+            PRIVATE
+                LUA_USE_READLINE
+            )
+            target_link_libraries(luai
+            PRIVATE
+                ${LIB_READLINE}
+            )
+        endif()
+    endif()
+    install(TARGETS luai luac
+            RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools/${PROJECT_NAME}
+    )
+endif()
