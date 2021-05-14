@@ -65,7 +65,11 @@ vcpkg_find_acquire_program(PERL)
 get_filename_component(PERL_EXE_PATH ${PERL} DIRECTORY)
 vcpkg_add_to_path(${PERL_EXE_PATH})
 message(STATUS "Using Perl: ${PERL}")
-
+if(NOT VCPKG_HOST_IS_WINDOWS)
+    find_program(MAKE make)
+    get_filename_component(MAKE_EXE_PATH ${MAKE} DIRECTORY)
+    message(STATUS "Using Make: ${MAKE}")
+endif()
 if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_find_acquire_program(NASM)
     get_filename_component(NASM_EXE_PATH ${NASM} DIRECTORY)
@@ -76,14 +80,23 @@ if(VCPKG_TARGET_IS_WINDOWS)
     message(STATUS "Using jom: ${JOM}")
 
 elseif(VCPKG_TARGET_IS_ANDROID)
-    # ...
-    # vcpkg_add_to_path for Android compilers like `arm-linux-androideabi-gcc`
-    # ...
-
-else()
-    find_program(MAKE make)
-    get_filename_component(MAKE_EXE_PATH ${MAKE} DIRECTORY)
-    message(STATUS "Using Make: ${MAKE}")
+    if(NOT DEFINED ENV{ANDROID_NDK_ROOT} AND DEFINED ENV{ANDROID_NDK_HOME})
+        message(STATUS "ENV{ANDROID_NDK_ROOT} will be set to $ENV{ANDROID_NDK_HOME}")
+        set(ENV{ANDROID_NDK_ROOT} $ENV{ANDROID_NDK_HOME})
+    endif()
+    if(NOT DEFINED ENV{ANDROID_NDK_ROOT})
+        message(FATAL_ERROR "ENV{ANDROID_NDK_ROOT} is required by ${SOURCE_PATH}/Configurations/15-android.conf")
+    endif()
+    if(CMAKE_HOST_SYSTEM_NAME STREQUAL Linux)
+        set(NDK_HOST_TAG linux-x86_64)
+    elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL Darwin)
+        set(NDK_HOST_TAG darwin-x86_64)
+    elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL Windows)
+        set(NDK_HOST_TAG windows-x86_64)
+    endif()
+    get_filename_component(NDK_TOOL_PATH $ENV{ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${NDK_HOST_TAG}/bin ABSOLUTE)
+    message(STATUS "Using NDK: ${NDK_TOOL_PATH}")
+    vcpkg_add_to_path(PREPEND ${NDK_TOOL_PATH})
 
 endif()
 
@@ -134,6 +147,17 @@ else()
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME install-${TARGET_TRIPLET}-rel
     )
+    if(VCPKG_TARGET_IS_ANDROID) 
+        # install_dev copies symbolic link. overwrite them with the actual shared objects
+        file(INSTALL ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/libcrypto.so
+                     ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/libssl.so
+             DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
+        )
+        file(INSTALL ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/libcrypto.so
+                     ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/libssl.so
+             DESTINATION ${CURRENT_PACKAGES_DIR}/lib
+        )
+    endif()
     vcpkg_fixup_pkgconfig()
 
 endif()
@@ -161,6 +185,6 @@ file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include
                     ${CURRENT_PACKAGES_DIR}/ossl-modules
 )
 
-file(INSTALL ${SOURCE_PATH}/LICENSE.txt
+file(INSTALL     ${SOURCE_PATH}/LICENSE.txt
      DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright
 )
