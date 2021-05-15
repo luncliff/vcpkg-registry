@@ -60,26 +60,27 @@ file(COPY        ${SOURCE_PATH}
 file(RENAME      ${CURRENT_BUILDTREES_DIR}/${SOURCE_DIR_NAME}
                  ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
 
-# Find some required tools
+# see ${SOURCE_PATH}/NOTES-PERL.md
 vcpkg_find_acquire_program(PERL)
 get_filename_component(PERL_EXE_PATH ${PERL} DIRECTORY)
 vcpkg_add_to_path(${PERL_EXE_PATH})
-message(STATUS "Using Perl: ${PERL}")
+
 if(NOT VCPKG_HOST_IS_WINDOWS)
+    # see ${SOURCE_PATH}/NOTES-UNIX.md
     find_program(MAKE make)
     get_filename_component(MAKE_EXE_PATH ${MAKE} DIRECTORY)
-    message(STATUS "Using Make: ${MAKE}")
 endif()
+
 if(VCPKG_TARGET_IS_WINDOWS)
+    # see ${SOURCE_PATH}/NOTES-WINDOWS.md
     vcpkg_find_acquire_program(NASM)
     get_filename_component(NASM_EXE_PATH ${NASM} DIRECTORY)
     vcpkg_add_to_path(PREPEND ${NASM_EXE_PATH})
-    message(STATUS "Using nasm: ${NASM}")
     # note: jom is not for `vcpkg_add_to_path`
     vcpkg_find_acquire_program(JOM)
-    message(STATUS "Using jom: ${JOM}")
 
 elseif(VCPKG_TARGET_IS_ANDROID)
+    # see ${SOURCE_PATH}/NOTES-ANDROID.md
     if(NOT DEFINED ENV{ANDROID_NDK_ROOT} AND DEFINED ENV{ANDROID_NDK_HOME})
         message(STATUS "ENV{ANDROID_NDK_ROOT} will be set to $ENV{ANDROID_NDK_HOME}")
         set(ENV{ANDROID_NDK_ROOT} $ENV{ANDROID_NDK_HOME})
@@ -87,12 +88,14 @@ elseif(VCPKG_TARGET_IS_ANDROID)
     if(NOT DEFINED ENV{ANDROID_NDK_ROOT})
         message(FATAL_ERROR "ENV{ANDROID_NDK_ROOT} is required by ${SOURCE_PATH}/Configurations/15-android.conf")
     endif()
-    if(CMAKE_HOST_SYSTEM_NAME STREQUAL Linux)
-        set(NDK_HOST_TAG linux-x86_64)
-    elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL Darwin)
-        set(NDK_HOST_TAG darwin-x86_64)
-    elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL Windows)
-        set(NDK_HOST_TAG windows-x86_64)
+    if(VCPKG_HOST_IS_LINUX)
+        set(NDK_HOST_TAG "linux-x86_64")
+    elseif(VCPKG_HOST_IS_OSX)
+        set(NDK_HOST_TAG "darwin-x86_64")
+    elseif(VCPKG_HOST_IS_WINDOWS)
+        set(NDK_HOST_TAG "windows-x86_64")
+    else()
+        message(FATAL_ERROR "Unknown NDK host platform")
     endif()
     get_filename_component(NDK_TOOL_PATH $ENV{ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${NDK_HOST_TAG}/bin ABSOLUTE)
     message(STATUS "Using NDK: ${NDK_TOOL_PATH}")
