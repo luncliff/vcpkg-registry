@@ -96,14 +96,16 @@ Sould be like the following. Notice that this repo contains `nsync` and `lua`, b
             "repository": "https://github.com/northwindtraders/vcpkg-registry",
             "packages": [
                 "beicode"
-            ]
+            ],
+            "baseline": "dacf4de488094a384ca2c202b923ccc097956e0c"
         },
         {
             "kind": "git",
             "repository": "https://github.com/luncliff/vcpkg-registry",
             "packages": [
                 "lua"
-            ]
+            ],
+            "baseline": "2810d45868352f84fe4bd9393094c4f1a26917e0"
         }
     ]
 }
