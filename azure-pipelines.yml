@@ -2,6 +2,7 @@
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
 # https://github.com/actions/virtual-environments/tree/main/images
+# https://github.com/lukka/CppBuildTasks
 #
 
 # trigger:
@@ -65,3 +66,19 @@ jobs:
         env:
           ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
         displayName: "x64-android"
+
+  - job: "macos_15"
+    pool:
+      vmImage: macOS-10.15
+    steps:
+      - powershell: env
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet x64-osx --overlay-ports $(Build.SourcesDirectory)/ports $(port_list)"
+        displayName: "x64-osx"
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet arm64-osx --overlay-ports $(Build.SourcesDirectory)/ports $(port_list)"
+        displayName: "arm64-osx"
