@@ -1,0 +1,108 @@
+#
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
+# https://github.com/actions/virtual-environments/tree/main/images
+# https://github.com/lukka/CppBuildTasks
+#
+
+# trigger:
+#   - main
+
+variables:
+  - name: VCPKG_DISABLE_METRICS
+    value: "true"
+  - name: overlay_configuration
+    value: "--overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets"
+
+jobs:
+  - job: "windows_2019"
+    pool:
+      vmImage: windows-2019
+    variables:
+      - name: windows_port_list
+        value: "lua[cpp] zlib-ng"
+    steps:
+      - powershell: systeminfo
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet x64-windows $(overlay_configuration) $(windows_port_list)"
+        displayName: "x64-windows"
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet x86-windows $(overlay_configuration) $(windows_port_list)"
+        displayName: "x86-windows"
+
+  - job: "windows_2022"
+    pool:
+      vmImage: windows-2022
+    variables:
+      - name: windows_port_list
+        value: "lua[cpp] zlib-ng"
+    steps:
+      - powershell: systeminfo
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet x64-windows $(overlay_configuration) $(windows_port_list)"
+        displayName: "x64-windows"
+
+  - job: "android_on_windows_2019"
+    pool:
+      vmImage: windows-2019
+    variables:
+      - name: android_port_list
+        value: "lua[cpp] zlib-ng"
+    steps:
+      - powershell: systeminfo
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet arm64-android $(overlay_configuration) $(android_port_list)"
+        env:
+          ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
+        displayName: "arm64-android"
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet arm-android   $(overlay_configuration) $(android_port_list)"
+        env:
+          ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
+        displayName: "arm-android"
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet x64-android   $(overlay_configuration) $(android_port_list)"
+        env:
+          ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
+        displayName: "x64-android"
+
+  - job: "macos_15"
+    pool:
+      vmImage: macOS-10.15
+    variables:
+      - name: osx_port_list
+        value: "lua[cpp] zlib-ng"
+    steps:
+      - powershell: env
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet x64-osx   $(overlay_configuration) $(osx_port_list)"
+        displayName: "x64-osx"
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet arm64-osx $(overlay_configuration) $(osx_port_list)"
+        displayName: "arm64-osx"
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet x64-ios   $(overlay_configuration) $(osx_port_list)"
+        displayName: "x64-ios"
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet arm64-ios $(overlay_configuration) $(osx_port_list)"
+        displayName: "arm64-ios"
