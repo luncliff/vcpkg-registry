@@ -1,5 +1,9 @@
 # vcpkg-registry
 
+[![Build Status](https://dev.azure.com/luncliff/personal/_apis/build/status/luncliff.vcpkg-registry?branchName=main)](https://dev.azure.com/luncliff/personal/_build/latest?definitionId=52&branchName=main)
+
+Targets [`2021.05.12`](https://github.com/microsoft/vcpkg/releases/tag/2021.05.12) or later version.
+
 ### References
 
 * https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/
@@ -26,12 +30,6 @@ Options:
 
 ### Setup
 
-#### Windows
-
-> TBA
-
-#### Mac/Linux
-
 ```console
 user@host:~$ git clone https://github.com/microsoft/vcpkg
 ...
@@ -41,16 +39,31 @@ user@host:~/vcpkg$ git clone https://github.com/luncliff/vcpkg-registry registry
 ...
 user@host:~/vcpkg$ tree -L 2 ./registry/
 ./registry/
+.
 ├── README.md
+├── azure-pipelines.yml
 ├── ports
-│   ├── lua
-│   └── nsync
+│   ├── ...
+│   └── ...
+├── scripts
+│   └── FindQtANGLE.cmake
+├── tests
+│   └── CMakeLists.txt
+├── triplets
+│   ├── arm-android.cmake
+│   ├── arm64-android.cmake
+│   ├── x64-android.cmake
+│   └── x86-android.cmake
 └── versions
-    └── baseline.json
-
+    └── ...
 ```
 
 Then bootstrap the [vcpkg-tool](https://github.com/microsoft/vcpkg-tool).
+
+```console
+PS vcpkg> ./bootstrap-vcpkg.bat
+...
+```
 
 ```console
 user@host:~/vcpkg$ ./bootstrap-vcpkg.sh
@@ -167,7 +180,9 @@ The following packages will be built and installed:
 ...
 ```
 
-#### with Registry
+#### ~~with Registry~~
+
+> This part will be updated later. Currently not supported.
 
 Provide the feature flags to install with registry informations in `vcpkg-configuration.json`.
 
