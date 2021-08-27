@@ -1,19 +1,29 @@
-
+#
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
+#
 trigger:
-- main
+  - main
 
 pool:
   vmImage: windows-latest
 
 steps:
-- powershell: cmake --version
+  - powershell: cmake --version
 
-- task: run-vcpkg@0
-  inputs:
-    vcpkgGitCommitId: '2021.05.12'
-    vcpkgArguments: '--triplet x64-windows --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets lua[cpp]'
+  - task: run-vcpkg@0
+    inputs:
+      vcpkgGitCommitId: "2021.05.12"
+      vcpkgArguments: "--triplet x64-windows --overlay-ports $(Build.SourcesDirectory)/ports lua[cpp]"
+    displayName: "x64-windows"
 
-- task: run-vcpkg@0
-  inputs:
-    vcpkgGitCommitId: '2021.05.12'
-    vcpkgArguments: '--triplet x86-windows --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets lua[cpp]'
+  - task: run-vcpkg@0
+    inputs:
+      vcpkgGitCommitId: "2021.05.12"
+      vcpkgArguments: "--triplet x86-windows --overlay-ports $(Build.SourcesDirectory)/ports lua[cpp]"
+    displayName: "x86-windows"
+
+  - task: run-vcpkg@0
+    inputs:
+      vcpkgGitCommitId: "2021.05.12"
+      vcpkgArguments: "--triplet arm64-android --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets lua[cpp]"
+    displayName: "arm64-android"
