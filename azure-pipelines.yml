@@ -1,29 +1,67 @@
 #
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
+# https://github.com/actions/virtual-environments/tree/main/images
 #
-trigger:
-  - main
 
-pool:
-  vmImage: windows-latest
+# trigger:
+#   - main
 
-steps:
-  - powershell: cmake --version
+variables:
+  - name: port_list
+    value: "lua[cpp] zlib-ng"
 
-  - task: run-vcpkg@0
-    inputs:
-      vcpkgGitCommitId: "2021.05.12"
-      vcpkgArguments: "--triplet x64-windows --overlay-ports $(Build.SourcesDirectory)/ports lua[cpp]"
-    displayName: "x64-windows"
+jobs:
+  - job: "windows_2019"
+    pool:
+      vmImage: windows-2019
+    steps:
+      - powershell: systeminfo
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet x64-windows --overlay-ports $(Build.SourcesDirectory)/ports $(port_list)"
+        displayName: "x64-windows"
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet x86-windows --overlay-ports $(Build.SourcesDirectory)/ports $(port_list)"
+        displayName: "x86-windows"
 
-  - task: run-vcpkg@0
-    inputs:
-      vcpkgGitCommitId: "2021.05.12"
-      vcpkgArguments: "--triplet x86-windows --overlay-ports $(Build.SourcesDirectory)/ports lua[cpp]"
-    displayName: "x86-windows"
+  - job: "windows_2022"
+    pool:
+      vmImage: windows-2022
+    steps:
+      - powershell: systeminfo
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet x64-windows --overlay-ports $(Build.SourcesDirectory)/ports $(port_list)"
+        displayName: "x64-windows"
 
-  - task: run-vcpkg@0
-    inputs:
-      vcpkgGitCommitId: "2021.05.12"
-      vcpkgArguments: "--triplet arm64-android --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets lua[cpp]"
-    displayName: "arm64-android"
+  - job: "android_on_windows_2019"
+    pool:
+      vmImage: windows-2019
+    steps:
+      - powershell: systeminfo
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet arm64-android --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets $(port_list)"
+        env:
+          ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
+        displayName: "arm64-android"
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet arm-android --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets $(port_list)"
+        env:
+          ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
+        displayName: "arm-android"
+      - task: run-vcpkg@0
+        inputs:
+          vcpkgGitCommitId: "2021.05.12"
+          vcpkgArguments: "--triplet x64-android --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets $(port_list)"
+        env:
+          ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
+        displayName: "x64-android"
