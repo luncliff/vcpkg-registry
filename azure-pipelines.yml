@@ -11,4 +11,9 @@ steps:
 - task: run-vcpkg@0
   inputs:
     vcpkgGitCommitId: '2021.05.12'
-    vcpkgArguments: '--overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets lua[cpp]'
+    vcpkgArguments: '--triplet x64-windows --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets lua[cpp]'
+
+- task: run-vcpkg@0
+  inputs:
+    vcpkgGitCommitId: '2021.05.12'
+    vcpkgArguments: '--triplet x86-windows --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets lua[cpp]'
