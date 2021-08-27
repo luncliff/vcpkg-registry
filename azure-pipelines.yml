@@ -5,8 +5,18 @@
 # https://github.com/lukka/CppBuildTasks
 #
 
-# trigger:
-#   - main
+trigger:
+  - main
+
+pr:
+  - main
+
+schedules:
+  - cron: "10 4 * * 6"
+    displayName: "Weekly check"
+    branches:
+      include:
+        - main
 
 variables:
   - name: VCPKG_DISABLE_METRICS
