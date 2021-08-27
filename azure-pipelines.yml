@@ -9,6 +9,8 @@
 #   - main
 
 variables:
+  - name: overlay_configuration
+    value: "--overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets"
   - name: windows_port_list
     value: "lua[cpp] zlib-ng"
   - name: android_port_list
@@ -25,12 +27,12 @@ jobs:
       - task: run-vcpkg@0
         inputs:
           vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-windows --overlay-ports $(Build.SourcesDirectory)/ports $(windows_port_list)"
+          vcpkgArguments: "--triplet x64-windows $(overlay_configuration) $(windows_port_list)"
         displayName: "x64-windows"
       - task: run-vcpkg@0
         inputs:
           vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x86-windows --overlay-ports $(Build.SourcesDirectory)/ports $(windows_port_list)"
+          vcpkgArguments: "--triplet x86-windows $(overlay_configuration) $(windows_port_list)"
         displayName: "x86-windows"
 
   - job: "windows_2022"
@@ -41,7 +43,7 @@ jobs:
       - task: run-vcpkg@0
         inputs:
           vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-windows --overlay-ports $(Build.SourcesDirectory)/ports $(windows_port_list)"
+          vcpkgArguments: "--triplet x64-windows $(overlay_configuration) $(windows_port_list)"
         displayName: "x64-windows"
 
   - job: "android_on_windows_2019"
@@ -52,21 +54,21 @@ jobs:
       - task: run-vcpkg@0
         inputs:
           vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm64-android --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets $(android_port_list)"
+          vcpkgArguments: "--triplet arm64-android $(overlay_configuration) $(android_port_list)"
         env:
           ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
         displayName: "arm64-android"
       - task: run-vcpkg@0
         inputs:
           vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm-android   --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets $(android_port_list)"
+          vcpkgArguments: "--triplet arm-android   $(overlay_configuration) $(android_port_list)"
         env:
           ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
         displayName: "arm-android"
       - task: run-vcpkg@0
         inputs:
           vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-android   --overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets $(android_port_list)"
+          vcpkgArguments: "--triplet x64-android   $(overlay_configuration) $(android_port_list)"
         env:
           ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
         displayName: "x64-android"
@@ -79,20 +81,20 @@ jobs:
       - task: run-vcpkg@0
         inputs:
           vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-osx   --overlay-ports $(Build.SourcesDirectory)/ports $(osx_port_list)"
+          vcpkgArguments: "--triplet x64-osx   $(overlay_configuration) $(osx_port_list)"
         displayName: "x64-osx"
       - task: run-vcpkg@0
         inputs:
           vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm64-osx --overlay-ports $(Build.SourcesDirectory)/ports $(osx_port_list)"
+          vcpkgArguments: "--triplet arm64-osx $(overlay_configuration) $(osx_port_list)"
         displayName: "arm64-osx"
       - task: run-vcpkg@0
         inputs:
           vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-ios   --overlay-ports $(Build.SourcesDirectory)/ports $(osx_port_list)"
+          vcpkgArguments: "--triplet x64-ios   $(overlay_configuration) $(osx_port_list)"
         displayName: "x64-ios"
       - task: run-vcpkg@0
         inputs:
           vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm64-ios --overlay-ports $(Build.SourcesDirectory)/ports $(osx_port_list)"
+          vcpkgArguments: "--triplet arm64-ios $(overlay_configuration) $(osx_port_list)"
         displayName: "arm64-ios"

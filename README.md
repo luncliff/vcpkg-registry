@@ -2,7 +2,10 @@
 
 [![Build Status](https://dev.azure.com/luncliff/personal/_apis/build/status/luncliff.vcpkg-registry?branchName=main)](https://dev.azure.com/luncliff/personal/_build/latest?definitionId=52&branchName=main)
 
-Targets [`2021.05.12`](https://github.com/microsoft/vcpkg/releases/tag/2021.05.12) or later version.
+Targets...
+
+* vcpkg: [`2021.05.12`](https://github.com/microsoft/vcpkg/releases/tag/2021.05.12) or later
+* [vcpkg-tool](https://github.com/microsoft/vcpkg-tool): [`2021-07-16`](https://github.com/microsoft/vcpkg-tool/releases/tag/2021-07-16) or later
 
 ### References
 
