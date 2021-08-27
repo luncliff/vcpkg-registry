@@ -9,19 +9,18 @@
 #   - main
 
 variables:
+  - name: VCPKG_DISABLE_METRICS
+    value: "true"
   - name: overlay_configuration
     value: "--overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets"
-  - name: windows_port_list
-    value: "lua[cpp] zlib-ng"
-  - name: android_port_list
-    value: "lua[cpp] zlib-ng"
-  - name: osx_port_list
-    value: "lua[cpp] zlib-ng"
 
 jobs:
   - job: "windows_2019"
     pool:
       vmImage: windows-2019
+    variables:
+      - name: windows_port_list
+        value: "lua[cpp] zlib-ng"
     steps:
       - powershell: systeminfo
       - task: run-vcpkg@0
@@ -38,6 +37,9 @@ jobs:
   - job: "windows_2022"
     pool:
       vmImage: windows-2022
+    variables:
+      - name: windows_port_list
+        value: "lua[cpp] zlib-ng"
     steps:
       - powershell: systeminfo
       - task: run-vcpkg@0
@@ -49,6 +51,9 @@ jobs:
   - job: "android_on_windows_2019"
     pool:
       vmImage: windows-2019
+    variables:
+      - name: android_port_list
+        value: "lua[cpp] zlib-ng"
     steps:
       - powershell: systeminfo
       - task: run-vcpkg@0
@@ -76,6 +81,9 @@ jobs:
   - job: "macos_15"
     pool:
       vmImage: macOS-10.15
+    variables:
+      - name: osx_port_list
+        value: "lua[cpp] zlib-ng"
     steps:
       - powershell: env
       - task: run-vcpkg@0
