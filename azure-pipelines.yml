@@ -59,6 +59,10 @@ jobs:
           vcpkgGitCommitId: $(vcpkg_version)
           vcpkgArguments: "--triplet x64-windows $(overaly_arguments) $(windows_port_list)"
         displayName: "x64-windows"
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "x86-windows"
+          port_list: $(windows_port_list)
 
   - job: "android_on_windows_2019"
     pool:
@@ -100,8 +104,8 @@ jobs:
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
           vcpkg_triplet: "x64-osx"
-          port_list: "zlib-ng"
+          port_list: $(osx_port_list)
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
           vcpkg_triplet: "arm64-osx"
-          port_list: "zlib-ng"
+          port_list: $(osx_port_list)
