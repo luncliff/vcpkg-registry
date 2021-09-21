@@ -65,7 +65,7 @@ jobs:
       vmImage: windows-2019
     variables:
       - name: android_port_list
-        value: "lua[cpp] zlib-ng quictls"
+        value: "lua[cpp] zlib-ng"
     steps:
       - powershell: systeminfo
       - task: run-vcpkg@0
@@ -98,6 +98,9 @@ jobs:
         value: "lua[cpp] zlib-ng quictls"
     steps:
       - template: azure/steps-osx.yml
+        parameters:
+          vcpkg_triplet: "x64-osx"
+          port_list: "vcpkg-cmake"
       - task: run-vcpkg@0
         inputs:
           vcpkgGitCommitId: $(vcpkg_version)

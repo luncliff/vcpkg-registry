@@ -2,19 +2,26 @@
 # Author: github.com/luncliff (luncliff@gmail.com)
 #
 # References
-#   https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops#passing-parameters
+#   https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops#step-reuse
+#   https://github.com/microsoft/vcpkg/releases/tag/2021.05.12
+#   https://github.com/microsoft/vcpkg/blob/2021.05.12/docs/users/config-environment.md
 #
+
 parameters:
-  - name: vcpkg_root
-    displayName: "Use specified VCPKG_ROOT"
+  - name: vcpkg_version
     type: string
-    default: $(VCPKG_INSTALLATION_ROOT)
+    default: "2021.05.12"
+  - name: vcpkg_triplet
+    type: string
+  - name: port_list
+    type: string
 
 steps:
-  - powershell: env
-    env: 
+  - task: run-vcpkg@0
+    inputs:
+      vcpkgGitCommitId: ${{ parameters.vcpkg_version }}
+      vcpkgArguments: "${{ parameters.port_list }}"
+    env:
       VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
       VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
-  - script: |
-      brew info llvm
-      brew info cmake
+    displayName: "${{ parameters.vcpkg_triplet }}: ${{ parameters.port_list }}"
