@@ -8,9 +8,6 @@
 #
 
 parameters:
-  - name: vcpkg_version
-    type: string
-    default: "2021.05.12"
   - name: vcpkg_triplet
     type: string
   - name: port_list
@@ -19,7 +16,7 @@ parameters:
 steps:
   - task: run-vcpkg@0
     inputs:
-      vcpkgGitCommitId: ${{ parameters.vcpkg_version }}
+      vcpkgGitCommitId: "2021.05.12"
       vcpkgArguments: "${{ parameters.port_list }}"
     env:
       VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports

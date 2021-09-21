@@ -32,7 +32,7 @@ jobs:
       vmImage: windows-2019
     variables:
       - name: windows_port_list
-        value: "lua[cpp] zlib-ng quictls"
+        value: "lua[cpp] zlib-ng"
     steps:
       - powershell: systeminfo
       - task: run-vcpkg@0
@@ -51,7 +51,7 @@ jobs:
       vmImage: windows-2022
     variables:
       - name: windows_port_list
-        value: "lua[cpp] zlib-ng quictls"
+        value: "lua[cpp] zlib-ng"
     steps:
       - powershell: systeminfo
       - task: run-vcpkg@0
@@ -95,29 +95,13 @@ jobs:
       vmImage: macOS-10.15
     variables:
       - name: osx_port_list
-        value: "lua[cpp] zlib-ng quictls"
+        value: "lua[cpp] zlib-ng"
     steps:
-      - template: azure/steps-osx.yml
+      - template: azure/run-vcpkg-with-overlay.yml
         parameters:
           vcpkg_triplet: "x64-osx"
-          port_list: "vcpkg-cmake"
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: $(vcpkg_version)
-          vcpkgArguments: "--triplet x64-osx   $(overaly_arguments) $(osx_port_list)"
-        displayName: "x64-osx"
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: $(vcpkg_version)
-          vcpkgArguments: "--triplet arm64-osx $(overaly_arguments) $(osx_port_list)"
-        displayName: "arm64-osx"
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: $(vcpkg_version)
-          vcpkgArguments: "--triplet x64-ios   $(overaly_arguments) $(osx_port_list)"
-        displayName: "x64-ios"
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: $(vcpkg_version)
-          vcpkgArguments: "--triplet arm64-ios $(overaly_arguments) $(osx_port_list)"
-        displayName: "arm64-ios"
+          port_list: "zlib-ng"
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "arm64-osx"
+          port_list: "zlib-ng"
