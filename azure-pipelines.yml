@@ -5,8 +5,8 @@
 # https://github.com/lukka/CppBuildTasks
 #
 
-trigger:
-  - main
+# trigger:
+#   - main
 
 pr:
   - main

@@ -4,9 +4,17 @@
 # References
 #   https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops#passing-parameters
 #
+parameters:
+  - name: vcpkg_root
+    displayName: "Use specified VCPKG_ROOT"
+    type: string
+    default: $(VCPKG_INSTALLATION_ROOT)
 
 steps:
   - powershell: env
+    env: 
+      VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+      VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
   - script: |
       brew info llvm
       brew info cmake
