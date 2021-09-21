@@ -64,6 +64,7 @@ jobs:
       - name: android.ndk.home # == ANDROID_NDK_HOME
         value: $(ANDROID_NDK_LATEST_HOME)
     steps:
+      - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
           vcpkg_triplet: "arm64-android"
