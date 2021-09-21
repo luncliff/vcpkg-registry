@@ -19,6 +19,7 @@ steps:
       vcpkgGitCommitId: "2021.05.12"
       vcpkgArguments: "${{ parameters.port_list }}" # vcpkg install ${port_list} ...
     env:
+      VCPKG_DEFAULT_TRIPLET: ${{ parameters.vcpkg_triplet }} # --triplet ${vcpkg_triplet}
       VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
       VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
     displayName: "${{ parameters.vcpkg_triplet }}: ${{ parameters.port_list }}"
