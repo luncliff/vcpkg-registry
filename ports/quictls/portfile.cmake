@@ -5,24 +5,22 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO quictls/openssl
-    REF 77248f1c1c8ea8dc57d624050b78eab0b3a10a04 # 2021-05-03
-    SHA512 881639f0bfd83858ce5d28aaf013dc34105cbc9c2fcc040c873c41ca45a0ea3dcb9dfd8e81821b21e92d4b9577f86d11ac010bb1f3746713892969c62d46fda6
-    HEAD_REF openssl-3.0.0-alpha15+quic
-    PATCHES
-        fix-http.patch
+    REF a6e9d76db343605dae9b59d71d2811b195ae7434
+    SHA512 23510a11203b96476c194a1987c7d4e758375adef0f6dfe319cd8ec4b8dd9b12ea64c4099cf3ba35722b992dad75afb1cfc5126489a5fa59f5ee4d46bdfbeaf6
+    HEAD_REF OpenSSL_1_1_1k+quic
 )
 
 # Option: shared/static
+if(VCPKG_TARGET_IS_WINDOWS)
+    vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
+endif()
 set(OPENSSL_SHARED no-shared)
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
     set(OPENSSL_SHARED shared)
 endif()
 
-# Option: feature / algorithms
+# Option: feature / algorithms from https://github.com/microsoft/msquic
 list(APPEND CONFIGURE_OPTIONS
-    # from existing 'openssl' port
-    enable-static-engine enable-capieng
-    # from 'microsoft/msquic'
     enable-tls1_3 no-makedepend no-dgram no-ssl3 no-psk no-srp
     no-zlib no-egd no-idea no-rc5 no-rc4 no-afalgeng
     no-comp no-cms no-ct no-srp no-srtp no-ts no-gost no-dso no-ec2m
@@ -31,8 +29,11 @@ list(APPEND CONFIGURE_OPTIONS
     no-siphash no-whirlpool no-aria no-bf no-blake2 no-sm2 no-sm3 no-sm4 no-camellia no-cast no-md4 no-mdc2 no-ocb no-rc2 no-rmd160 no-scrypt
     no-weak-ssl-ciphers no-tests
 )
+if(VCPKG_TARGET_IS_UWP)
+    list(APPEND CONFIGURE_OPTIONS no-async)
+endif()
 if(VCPKG_TARGET_IS_WINDOWS)
-    # jom will build in parallel mode, so we need /FS
+    # jom will build in parallel mode, we need /FS for PDB access
     list(APPEND CONFIGURE_OPTIONS -utf-8 -FS)
 
 elseif(VCPKG_TARGET_IS_IOS)
@@ -44,7 +45,6 @@ endif()
 
 # Option: platform/architecture
 include(${CMAKE_CURRENT_LIST_DIR}/detect_platform.cmake)
-message(STATUS "Targeting: ${PLATFORM}")
 
 # Clean & copy source files for working directories
 file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg
@@ -98,7 +98,6 @@ elseif(VCPKG_TARGET_IS_ANDROID)
         message(FATAL_ERROR "Unknown NDK host platform")
     endif()
     get_filename_component(NDK_TOOL_PATH $ENV{ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${NDK_HOST_TAG}/bin ABSOLUTE)
-    message(STATUS "Using NDK: ${NDK_TOOL_PATH}")
     vcpkg_add_to_path(PREPEND ${NDK_TOOL_PATH})
 
 endif()
@@ -150,7 +149,7 @@ else()
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME install-${TARGET_TRIPLET}-rel
     )
-    if(VCPKG_TARGET_IS_ANDROID) 
+    if(VCPKG_TARGET_IS_ANDROID AND VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
         # install_dev copies symbolic link. overwrite them with the actual shared objects
         file(INSTALL ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/libcrypto.so
                      ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/libssl.so
@@ -188,6 +187,6 @@ file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include
                     ${CURRENT_PACKAGES_DIR}/ossl-modules
 )
 
-file(INSTALL     ${SOURCE_PATH}/LICENSE.txt
+file(INSTALL     ${SOURCE_PATH}/LICENSE
      DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright
 )

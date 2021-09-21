@@ -28,7 +28,7 @@ jobs:
       vmImage: windows-2019
     variables:
       - name: windows_port_list
-        value: "lua[cpp] zlib-ng"
+        value: "lua[cpp] zlib-ng quictls"
     steps:
       - task: UsePythonVersion@0
         inputs:
@@ -48,7 +48,11 @@ jobs:
           port_list: $(windows_port_list)
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          vcpkg_triplet: "x86-windows"
+          vcpkg_triplet: "arm64-windows"
+          port_list: $(windows_port_list)
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "x64-uwp"
           port_list: $(windows_port_list)
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
@@ -60,7 +64,7 @@ jobs:
       vmImage: windows-2022
     variables:
       - name: windows_port_list
-        value: "lua[cpp] zlib-ng"
+        value: "lua[cpp] zlib-ng quictls"
     steps:
       - task: UsePythonVersion@0
         inputs:
@@ -82,7 +86,7 @@ jobs:
       vmImage: windows-2019
     variables:
       - name: android_port_list
-        value: "lua[cpp] zlib-ng"
+        value: "lua[cpp] zlib-ng quictls"
       # - name: android.ndk.home # == ANDROID_NDK_HOME
       #   value: $(ANDROID_NDK_LATEST_HOME) # todo: change expression
     steps:
@@ -105,7 +109,7 @@ jobs:
       vmImage: macOS-10.15
     variables:
       - name: osx_port_list
-        value: "lua[cpp] zlib-ng"
+        value: "lua[cpp] zlib-ng quictls"
     steps:
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
@@ -121,7 +125,7 @@ jobs:
       vmImage: macOS-10.15
     variables:
       - name: ios_port_list
-        value: "lua[cpp] zlib-ng"
+        value: "lua[cpp] zlib-ng quictls"
     steps:
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
