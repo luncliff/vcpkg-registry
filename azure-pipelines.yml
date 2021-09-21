@@ -46,6 +46,18 @@ jobs:
       - name: windows_port_list
         value: "lua[cpp] zlib-ng"
     steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: "3.9"
+          addToPath: true
+          architecture: "x64"
+        displayName: "Setup Python 3.9"
+      - task: DeleteFiles@1
+        inputs:
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/downloads"
+          Contents: "**/*" # todo: change to downloads, buildtrees, etc.
+          RemoveSourceFolder: true
+          RemoveDotFiles: true
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
           vcpkg_triplet: "x64-windows"
@@ -61,8 +73,8 @@ jobs:
     variables:
       - name: android_port_list
         value: "lua[cpp] zlib-ng"
-      - name: android.ndk.home # == ANDROID_NDK_HOME
-        value: $(ANDROID_NDK_LATEST_HOME)
+      # - name: android.ndk.home # == ANDROID_NDK_HOME
+      #   value: $(ANDROID_NDK_LATEST_HOME) # todo: change expression
     steps:
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
