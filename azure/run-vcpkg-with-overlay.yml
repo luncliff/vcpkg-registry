@@ -17,8 +17,20 @@ steps:
   - task: run-vcpkg@0
     inputs:
       vcpkgGitCommitId: "2021.05.12"
-      vcpkgArguments: "${{ parameters.port_list }}"
+      vcpkgArguments: "${{ parameters.port_list }}" # vcpkg install ${port_list} ...
     env:
-      VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
-      VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
+      VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
+      VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
     displayName: "${{ parameters.vcpkg_triplet }}: ${{ parameters.port_list }}"
+
+  # todo: implement buildtree archive if the job failed
+  # - task: CopyFiles@2
+  #   inputs:
+  #     SourceFolder: "C:/vcpkg/buildtrees"
+  #     Contents: |
+  #       ?(*.exe|*.dll)
+  #       *.pdb
+  #     TargetFolder: $(Build.SourcesDirectory)
+  #     OverWrite: true
+  #   condition: in(variables['BuildConfiguration'], 'Debug')
+  #   displayName: "${{ parameters.vcpkg_triplet }}: archive buildtree"
