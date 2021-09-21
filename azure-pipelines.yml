@@ -5,8 +5,8 @@
 # https://github.com/lukka/CppBuildTasks
 #
 
-trigger:
-  - main
+# trigger:
+#   - main
 
 pr:
   - main
@@ -21,8 +21,6 @@ schedules:
 variables:
   - name: VCPKG_DISABLE_METRICS
     value: "true"
-  - name: overlay_configuration
-    value: "--overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets"
 
 jobs:
   - job: "windows_2019"
@@ -32,17 +30,14 @@ jobs:
       - name: windows_port_list
         value: "lua[cpp] zlib-ng"
     steps:
-      - powershell: systeminfo
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-windows $(overlay_configuration) $(windows_port_list)"
-        displayName: "x64-windows"
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x86-windows $(overlay_configuration) $(windows_port_list)"
-        displayName: "x86-windows"
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "x64-windows"
+          port_list: $(windows_port_list)
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "x86-windows"
+          port_list: $(windows_port_list)
 
   - job: "windows_2022"
     pool:
@@ -51,12 +46,26 @@ jobs:
       - name: windows_port_list
         value: "lua[cpp] zlib-ng"
     steps:
-      - powershell: systeminfo
-      - task: run-vcpkg@0
+      - task: UsePythonVersion@0
         inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-windows $(overlay_configuration) $(windows_port_list)"
-        displayName: "x64-windows"
+          versionSpec: "3.9"
+          addToPath: true
+          architecture: "x64"
+        displayName: "Setup Python 3.9"
+      - task: DeleteFiles@1
+        inputs:
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/downloads"
+          Contents: "**/*" # todo: change to downloads, buildtrees, etc.
+          RemoveSourceFolder: true
+          RemoveDotFiles: true
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "x64-windows"
+          port_list: $(windows_port_list)
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "x86-windows"
+          port_list: $(windows_port_list)
 
   - job: "android_on_windows_2019"
     pool:
@@ -64,29 +73,22 @@ jobs:
     variables:
       - name: android_port_list
         value: "lua[cpp] zlib-ng"
+      # - name: android.ndk.home # == ANDROID_NDK_HOME
+      #   value: $(ANDROID_NDK_LATEST_HOME) # todo: change expression
     steps:
-      - powershell: systeminfo
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm64-android $(overlay_configuration) $(android_port_list)"
-        env:
-          ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
-        displayName: "arm64-android"
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm-android   $(overlay_configuration) $(android_port_list)"
-        env:
-          ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
-        displayName: "arm-android"
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-android   $(overlay_configuration) $(android_port_list)"
-        env:
-          ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
-        displayName: "x64-android"
+      - powershell: env
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "arm64-android"
+          port_list: $(android_port_list)
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "arm-android"
+          port_list: $(android_port_list)
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "x64-android"
+          port_list: $(android_port_list)
 
   - job: "macos_15"
     pool:
@@ -95,24 +97,27 @@ jobs:
       - name: osx_port_list
         value: "lua[cpp] zlib-ng"
     steps:
-      - powershell: env
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-osx   $(overlay_configuration) $(osx_port_list)"
-        displayName: "x64-osx"
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm64-osx $(overlay_configuration) $(osx_port_list)"
-        displayName: "arm64-osx"
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-ios   $(overlay_configuration) $(osx_port_list)"
-        displayName: "x64-ios"
-      - task: run-vcpkg@0
-        inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm64-ios $(overlay_configuration) $(osx_port_list)"
-        displayName: "arm64-ios"
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "x64-osx"
+          port_list: $(osx_port_list)
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "arm64-osx"
+          port_list: $(osx_port_list)
+
+  - job: "ios_on_macos_15"
+    pool:
+      vmImage: macOS-10.15
+    variables:
+      - name: ios_port_list
+        value: "lua[cpp] zlib-ng"
+    steps:
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "x64-ios"
+          port_list: $(ios_port_list)
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "arm64-ios"
+          port_list: $(ios_port_list)

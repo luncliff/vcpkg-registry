@@ -56,7 +56,6 @@ set(VCPKG_LIBRARY_LINKAGE dynamic)
 set(VCPKG_CMAKE_SYSTEM_NAME Android)
 
 get_filename_component(TRIPLET_NAME ${CMAKE_CURRENT_LIST_FILE} NAME)
-message(VERBOSE "Using triplet: ${TRIPLET_NAME}")
 
 # Expect: Windows, Linux, Darwin
 string(TOLOWER ${CMAKE_HOST_SYSTEM_NAME} NDK_HOST_NAME)
@@ -94,6 +93,7 @@ endif()
 string(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" NDK_VERSION ${NDK_DIR_NAME})
 set(NDK_MAJOR_VERSION ${CMAKE_MATCH_1})
 set(NDK_MINOR_VERSION ${CMAKE_MATCH_2})
+message(STATUS "Found NDK: ${NDK_DIR_NAME} (${NDK_MAJOR_VERSION}.${NDK_MINOR_VERSION})")
 
 # Provide some paths to help using Vulkan SDK
 string(COMPARE GREATER ${NDK_MAJOR_VERSION} 21 NDK_VERSION_OVER_21)

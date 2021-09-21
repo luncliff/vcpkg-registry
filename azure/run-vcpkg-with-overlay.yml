@@ -1,0 +1,38 @@
+#
+# Author: github.com/luncliff (luncliff@gmail.com)
+#
+# References
+#   https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops#step-reuse
+#   https://github.com/microsoft/vcpkg/releases/tag/2021.05.12
+#   https://github.com/microsoft/vcpkg/blob/2021.05.12/docs/users/config-environment.md
+#
+
+parameters:
+  - name: vcpkg_triplet
+    type: string
+  - name: port_list
+    type: string
+
+steps:
+  - task: run-vcpkg@0
+    inputs:
+      vcpkgGitCommitId: "2021.05.12"
+      vcpkgArguments: "${{ parameters.port_list }}" # vcpkg install ${port_list} ...
+    env:
+      VCPKG_DEFAULT_TRIPLET: ${{ parameters.vcpkg_triplet }} # --triplet ${vcpkg_triplet}
+      VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
+      VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
+      ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
+    displayName: "${{ parameters.vcpkg_triplet }}: ${{ parameters.port_list }}"
+
+  # todo: implement buildtree archive if the job failed
+  # - task: CopyFiles@2
+  #   inputs:
+  #     SourceFolder: "C:/vcpkg/buildtrees"
+  #     Contents: |
+  #       ?(*.exe|*.dll)
+  #       *.pdb
+  #     TargetFolder: $(Build.SourcesDirectory)
+  #     OverWrite: true
+  #   condition: in(variables['BuildConfiguration'], 'Debug')
+  #   displayName: "${{ parameters.vcpkg_triplet }}: archive buildtree"
