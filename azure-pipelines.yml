@@ -21,7 +21,9 @@ schedules:
 variables:
   - name: VCPKG_DISABLE_METRICS
     value: "true"
-  - name: overlay_configuration
+  - name: vcpkg_version
+    value: "2021.05.12"
+  - name: overaly_arguments
     value: "--overlay-ports $(Build.SourcesDirectory)/ports --overlay-triplets $(Build.SourcesDirectory)/triplets"
 
 jobs:
@@ -30,18 +32,18 @@ jobs:
       vmImage: windows-2019
     variables:
       - name: windows_port_list
-        value: "lua[cpp] zlib-ng"
+        value: "lua[cpp] zlib-ng quictls"
     steps:
       - powershell: systeminfo
       - task: run-vcpkg@0
         inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-windows $(overlay_configuration) $(windows_port_list)"
+          vcpkgGitCommitId: $(vcpkg_version)
+          vcpkgArguments: "--triplet x64-windows $(overaly_arguments) $(windows_port_list)"
         displayName: "x64-windows"
       - task: run-vcpkg@0
         inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x86-windows $(overlay_configuration) $(windows_port_list)"
+          vcpkgGitCommitId: $(vcpkg_version)
+          vcpkgArguments: "--triplet x86-windows $(overaly_arguments) $(windows_port_list)"
         displayName: "x86-windows"
 
   - job: "windows_2022"
@@ -49,13 +51,13 @@ jobs:
       vmImage: windows-2022
     variables:
       - name: windows_port_list
-        value: "lua[cpp] zlib-ng"
+        value: "lua[cpp] zlib-ng quictls"
     steps:
       - powershell: systeminfo
       - task: run-vcpkg@0
         inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-windows $(overlay_configuration) $(windows_port_list)"
+          vcpkgGitCommitId: $(vcpkg_version)
+          vcpkgArguments: "--triplet x64-windows $(overaly_arguments) $(windows_port_list)"
         displayName: "x64-windows"
 
   - job: "android_on_windows_2019"
@@ -63,27 +65,27 @@ jobs:
       vmImage: windows-2019
     variables:
       - name: android_port_list
-        value: "lua[cpp] zlib-ng"
+        value: "lua[cpp] zlib-ng quictls"
     steps:
       - powershell: systeminfo
       - task: run-vcpkg@0
         inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm64-android $(overlay_configuration) $(android_port_list)"
+          vcpkgGitCommitId: $(vcpkg_version)
+          vcpkgArguments: "--triplet arm64-android $(overaly_arguments) $(android_port_list)"
         env:
           ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
         displayName: "arm64-android"
       - task: run-vcpkg@0
         inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm-android   $(overlay_configuration) $(android_port_list)"
+          vcpkgGitCommitId: $(vcpkg_version)
+          vcpkgArguments: "--triplet arm-android   $(overaly_arguments) $(android_port_list)"
         env:
           ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
         displayName: "arm-android"
       - task: run-vcpkg@0
         inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-android   $(overlay_configuration) $(android_port_list)"
+          vcpkgGitCommitId: $(vcpkg_version)
+          vcpkgArguments: "--triplet x64-android   $(overaly_arguments) $(android_port_list)"
         env:
           ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
         displayName: "x64-android"
@@ -93,26 +95,26 @@ jobs:
       vmImage: macOS-10.15
     variables:
       - name: osx_port_list
-        value: "lua[cpp] zlib-ng"
+        value: "lua[cpp] zlib-ng quictls"
     steps:
-      - powershell: env
+      - template: azure/steps-osx.yml
       - task: run-vcpkg@0
         inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-osx   $(overlay_configuration) $(osx_port_list)"
+          vcpkgGitCommitId: $(vcpkg_version)
+          vcpkgArguments: "--triplet x64-osx   $(overaly_arguments) $(osx_port_list)"
         displayName: "x64-osx"
       - task: run-vcpkg@0
         inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm64-osx $(overlay_configuration) $(osx_port_list)"
+          vcpkgGitCommitId: $(vcpkg_version)
+          vcpkgArguments: "--triplet arm64-osx $(overaly_arguments) $(osx_port_list)"
         displayName: "arm64-osx"
       - task: run-vcpkg@0
         inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet x64-ios   $(overlay_configuration) $(osx_port_list)"
+          vcpkgGitCommitId: $(vcpkg_version)
+          vcpkgArguments: "--triplet x64-ios   $(overaly_arguments) $(osx_port_list)"
         displayName: "x64-ios"
       - task: run-vcpkg@0
         inputs:
-          vcpkgGitCommitId: "2021.05.12"
-          vcpkgArguments: "--triplet arm64-ios $(overlay_configuration) $(osx_port_list)"
+          vcpkgGitCommitId: $(vcpkg_version)
+          vcpkgArguments: "--triplet arm64-ios $(overaly_arguments) $(osx_port_list)"
         displayName: "arm64-ios"
