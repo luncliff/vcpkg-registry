@@ -30,6 +30,18 @@ jobs:
       - name: windows_port_list
         value: "lua[cpp] zlib-ng"
     steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: "3.9"
+          addToPath: true
+          architecture: "x64"
+        displayName: "Setup Python 3.9"
+      # - task: DeleteFiles@1
+      #   inputs:
+      #     SourceFolder: "$(Build.BinariesDirectory)/vcpkg/downloads"
+      #     Contents: "**/*" # todo: change to downloads, buildtrees, etc.
+      #     RemoveSourceFolder: true
+      #     RemoveDotFiles: true
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
           vcpkg_triplet: "x64-windows"
@@ -37,6 +49,10 @@ jobs:
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
           vcpkg_triplet: "x86-windows"
+          port_list: $(windows_port_list)
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "arm64-windows"
           port_list: $(windows_port_list)
 
   - job: "windows_2022"
@@ -52,19 +68,13 @@ jobs:
           addToPath: true
           architecture: "x64"
         displayName: "Setup Python 3.9"
-      - task: DeleteFiles@1
-        inputs:
-          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/downloads"
-          Contents: "**/*" # todo: change to downloads, buildtrees, etc.
-          RemoveSourceFolder: true
-          RemoveDotFiles: true
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
           vcpkg_triplet: "x64-windows"
           port_list: $(windows_port_list)
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          vcpkg_triplet: "x86-windows"
+          vcpkg_triplet: "x64-uwp"
           port_list: $(windows_port_list)
 
   - job: "android_on_windows_2019"
