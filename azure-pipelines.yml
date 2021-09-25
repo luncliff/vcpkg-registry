@@ -52,11 +52,7 @@ jobs:
           port_list: $(windows_port_list)
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          vcpkg_triplet: "x64-uwp"
-          port_list: $(windows_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "arm64-windows"
+          vcpkg_triplet: "x86-windows"
           port_list: $(windows_port_list)
 
   - job: "windows_2022"
