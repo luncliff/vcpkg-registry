@@ -71,9 +71,27 @@ jobs:
           vcpkg_triplet: "x64-uwp"
           port_list: $(windows_port_list)
 
-  - job: "android_on_windows_2019"
+  - job: "ubuntu_2004"
     pool:
-      vmImage: windows-2019
+      vmImage: ubuntu-20.04
+    variables:
+      - name: linux_port_list
+        value: "openssl3"
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: "3.9"
+          addToPath: true
+          architecture: "x64"
+        displayName: "Setup Python 3.9"
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "x64-linux"
+          port_list: $(linux_port_list)
+
+  - job: "android_on_ubuntu_2004"
+    pool:
+      vmImage: ubuntu-20.04
     variables:
       - name: android_port_list
         value: "openssl3"
