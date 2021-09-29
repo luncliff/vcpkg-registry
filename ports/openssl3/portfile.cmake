@@ -97,7 +97,7 @@ elseif(VCPKG_TARGET_IS_ANDROID)
 endif()
 
 # Configure / Install
-# We need a PERL so can't use `vcpkg_configure_make` directly...
+# note: we need a PERL so can't use `vcpkg_configure_make` directly...
 message(STATUS "Configuring ${TARGET_TRIPLET}-dbg")
 vcpkg_execute_required_process(
     COMMAND ${PERL} Configure ${OPENSSL_SHARED} ${CONFIGURE_OPTIONS}
@@ -174,12 +174,7 @@ else()
         )
     endif()
 endif()
-file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include
-                    ${CURRENT_PACKAGES_DIR}/debug/engines-3.0
-                    ${CURRENT_PACKAGES_DIR}/engines-3.0
-                    ${CURRENT_PACKAGES_DIR}/debug/ossl-modules
-                    ${CURRENT_PACKAGES_DIR}/ossl-modules
-)
+file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
 
 file(INSTALL     ${SOURCE_PATH}/LICENSE.txt
      DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright
