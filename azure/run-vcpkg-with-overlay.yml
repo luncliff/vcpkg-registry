@@ -21,7 +21,7 @@ steps:
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ parameters.vcpkg_triplet }} # --triplet ${vcpkg_triplet}
       VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
-      VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
+      # VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
       ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
     displayName: "${{ parameters.vcpkg_triplet }}: ${{ parameters.port_list }}"
 
