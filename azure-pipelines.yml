@@ -28,7 +28,7 @@ jobs:
       vmImage: windows-2019
     variables:
       - name: windows_port_list
-        value: "lua[cpp] zlib-ng quictls"
+        value: "openssl3"
     steps:
       - task: UsePythonVersion@0
         inputs:
@@ -36,12 +36,6 @@ jobs:
           addToPath: true
           architecture: "x64"
         displayName: "Setup Python 3.9"
-      # - task: DeleteFiles@1
-      #   inputs:
-      #     SourceFolder: "$(Build.BinariesDirectory)/vcpkg/downloads"
-      #     Contents: "**/*" # todo: change to downloads, buildtrees, etc.
-      #     RemoveSourceFolder: true
-      #     RemoveDotFiles: true
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
           vcpkg_triplet: "x64-windows"
@@ -60,7 +54,7 @@ jobs:
       vmImage: windows-2022
     variables:
       - name: windows_port_list
-        value: "lua[cpp] zlib-ng quictls"
+        value: "openssl3"
     steps:
       - task: UsePythonVersion@0
         inputs:
@@ -82,7 +76,7 @@ jobs:
       vmImage: windows-2019
     variables:
       - name: android_port_list
-        value: "lua[cpp] zlib-ng quictls"
+        value: "openssl3"
       # - name: android.ndk.home # == ANDROID_NDK_HOME
       #   value: $(ANDROID_NDK_LATEST_HOME) # todo: change expression
     steps:
@@ -99,13 +93,17 @@ jobs:
         parameters:
           vcpkg_triplet: "x64-android"
           port_list: $(android_port_list)
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          vcpkg_triplet: "x86-android"
+          port_list: $(android_port_list)
 
   - job: "macos_15"
     pool:
       vmImage: macOS-10.15
     variables:
       - name: osx_port_list
-        value: "lua[cpp] zlib-ng quictls"
+        value: "openssl3"
     steps:
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
@@ -121,7 +119,7 @@ jobs:
       vmImage: macOS-10.15
     variables:
       - name: ios_port_list
-        value: "lua[cpp] zlib-ng quictls"
+        value: "openssl3"
     steps:
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
