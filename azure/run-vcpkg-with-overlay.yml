@@ -25,6 +25,13 @@ steps:
       ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
     displayName: "${{ parameters.vcpkg_triplet }}: ${{ parameters.port_list }}"
 
+  # - task: DeleteFiles@1
+  #   inputs:
+  #     SourceFolder: "$(Build.BinariesDirectory)/vcpkg/downloads"
+  #     Contents: "**/*" # todo: change to downloads, buildtrees, etc.
+  #     RemoveSourceFolder: true
+  #     RemoveDotFiles: true
+
   # todo: implement buildtree archive if the job failed
   # - task: CopyFiles@2
   #   inputs:
