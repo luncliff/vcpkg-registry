@@ -37,7 +37,7 @@ jobs:
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "fbgemm"
+          port_name: "vcpkg-host-python3"
           target_triplet: "x64-windows"
 
   - job: "ubuntu_2004"
@@ -54,27 +54,8 @@ jobs:
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "fbgemm"
+          port_name: "vcpkg-host-python3"
           target_triplet: "x64-linux"
-
-  - job: "android_on_ubuntu_2004"
-    pool:
-      vmImage: ubuntu-20.04
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: "3.9"
-          addToPath: true
-          architecture: "x64"
-        displayName: "Setup Python 3.9"
-      - powershell: pip install typing-extensions pybind11 numpy
-      - powershell: env
-        env:
-          ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          port_name: "fbgemm"
-          target_triplet: "arm64-android"
 
   - job: "macos_15"
     pool:
@@ -90,5 +71,5 @@ jobs:
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "fbgemm"
+          port_name: "vcpkg-host-python3"
           target_triplet: "x64-osx"
