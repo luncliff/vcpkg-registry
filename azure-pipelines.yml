@@ -34,10 +34,12 @@ jobs:
           architecture: "x64"
         displayName: "Setup Python 3.9"
       - powershell: pip install typing-extensions pybind11 numpy
+      - powershell: pip show pybind11
+      - powershell: pip show numpy
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "vcpkg-host-python3"
+          port_name: "vcpkg-host-python3-test"
           target_triplet: "x64-windows"
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
@@ -55,11 +57,9 @@ jobs:
           architecture: "x64"
         displayName: "Setup Python 3.9"
       - powershell: pip install typing-extensions pybind11 numpy
+      - powershell: pip show pybind11
+      - powershell: pip show numpy
       - powershell: env
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          port_name: "vcpkg-host-python3"
-          target_triplet: "x64-linux"
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
           port_name: "vcpkg-host-python3-test"
@@ -76,10 +76,12 @@ jobs:
           architecture: "x64"
         displayName: "Setup Python 3.9"
       - powershell: pip install typing-extensions pybind11 numpy
+      - powershell: pip show pybind11
+      - powershell: pip show numpy
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "vcpkg-host-python3"
+          port_name: "vcpkg-host-python3-test"
           target_triplet: "x64-osx"
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
