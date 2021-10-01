@@ -12,13 +12,18 @@ endif()
 
 # todo: if virtualenv specified, extend CMAKE_PREFIX_PATH ...
 if(Python3_INTERPRETER_ID STREQUAL Python)
-    # get_filename_component(PY3_LIBRARY_ROOT_DIR "${Python3_INCLUDE_DIRS}/../Library" ABSOLUTE)
+    if(Python3_EXECUTABLE MATCHES Anaconda)
+        message(STATUS "Detected: Anaconda Python3")
+        # ...
+    endif()
+    get_filename_component(PY3_LIBRARY_ROOT_DIR "${Python3_INCLUDE_DIRS}/../Library" ABSOLUTE)
+    # list(APPEND CMAKE_PREFIX_PATH ${PY3_LIBRARY_ROOT_DIR})
     # get_filename_component(PY3_CONFIG_DIR_0 "${PY3_LIBRARY_ROOT_DIR}/cmake" ABSOLUTE)
     # get_filename_component(PY3_CONFIG_DIR_1 "${PY3_LIBRARY_ROOT_DIR}/lib/cmake" ABSOLUTE)
     # get_filename_component(PY3_CONFIG_DIR_2 "${PY3_LIBRARY_ROOT_DIR}/share/cmake" ABSOLUTE)
     # list(APPEND CMAKE_PREFIX_PATH ${PY3_LIBRARY_ROOT_DIR})
 else()
-    # message(WARNING "Unhandled: ${Python3_INTERPRETER_ID}")
+    message(WARNING "Unhandled: ${Python3_INTERPRETER_ID}")
 endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/vcpkg_pip_install.cmake")

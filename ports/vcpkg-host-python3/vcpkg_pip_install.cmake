@@ -30,20 +30,13 @@ function(vcpkg_pip_install)
 
     # run `pip install ${package}`
     execute_process(
-        COMMAND ${Python3_EXECUTABLE} -m pip install ${arg_PACKAGE}
+        COMMAND ${Python3_EXECUTABLE} -m pip install ${arg_PACKAGE} ${arg_INSTALL_OPTIONS}
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}
         OUTPUT_FILE install-${arg_PACKAGE}-out.log
         ERROR_FILE  install-${arg_PACKAGE}-err.log
-        COMMAND_ECHO NONE
+        COMMAND_ECHO STDOUT
         ENCODING UTF-8
     )
-
-    if(Python3_INTERPRETER_ID STREQUAL Python)
-        get_filename_component(PY3_LIBRARY_ROOT_DIR "${Python3_INCLUDE_DIRS}/../Library" ABSOLUTE)
-        # list(APPEND CMAKE_PREFIX_PATH ${PY3_LIBRARY_ROOT_DIR})
-    else()
-        message(WARNING "Unhandled: ${Python3_INTERPRETER_ID}")
-    endif()
 
     # if 'numpy', find NumPy component
     if(arg_PACKAGE MATCHES [Nn]um[Pp]y)
