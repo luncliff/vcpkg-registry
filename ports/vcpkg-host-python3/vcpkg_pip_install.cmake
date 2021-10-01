@@ -5,6 +5,7 @@
 
 * https://cmake.org/cmake/help/latest/module/FindPython3.html
 * https://cmake.org/cmake/help/latest/command/execute_process.html
+* https://cmake.org/cmake/help/latest/command/find_package.html
 
 #]===]
 if(Z_VCPKG_PIP_INSTALL_GUARD)
@@ -23,9 +24,11 @@ function(vcpkg_pip_install)
     if(DEFINED arg_INSTALL_OPTIONS)
         message(VERBOSE "install_options:")
         foreach(OPTION IN LISTS arg_INSTALL_OPTIONS)
-            message(VERBOSE " ${OPTION}")
+            message(VERBOSE "  ${OPTION}")
         endforeach()
     endif()
+
+    # run `pip install ${package}`
     execute_process(
         COMMAND ${Python3_EXECUTABLE} -m pip install ${arg_PACKAGE}
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}
@@ -34,22 +37,21 @@ function(vcpkg_pip_install)
         COMMAND_ECHO NONE
         ENCODING UTF-8
     )
+
+    if(Python3_INTERPRETER_ID STREQUAL Python)
+        get_filename_component(PY3_LIBRARY_ROOT_DIR "${Python3_INCLUDE_DIRS}/../Library" ABSOLUTE)
+        # list(APPEND CMAKE_PREFIX_PATH ${PY3_LIBRARY_ROOT_DIR})
+    else()
+        message(WARNING "Unhandled: ${Python3_INTERPRETER_ID}")
+    endif()
+
     # if 'numpy', find NumPy component
     if(arg_PACKAGE MATCHES [Nn]um[Pp]y)
-        if(Python3_INTERPRETER_ID STREQUAL Python)
-            get_filename_component(PY3_LIBRARY_ROOT_DIR      "${Python3_INCLUDE_DIRS}/../Library" ABSOLUTE)
-            get_filename_component(Python3_NumPy_INCLUDE_DIR "${PY3_LIBRARY_ROOT_DIR}/include"   ABSOLUTE)
-
-        elseif(Python3_INTERPRETER_ID STREQUAL Anaconda)
-            get_filename_component(CONDA_LIBRARY_ROOT_DIR    "${Python3_INCLUDE_DIRS}/../Library" ABSOLUTE)
-            get_filename_component(CONDA_LIBRARY_INCLUDE_DIR "${CONDA_LIBRARY_ROOT_DIR}/include" ABSOLUTE)
-            set(Python3_NumPy_INCLUDE_DIR ${CONDA_LIBRARY_INCLUDE_DIR})
-
-        else()
-            message(WARNING "Unhandled: ${Python3_INTERPRETER_ID}")
-        endif()
-
-        message(STATUS "Searching: ${Python3_NumPy_INCLUDE_DIR}")
-        find_package(Python3 QUIET REQUIRED COMPONENTS NumPy)
+        get_filename_component(Python3_NumPy_INCLUDE_DIR "${PY3_LIBRARY_ROOT_DIR}/include"   ABSOLUTE)
+        # run find_package and forward result variables with PARENT_SCOPE
+        find_package(Python3 REQUIRED COMPONENTS NumPy)
+        message(VERBOSE "numpy: ${Python3_NumPy_VERSION}")
+        message(VERBOSE "  include: ${Python3_NumPy_INCLUDE_DIRS}")
+        set(Python3_NumPy_INCLUDE_DIRS ${Python3_NumPy_INCLUDE_DIRS} PARENT_SCOPE)
     endif()
 endfunction()

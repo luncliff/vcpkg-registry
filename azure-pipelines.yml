@@ -39,6 +39,10 @@ jobs:
         parameters:
           port_name: "vcpkg-host-python3"
           target_triplet: "x64-windows"
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "vcpkg-host-python3-test"
+          target_triplet: "x86-windows"
 
   - job: "ubuntu_2004"
     pool:
@@ -55,6 +59,10 @@ jobs:
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
           port_name: "vcpkg-host-python3"
+          target_triplet: "x64-linux"
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "vcpkg-host-python3-test"
           target_triplet: "x64-linux"
 
   - job: "macos_15"
@@ -73,3 +81,7 @@ jobs:
         parameters:
           port_name: "vcpkg-host-python3"
           target_triplet: "x64-osx"
+      - template: azure/run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "vcpkg-host-python3-test"
+          target_triplet: "arm64-osx"
