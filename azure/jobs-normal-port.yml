@@ -1,0 +1,91 @@
+#
+# Author: github.com/luncliff (luncliff@gmail.com)
+#
+# References
+#   https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops#job-reuse
+#
+
+parameters:
+  - name: job_name
+    type: string
+  - name: port_name
+    type: string
+
+jobs:
+  - job: "windows_${{ parameters.job_name }}"
+    pool:
+      vmImage: windows-2022
+    steps:
+      - task: UsePythonVersion@0
+        displayName: "Setup: Python 3.9"
+        inputs:
+          versionSpec: "3.9"
+          addToPath: true
+          architecture: "x64"
+      - powershell: env
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "x64-windows"
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "x86-windows"
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "arm64-windows"
+
+  - job: "linux_${{ parameters.job_name }}"
+    pool:
+      vmImage: ubuntu-20.04
+    steps:
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "x64-linux"
+
+  - job: "android_${{ parameters.job_name }}"
+    pool:
+      vmImage: ubuntu-20.04
+    steps:
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "arm64-android"
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "arm-android"
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "x64-android"
+
+  - job: "osx_${{ parameters.job_name }}"
+    pool:
+      vmImage: macOS-10.15
+    steps:
+      - powershell: env
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "x64-osx"
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "arm64-osx"
+
+  - job: "ios_${{ parameters.job_name }}"
+    pool:
+      vmImage: macOS-10.15
+    steps:
+      - powershell: env
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "x64-ios"
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "arm64-ios"

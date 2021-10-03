@@ -23,6 +23,11 @@ variables:
     value: "true"
 
 jobs:
+  - template: azure/jobs-normal-port.yml
+    parameters:
+      job_name: "zlib_ng"
+      port_name: "zlib-ng"
+
   - template: azure/jobs-python3-port.yml
     parameters:
       job_name: "vcpkg_host_python3"
