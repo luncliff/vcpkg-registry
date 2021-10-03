@@ -23,6 +23,6 @@ variables:
     value: "true"
 
 jobs:
-  - template: azure/jobs-vcpkg-host-python3.yml
+  - template: azure/jobs-python3-port.yml
     parameters:
       port_name: "vcpkg-host-python3"
