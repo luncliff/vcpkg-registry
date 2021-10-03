@@ -44,11 +44,6 @@ jobs:
         parameters:
           port_name: "${{ parameters.port_name }}"
           target_triplet: "x64-linux"
-
-  - job: "android_${{ parameters.job_name }}"
-    pool:
-      vmImage: ubuntu-20.04
-    steps:
       - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}"
@@ -75,12 +70,6 @@ jobs:
         parameters:
           port_name: "${{ parameters.port_name }}"
           target_triplet: "arm64-osx"
-
-  - job: "ios_${{ parameters.job_name }}"
-    pool:
-      vmImage: macOS-10.15
-    steps:
-      - powershell: env
       - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}"
