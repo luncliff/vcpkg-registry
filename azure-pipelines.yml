@@ -39,6 +39,10 @@ stages:
         parameters:
           job_name: "openssl3"
           port_name: "openssl3"
+      - template: azure/jobs-uwp-port.yml
+        parameters:
+          job_name: "openssl3"
+          port_name: "openssl3"
 
   - stage: "Registry" # todo: Use of this registry
     jobs:

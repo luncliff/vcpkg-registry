@@ -50,7 +50,7 @@ jobs:
         displayName: "Publish Logs"
         inputs:
           PathtoPublish: "$(Build.ArtifactStagingDirectory)"
-          ArtifactName: "${{ parameters.job_name }}"
+          ArtifactName: "$(Agent.JobName)"
         condition: always()
 
   - job: "linux_${{ parameters.job_name }}"
@@ -87,7 +87,7 @@ jobs:
         displayName: "Publish Logs"
         inputs:
           PathtoPublish: "$(Build.ArtifactStagingDirectory)"
-          ArtifactName: "${{ parameters.job_name }}"
+          ArtifactName: "$(Agent.JobName)"
         condition: always()
 
   - job: "osx_${{ parameters.job_name }}"
@@ -125,5 +125,5 @@ jobs:
         displayName: "Publish Logs"
         inputs:
           PathtoPublish: "$(Build.ArtifactStagingDirectory)"
-          ArtifactName: "${{ parameters.job_name }}"
+          ArtifactName: "$(Agent.JobName)"
         condition: always()
