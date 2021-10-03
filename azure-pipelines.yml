@@ -33,8 +33,7 @@ jobs:
           versionSpec: "3.9"
           addToPath: true
           architecture: "x64"
-      - powershell: |
-          pip install typing-extensions pybind11
+      - powershell: pip install typing-extensions pybind11
         displayName: "Install Python packages"
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
@@ -45,6 +44,8 @@ jobs:
         parameters:
           port_name: "vcpkg-host-python3-test"
           target_triplet: "x86-windows"
+      - powershell: pip list
+        displayName: "Show installed Python packages"
 
   - job: "ubuntu_2004"
     pool:
@@ -66,6 +67,8 @@ jobs:
         parameters:
           port_name: "vcpkg-host-python3-test"
           target_triplet: "x64-linux"
+      - powershell: pip list
+        displayName: "Show installed Python packages"
 
   - job: "macos_15"
     pool:
@@ -77,9 +80,7 @@ jobs:
           versionSpec: "3.9"
           addToPath: true
           architecture: "x64"
-      - powershell: |
-          pip install typing-extensions pybind11 numpy
-          pip show numpy
+      - powershell: pip install pybind11
         displayName: "Install Python packages"
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
@@ -90,3 +91,5 @@ jobs:
         parameters:
           port_name: "vcpkg-host-python3-test"
           target_triplet: "arm64-osx"
+      - powershell: pip list
+        displayName: "Show installed Python packages"
