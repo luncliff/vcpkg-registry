@@ -9,8 +9,11 @@ message(STATUS "  Python3_INCLUDE_DIRS: ${Python3_INCLUDE_DIRS}")
 message(STATUS "  Python3_LIBRARIES: ${Python3_LIBRARIES}")
 message(STATUS "  Python3_LIBRARY_DIRS: ${Python3_LIBRARY_DIRS}")
 message(STATUS)
+message(STATUS "variables:")
+message(STATUS "  PY3_LIBRARY_ROOT_DIR: ${PY3_LIBRARY_ROOT_DIR}")
+message(STATUS "  PY3_USER_SITE_PACKAGE_DIR: ${PY3_USER_SITE_PACKAGE_DIR}")
+message(STATUS)
 
-message(STATUS "vcpkg_pip_install:")
 vcpkg_pip_install(PACKAGE "typing-extensions")
 
 vcpkg_pip_install(PACKAGE "pybind11"

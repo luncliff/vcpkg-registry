@@ -35,12 +35,33 @@ OPTIONAL_COMPONENTS
 
 include(${CURRENT_PORT_DIR}/vcpkg-port-config.cmake)
 
+if(NOT DEFINED PY3_USER_SITE_PACKAGE_DIR)
+    # run `python -m site --user-site`
+    execute_process(
+        COMMAND ${Python3_EXECUTABLE} -m site --user-site
+        WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}
+        OUTPUT_VARIABLE PY3_USER_SITE_PACKAGE_DIR
+        ERROR_VARIABLE  ERROR_MESSAGE
+        OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_STRIP_TRAILING_WHITESPACE
+        ENCODING UTF-8
+    )
+    if(ERROR_MESSAGE)
+        message(FATAL_ERROR "${ERROR_MESSAGE}")
+    endif()
+    # change path separaters in the variable
+    get_filename_component(PY3_USER_SITE_PACKAGE_DIR "${PY3_USER_SITE_PACKAGE_DIR}" ABSOLUTE)
+    message(STATUS "Detected: ${PY3_USER_SITE_PACKAGE_DIR}")
+endif()
+
 string(TIMESTAMP INSTALL_TIMEPOINT UTC)
 file(WRITE ${HINT_FILE}  "# timestamp: ${INSTALL_TIMEPOINT}\n")
 file(APPEND ${HINT_FILE} "set(Python3_USE_STATIC_LIBS ${Python3_USE_STATIC_LIBS})\n")
 
 file(APPEND ${HINT_FILE} "# triplet: ${TARGET_TRIPLET}\n")
 file(APPEND ${HINT_FILE} "set(Python3_VERSION \"${Python3_VERSION}\")\n")
+file(APPEND ${HINT_FILE} "set(Python3_VERSION_MAJOR \"${Python3_VERSION_MAJOR}\")\n")
+file(APPEND ${HINT_FILE} "set(Python3_VERSION_MINOR \"${Python3_VERSION_MINOR}\")\n")
+
 file(APPEND ${HINT_FILE} "set(Python3_EXECUTABLE \"${Python3_EXECUTABLE}\")\n")
 file(APPEND ${HINT_FILE} "set(Python3_INTERPRETER_ID ${Python3_INTERPRETER_ID})\n")
 
@@ -49,8 +70,14 @@ file(APPEND ${HINT_FILE} "set(Python3_INCLUDE_DIRS \"${Python3_INCLUDE_DIRS}\")\
 file(APPEND ${HINT_FILE} "set(Python3_LIBRARIES \"${Python3_LIBRARIES}\")\n")
 file(APPEND ${HINT_FILE} "set(Python3_LIBRARY_DIRS \"${Python3_LIBRARY_DIRS}\")\n")
 if(Python3_NumPy_FOUND)
-     file(APPEND ${HINT_FILE} "# component: NumPy\n")
      file(APPEND ${HINT_FILE} "set(Python3_NumPy_INCLUDE_DIRS \"${Python3_NumPy_INCLUDE_DIRS}\")\n")
+endif()
+
+file(APPEND ${HINT_FILE} "\n")
+set(PY3_NAME "python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
+file(APPEND ${HINT_FILE} "set(PY3_NAME \"${PY3_NAME}\")\n")
+if(DEFINED PY3_USER_SITE_PACKAGE_DIR)
+     file(APPEND ${HINT_FILE} "set(PY3_USER_SITE_PACKAGE_DIR \"${PY3_USER_SITE_PACKAGE_DIR}\")\n")
 endif()
 
 file(INSTALL     ${CURRENT_PORT_DIR}/LICENSE

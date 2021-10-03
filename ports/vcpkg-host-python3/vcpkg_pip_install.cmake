@@ -40,7 +40,7 @@ function(vcpkg_pip_install)
 
     # if 'numpy', find NumPy component
     if(arg_PACKAGE MATCHES [Nn]um[Pp]y)
-        get_filename_component(Python3_NumPy_INCLUDE_DIR "${PY3_LIBRARY_ROOT_DIR}/include"   ABSOLUTE)
+        get_filename_component(Python3_NumPy_INCLUDE_DIR "${PY3_LIBRARY_ROOT_DIR}/numpy/core/include"   ABSOLUTE)
         # run find_package and forward result variables with PARENT_SCOPE
         find_package(Python3 REQUIRED COMPONENTS NumPy)
         message(VERBOSE "numpy: ${Python3_NumPy_VERSION}")
