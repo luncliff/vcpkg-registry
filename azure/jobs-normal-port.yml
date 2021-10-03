@@ -76,7 +76,7 @@ jobs:
       - task: CopyFiles@2
         displayName: "Copy Logs: ${{ parameters.port_name }}"
         inputs:
-          SourceFolder: "C:/vcpkg/buildtrees/${{ parameters.port_name }}"
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port_name }}"
           Contents: |
             ?(*.log|*.txt)
             *.cmake
@@ -114,7 +114,7 @@ jobs:
       - task: CopyFiles@2
         displayName: "Copy Logs: ${{ parameters.port_name }}"
         inputs:
-          SourceFolder: "C:/vcpkg/buildtrees/${{ parameters.port_name }}"
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port_name }}"
           Contents: |
             ?(*.log|*.txt)
             *.cmake
