@@ -154,6 +154,15 @@ else()
              DESTINATION ${CURRENT_PACKAGES_DIR}/lib
         )
     endif()
+    # rename lib64 to lib for lib/pkgconfig
+    if(EXISTS ${CURRENT_PACKAGES_DIR}/debug/lib64)
+        file(RENAME ${CURRENT_PACKAGES_DIR}/debug/lib64
+                    ${CURRENT_PACKAGES_DIR}/debug/lib)
+    endif()
+    if(EXISTS ${CURRENT_PACKAGES_DIR}/lib64)
+        file(RENAME ${CURRENT_PACKAGES_DIR}/lib64
+                    ${CURRENT_PACKAGES_DIR}/lib)
+    endif()
     vcpkg_fixup_pkgconfig()
 
 endif()
