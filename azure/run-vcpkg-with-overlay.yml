@@ -8,31 +8,27 @@
 #
 
 parameters:
-  - name: vcpkg_triplet
+  - name: port_name
     type: string
-  - name: port_list
+  - name: target_triplet
     type: string
 
 steps:
   - task: run-vcpkg@0
+    displayName: "${{ parameters.target_triplet }}: ${{ parameters.port_name }}"
     inputs:
       vcpkgGitCommitId: "2021.05.12"
-      vcpkgArguments: "${{ parameters.port_list }}" # vcpkg install ${port_list} ...
+      vcpkgArguments: "${{ parameters.port_name }}" # vcpkg install ${port_name} ...
     env:
-      VCPKG_DEFAULT_TRIPLET: ${{ parameters.vcpkg_triplet }} # --triplet ${vcpkg_triplet}
+      VCPKG_DEFAULT_TRIPLET: ${{ parameters.target_triplet }} # --triplet ${target_triplet}
       VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
       # VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
       ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
-    displayName: "${{ parameters.vcpkg_triplet }}: ${{ parameters.port_list }}"
+    continueOnError: true
 
-  # todo: implement buildtree archive if the job failed
-  # - task: CopyFiles@2
+  # - task: DeleteFiles@1
   #   inputs:
-  #     SourceFolder: "C:/vcpkg/buildtrees"
-  #     Contents: |
-  #       ?(*.exe|*.dll)
-  #       *.pdb
-  #     TargetFolder: $(Build.SourcesDirectory)
-  #     OverWrite: true
-  #   condition: in(variables['BuildConfiguration'], 'Debug')
-  #   displayName: "${{ parameters.vcpkg_triplet }}: archive buildtree"
+  #     SourceFolder: "$(Build.BinariesDirectory)/vcpkg/downloads"
+  #     Contents: "**/*" # todo: change to downloads, buildtrees, etc.
+  #     RemoveSourceFolder: true
+  #     RemoveDotFiles: true

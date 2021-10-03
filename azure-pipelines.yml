@@ -22,128 +22,26 @@ variables:
   - name: VCPKG_DISABLE_METRICS
     value: "true"
 
-jobs:
-  - job: "windows_2019"
-    pool:
-      vmImage: windows-2019
-    variables:
-      - name: windows_port_list
-        value: "openssl3"
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: "3.9"
-          addToPath: true
-          architecture: "x64"
-        displayName: "Setup Python 3.9"
-      - template: azure/run-vcpkg-with-overlay.yml
+stages:
+  - stage: "Ports" # Check build status of the ports
+    jobs:
+      - template: azure/jobs-normal-port.yml
         parameters:
-          vcpkg_triplet: "x64-windows"
-          port_list: $(windows_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "arm64-windows"
-          port_list: $(windows_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x86-windows"
-          port_list: $(windows_port_list)
+          job_name: "zlib_ng"
+          port_name: "zlib-ng"
 
-  - job: "windows_2022"
-    pool:
-      vmImage: windows-2022
-    variables:
-      - name: windows_port_list
-        value: "openssl3"
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: "3.9"
-          addToPath: true
-          architecture: "x64"
-        displayName: "Setup Python 3.9"
-      - template: azure/run-vcpkg-with-overlay.yml
+      - template: azure/jobs-python3-port.yml
         parameters:
-          vcpkg_triplet: "x64-windows"
-          port_list: $(windows_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x64-uwp"
-          port_list: $(windows_port_list)
+          job_name: "vcpkg_host_python3"
+          port_name: "vcpkg-host-python3"
 
-  - job: "ubuntu_2004"
-    pool:
-      vmImage: ubuntu-20.04
-    variables:
-      - name: linux_port_list
-        value: "openssl3"
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: "3.9"
-          addToPath: true
-          architecture: "x64"
-        displayName: "Setup Python 3.9"
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x64-linux"
-          port_list: $(linux_port_list)
+  - stage: "Registry" # todo: Use of this registry
+    jobs:
+      - job: "windows_2022"
+        pool:
+          vmImage: windows-2022
+        steps:
+          - powershell: Write-Output "Not implemented"
 
-  - job: "android_on_ubuntu_2004"
-    pool:
-      vmImage: ubuntu-20.04
-    variables:
-      - name: android_port_list
-        value: "openssl3"
-      # - name: android.ndk.home # == ANDROID_NDK_HOME
-      #   value: $(ANDROID_NDK_LATEST_HOME) # todo: change expression
-    steps:
-      - powershell: env
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "arm64-android"
-          port_list: $(android_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "arm-android"
-          port_list: $(android_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x64-android"
-          port_list: $(android_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x86-android"
-          port_list: $(android_port_list)
-
-  - job: "macos_15"
-    pool:
-      vmImage: macOS-10.15
-    variables:
-      - name: osx_port_list
-        value: "openssl3"
-    steps:
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x64-osx"
-          port_list: $(osx_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "arm64-osx"
-          port_list: $(osx_port_list)
-
-  - job: "ios_on_macos_15"
-    pool:
-      vmImage: macOS-10.15
-    variables:
-      - name: ios_port_list
-        value: "openssl3"
-    steps:
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x64-ios"
-          port_list: $(ios_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "arm64-ios"
-          port_list: $(ios_port_list)
+  # todo: Deploy stage
+  #   Status notification + GitHub release
