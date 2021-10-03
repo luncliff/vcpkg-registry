@@ -6,11 +6,13 @@
 #
 
 parameters:
+  - name: job_name
+    type: string
   - name: port_name
     type: string
 
 jobs:
-  - job: "windows: ${{ parameters.port_name }}"
+  - job: "windows_${{ parameters.job_name }}"
     pool:
       vmImage: windows-2019
     steps:
@@ -32,7 +34,7 @@ jobs:
       - powershell: pip list
         displayName: "Show installed Python packages"
 
-  - job: "linux: ${{ parameters.port_name }}"
+  - job: "linux_${{ parameters.job_name }}"
     pool:
       vmImage: ubuntu-20.04
     steps:
@@ -54,7 +56,7 @@ jobs:
       - powershell: pip list
         displayName: "Show installed Python packages"
 
-  - job: "osx: ${{ parameters.port_name }}"
+  - job: "osx_${{ parameters.job_name }}"
     pool:
       vmImage: macOS-10.15
     steps:
