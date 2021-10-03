@@ -1,0 +1,12 @@
+{
+  "name": "vcpkg-host-python3-test",
+  "version-date": "2021-10-01",
+  "description": "Test port for 'vcpkg-host-python",
+  "homepage": "https://github.com/luncliff/vcpkg-registry",
+  "dependencies": [
+    {
+      "name": "vcpkg-host-python3",
+      "host": true
+    }
+  ]
+}

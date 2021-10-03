@@ -26,108 +26,70 @@ jobs:
   - job: "windows_2019"
     pool:
       vmImage: windows-2019
-    variables:
-      - name: windows_port_list
-        value: "lua[cpp] zlib-ng quictls"
     steps:
       - task: UsePythonVersion@0
+        displayName: "Setup: Python 3.9"
         inputs:
           versionSpec: "3.9"
           addToPath: true
           architecture: "x64"
-        displayName: "Setup Python 3.9"
-      # - task: DeleteFiles@1
-      #   inputs:
-      #     SourceFolder: "$(Build.BinariesDirectory)/vcpkg/downloads"
-      #     Contents: "**/*" # todo: change to downloads, buildtrees, etc.
-      #     RemoveSourceFolder: true
-      #     RemoveDotFiles: true
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x64-windows"
-          port_list: $(windows_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "arm64-windows"
-          port_list: $(windows_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x86-windows"
-          port_list: $(windows_port_list)
-
-  - job: "windows_2022"
-    pool:
-      vmImage: windows-2022
-    variables:
-      - name: windows_port_list
-        value: "lua[cpp] zlib-ng quictls"
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: "3.9"
-          addToPath: true
-          architecture: "x64"
-        displayName: "Setup Python 3.9"
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x64-windows"
-          port_list: $(windows_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x64-uwp"
-          port_list: $(windows_port_list)
-
-  - job: "android_on_windows_2019"
-    pool:
-      vmImage: windows-2019
-    variables:
-      - name: android_port_list
-        value: "lua[cpp] zlib-ng quictls"
-      # - name: android.ndk.home # == ANDROID_NDK_HOME
-      #   value: $(ANDROID_NDK_LATEST_HOME) # todo: change expression
-    steps:
+      - powershell: pip install typing-extensions pybind11
+        displayName: "Install Python packages"
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          vcpkg_triplet: "arm64-android"
-          port_list: $(android_port_list)
+          port_name: "vcpkg-host-python3-test"
+          target_triplet: "x64-windows"
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          vcpkg_triplet: "arm-android"
-          port_list: $(android_port_list)
+          port_name: "vcpkg-host-python3-test"
+          target_triplet: "x86-windows"
+      - powershell: pip list
+        displayName: "Show installed Python packages"
+
+  - job: "ubuntu_2004"
+    pool:
+      vmImage: ubuntu-20.04
+    steps:
+      - powershell: |
+          python3 -m pip install typing-extensions numpy
+          pip show numpy
+        displayName: "Install Python packages"
+      - powershell: |
+          $site_package_dir=$(python3 -m site --user-site)
+          Write-Output $site_package_dir
+          if (Test-Path $site_package_dir) {
+            Get-ChildItem $site_package_dir
+          }
+        displayName: "Check Python User Site"
+      - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          vcpkg_triplet: "x64-android"
-          port_list: $(android_port_list)
+          port_name: "vcpkg-host-python3-test"
+          target_triplet: "x64-linux"
+      - powershell: pip list
+        displayName: "Show installed Python packages"
 
   - job: "macos_15"
     pool:
       vmImage: macOS-10.15
-    variables:
-      - name: osx_port_list
-        value: "lua[cpp] zlib-ng quictls"
     steps:
+      - task: UsePythonVersion@0
+        displayName: "Setup: Python 3.9"
+        inputs:
+          versionSpec: "3.9"
+          addToPath: true
+          architecture: "x64"
+      - powershell: pip install pybind11
+        displayName: "Install Python packages"
+      - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          vcpkg_triplet: "x64-osx"
-          port_list: $(osx_port_list)
+          port_name: "vcpkg-host-python3-test"
+          target_triplet: "x64-osx"
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
-          vcpkg_triplet: "arm64-osx"
-          port_list: $(osx_port_list)
-
-  - job: "ios_on_macos_15"
-    pool:
-      vmImage: macOS-10.15
-    variables:
-      - name: ios_port_list
-        value: "lua[cpp] zlib-ng quictls"
-    steps:
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "x64-ios"
-          port_list: $(ios_port_list)
-      - template: azure/run-vcpkg-with-overlay.yml
-        parameters:
-          vcpkg_triplet: "arm64-ios"
-          port_list: $(ios_port_list)
+          port_name: "vcpkg-host-python3-test"
+          target_triplet: "arm64-osx"
+      - powershell: pip list
+        displayName: "Show installed Python packages"
