@@ -21,11 +21,11 @@ jobs:
           addToPath: true
           architecture: "x64"
       - powershell: env
-      - template: azure/run-vcpkg-with-overlay.yml
+      - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}-test"
           target_triplet: "x64-windows"
-      - template: azure/run-vcpkg-with-overlay.yml
+      - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}-test"
           target_triplet: "x86-windows"
@@ -47,7 +47,7 @@ jobs:
             Get-ChildItem $site_package_dir
           }
         displayName: "Check Python User Site"
-      - template: azure/run-vcpkg-with-overlay.yml
+      - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}-test"
           target_triplet: "x64-linux"
@@ -67,11 +67,11 @@ jobs:
       - powershell: pip install pybind11
         displayName: "Install Python packages"
       - powershell: env
-      - template: azure/run-vcpkg-with-overlay.yml
+      - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}-test"
           target_triplet: "x64-osx"
-      - template: azure/run-vcpkg-with-overlay.yml
+      - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}-test"
           target_triplet: "arm64-osx"
