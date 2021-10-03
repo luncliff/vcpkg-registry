@@ -14,7 +14,8 @@ parameters:
 jobs:
   - job: "windows_${{ parameters.job_name }}"
     pool:
-      vmImage: windows-2022
+      vmImage: windows-2019
+      # vmImage: windows-2022 # (2021-10-04) VS 2022 Preview is not ready for arm64-windows
     steps:
       - task: UsePythonVersion@0
         displayName: "Setup: Python 3.9"
