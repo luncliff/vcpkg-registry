@@ -14,14 +14,24 @@ message(STATUS "  PY3_LIBRARY_ROOT_DIR: ${PY3_LIBRARY_ROOT_DIR}")
 message(STATUS "  PY3_USER_SITE_PACKAGE_DIR: ${PY3_USER_SITE_PACKAGE_DIR}")
 message(STATUS)
 
-vcpkg_pip_install(PACKAGE "typing-extensions")
+message(STATUS "vcpkg_pip_install_requirement:")
+vcpkg_pip_install_requirement(
+     FOLDER    ${CURRENT_PORT_DIR}
+     FILENAME  requirements.txt
+)
+message(STATUS)
 
-vcpkg_pip_install(PACKAGE "pybind11"
-                  INSTALL_OPTIONS --user)
+message(STATUS "vcpkg_pip_install:")
+vcpkg_pip_install(PACKAGE "pyyaml")
 
 vcpkg_pip_install(PACKAGE "numpy"
                   INSTALL_OPTIONS --user --quiet)
 message(STATUS "  Python3_NumPy_INCLUDE_DIRS: ${Python3_NumPy_INCLUDE_DIRS}")
+message(STATUS)
+
+vcpkg_pip_install(PACKAGE "pybind11"
+                  INSTALL_OPTIONS --user)
+message(STATUS "  pybind11_DIR: ${pybind11_DIR}")
 message(STATUS)
 
 get_filename_component(LICENSE_PATH ${CURRENT_PORT_DIR}/../vcpkg-host-python3/LICENSE ABSOLUTE)

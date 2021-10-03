@@ -86,5 +86,6 @@ file(INSTALL     ${CURRENT_PORT_DIR}/LICENSE
 file(INSTALL     ${CURRENT_PORT_DIR}/vcpkg-port-config.cmake
                  ${HINT_FILE}
                  ${CURRENT_PORT_DIR}/vcpkg_pip_install.cmake
+                 ${CURRENT_PORT_DIR}/vcpkg_pip_install_requirement.cmake
      DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT}
 )

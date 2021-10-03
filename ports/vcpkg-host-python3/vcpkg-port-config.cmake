@@ -32,3 +32,4 @@ else()
 endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/vcpkg_pip_install.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/vcpkg_pip_install_requirement.cmake")
