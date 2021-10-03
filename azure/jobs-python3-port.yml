@@ -37,6 +37,7 @@ jobs:
   - job: "linux_${{ parameters.job_name }}"
     pool:
       vmImage: ubuntu-20.04
+    dependsOn: "windows_${{ parameters.job_name }}" # Less the build stress
     steps:
       - powershell: |
           python3 -m pip install typing-extensions numpy
@@ -59,6 +60,7 @@ jobs:
   - job: "osx_${{ parameters.job_name }}"
     pool:
       vmImage: macOS-10.15
+    dependsOn: "windows_${{ parameters.job_name }}" # Less the build stress
     steps:
       - task: UsePythonVersion@0
         displayName: "Setup: Python 3.9"
