@@ -28,14 +28,14 @@ jobs:
       vmImage: windows-2019
     steps:
       - task: UsePythonVersion@0
+        displayName: "Setup: Python 3.9"
         inputs:
           versionSpec: "3.9"
           addToPath: true
           architecture: "x64"
-        displayName: "Setup Python 3.9"
-      - powershell: pip install typing-extensions pybind11 numpy
-      - powershell: pip show pybind11
-      - powershell: pip show numpy
+      - powershell: |
+          pip install typing-extensions pybind11
+        displayName: "Install Python packages"
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
@@ -50,15 +50,17 @@ jobs:
     pool:
       vmImage: ubuntu-20.04
     steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: "3.9"
-          addToPath: true
-          architecture: "x64"
-        displayName: "Setup Python 3.9"
-      - powershell: pip install typing-extensions pybind11 numpy
-      - powershell: pip show pybind11
-      - powershell: pip show numpy
+      - powershell: |
+          python3 -m pip install typing-extensions numpy
+          pip show numpy
+        displayName: "Install Python packages"
+      - powershell: |
+          $site_package_dir=$(python3 -m site --user-site)
+          Write-Output $site_package_dir
+          if (Test-Path $site_package_dir) {
+            Get-ChildItem $site_package_dir
+          }
+        displayName: "Check Python User Site"
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
@@ -70,14 +72,15 @@ jobs:
       vmImage: macOS-10.15
     steps:
       - task: UsePythonVersion@0
+        displayName: "Setup: Python 3.9"
         inputs:
           versionSpec: "3.9"
           addToPath: true
           architecture: "x64"
-        displayName: "Setup Python 3.9"
-      - powershell: pip install typing-extensions pybind11 numpy
-      - powershell: pip show pybind11
-      - powershell: pip show numpy
+      - powershell: |
+          pip install typing-extensions pybind11 numpy
+          pip show numpy
+        displayName: "Install Python packages"
       - powershell: env
       - template: azure/run-vcpkg-with-overlay.yml
         parameters:
