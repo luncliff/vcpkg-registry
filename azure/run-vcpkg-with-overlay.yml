@@ -25,6 +25,7 @@ steps:
       # VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
       ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
     continueOnError: true
+    condition: succeeded() # fallthrough for log archive
 
   # - task: DeleteFiles@1
   #   inputs:

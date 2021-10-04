@@ -35,6 +35,15 @@ stages:
           job_name: "vcpkg_host_python3"
           port_name: "vcpkg-host-python3"
 
+      - template: azure/jobs-normal-port.yml
+        parameters:
+          job_name: "openssl3"
+          port_name: "openssl3"
+      - template: azure/jobs-uwp-port.yml
+        parameters:
+          job_name: "openssl3"
+          port_name: "openssl3"
+
   - stage: "Registry" # todo: Use of this registry
     jobs:
       - job: "windows_2022"
