@@ -44,13 +44,24 @@ stages:
           job_name: "openssl3"
           port_name: "openssl3"
 
-  - stage: "Registry" # todo: Use of this registry
+  - stage: "Scripts"
     jobs:
       - job: "windows_2022"
         pool:
           vmImage: windows-2022
         steps:
-          - powershell: Write-Output "Not implemented"
+          - task: CMake@1
+            inputs:
+              cmakeArgs: "-S tests -B tests"
+              runInsideShell: true
+
+  # - stage: "Registry" # todo: Use of this registry
+  #   jobs:
+  #     - job: "windows_2022"
+  #       pool:
+  #         vmImage: windows-2022
+  #       steps:
+  #         - powershell: Write-Output "Not implemented"
 
   # todo: Deploy stage
   #   Status notification + GitHub release

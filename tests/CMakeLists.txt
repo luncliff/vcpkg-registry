@@ -13,7 +13,7 @@ list(APPEND CMAKE_MODULE_PATH
 
 if(WIN32)
     # scripts/
-    find_package(QtANGLE REQUIRED)
+    find_package(QtANGLE)
 
     # ports/
     # todo: add some `find_package` for the ports ...

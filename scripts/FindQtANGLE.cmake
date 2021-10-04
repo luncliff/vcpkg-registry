@@ -20,7 +20,12 @@ if(QtANGLE_FOUND)
 endif()
 set(QtANGLE_FOUND FALSE)
 
-find_package(Qt5 REQUIRED COMPONENTS OpenGL)
+find_package(Qt5 COMPONENTS OpenGL)
+if(NOT Qt5_FOUND)
+    message(WARNING "Failed: find_package(Qt5)")
+    return()
+endif()
+
 message(STATUS "Found Qt5::OpenGL ${Qt5_VERSION}")
 foreach(dirpath ${Qt5OpenGL_INCLUDE_DIRS})
     message(STATUS " - ${dirpath}")
