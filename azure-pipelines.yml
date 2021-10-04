@@ -21,6 +21,8 @@ schedules:
 variables:
   - name: VCPKG_DISABLE_METRICS
     value: "true"
+  - name: VCPKG_FEATURE_FLAGS
+    value: "binarycaching,manifest"
 
 stages:
   - stage: "Scripts"
@@ -57,24 +59,24 @@ stages:
             inputs:
               filePath: 'scripts/check-sha.ps1'
 
-  # - stage: "Ports" # Check build status of the ports
-  #   jobs:
-  #     - template: azure/jobs-normal-port.yml
-  #       parameters:
-  #         job_name: "zlib_ng"
-  #         port_name: "zlib-ng"
-  #     - template: azure/jobs-python3-port.yml
-  #       parameters:
-  #         job_name: "vcpkg_host_python3"
-  #         port_name: "vcpkg-host-python3"
-  #     - template: azure/jobs-normal-port.yml
-  #       parameters:
-  #         job_name: "openssl3"
-  #         port_name: "openssl3"
-  #     - template: azure/jobs-uwp-port.yml
-  #       parameters:
-  #         job_name: "openssl3"
-  #         port_name: "openssl3"
+  - stage: "Ports" # Check build status of the ports
+    jobs:
+      - template: azure/jobs-normal-port.yml
+        parameters:
+          job_name: "zlib_ng"
+          port_name: "zlib-ng"
+      - template: azure/jobs-python3-port.yml
+        parameters:
+          job_name: "vcpkg_host_python3"
+          port_name: "vcpkg-host-python3"
+      - template: azure/jobs-normal-port.yml
+        parameters:
+          job_name: "openssl3"
+          port_name: "openssl3"
+      - template: azure/jobs-uwp-port.yml
+        parameters:
+          job_name: "openssl3"
+          port_name: "openssl3"
 
   # - stage: "Registry" # todo: Use of this registry
   #   jobs:
