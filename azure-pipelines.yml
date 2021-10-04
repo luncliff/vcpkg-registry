@@ -25,31 +25,37 @@ variables:
 stages:
   - stage: "Scripts"
     jobs:
-      - job: "windows_2019"
+      - job: "CMake"
         pool:
           vmImage: windows-2019
         steps:
-          - powershell: env
-          - task: PowerShell@2
-            inputs:
-              filePath: 'scripts/check-sha.ps1'
           - task: CondaEnvironment@0
             inputs:
               environmentName: 'develop'
               packageSpecs: 'python=3.9 pyqt=5.9.2'
               cleanEnvironment: true
+          - task: CMake@1
+            displayName: "CMake modules/scripts"
+            inputs:
+              cmakeArgs: "-S $(Build.SourcesDirectory)/tests"
+              runInsideShell: true
+            env:
+              Qt5_DIR: "$(CONDA)/envs/develop/Library/lib/cmake/Qt5"
           - powershell: |
               conda env list
               Get-ChildItem "$(CONDA)\\envs\\develop"
               Get-ChildItem "$(CONDA)\\envs\\develop\\Library"
               Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\pkgconfig"
               Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\cmake"
-          - task: CMake@1
+            condition: failed()
+      - job: "PowerShell"
+        pool:
+          vmImage: ubuntu-20.04
+        steps:
+          - task: PowerShell@2
+            displayName: "Check port versions"
             inputs:
-              cmakeArgs: "-S ../tests"
-              runInsideShell: true
-            env:
-              Qt5_DIR: "$(CONDA)/envs/develop/Library/lib/cmake/Qt5"
+              filePath: 'scripts/check-sha.ps1'
 
   # - stage: "Ports" # Check build status of the ports
   #   jobs:
