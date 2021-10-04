@@ -23,6 +23,20 @@ variables:
     value: "true"
 
 stages:
+  - stage: "Scripts"
+    jobs:
+      - job: "windows_2022"
+        pool:
+          vmImage: windows-2022
+        steps:
+          - task: PowerShell@2
+            inputs:
+              filePath: 'scripts/check-sha.ps1'
+          # - task: CMake@1
+          #   inputs:
+          #     cmakeArgs: "-S ../tests"
+          #     runInsideShell: true
+
   - stage: "Ports" # Check build status of the ports
     jobs:
       - template: azure/jobs-normal-port.yml
@@ -43,17 +57,6 @@ stages:
         parameters:
           job_name: "openssl3"
           port_name: "openssl3"
-
-  - stage: "Scripts"
-    jobs:
-      - job: "windows_2022"
-        pool:
-          vmImage: windows-2022
-        steps:
-          - task: CMake@1
-            inputs:
-              cmakeArgs: "-S tests -B tests"
-              runInsideShell: true
 
   # - stage: "Registry" # todo: Use of this registry
   #   jobs:
