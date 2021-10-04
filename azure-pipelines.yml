@@ -33,16 +33,19 @@ stages:
           - task: PowerShell@2
             inputs:
               filePath: 'scripts/check-sha.ps1'
+          - task: CondaEnvironment@0
+            inputs:
+              environmentName: 'develop'
+              packageSpecs: 'python=3.9 pyqt=5.9.2'
+              cleanEnvironment: true
           - powershell: |
-              Get-ChildItem $(CONDA)
-              Push-Location "$(CONDA)\\condabin"
-                ./conda install pyqt
-              Pop-Location
-              Get-ChildItem "$(CONDA)\\Library"
-              Get-ChildItem "$(CONDA)\\Library\\pkgconfig"
-              Get-ChildItem "$(CONDA)\\Library\\cmake"
-              Get-ChildItem "$(CONDA)\\Library\\lib\\cmake"
-
+              conda env list
+              Get-ChildItem "$(CONDA_ENV_ROOT)"
+              Get-ChildItem "$(CONDA_ENV_ROOT)\\Library"
+              Get-ChildItem "$(CONDA_ENV_ROOT)\\Library\\lib\\pkgconfig"
+              Get-ChildItem "$(CONDA_ENV_ROOT)\\Library\\lib\\cmake"
+            env:
+              CONDA_ENV_ROOT: $(CONDA)/envs/develop
           # - task: CMake@1
           #   inputs:
           #     cmakeArgs: "-S ../tests"
