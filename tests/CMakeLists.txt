@@ -13,6 +13,10 @@ list(APPEND CMAKE_MODULE_PATH
 
 if(WIN32)
     # scripts/
+    if(DEFINED ENV{Qt5_DIR})
+        message(STATUS "Detected: $ENV{Qt5_DIR}")
+        get_filename_component(Qt5_DIR "ENV{Qt5_DIR}" ABSOLUTE)
+    endif()
     find_package(QtANGLE)
 
     # ports/

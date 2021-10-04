@@ -40,16 +40,16 @@ stages:
               cleanEnvironment: true
           - powershell: |
               conda env list
-              Get-ChildItem "$(CONDA_ENV_ROOT)"
-              Get-ChildItem "$(CONDA_ENV_ROOT)\\Library"
-              Get-ChildItem "$(CONDA_ENV_ROOT)\\Library\\lib\\pkgconfig"
-              Get-ChildItem "$(CONDA_ENV_ROOT)\\Library\\lib\\cmake"
+              Get-ChildItem "$(CONDA)\\envs\\develop"
+              Get-ChildItem "$(CONDA)\\envs\\develop\\Library"
+              Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\pkgconfig"
+              Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\cmake"
+          - task: CMake@1
+            inputs:
+              cmakeArgs: "-S ../tests"
+              runInsideShell: true
             env:
-              CONDA_ENV_ROOT: $(CONDA)/envs/develop
-          # - task: CMake@1
-          #   inputs:
-          #     cmakeArgs: "-S ../tests"
-          #     runInsideShell: true
+              Qt5_DIR: "$(CONDA)/envs/develop/Library/lib/cmake/Qt5"
 
   # - stage: "Ports" # Check build status of the ports
   #   jobs:
