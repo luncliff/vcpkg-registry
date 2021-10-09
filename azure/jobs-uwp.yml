@@ -32,19 +32,6 @@ jobs:
         parameters:
           port_name: "${{ parameters.port_name }}"
           target_triplet: "arm64-uwp"
-      - task: CopyFiles@2
-        displayName: "Copy Logs: ${{ parameters.port_name }}"
-        inputs:
-          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port_name }}" # check how https://github.com/lukka/CppBuildTasks works
-          Contents: |
-            ?(*.log|*.txt)
-            *.cmake
-          TargetFolder: "$(Build.ArtifactStagingDirectory)"
-          OverWrite: true
-        condition: always()
-      - task: PublishBuildArtifacts@1
-        displayName: "Publish Logs"
-        inputs:
-          PathtoPublish: "$(Build.ArtifactStagingDirectory)"
-          ArtifactName: "$(Agent.JobName)"
-        condition: always()
+      - template: steps-publish-logs.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"

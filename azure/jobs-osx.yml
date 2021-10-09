@@ -1,0 +1,30 @@
+#
+# Author: github.com/luncliff (luncliff@gmail.com)
+#
+# References
+#   https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops#job-reuse
+#
+
+parameters:
+  - name: job_name
+    type: string
+  - name: port_name
+    type: string
+
+jobs:
+  - job: "osx_${{ parameters.job_name }}"
+    pool:
+      vmImage: macOS-11
+    steps:
+      - powershell: env
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "x64-osx"
+      - template: run-vcpkg-with-overlay.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"
+          target_triplet: "arm64-osx"
+      - template: steps-publish-logs.yml
+        parameters:
+          port_name: "${{ parameters.port_name }}"

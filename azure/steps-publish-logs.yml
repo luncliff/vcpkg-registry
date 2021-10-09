@@ -1,0 +1,22 @@
+
+parameters:
+  - name: port_name
+    type: string
+
+steps:
+  - task: CopyFiles@2
+    displayName: "Stage Logs: ${{ parameters.port_name }}"
+    inputs:
+      SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port_name }}"
+      Contents: |
+        ?(*.log|*.txt)
+        *.cmake
+      TargetFolder: "$(Build.ArtifactStagingDirectory)"
+      OverWrite: true
+    condition: always()
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Staged Logs"
+    inputs:
+      PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+      ArtifactName: "$(Agent.JobName)"
+    condition: always()
