@@ -1,0 +1,131 @@
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index ae956a74..e028b24a 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -124,15 +124,18 @@ macro(populate_tf_source_vars RELATIVE_DIR SOURCES_VAR)
+     "${TF_SOURCE_DIR}/${RELATIVE_DIR}" ${SOURCES_VAR} ${ARGN}
+   )
+ endmacro()
+-# Find TensorFlow Lite dependencies.
+-find_package(absl REQUIRED CONFIG)
+-find_package(eigen REQUIRED)
+-find_package(farmhash REQUIRED)
++
++# Use packages in vcpkg
++find_package(absl CONFIG REQUIRED)
++find_package(Eigen3 CONFIG REQUIRED) # Requires Eigen 3.4+
++find_package(Flatbuffers CONFIG REQUIRED)
++find_package(gemmlowp CONFIG REQUIRED)
++find_package(NEON_2_SSE CONFIG REQUIRED)
++find_library(FARMHASH_LIBPATH farmhash)
++# Build using OverridableFetchContent. See ${TFLITE_SOURCE_DIR}/tools/cmake/modules
+ find_package(fft2d REQUIRED)
+-find_package(flatbuffers REQUIRED)
+-find_package(gemmlowp REQUIRED)
+-find_package(neon2sse REQUIRED)
+ find_package(ruy REQUIRED)
++
+ # Generate TensorFlow Lite FlatBuffer code.
+ # We used to have an actual compilation logic with flatc but decided to use
+ # schema_generated.h since flatc doesn't work with cross compilation.
+@@ -269,13 +272,14 @@ else()
+   )
+ endif()
+ if(TFLITE_ENABLE_XNNPACK)
+-  find_package(xnnpack REQUIRED)
++  find_package(unofficial-cpuinfo CONFIG REQUIRED)
++  find_package(xnnpack CONFIG REQUIRED)
+   populate_tflite_source_vars("delegates/xnnpack"
+     TFLITE_DELEGATES_XNNPACK_SRCS
+     FILTER ".*(_test|_tester)\\.(cc|h)"
+   )
+   list(APPEND TFLITE_TARGET_DEPENDENCIES
+-    XNNPACK
++    unofficial::XNNPACK
+   )
+ endif()
+ if (TFLITE_ENABLE_RESOURCE)
+@@ -365,22 +369,22 @@ add_library(tensorflow-lite
+ )
+ target_include_directories(tensorflow-lite
+   PUBLIC
+-    ${TFLITE_INCLUDE_DIRS}
++    $<BUILD_INTERFACE:${TFLITE_INCLUDE_DIRS}>
+ )
+ target_link_libraries(tensorflow-lite
+   PUBLIC
+     Eigen3::Eigen
+-    NEON_2_SSE
++    NEON_2_SSE::NEON_2_SSE
+     absl::flags
+     absl::hash
+     absl::status
+     absl::strings
+     absl::synchronization
+     absl::variant
+-    farmhash
++    ${FARMHASH_LIBPATH}
+     fft2d_fftsg2d
+-    flatbuffers
+-    gemmlowp
++    flatbuffers::flatbuffers
++    gemmlowp::gemmlowp
+     ruy
+     ${TFLITE_TARGET_DEPENDENCIES}
+ )
+@@ -446,6 +450,25 @@ if(TFLITE_ENABLE_GPU)
+   )
+ endif()  # TFLITE_ENABLE_GPU
+ 
++include(GNUInstallDirs)
++install(DIRECTORY   ${TFLITE_SOURCE_DIR}/c
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
++        FILES_MATCHING PATTERN "*.h"
++)
++install(DIRECTORY   ${TFLITE_SOURCE_DIR}
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow
++        FILES_MATCHING PATTERN "*.h"
++)
++install(FILES ${TF_SOURCE_DIR}/core/public/version.h 
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/core/public
++)
++install(TARGETS tensorflow-lite
++        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
++return()
++
+ add_executable(benchmark_model
+   EXCLUDE_FROM_ALL
+   ${TFLITE_BENCHMARK_SRCS}
+diff --git a/tensorflow/lite/tools/cmake/modules/fft2d/CMakeLists.txt b/tensorflow/lite/tools/cmake/modules/fft2d/CMakeLists.txt
+index e7a5ed9b..ad705486 100644
+--- a/tensorflow/lite/tools/cmake/modules/fft2d/CMakeLists.txt
++++ b/tensorflow/lite/tools/cmake/modules/fft2d/CMakeLists.txt
+@@ -52,3 +52,10 @@ target_include_directories(fft2d_fftsg3d PRIVATE "${FFT2D_SOURCE_DIR}")
+ add_library(fft2d_shrtdct "${FFT2D_SOURCE_DIR}/shrtdct.c")
+ 
+ add_library(fft2d ALIAS fft2d_fftsg2d)
++
++include(GNUInstallDirs)
++install(TARGETS fft2d_alloc fft2d_fft4f2d fft2d_fftsg fft2d_fftsg2d fft2d_fftsg3d fft2d_shrtdct
++        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
+diff --git a/tensorflow/lite/tools/cmake/modules/ruy/CMakeLists.txt b/tensorflow/lite/tools/cmake/modules/ruy/CMakeLists.txt
+index d88d0470..ccff465d 100644
+--- a/tensorflow/lite/tools/cmake/modules/ruy/CMakeLists.txt
++++ b/tensorflow/lite/tools/cmake/modules/ruy/CMakeLists.txt
+@@ -36,3 +36,9 @@ list(FILTER RUY_SOURCES EXCLUDE REGEX ".*/gtest_wrapper\\.h$")
+ add_library(ruy ${RUY_SOURCES})
+ target_include_directories(ruy PUBLIC "${RUY_SOURCE_DIR}")
+ 
++include(GNUInstallDirs)
++install(TARGETS ruy
++        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
+\ No newline at end of file
