@@ -33,10 +33,10 @@ index 98d480d..2b31f49 100644
  if (NOT RUY_MINIMAL_BUILD)
    add_subdirectory("example")
  endif()
-+
++install(DIRECTORY ruy/profiler 
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ruy FILES_MATCHING PATTERN "*.h")
 +install(EXPORT ${PROJECT_NAME}-config NAMESPACE unofficial::
-+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-+)
++        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 \ No newline at end of file
 diff --git a/cmake/ruy_cc_library.cmake b/cmake/ruy_cc_library.cmake
 index 38accc5..2625b0f 100644
