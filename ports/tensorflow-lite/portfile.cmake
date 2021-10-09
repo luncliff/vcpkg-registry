@@ -1,12 +1,14 @@
+
+# Currently links with an internal library 'fft2d'
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.4.3
-    SHA512 46d25b6e3457fcad727a16da7dcfc2e640edbe4952a2d463b186362f3cf1ab2353c3b83f6e51ac556de8706fce6cd49314e1d3daeb92193878dc49101889aa50
+    REF v2.6.0
+    SHA512 d052da4b324f1b5ac9c904ac3cca270cefbf916be6e5968a6835ef3f8ea8c703a0b90be577ac5205edf248e8e6c7ee8817b6a1b383018bb77c381717c6205e05
     PATCHES
-        fix-cmakelists.patch # todo: replace ruy, fft2d
+        fix-cmakelists.patch
         fix-header-usage.patch
 )
 
@@ -45,4 +47,7 @@ file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
                     "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/experimental"
                     "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/g3doc"
                     "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/tutorials"
+                    "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/ios"
+                    "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/objc"
+                    "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/swift"
 )
