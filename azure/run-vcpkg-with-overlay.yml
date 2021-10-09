@@ -24,7 +24,6 @@ steps:
       VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
       # VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
       ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
-    continueOnError: true
   - task: CopyFiles@2
     inputs:
       SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port_name }}" # check how https://github.com/lukka/CppBuildTasks works
