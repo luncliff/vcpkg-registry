@@ -1,0 +1,21 @@
+{
+  "name": "ruy",
+  "version-date": "2021-10-10",
+  "description": [
+    "ruy is a matrix multiplication library.",
+    "Its focus is to cover the matrix multiplication needs of neural network inference engines."
+  ],
+  "homepage": "https://github.com/google/ruy",
+  "license": "Apache-2.0",
+  "dependencies": [
+    "cpuinfo",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
