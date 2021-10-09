@@ -117,6 +117,27 @@ stages:
           job_name: "tflite"
           port_name: "tensorflow-lite"
 
+      - template: azure/jobs-windows.yml
+        parameters:
+          job_name: "xnnpack"
+          port_name: "xnnpack"
+      - template: azure/jobs-uwp.yml
+        parameters:
+          job_name: "xnnpack"
+          port_name: "xnnpack"
+      - template: azure/jobs-android.yml
+        parameters:
+          job_name: "xnnpack"
+          port_name: "xnnpack"
+      - template: azure/jobs-osx.yml
+        parameters:
+          job_name: "xnnpack"
+          port_name: "xnnpack"
+      - template: azure/jobs-ios.yml
+        parameters:
+          job_name: "xnnpack"
+          port_name: "xnnpack"
+
   # - stage: "Registry" # todo: Use of this registry
   #   jobs:
   #     - job: "windows_2022"

@@ -15,6 +15,7 @@ jobs:
   - job: "android_${{ parameters.job_name }}"
     pool:
       vmImage: ubuntu-20.04
+    timeoutInMinutes: 300
     steps:
       - template: run-vcpkg-with-overlay.yml
         parameters:

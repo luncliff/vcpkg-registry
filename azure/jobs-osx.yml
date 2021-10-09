@@ -15,6 +15,7 @@ jobs:
   - job: "osx_${{ parameters.job_name }}"
     pool:
       vmImage: macOS-11
+    timeoutInMinutes: 300
     steps:
       - powershell: env
       - template: run-vcpkg-with-overlay.yml

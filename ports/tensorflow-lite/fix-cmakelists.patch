@@ -15,7 +15,7 @@ index f5cc9b97..6da3bdde 100644
 -find_package(neon2sse REQUIRED)
 -find_package(ruy REQUIRED)
 +find_package(absl CONFIG REQUIRED)
-+find_package(Eigen3 3.4 CONFIG REQUIRED) # requires Eigen 3.4+
++find_package(Eigen3 3.4 CONFIG REQUIRED)
 +find_library(FARMHASH_LIBPATH farmhash)
 +find_package(fft2d REQUIRED) # build with tools/cmake/modules
 +find_package(Flatbuffers CONFIG REQUIRED)
