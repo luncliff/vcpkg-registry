@@ -16,6 +16,7 @@ jobs:
     pool:
       vmImage: windows-2019
       # vmImage: windows-2022 # (2021-10-04) VS 2022 Preview is not ready for arm64-windows
+    timeoutInMinutes: 300
     steps:
       - task: UsePythonVersion@0
         displayName: "Setup: Python 3.9"
@@ -32,10 +33,6 @@ jobs:
         parameters:
           port_name: "${{ parameters.port_name }}"
           target_triplet: "x86-windows"
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port_name: "${{ parameters.port_name }}"
-          target_triplet: "arm64-windows"
       - template: steps-publish-logs.yml
         parameters:
           port_name: "${{ parameters.port_name }}"

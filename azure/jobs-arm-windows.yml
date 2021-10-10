@@ -12,19 +12,23 @@ parameters:
     type: string
 
 jobs:
-  - job: "android_${{ parameters.job_name }}"
+  - job: "arm_windows_${{ parameters.job_name }}"
     pool:
-      vmImage: ubuntu-20.04
+      vmImage: windows-2019
+      # vmImage: windows-2022 # (2021-10-04) VS 2022 Preview is not ready for arm64-windows
     timeoutInMinutes: 300
     steps:
+      - task: UsePythonVersion@0
+        displayName: "Setup: Python 3.9"
+        inputs:
+          versionSpec: "3.9"
+          addToPath: true
+          architecture: "x64"
+      - powershell: env
       - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}"
-          target_triplet: "arm64-android"
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port_name: "${{ parameters.port_name }}"
-          target_triplet: "x64-android"
+          target_triplet: "arm64-windows"
       - template: steps-publish-logs.yml
         parameters:
           port_name: "${{ parameters.port_name }}"

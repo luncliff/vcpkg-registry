@@ -78,6 +78,10 @@ stages:
         parameters:
           job_name: "zlib_ng"
           port_name: "zlib-ng"
+      - template: azure/jobs-arm-windows.yml
+        parameters:
+          job_name: "zlib_ng"
+          port_name: "zlib-ng"
 
       - template: azure/jobs-windows.yml
         parameters:
@@ -95,6 +99,10 @@ stages:
         parameters:
           job_name: "openssl3"
           port_name: "openssl3"
+      - template: azure/jobs-arm-windows.yml
+        parameters:
+          job_name: "openssl3"
+          port_name: "openssl3"
       - template: azure/jobs-android.yml
         parameters:
           job_name: "openssl3"
@@ -103,6 +111,33 @@ stages:
         parameters:
           job_name: "openssl3"
           port_name: "openssl3"
+
+      - template: azure/jobs-windows.yml
+        parameters:
+          job_name: "tflite"
+          port_name: "tensorflow-lite"
+      - template: azure/jobs-linux.yml
+        parameters:
+          job_name: "tflite"
+          port_name: "tensorflow-lite"
+      - template: azure/jobs-osx.yml
+        parameters:
+          job_name: "tflite"
+          port_name: "tensorflow-lite"
+
+      - template: azure/jobs-android.yml
+        parameters:
+          job_name: "xnnpack"
+          port_name: "xnnpack"
+
+      - template: azure/jobs-android.yml
+        parameters:
+          job_name: "cpuinfo"
+          port_name: "cpuinfo"
+      - template: azure/jobs-ios.yml
+        parameters:
+          job_name: "cpuinfo"
+          port_name: "cpuinfo"
 
   # - stage: "Registry" # todo: Use of this registry
   #   jobs:

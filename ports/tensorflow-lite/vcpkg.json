@@ -1,0 +1,30 @@
+{
+  "name": "tensorflow-lite",
+  "version-semver": "2.6.0",
+  "description": "Open standard for machine learning interoperability",
+  "homepage": "https://www.tensorflow.org/",
+  "license": "Apache-2.0",
+  "dependencies": [
+    "abseil",
+    "eigen3",
+    "farmhash",
+    "flatbuffers",
+    "gemmlowp",
+    "neon2sse",
+    "ruy",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    "xnnpack"
+  ],
+  "features": {
+    "gpu": {
+      "description": "Enable GPU",
+      "dependencies": [
+        "opencl",
+        "vulkan"
+      ]
+    }
+  }
+}
