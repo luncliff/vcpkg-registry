@@ -32,7 +32,7 @@ index f5cc9b97..6da3bdde 100644
 -  find_package(fp16_headers REQUIRED)
 -  find_package(xnnpack REQUIRED)
 +  find_package(unofficial-pthreadpool CONFIG REQUIRED)
-+  find_package(unofficial-cpuinfo CONFIG REQUIRED)
++  find_package(cpuinfo CONFIG REQUIRED)
 +  find_package(xnnpack CONFIG REQUIRED)
    populate_tflite_source_vars("delegates/xnnpack"
      TFLITE_DELEGATES_XNNPACK_SRCS
