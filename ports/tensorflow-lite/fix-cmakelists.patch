@@ -40,7 +40,7 @@ index f5cc9b97..6da3bdde 100644
    )
    list(APPEND TFLITE_TARGET_DEPENDENCIES
 -    XNNPACK
-+    unofficial::XNNPACK
++    unofficial::XNNPACK cpuinfo::clog cpuinfo::cpuinfo
    )
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
  endif()
