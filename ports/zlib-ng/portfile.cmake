@@ -13,13 +13,13 @@ vcpkg_cmake_configure(
         -DZLIB_FULL_VERSION=2.0.5
         -DZLIB_ENABLE_TESTS=OFF
         -DWITH_NEW_STRATEGIES=ON
-        -DWITH_NATIVE_INSTRUCTIONS=ON
+        -DWITH_NATIVE_INSTRUCTIONS=OFF # `-march=native` breaks `check_c_source_compiles`
     OPTIONS_DEBUG
         -DWITH_OPTIM=OFF
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
-vcpkg_fixup_pkgconfig() # zlib>=2.0
+vcpkg_fixup_pkgconfig() # zlib-ng>=2.0
 
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/share
                     ${CURRENT_PACKAGES_DIR}/debug/include
