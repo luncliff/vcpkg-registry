@@ -68,6 +68,19 @@ stages:
 
       - template: azure/jobs-windows.yml
         parameters:
+          job_name: "onnx"
+          port_name: "onnx"
+      - template: azure/jobs-linux.yml
+        parameters:
+          job_name: "onnx"
+          port_name: "onnx"
+      - template: azure/jobs-osx.yml
+        parameters:
+          job_name: "onnx"
+          port_name: "onnx"
+
+      - template: azure/jobs-windows.yml
+        parameters:
           job_name: "zlib_ng"
           port_name: "zlib-ng"
       - template: azure/jobs-linux.yml
