@@ -11,6 +11,7 @@
     "gflags",
     "glog",
     "lmdb",
+    "onnx",
     "onnx-optimizer",
     "protobuf",
     {

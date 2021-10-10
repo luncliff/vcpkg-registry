@@ -95,7 +95,7 @@ else()
     list(APPEND FEATURE_OPTIONS -DINTERN_BUILD_MOBILE=OFF)
 endif()
 
-vcpkg_find_acquire_program(PYTHON3)
+# vcpkg_find_acquire_program(PYTHON3)
 
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
 
@@ -103,7 +103,7 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
-        -DPython3_EXECUTABLE=${PYTHON3}
+        # -DPython3_EXECUTABLE=${PYTHON3}
         -DCAFFE2_USE_MSVC_STATIC_RUNTIME=${USE_STATIC_RUNTIME}
         -DBUILD_CUSTOM_PROTOBUF=OFF -DUSE_LITE_PROTO=OFF
         -DBUILD_TEST=OFF -DATEN_NO_TEST=ON
@@ -126,12 +126,11 @@ vcpkg_cmake_build(TARGET __aten_op_header_gen) # explicit codegen is required
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 # todo: combine multiple config.cmake files
-vcpkg_cmake_config_fixup(PACKAGE_NAME Caffe2 CONFIG_PATH "share/cmake/Caffe2")
-
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME "copyright")
+# vcpkg_cmake_config_fixup(PACKAGE_NAME Caffe2 CONFIG_PATH "share/cmake/Caffe2")
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
                     "${CURRENT_PACKAGES_DIR}/debug/share"
+                    "${CURRENT_PACKAGES_DIR}/share"
                     "${CURRENT_PACKAGES_DIR}/include/c10/test/core/impl"
                     "${CURRENT_PACKAGES_DIR}/include/c10/hip"
                     "${CURRENT_PACKAGES_DIR}/include/c10/benchmark"
@@ -150,3 +149,4 @@ file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
                     "${CURRENT_PACKAGES_DIR}/include/caffe2/core/nomnigraph/Representations"
                     "${CURRENT_PACKAGES_DIR}/include/torch/csrc"
 )
+file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME "copyright")
