@@ -18,6 +18,9 @@ jobs:
     timeoutInMinutes: 300
     steps:
       - powershell: brew install autoconf automake libtool
+        displayName: "Install HomeBrew packages"
+      - powershell: pip install typing-extensions pybind11 numpy pyyaml
+        displayName: "Install Python packages"
       - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}"

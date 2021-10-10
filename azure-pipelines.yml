@@ -68,16 +68,16 @@ stages:
 
       - template: azure/jobs-windows.yml
         parameters:
-          job_name: "onnx"
-          port_name: "onnx"
+          job_name: "libtorch"
+          port_name: "libtorch"
       - template: azure/jobs-linux.yml
         parameters:
-          job_name: "onnx"
-          port_name: "onnx"
+          job_name: "libtorch"
+          port_name: "libtorch"
       - template: azure/jobs-osx.yml
         parameters:
-          job_name: "onnx"
-          port_name: "onnx"
+          job_name: "libtorch"
+          port_name: "libtorch"
 
       # - template: azure/jobs-windows.yml
       #   parameters:
