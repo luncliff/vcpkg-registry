@@ -6,8 +6,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO luncliff/cpuinfo
-    REF 7324ba5f690cd7fb873b583bc2bf9eeae28a6e76
-    SHA512 69848ec772a10f7cccdfa3d4d5c3efd1833bae79c954838e87645f647c2dcae65fe332a63d98ba54e39f2e3f2af22c53da79c52783eaad80056041dc0f7e8fa0
+    REF b23b0d3bbc441ac1172458827ef309e9f6c47fd4
+    SHA512 ea31b46a0375f67de00241aeec48678a476e8979f6ad0943bebee3c46c848f62ae8d282c9ac8625014f77af5a6dbbb9adf9e98d78111dad0cdc95b40f36520ce
     HEAD_REF master
 )
 
