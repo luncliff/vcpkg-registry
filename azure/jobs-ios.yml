@@ -17,7 +17,7 @@ jobs:
       vmImage: macOS-11
     timeoutInMinutes: 300
     steps:
-      - powershell: env
+      - powershell: brew install autoconf automake
       - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}"
