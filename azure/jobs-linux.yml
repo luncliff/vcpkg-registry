@@ -17,6 +17,7 @@ jobs:
       vmImage: ubuntu-20.04
     timeoutInMinutes: 300
     steps:
+      - powershell: apt-get install -y libnuma-dev
       - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}"
