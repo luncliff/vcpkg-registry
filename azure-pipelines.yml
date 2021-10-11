@@ -83,6 +83,10 @@ stages:
       #   parameters:
       #     job_name: "zlib_ng"
       #     port_name: "zlib-ng"
+      # - template: azure/jobs-arm-windows.yml
+      #   parameters:
+      #     job_name: "zlib_ng"
+      #     port_name: "zlib-ng"
       # - template: azure/jobs-linux.yml
       #   parameters:
       #     job_name: "zlib_ng"
@@ -91,7 +95,7 @@ stages:
       #   parameters:
       #     job_name: "zlib_ng"
       #     port_name: "zlib-ng"
-      # - template: azure/jobs-arm-windows.yml
+      # - template: azure/jobs-arm-osx.yml
       #   parameters:
       #     job_name: "zlib_ng"
       #     port_name: "zlib-ng"
@@ -100,6 +104,14 @@ stages:
       #   parameters:
       #     job_name: "openssl3"
       #     port_name: "openssl3"
+      # - template: azure/jobs-arm-windows.yml
+      #   parameters:
+      #     job_name: "openssl3"
+      #     port_name: "openssl3"
+      # - template: azure/jobs-uwp.yml
+      #   parameters:
+      #     job_name: "openssl3"
+      #     port_name: "openssl3"
       # - template: azure/jobs-linux.yml
       #   parameters:
       #     job_name: "openssl3"
@@ -108,11 +120,7 @@ stages:
       #   parameters:
       #     job_name: "openssl3"
       #     port_name: "openssl3"
-      # - template: azure/jobs-uwp.yml
-      #   parameters:
-      #     job_name: "openssl3"
-      #     port_name: "openssl3"
-      # - template: azure/jobs-arm-windows.yml
+      # - template: azure/jobs-arm-osx.yml
       #   parameters:
       #     job_name: "openssl3"
       #     port_name: "openssl3"
