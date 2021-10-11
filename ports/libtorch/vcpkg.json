@@ -65,7 +65,7 @@
       ]
     },
     "eigen3": {
-      "description": "BLAS with Eigen 3"
+      "description": "BLAS with Eigen 3 (Mac OS will use Accelerate.framework)"
     },
     "fbgemm": {
       "description": "Build with FBGEMM (quantized 8-bit server operators)",

@@ -148,3 +148,17 @@ index 7bef849..968d248 100644
  endif()
  
  # ==========================================================
+diff --git a/caffe2/CMakeLists.txt b/caffe2/CMakeLists.txt
+index 968d248..9fdb4af 100644
+--- a/caffe2/CMakeLists.txt
++++ b/caffe2/CMakeLists.txt
+@@ -997,7 +997,8 @@ endif()
+ # ==========================================================
+ 
+ 
+-
++find_package(Eigen3 CONFIG REQUIRED)
++target_link_libraries(torch_cpu PRIVATE Eigen3::Eigen) # for caffe2 operators
+ 
+ 
+ 
