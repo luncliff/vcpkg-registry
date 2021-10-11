@@ -47,11 +47,11 @@ index 24d3c9b..5f17c4c 100644
 +
 +find_package(gflags CONFIG REQUIRED) # gflags::gflags
 +find_package(glog CONFIG REQUIRED) # glog::glog
-+find_package(cpuinfo CONFIG REQUIRED) # cpuinfo::clog cpuinfo::cpuinfo
++find_package(unofficial-cpuinfo CONFIG REQUIRED) # cpuinfo::clog cpuinfo::cpuinfo
 +find_package(unofficial-pthreadpool CONFIG REQUIRED) # unofficial::pthreadpool
 +list(APPEND Caffe2_DEPENDENCY_LIBS
 +  gflags::gflags glog::glog
-+  cpuinfo::clog cpuinfo::cpuinfo unofficial::pthreadpool
++  unofficial::cpuinfo::clog unofficial::cpuinfo::cpuinfo unofficial::pthreadpool
 +)
 +link_directories(
 +  $<$<CONFIG:Debug>:${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib>

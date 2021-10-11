@@ -9,6 +9,8 @@ vcpkg_from_github(
     REF b23b0d3bbc441ac1172458827ef309e9f6c47fd4
     SHA512 ea31b46a0375f67de00241aeec48678a476e8979f6ad0943bebee3c46c848f62ae8d282c9ac8625014f77af5a6dbbb9adf9e98d78111dad0cdc95b40f36520ce
     HEAD_REF master
+    PATCHES
+        rename-unofficial.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -42,7 +44,7 @@ vcpkg_cmake_configure(
         -DCPUINFO_LOG_LEVEL=default
 )
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(CONFIG_PATH "share/${PORT}")
+vcpkg_cmake_config_fixup(PACKAGE_NAME "unofficial-cpuinfo" CONFIG_PATH "share/${PORT}")
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libcpuinfo)
 
 if("tools" IN_LIST FEATURES)
