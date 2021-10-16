@@ -3,7 +3,7 @@ if(VCPKG_TARGET_IS_WINDOWS)
     set(VCPKG_POLICY_SKIP_ARCHITECTURE_CHECK enabled)
     set(VCPKG_POLICY_SKIP_DUMPBIN_CHECKS disabled)
     if(VCPKG_CROSSCOMPILING)
-        message(WARNING "Cross compiling is not tested for Windows")
+        message(WARNING "Cross compiling is not tested enough!")
     endif()
 
     list(APPEND PLATFORM_PATCHES fix-windows.patch)
@@ -27,41 +27,43 @@ vcpkg_from_github(
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)
+    # better guess for host architecture?
+    string(REGEX MATCH "^(x64|x86|arm64)" HOST_ARCH "${HOST_TRIPLET}")
+    if(NOT HOST_ARCH)
+        message(FATAL_ERROR "Failed to detect the host architecture")
+    endif()
+    message(STATUS "Detected ${HOST_ARCH} from ${HOST_TRIPLET}")
+
     # MSVC is unsupported compiler. We will use Clang
     vcpkg_find_acquire_program(CLANG)
     message(STATUS "Found clang: ${CLANG}")
 
-    # We need to use clang toolchain executables in Visual Studio Tools
-    get_filename_component(CLANG_PATH "${CLANG}" PATH)
-    if(VCPKG_TARGET_ARCHITECTURE MATCHES "x86")
-        # Acquire PATH of LLVM tools for x86 target
-        # case: Visual Studio 2019
-        if(CLANG_PATH MATCHES "VC/Tools/Llvm/x64") 
-            get_filename_component(LLVM_TOOL_PATH "${CLANG_PATH}" PATH)
-            get_filename_component(LLVM_TOOL_PATH "${LLVM_TOOL_PATH}" PATH)
-            get_filename_component(LLVM_TOOL_PATH "${LLVM_TOOL_PATH}/bin" ABSOLUTE)
-        else()
-            message(FATAL_ERROR "Unexpected install location: ${CLANG_PATH}")
-        endif()
-        # list(APPEND PLATFORM_OPTIONS
-        #     -DCMAKE_EXE_LINKER_FLAGS="/machine:x86"
-        # )
-    endif()
-
     # Actually, we need clang-cl, not clang
+    get_filename_component(CLANG_PATH "${CLANG}" PATH)
     find_program(CLANG_CL_EXE NAMES clang-cl HINTS ${LLVM_TOOL_PATH} ${CLANG_PATH} REQUIRED)
-    message(STATUS "Found clang-cl(${VCPKG_TARGET_ARCHITECTURE}): ${CLANG_CL_EXE}")
+    message(STATUS "Found clang-cl: ${CLANG_CL_EXE}")
 
-    get_filename_component(CLANG_CL_PATH "${CLANG_CL_EXE}" PATH)
-    vcpkg_add_to_path(PREPEND ${CLANG_CL_PATH})
-    message(STATUS "Prepend PATH: ${CLANG_CL_PATH}")
+    # get_filename_component(CLANG_CL_PATH "${CLANG_CL_EXE}" PATH)
+    # vcpkg_add_to_path(PREPEND ${CLANG_CL_PATH})
+    # message(STATUS "Prepend PATH: ${CLANG_CL_PATH}")
+
+    list(APPEND COMPILE_OPTIONS "-fms-compatibility")
+    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+        list(APPEND COMPILE_OPTIONS -m64)
+    elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
+        list(APPEND COMPILE_OPTIONS -m32)
+    elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+        list(APPEND COMPILE_OPTIONS -m64 --target=arm-none-win32)
+    else()
+        message(FATAL_ERROR "not supported")
+    endif()
 
     # CMAKE_C_COMPILER_ID=Clang can be deduced by Ninja
     list(APPEND PLATFORM_OPTIONS
         -DCMAKE_C_COMPILER:PATH=${CLANG_CL_EXE}
-        -DCMAKE_C_FLAGS="-fms-compatibility"
+        -DCMAKE_C_FLAGS="${COMPILE_OPTIONS}"
         -DCMAKE_CXX_COMPILER:PATH=${CLANG_CL_EXE}
-        -DCMAKE_CXX_FLAGS="-fms-compatibility"
+        -DCMAKE_CXX_FLAGS="${COMPILE_OPTIONS}"
     )
 endif()
 
@@ -79,6 +81,14 @@ vcpkg_cmake_configure(
     OPTIONS_DEBUG
         -DDISPATCH_ENABLE_ASSERTS=ON
 )
+if(VCPKG_TARGET_IS_WINDOWS AND VCPKG_CROSSCOMPILING)
+    # The build.ninja uses LIBPATH for current host architecture. We have to fix that.
+    get_filename_component(BUILD_FILE_DBG ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/build.ninja ABSOLUTE)
+    vcpkg_replace_string(${BUILD_FILE_DBG} "${HOST_ARCH}" "${VCPKG_TARGET_ARCHITECTURE}")
+    get_filename_component(BUILD_FILE_REL ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/build.ninja ABSOLUTE)
+    vcpkg_replace_string(${BUILD_FILE_REL} "${HOST_ARCH}" "${VCPKG_TARGET_ARCHITECTURE}")
+endif()
+
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 
