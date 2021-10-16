@@ -5,8 +5,10 @@
 # https://github.com/lukka/CppBuildTasks
 #
 
-# trigger:
-#   - main
+trigger:
+  branches:
+    exclude:
+      - docs
 
 pr:
   - main
