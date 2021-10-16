@@ -70,10 +70,14 @@ stages:
         parameters:
           job_name: "libdispatch"
           port_name: "libdispatch"
-      - template: azure/jobs-android.yml
+      - template: azure/jobs-arm-windows.yml
         parameters:
           job_name: "libdispatch"
           port_name: "libdispatch"
+      # - template: azure/jobs-android.yml # todo: decide NDK version coverage
+      #   parameters:
+      #     job_name: "libdispatch"
+      #     port_name: "libdispatch"
 
       - template: azure/jobs-windows.yml
         parameters:
