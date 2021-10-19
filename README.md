@@ -4,8 +4,8 @@
 
 Targets...
 
-* vcpkg: [`2021.05.12`](https://github.com/microsoft/vcpkg/releases/tag/2021.05.12) or later
-* [vcpkg-tool](https://github.com/microsoft/vcpkg-tool): [`2021-07-16`](https://github.com/microsoft/vcpkg-tool/releases/tag/2021-07-16) or later
+* [vcpkg](https://github.com/microsoft/vcpkg): `master` branch, 2021/10 or later
+* [vcpkg-tool](https://github.com/microsoft/vcpkg-tool): [`2021-09-10`](https://github.com/microsoft/vcpkg-tool/tree/2021-09-10) or later
 
 ### References
 
@@ -33,6 +33,9 @@ Options:
 
 ### Setup
 
+Currently stopped supporting registry feature support.
+It is planned, but not today. It will be supported when this repo gets another Git tag.
+
 ```console
 user@host:~$ git clone https://github.com/microsoft/vcpkg
 ...
@@ -52,25 +55,9 @@ user@host:~/vcpkg$ tree -L 2 ./registry/
 │   └── FindQtANGLE.cmake
 ├── tests
 │   └── CMakeLists.txt
-├── triplets
-│   ├── arm-android.cmake
-│   ├── arm64-android.cmake
-│   ├── x64-android.cmake
-│   └── x86-android.cmake
-└── versions
+└── triplets
+    ├── ...
     └── ...
-```
-
-Then bootstrap the [vcpkg-tool](https://github.com/microsoft/vcpkg-tool).
-
-```console
-PS vcpkg> ./bootstrap-vcpkg.bat
-...
-```
-
-```console
-user@host:~/vcpkg$ ./bootstrap-vcpkg.sh
-...
 ```
 
 ### Search
@@ -80,18 +67,10 @@ user@host:~/vcpkg$ ./bootstrap-vcpkg.sh
 Just provide the path of `port/` folder. 
 
 ```console
-user@host:~/vcpkg$ ./vcpkg search nsync --overlay-ports=registry/ports
-nsync                1.24.0           ...
+user@host:~/vcpkg$ ./vcpkg search --overlay-ports=registry/ports cpuinfo
 ```
 
-If you want to make sure the overlay works, change some fields of the `ports/nsync/vcpkg.json` and rerun the command.
-
-```console
-user@host:~/vcpkg$ ./vcpkg search nsync --overlay-ports=registry/ports
-nsync                1.24.0           Hello?
-```
-
-#### with Registry
+#### ~~with Registry~~
 
 For registry customization, configure your [vcpkg-configuration.json](https://github.com/microsoft/vcpkg/blob/master/docs/specifications/registries.md).
 
@@ -109,35 +88,15 @@ Sould be like the following. Notice that this repo contains `nsync` and `lua`, b
     "registries": [
         {
             "kind": "git",
-            "repository": "https://github.com/northwindtraders/vcpkg-registry",
-            "packages": [
-                "beicode"
-            ],
-            "baseline": "dacf4de488094a384ca2c202b923ccc097956e0c"
-        },
-        {
-            "kind": "git",
             "repository": "https://github.com/luncliff/vcpkg-registry",
             "packages": [
-                "lua"
+                "tensorflow-lite"
             ],
-            "baseline": "2810d45868352f84fe4bd9393094c4f1a26917e0"
+            "baseline": "0000..."
         }
     ]
 }
 ```
-
-```console
-user@host:~/vcpkg$ ./vcpkg search beicode --feature-flags=registries
-beicode              1.0.0            ...
-...
-user@host:~/vcpkg$ ./vcpkg search lua --feature-flags=registries
-...
-lua                  5.3.5#6          ...
-...
-```
-
-You can see the version is 5.3.5, which is different from the mainstream(https://github.com/microsoft/vcpkg).
 
 ##### Cache location for Linux/Mac
 
@@ -145,7 +104,9 @@ There are cache files under `/Users/$(whoami)/.cache/vcpkg/registries`.
 
 ### Install
 
-#### with Triplets
+#### ~~with Triplets~~
+
+> Redesign of Android triplets are in progress...
 
 Currently there are 4 triplets for each of Android architectures. Check https://github.com/microsoft/vcpkg/blob/master/docs/users/android.md for their roles.
 
