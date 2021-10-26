@@ -1,0 +1,8 @@
+{
+  "name": "zenny-atomic",
+  "version-date": "2021-10-15",
+  "description": "Simple <stdatomic.h>, <stdalign.h> and <threads.h> implementation for MSVC in Visual Studio 2019",
+  "homepage": "https://github.com/zenny-chen/simple-stdatomic-for-VS-Clang",
+  "license": "Apache-2.0",
+  "supports": "windows"
+}
