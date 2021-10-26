@@ -12,7 +12,7 @@ parameters:
     type: string
 
 jobs:
-  - job: "osx_${{ parameters.job_name }}"
+  - job: "arm_osx_${{ parameters.job_name }}"
     pool:
       vmImage: macOS-11
     timeoutInMinutes: 300
