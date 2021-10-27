@@ -24,6 +24,8 @@ This triplet is for the minimal works to try iOS Simulator build
     * [Cross Compiling for iOS, tvOS, or watchOS](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#cross-compiling-for-ios-tvos-or-watchos)
 
 #]===]
+cmake_minimum_required(VERSION 3.13)
+
 set(VCPKG_TARGET_ARCHITECTURE arm64)
 set(VCPKG_CRT_LINKAGE dynamic)
 set(VCPKG_LIBRARY_LINKAGE static)
