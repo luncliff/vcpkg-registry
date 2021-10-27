@@ -65,6 +65,32 @@ stages:
 
   - stage: "Triplets"
     jobs:
+      - job: "arm64_android"
+        pool:
+          vmImage: ubuntu-20.04
+        steps:
+          - template: azure/run-with-overlay-triplet.yml
+            parameters:
+              port: "ijg-libjpeg"
+              triplet: "arm64-android"
+          - template: azure/run-with-overlay-triplet.yml
+            parameters:
+              port: "zlib-ng"
+              features: "[core]"
+              triplet: "arm64-android"
+      - job: "x64_android"
+        pool:
+          vmImage: ubuntu-20.04
+        steps:
+          - template: azure/run-with-overlay-triplet.yml
+            parameters:
+              port: "ijg-libjpeg"
+              triplet: "arm-android"
+          - template: azure/run-with-overlay-triplet.yml
+            parameters:
+              port: "zlib-ng"
+              features: "[core]"
+              triplet: "arm-android"
       - job: "x64_ios_simulator"
         pool:
           vmImage: macOS-10.15
@@ -75,8 +101,8 @@ stages:
               triplet: "x64-ios-simulator"
           - template: azure/run-with-overlay-triplet.yml
             parameters:
-              port: "libzip"
-              features: "[core,bzip2]"
+              port: "zlib-ng"
+              features: "[core]"
               triplet: "x64-ios-simulator"
       - job: "arm64_ios_simulator"
         pool:
@@ -88,8 +114,8 @@ stages:
               triplet: "x64-ios-simulator"
           - template: azure/run-with-overlay-triplet.yml
             parameters:
-              port: "libzip"
-              features: "[core,bzip2]"
+              port: "zlib-ng"
+              features: "[core]"
               triplet: "x64-ios-simulator"
 
   - stage: "Ports" # Check build status of the ports
