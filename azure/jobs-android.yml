@@ -10,6 +10,9 @@ parameters:
     type: string
   - name: port
     type: string
+  - name: features
+    type: string
+    default: ""
 
 jobs:
   - job: "android_${{ parameters.job_name }}"
@@ -17,15 +20,54 @@ jobs:
       vmImage: ubuntu-20.04
     timeoutInMinutes: "300"
     steps:
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port: "${{ parameters.port }}"
-          triplet: "arm64-android"
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port: "${{ parameters.port }}"
-          triplet: "x64-android"
-      - template: steps-publish-logs.yml
-        parameters:
-          port: "${{ parameters.port }}"
+      - task: run-vcpkg@0
+        displayName: "arm64-android: ${{ parameters.port }}"
+        inputs:
+          vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
+          vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
+        env:
+          VCPKG_DEFAULT_TRIPLET: arm64-android
+          VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+          VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
+        condition: succeeded()
+
+      - task: run-vcpkg@0
+        displayName: "arm-android: ${{ parameters.port }}"
+        inputs:
+          vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
+          vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
+        env:
+          VCPKG_DEFAULT_TRIPLET: arm-android
+          VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+          VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
+        condition: succeeded()
+
+      - task: run-vcpkg@0
+        displayName: "x64-android: ${{ parameters.port }}"
+        inputs:
+          vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
+          vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
+        env:
+          VCPKG_DEFAULT_TRIPLET: x64-android
+          VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+          VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
+        condition: succeeded()
+
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port }}"
+          Contents: |
+            ?(*.log|*.txt)
+            *.cmake
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          OverWrite: true
+        condition: always()
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Staged Logs"
+        inputs:
+          PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+          ArtifactName: "$(Agent.JobName)"
+        condition: always()
+
     condition: or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'port/${{ parameters.port }}')) # https://stackoverflow.com/a/64657966

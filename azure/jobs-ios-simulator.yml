@@ -23,23 +23,25 @@ jobs:
       - powershell: brew install autoconf automake libtool
 
       - task: run-vcpkg@0
-        displayName: "arm64-ios: ${{ parameters.port }}"
+        displayName: "arm64-ios-simulator: ${{ parameters.port }}"
         inputs:
           vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
           vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
         env:
-          VCPKG_DEFAULT_TRIPLET: arm64-ios
+          VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
           VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+          VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
         condition: succeeded()
 
       - task: run-vcpkg@0
-        displayName: "arm-ios: ${{ parameters.port }}"
+        displayName: "x64-ios-simulator: ${{ parameters.port }}"
         inputs:
           vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
           vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
         env:
-          VCPKG_DEFAULT_TRIPLET: arm-ios
+          VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
           VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+          VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
         condition: succeeded()
 
       - task: CopyFiles@2
