@@ -8,7 +8,7 @@
 parameters:
   - name: job_name
     type: string
-  - name: port_name
+  - name: port
     type: string
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
     pool:
       vmImage: windows-2019
       # vmImage: windows-2022 # (2021-10-04) VS 2022 Preview is not ready for arm64-windows
-    timeoutInMinutes: 300
+    timeoutInMinutes: "300"
     steps:
       - task: UsePythonVersion@0
         displayName: "Setup: Python 3.9"
@@ -25,14 +25,40 @@ jobs:
           addToPath: true
           architecture: "x64"
       - powershell: env
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port_name: "${{ parameters.port_name }}"
-          target_triplet: "x64-uwp"
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port_name: "${{ parameters.port_name }}"
-          target_triplet: "arm64-uwp"
-      - template: steps-publish-logs.yml
-        parameters:
-          port_name: "${{ parameters.port_name }}"
+
+      - task: run-vcpkg@0
+        displayName: "x64-uwp: ${{ parameters.port }}"
+        inputs:
+          vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
+          vcpkgArguments: "${{ parameters.port }}"
+        env:
+          VCPKG_DEFAULT_TRIPLET: x64-uwp
+          VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+
+      - task: run-vcpkg@0
+        displayName: "arm64-uwp: ${{ parameters.port }}"
+        inputs:
+          vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
+          vcpkgArguments: "${{ parameters.port }}"
+        env:
+          VCPKG_DEFAULT_TRIPLET: arm64-uwp
+          VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port }}"
+          Contents: |
+            ?(*.log|*.txt)
+            *.cmake
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          OverWrite: true
+        condition: always()
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Staged Logs"
+        inputs:
+          PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+          ArtifactName: "$(Agent.JobName)"
+        condition: always()
+
+    condition: or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'port/${{ parameters.port }}')) # https://stackoverflow.com/a/64657966

@@ -10,6 +10,9 @@
 parameters:
   - name: port
     type: string
+  - name: features
+    type: string
+    default: ""
   - name: triplet
     type: string
 
@@ -17,13 +20,12 @@ steps:
   - task: run-vcpkg@0
     displayName: "${{ parameters.triplet }}: ${{ parameters.port }}"
     inputs:
-      vcpkgGitCommitId: "2a31089e777fc187f1cc05338250b8e1810cfb52" # mainstream 2021-10-02
-      vcpkgArguments: "${{ parameters.port }}" # vcpkg install ${port} ...
+      vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
+      vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ parameters.triplet }} # --triplet ${triplet}
       VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
-      # VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
-      ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
+      VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
   - task: CopyFiles@2
     inputs:
       SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port }}" # check how https://github.com/lukka/CppBuildTasks works
@@ -33,9 +35,3 @@ steps:
       TargetFolder: "$(Build.ArtifactStagingDirectory)"
       OverWrite: true
     condition: failed()
-  # - task: DeleteFiles@1
-  #   inputs:
-  #     SourceFolder: "$(Build.BinariesDirectory)/vcpkg/downloads"
-  #     Contents: "**/*" # todo: change to downloads, buildtrees, etc.
-  #     RemoveSourceFolder: true
-  #     RemoveDotFiles: true
