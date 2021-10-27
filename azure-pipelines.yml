@@ -35,8 +35,8 @@ stages:
         steps:
           - task: CondaEnvironment@0
             inputs:
-              environmentName: 'develop'
-              packageSpecs: 'python=3.9 pyqt=5.9.2'
+              environmentName: "develop"
+              packageSpecs: "python=3.9 pyqt=5.9.2"
               cleanEnvironment: true
           - task: CMake@1
             displayName: "CMake modules/scripts"
@@ -59,7 +59,36 @@ stages:
           - task: PowerShell@2
             displayName: "Check port versions"
             inputs:
-              filePath: 'scripts/check-sha.ps1'
+              filePath: "scripts/check-sha.ps1"
+
+  - stage: "Triplets"
+    jobs:
+      - job: "x64_ios_simulator"
+        pool:
+          vmImage: macOS-10.15
+        steps:
+          - template: azure/run-with-overlay-triplet.yml
+            parameters:
+              port: "ijg-libjpeg"
+              triplet: "x64-ios-simulator"
+          - template: azure/run-with-overlay-triplet.yml
+            parameters:
+              port: "libzip"
+              features: "[core,bzip2]"
+              triplet: "x64-ios-simulator"
+      - job: "arm64_ios_simulator"
+        pool:
+          vmImage: macOS-11
+        steps:
+          - template: azure/run-with-overlay-triplet.yml
+            parameters:
+              port: "ijg-libjpeg"
+              triplet: "x64-ios-simulator"
+          - template: azure/run-with-overlay-triplet.yml
+            parameters:
+              port: "libzip"
+              features: "[core,bzip2]"
+              triplet: "x64-ios-simulator"
 
   - stage: "Ports" # Check build status of the ports
     jobs:

@@ -1,0 +1,37 @@
+#
+# Author: github.com/luncliff (luncliff@gmail.com)
+#
+# References
+#   https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops#step-reuse
+#   https://github.com/microsoft/vcpkg/releases/tag/2021.05.12
+#   https://github.com/microsoft/vcpkg/blob/2021.05.12/docs/users/config-environment.md
+#
+
+parameters:
+  - name: port
+    type: string
+  - name: features
+    type: string
+    default: ""
+  - name: triplet
+    type: string
+
+steps:
+  - task: run-vcpkg@0
+    displayName: "${{ parameters.triplet }}: ${{ parameters.port }}"
+    inputs:
+      vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
+      vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
+    env:
+      VCPKG_DEFAULT_TRIPLET: ${{ parameters.triplet }} # --triplet ${triplet}
+      VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
+      VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port }}" # check how https://github.com/lukka/CppBuildTasks works
+      Contents: |
+        ?(*.log|*.txt)
+        *.cmake
+      TargetFolder: "$(Build.ArtifactStagingDirectory)"
+      OverWrite: true
+    condition: failed()
