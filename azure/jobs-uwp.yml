@@ -36,3 +36,4 @@ jobs:
       - template: steps-publish-logs.yml
         parameters:
           port: "${{ parameters.port }}"
+    condition: or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'port/${{ parameters.port }}')) # https://stackoverflow.com/a/64657966
