@@ -8,23 +8,24 @@
 parameters:
   - name: job_name
     type: string
-  - name: port_name
+  - name: port
     type: string
 
 jobs:
   - job: "android_${{ parameters.job_name }}"
     pool:
       vmImage: ubuntu-20.04
-    timeoutInMinutes: 300
+    timeoutInMinutes: "300"
     steps:
       - template: run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "${{ parameters.port_name }}"
-          target_triplet: "arm64-android"
+          port: "${{ parameters.port }}"
+          triplet: "arm64-android"
       - template: run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "${{ parameters.port_name }}"
-          target_triplet: "x64-android"
+          port: "${{ parameters.port }}"
+          triplet: "x64-android"
       - template: steps-publish-logs.yml
         parameters:
-          port_name: "${{ parameters.port_name }}"
+          port: "${{ parameters.port }}"
+    condition: or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'port/${{ parameters.port }}')) # https://stackoverflow.com/a/64657966

@@ -8,14 +8,14 @@
 parameters:
   - name: job_name
     type: string
-  - name: port_name
+  - name: port
     type: string
 
 jobs:
   - job: "linux_${{ parameters.job_name }}"
     pool:
       vmImage: ubuntu-20.04
-    timeoutInMinutes: 300
+    timeoutInMinutes: "300"
     steps:
       - powershell: sudo apt-get install -y libnuma-dev
         displayName: "Install APT packages"
@@ -23,8 +23,9 @@ jobs:
         displayName: "Install Python packages"
       - template: run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "${{ parameters.port_name }}"
-          target_triplet: "x64-linux"
+          port: "${{ parameters.port }}"
+          triplet: "x64-linux"
       - template: steps-publish-logs.yml
         parameters:
-          port_name: "${{ parameters.port_name }}"
+          port: "${{ parameters.port }}"
+    condition: or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'port/${{ parameters.port }}')) # https://stackoverflow.com/a/64657966

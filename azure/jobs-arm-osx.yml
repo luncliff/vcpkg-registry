@@ -8,14 +8,14 @@
 parameters:
   - name: job_name
     type: string
-  - name: port_name
+  - name: port
     type: string
 
 jobs:
   - job: "arm_osx_${{ parameters.job_name }}"
     pool:
       vmImage: macOS-11
-    timeoutInMinutes: 300
+    timeoutInMinutes: "300"
     steps:
       - powershell: brew install autoconf automake libtool
         displayName: "Install HomeBrew packages"
@@ -29,8 +29,9 @@ jobs:
         displayName: "Install Python packages"
       - template: run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "${{ parameters.port_name }}"
-          target_triplet: "arm64-osx"
+          port: "${{ parameters.port }}"
+          triplet: "arm64-osx"
       - template: steps-publish-logs.yml
         parameters:
-          port_name: "${{ parameters.port_name }}"
+          port: "${{ parameters.port }}"
+    condition: or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'port/${{ parameters.port }}')) # https://stackoverflow.com/a/64657966
