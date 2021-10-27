@@ -8,6 +8,9 @@
 parameters:
   - name: job_name
     type: string
+  - name: features
+    type: string
+    default: ""
   - name: port
     type: string
 
@@ -31,28 +34,21 @@ jobs:
         displayName: "x64-windows: ${{ parameters.port }}"
         inputs:
           vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
-          vcpkgArguments: "${{ parameters.port }}"
+          vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
         env:
           VCPKG_DEFAULT_TRIPLET: x64-windows
           VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
-      - task: CopyFiles@2
-        inputs:
-          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port }}"
-          Contents: |
-            ?(*.log|*.txt)
-            *.cmake
-          TargetFolder: "$(Build.ArtifactStagingDirectory)"
-          OverWrite: true
-        condition: failed()
 
       - task: run-vcpkg@0
         displayName: "x86-windows: ${{ parameters.port }}"
         inputs:
-          vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
-          vcpkgArguments: "${{ parameters.port }}"
+          vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae"
+          vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
         env:
           VCPKG_DEFAULT_TRIPLET: x86-windows
           VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+        condition: succeeded()
+
       - task: CopyFiles@2
         inputs:
           SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port }}"
@@ -61,6 +57,13 @@ jobs:
             *.cmake
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
           OverWrite: true
-        condition: failed()
+        condition: always()
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Staged Logs"
+        inputs:
+          PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+          ArtifactName: "$(Agent.JobName)"
+        condition: always()
 
     condition: or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'port/${{ parameters.port }}')) # https://stackoverflow.com/a/64657966

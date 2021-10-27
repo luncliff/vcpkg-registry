@@ -34,15 +34,6 @@ jobs:
         env:
           VCPKG_DEFAULT_TRIPLET: x64-uwp
           VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
-      - task: CopyFiles@2
-        inputs:
-          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port }}"
-          Contents: |
-            ?(*.log|*.txt)
-            *.cmake
-          TargetFolder: "$(Build.ArtifactStagingDirectory)"
-          OverWrite: true
-        condition: failed()
 
       - task: run-vcpkg@0
         displayName: "arm64-uwp: ${{ parameters.port }}"
@@ -52,6 +43,7 @@ jobs:
         env:
           VCPKG_DEFAULT_TRIPLET: arm64-uwp
           VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+
       - task: CopyFiles@2
         inputs:
           SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port }}"
@@ -60,6 +52,13 @@ jobs:
             *.cmake
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
           OverWrite: true
-        condition: failed()
+        condition: always()
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Staged Logs"
+        inputs:
+          PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+          ArtifactName: "$(Agent.JobName)"
+        condition: always()
 
     condition: or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'port/${{ parameters.port }}')) # https://stackoverflow.com/a/64657966

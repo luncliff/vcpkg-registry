@@ -5,7 +5,6 @@ parameters:
 
 steps:
   - task: CopyFiles@2
-    displayName: "Stage Logs: ${{ parameters.port }}"
     inputs:
       SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port }}"
       Contents: |
