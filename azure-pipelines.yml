@@ -25,6 +25,8 @@ variables:
     value: "true"
   - name: VCPKG_FEATURE_FLAGS
     value: "binarycaching,manifest"
+  - name: checkingTriplet
+    value: $[eq(variables['Build.SourceBranchName'], 'triplet/')]
 
 stages:
   - stage: "Scripts"
@@ -66,102 +68,102 @@ stages:
       - template: azure/jobs-python3.yml
         parameters:
           job_name: "vcpkg_host_python3"
-          port_name: "vcpkg-host-python3"
+          port: "vcpkg-host-python3"
 
       - template: azure/jobs-linux.yml
         parameters:
           job_name: "libtorch"
-          port_name: "libtorch"
+          port: "libtorch"
       - template: azure/jobs-osx.yml
         parameters:
           job_name: "libtorch"
-          port_name: "libtorch"
+          port: "libtorch"
 
       - template: azure/jobs-windows.yml
         parameters:
           job_name: "libdispatch"
-          port_name: "libdispatch"
+          port: "libdispatch"
       - template: azure/jobs-arm-windows.yml
         parameters:
           job_name: "libdispatch"
-          port_name: "libdispatch"
+          port: "libdispatch"
       # - template: azure/jobs-android.yml # todo: decide NDK version coverage
       #   parameters:
       #     job_name: "libdispatch"
-      #     port_name: "libdispatch"
+      #     port: "libdispatch"
 
       - template: azure/jobs-windows.yml
         parameters:
           job_name: "zlib_ng"
-          port_name: "zlib-ng"
+          port: "zlib-ng"
       - template: azure/jobs-linux.yml
         parameters:
           job_name: "zlib_ng"
-          port_name: "zlib-ng"
+          port: "zlib-ng"
       - template: azure/jobs-osx.yml
         parameters:
           job_name: "zlib_ng"
-          port_name: "zlib-ng"
+          port: "zlib-ng"
       - template: azure/jobs-arm-windows.yml
         parameters:
           job_name: "zlib_ng"
-          port_name: "zlib-ng"
+          port: "zlib-ng"
 
       - template: azure/jobs-windows.yml
         parameters:
           job_name: "openssl3"
-          port_name: "openssl3"
+          port: "openssl3"
       - template: azure/jobs-linux.yml
         parameters:
           job_name: "openssl3"
-          port_name: "openssl3"
+          port: "openssl3"
       - template: azure/jobs-osx.yml
         parameters:
           job_name: "openssl3"
-          port_name: "openssl3"
+          port: "openssl3"
       - template: azure/jobs-uwp.yml
         parameters:
           job_name: "openssl3"
-          port_name: "openssl3"
+          port: "openssl3"
       - template: azure/jobs-arm-windows.yml
         parameters:
           job_name: "openssl3"
-          port_name: "openssl3"
+          port: "openssl3"
       - template: azure/jobs-android.yml
         parameters:
           job_name: "openssl3"
-          port_name: "openssl3"
+          port: "openssl3"
       - template: azure/jobs-ios.yml
         parameters:
           job_name: "openssl3"
-          port_name: "openssl3"
+          port: "openssl3"
 
       - template: azure/jobs-windows.yml
         parameters:
           job_name: "tflite"
-          port_name: "tensorflow-lite"
+          port: "tensorflow-lite"
       - template: azure/jobs-linux.yml
         parameters:
           job_name: "tflite"
-          port_name: "tensorflow-lite"
+          port: "tensorflow-lite"
       - template: azure/jobs-osx.yml
         parameters:
           job_name: "tflite"
-          port_name: "tensorflow-lite"
+          port: "tensorflow-lite"
 
       - template: azure/jobs-android.yml
         parameters:
           job_name: "xnnpack"
-          port_name: "xnnpack"
+          port: "xnnpack"
 
       - template: azure/jobs-android.yml
         parameters:
           job_name: "cpuinfo"
-          port_name: "cpuinfo"
+          port: "cpuinfo"
       - template: azure/jobs-ios.yml
         parameters:
           job_name: "cpuinfo"
-          port_name: "cpuinfo"
+          port: "cpuinfo"
 
   # - stage: "Registry" # todo: Use of this registry
   #   jobs:

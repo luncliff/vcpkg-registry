@@ -1,13 +1,13 @@
 
 parameters:
-  - name: port_name
+  - name: port
     type: string
 
 steps:
   - task: CopyFiles@2
-    displayName: "Stage Logs: ${{ parameters.port_name }}"
+    displayName: "Stage Logs: ${{ parameters.port }}"
     inputs:
-      SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port_name }}"
+      SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port }}"
       Contents: |
         ?(*.log|*.txt)
         *.cmake

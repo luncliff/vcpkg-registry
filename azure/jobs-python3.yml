@@ -8,7 +8,7 @@
 parameters:
   - name: job_name
     type: string
-  - name: port_name
+  - name: port
     type: string
 
 jobs:
@@ -25,12 +25,12 @@ jobs:
       - powershell: env
       - template: run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "${{ parameters.port_name }}-test"
-          target_triplet: "x64-windows"
+          port: "${{ parameters.port }}-test"
+          triplet: "x64-windows"
       - template: run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "${{ parameters.port_name }}-test"
-          target_triplet: "x86-windows"
+          port: "${{ parameters.port }}-test"
+          triplet: "x86-windows"
       - powershell: pip list
         displayName: "Show installed Python packages"
 
@@ -52,8 +52,8 @@ jobs:
         displayName: "Check Python User Site"
       - template: run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "${{ parameters.port_name }}-test"
-          target_triplet: "x64-linux"
+          port: "${{ parameters.port }}-test"
+          triplet: "x64-linux"
       - powershell: pip list
         displayName: "Show installed Python packages"
 
@@ -73,11 +73,11 @@ jobs:
       - powershell: env
       - template: run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "${{ parameters.port_name }}-test"
-          target_triplet: "x64-osx"
+          port: "${{ parameters.port }}-test"
+          triplet: "x64-osx"
       - template: run-vcpkg-with-overlay.yml
         parameters:
-          port_name: "${{ parameters.port_name }}-test"
-          target_triplet: "arm64-osx"
+          port: "${{ parameters.port }}-test"
+          triplet: "arm64-osx"
       - powershell: pip list
         displayName: "Show installed Python packages"

@@ -8,25 +8,25 @@
 #
 
 parameters:
-  - name: port_name
+  - name: port
     type: string
-  - name: target_triplet
+  - name: triplet
     type: string
 
 steps:
   - task: run-vcpkg@0
-    displayName: "${{ parameters.target_triplet }}: ${{ parameters.port_name }}"
+    displayName: "${{ parameters.triplet }}: ${{ parameters.port }}"
     inputs:
       vcpkgGitCommitId: "2a31089e777fc187f1cc05338250b8e1810cfb52" # mainstream 2021-10-02
-      vcpkgArguments: "${{ parameters.port_name }}" # vcpkg install ${port_name} ...
+      vcpkgArguments: "${{ parameters.port }}" # vcpkg install ${port} ...
     env:
-      VCPKG_DEFAULT_TRIPLET: ${{ parameters.target_triplet }} # --triplet ${target_triplet}
+      VCPKG_DEFAULT_TRIPLET: ${{ parameters.triplet }} # --triplet ${triplet}
       VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
       # VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
       ANDROID_NDK_HOME: $(ANDROID_NDK_LATEST_HOME)
   - task: CopyFiles@2
     inputs:
-      SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port_name }}" # check how https://github.com/lukka/CppBuildTasks works
+      SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/${{ parameters.port }}" # check how https://github.com/lukka/CppBuildTasks works
       Contents: |
         ?(*.log|*.txt)
         *.cmake
