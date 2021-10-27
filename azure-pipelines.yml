@@ -25,45 +25,10 @@ variables:
     value: "true"
   - name: VCPKG_FEATURE_FLAGS
     value: "binarycaching,manifest"
-  - name: checkingTriplet
-    value: $[eq(variables['Build.SourceBranchName'], 'triplet/')]
 
 stages:
-  - stage: "Scripts"
-    jobs:
-      - job: "CMake"
-        pool:
-          vmImage: windows-2019
-        steps:
-          - task: CondaEnvironment@0
-            inputs:
-              environmentName: "develop"
-              packageSpecs: "python=3.9 pyqt=5.9.2"
-              cleanEnvironment: true
-          - task: CMake@1
-            displayName: "CMake modules/scripts"
-            inputs:
-              cmakeArgs: "-S $(Build.SourcesDirectory)/tests"
-              runInsideShell: true
-            env:
-              Qt5_DIR: "$(CONDA)/envs/develop/Library/lib/cmake/Qt5"
-          - powershell: |
-              conda env list
-              Get-ChildItem "$(CONDA)\\envs\\develop"
-              Get-ChildItem "$(CONDA)\\envs\\develop\\Library"
-              Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\pkgconfig"
-              Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\cmake"
-            condition: failed()
-      - job: "PowerShell"
-        pool:
-          vmImage: ubuntu-20.04
-        steps:
-          - task: PowerShell@2
-            displayName: "Check port versions"
-            inputs:
-              filePath: "scripts/check-sha.ps1"
-
   - stage: "Triplets"
+    # condition: startsWith(variables['build.sourceBranch'], 'refs/heads/triplet/')
     jobs:
       - job: "arm64_android"
         pool:
@@ -233,13 +198,39 @@ stages:
           job_name: "cpuinfo"
           port: "cpuinfo"
 
-  # - stage: "Registry" # todo: Use of this registry
-  #   jobs:
-  #     - job: "windows_2022"
-  #       pool:
-  #         vmImage: windows-2022
-  #       steps:
-  #         - powershell: Write-Output "Not implemented"
+  - stage: "Scripts" # todo: Use of this registry
+    jobs:
+      - job: "CMake"
+        pool:
+          vmImage: windows-2019
+        steps:
+          - task: CondaEnvironment@0
+            inputs:
+              environmentName: "develop"
+              packageSpecs: "python=3.9 pyqt=5.9.2"
+              cleanEnvironment: true
+          - task: CMake@1
+            displayName: "CMake modules/scripts"
+            inputs:
+              cmakeArgs: "-S $(Build.SourcesDirectory)/tests"
+              runInsideShell: true
+            env:
+              Qt5_DIR: "$(CONDA)/envs/develop/Library/lib/cmake/Qt5"
+          - powershell: |
+              conda env list
+              Get-ChildItem "$(CONDA)\\envs\\develop"
+              Get-ChildItem "$(CONDA)\\envs\\develop\\Library"
+              Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\pkgconfig"
+              Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\cmake"
+            condition: failed()
+      - job: "PowerShell"
+        pool:
+          vmImage: ubuntu-20.04
+        steps:
+          - task: PowerShell@2
+            displayName: "Check port versions"
+            inputs:
+              filePath: "scripts/check-sha.ps1"
 
   # todo: Deploy stage
   #   Status notification + GitHub release
