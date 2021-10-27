@@ -12,12 +12,13 @@ parameters:
     type: string
 
 jobs:
-  - job: "windows_${{ parameters.job_name }}"
+  - job: "arm_osx_${{ parameters.job_name }}"
     pool:
-      vmImage: windows-2019
-      # vmImage: windows-2022 # (2021-10-04) VS 2022 Preview is not ready for arm64-windows
+      vmImage: macOS-11
     timeoutInMinutes: 300
     steps:
+      - powershell: brew install autoconf automake libtool
+        displayName: "Install HomeBrew packages"
       - task: UsePythonVersion@0
         displayName: "Setup: Python 3.9"
         inputs:
@@ -29,11 +30,7 @@ jobs:
       - template: run-vcpkg-with-overlay.yml
         parameters:
           port_name: "${{ parameters.port_name }}"
-          target_triplet: "x64-windows"
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port_name: "${{ parameters.port_name }}"
-          target_triplet: "x86-windows"
+          target_triplet: "arm64-osx"
       - template: steps-publish-logs.yml
         parameters:
           port_name: "${{ parameters.port_name }}"

@@ -37,8 +37,8 @@ index 0f8df27..adf38a1 100644
    ENDIF()
  ENDIF()
 -TARGET_LINK_LIBRARIES(XNNPACK PRIVATE cpuinfo)
-+find_package(cpuinfo CONFIG REQUIRED)
-+target_link_libraries(XNNPACK PRIVATE cpuinfo::clog cpuinfo::cpuinfo)
++find_package(unofficial-cpuinfo CONFIG REQUIRED)
++target_link_libraries(XNNPACK PRIVATE unofficial::cpuinfo::clog unofficial::cpuinfo::cpuinfo)
  
  # ---[ Configure pthreadpool
 -IF(NOT TARGET pthreadpool)

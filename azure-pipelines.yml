@@ -68,6 +68,15 @@ stages:
           job_name: "vcpkg_host_python3"
           port_name: "vcpkg-host-python3"
 
+      - template: azure/jobs-linux.yml
+        parameters:
+          job_name: "libtorch"
+          port_name: "libtorch"
+      - template: azure/jobs-osx.yml
+        parameters:
+          job_name: "libtorch"
+          port_name: "libtorch"
+
       - template: azure/jobs-windows.yml
         parameters:
           job_name: "libdispatch"
