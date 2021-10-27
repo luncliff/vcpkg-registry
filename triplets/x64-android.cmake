@@ -90,7 +90,7 @@ if(NDK_DIR_NAME STREQUAL "ndk-bundle")
     set(ANDROID_NDK_REVISION_REGEX
       "^Pkg\\.Desc = Android NDK\nPkg\\.Revision = ([0-9]+)\\.([0-9]+)\\.([0-9]+)(-beta([0-9]+))?")
     if(NOT ANDROID_NDK_SOURCE_PROPERTIES MATCHES "${ANDROID_NDK_REVISION_REGEX}")
-      message(SEND_ERROR "Failed to parse Android NDK revision: ${ANDROID_NDK}/source.properties.\n${ANDROID_NDK_SOURCE_PROPERTIES}")
+      message(SEND_ERROR "Failed to parse Android NDK revision: source.properties.\n${ANDROID_NDK_SOURCE_PROPERTIES}")
     endif()
     set(NDK_MAJOR_VERSION "${CMAKE_MATCH_1}")
     set(NDK_MINOR_VERSION "${CMAKE_MATCH_2}")
@@ -105,23 +105,23 @@ endif()
 message(STATUS "Found NDK: ${NDK_DIR_NAME} (${NDK_MAJOR_VERSION}.${NDK_MINOR_VERSION})")
 unset(NDK_DIR_NAME)
 
-# # Provide some paths to help using Vulkan SDK
-# string(COMPARE GREATER ${NDK_MAJOR_VERSION} 21 NDK_VERSION_OVER_21)
-# if(NDK_VERSION_OVER_21)
-#     set(ENV{VULKAN_SDK} $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/${NDK_HOST_TAG}/sysroot/usr)
-#     # If your API level is 30, libvulkan.so is at 
-#     #  $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/30
-#     get_filename_component(NDK_VULKAN_LIB_PATH $ENV{VULKAN_SDK}/lib/x86_64-linux-android/${NDK_API_LEVEL}/libvulkan.so ABSOLUTE)
-# else()
-#     # If your API level is 30, libvulkan.so is at 
-#     #  $ENV{ANDROID_NDK_HOME}/platforms/android-30/arch-arm64/usr/lib
-#     get_filename_component(NDK_VULKAN_LIB_PATH $ENV{ANDROID_NDK_HOME}/platforms/android-${NDK_API_LEVEL}/arch-${VCPKG_TARGET_ARCHITECTURE}/usr/lib/libvulkan.so ABSOLUTE)
-# endif()
-# message(STATUS "Using ENV{VULKAN_SDK}: $ENV{VULKAN_SDK}")
-# if(NOT EXISTS ${NDK_VULKAN_LIB_PATH})
-#     message(WARNING "libvulkan.so not found: ${NDK_VULKAN_LIB_PATH}")
-# else()
-#     message(STATUS "Found libvulkan.so: ${NDK_VULKAN_LIB_PATH}")
-# endif()
+# Provide some paths to help using Vulkan SDK
+string(COMPARE GREATER ${NDK_MAJOR_VERSION} 21 NDK_VERSION_OVER_21)
+if(NDK_VERSION_OVER_21)
+    set(ENV{VULKAN_SDK} $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/${NDK_HOST_TAG}/sysroot/usr)
+    # If your API level is 30, libvulkan.so is at 
+    #  $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/30
+    get_filename_component(Vulkan_LIBRARY $ENV{VULKAN_SDK}/lib/x86_64-linux-android/${NDK_API_LEVEL}/libvulkan.so ABSOLUTE)
+else()
+    # If your API level is 30, libvulkan.so is at 
+    #  $ENV{ANDROID_NDK_HOME}/platforms/android-30/arch-arm64/usr/lib
+    get_filename_component(Vulkan_LIBRARY $ENV{ANDROID_NDK_HOME}/platforms/android-${NDK_API_LEVEL}/arch-${VCPKG_TARGET_ARCHITECTURE}/usr/lib/libvulkan.so ABSOLUTE)
+endif()
+if(NOT EXISTS ${Vulkan_LIBRARY})
+    message(WARNING "libvulkan.so not found")
+else()
+    message(STATUS "Using ENV{VULKAN_SDK}: $ENV{VULKAN_SDK}")
+    message(STATUS "Found libvulkan.so: ${Vulkan_LIBRARY}")
+endif()
 
 message(STATUS) # trailing LF for readability
