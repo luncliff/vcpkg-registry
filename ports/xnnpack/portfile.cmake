@@ -10,7 +10,12 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         use-packages.patch
+        change-allowed-systems.patch
 )
+
+if(VCPKG_TARGET_IS_IOS)
+    list(APPEND PLATFORM_OPTIONS -DIOS_ARCH=${VCPKG_TARGET_ARCHITECTURE})
+endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH ${SOURCE_PATH}
@@ -21,6 +26,7 @@ vcpkg_cmake_configure(
         -DXNNPACK_ENABLE_SPARSE=ON
         -DXNNPACK_BUILD_TESTS=OFF
         -DXNNPACK_BUILD_BENCHMARKS=OFF
+       ${PLATFORM_OPTIONS}
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
