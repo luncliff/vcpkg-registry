@@ -14,7 +14,12 @@ vcpkg_from_github(
 )
 
 if(VCPKG_TARGET_IS_IOS)
-    list(APPEND PLATFORM_OPTIONS -DIOS_ARCH=${VCPKG_TARGET_ARCHITECTURE})
+    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
+        set(IOS_ARCH "armv7")
+    elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+        set(IOS_ARCH "arm64")
+    endif()
+    list(APPEND PLATFORM_OPTIONS -DIOS_ARCH=${IOS_ARCH})
 endif()
 
 vcpkg_cmake_configure(
