@@ -213,6 +213,10 @@ stages:
         parameters:
           job_name: "xnnpack"
           port: "xnnpack"
+      - template: azure/jobs-ios.yml
+        parameters:
+          job_name: "xnnpack"
+          port: "xnnpack"
 
       - template: azure/jobs-android.yml
         parameters:
