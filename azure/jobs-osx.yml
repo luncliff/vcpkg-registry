@@ -58,4 +58,4 @@ jobs:
           ArtifactName: "$(Agent.JobName)"
         condition: always()
 
-    condition: or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'port/${{ parameters.port }}')) # https://stackoverflow.com/a/64657966
+    condition: or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/port/${{ parameters.port }}')) # https://stackoverflow.com/a/64657966
