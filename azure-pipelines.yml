@@ -127,6 +127,31 @@ stages:
 
       - template: azure/jobs-windows.yml
         parameters:
+          job_name: "farmhash"
+          port: "farmhash"
+      - template: azure/jobs-uwp.yml
+        parameters:
+          job_name: "farmhash"
+          port: "farmhash"
+      - template: azure/jobs-linux.yml
+        parameters:
+          job_name: "farmhash"
+          port: "farmhash"
+      - template: azure/jobs-android.yml
+        parameters:
+          job_name: "farmhash"
+          port: "farmhash"
+      - template: azure/jobs-osx.yml
+        parameters:
+          job_name: "farmhash"
+          port: "farmhash"
+      - template: azure/jobs-ios.yml
+        parameters:
+          job_name: "farmhash"
+          port: "farmhash"
+
+      - template: azure/jobs-windows.yml
+        parameters:
           job_name: "zlib_ng"
           port: "zlib-ng"
       - template: azure/jobs-linux.yml
