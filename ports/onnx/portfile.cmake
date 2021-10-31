@@ -5,8 +5,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO onnx/onnx
-    REF v1.9.0
-    SHA512 a3eecc74ce4f22524603fb86367d21c87a143ba27eef93ef4bd2e2868c2cadeb724b84df58a429286e7824adebdeba7fa059095b7ab29df8dcea8777bd7f4101
+    REF v1.10.2
+    SHA512 7519d326cd2b2b13a269ec0d01af07c32115d183dae6e1eaae55f5b23b6c92b2aadbb2b1e555557f4201bbcf921fa563d09d45d7f1d3bd2399c1a94a6ef63303
     PATCHES
         fix-cmakelists.patch
 )
@@ -78,6 +78,7 @@ file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
                     "${CURRENT_PACKAGES_DIR}/include/onnx/defs/math"
                     "${CURRENT_PACKAGES_DIR}/include/onnx/defs/nn"
                     "${CURRENT_PACKAGES_DIR}/include/onnx/defs/object_detection"
+                    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/optional"
                     "${CURRENT_PACKAGES_DIR}/include/onnx/defs/quantization"
                     "${CURRENT_PACKAGES_DIR}/include/onnx/defs/reduction"
                     "${CURRENT_PACKAGES_DIR}/include/onnx/defs/rnn"
