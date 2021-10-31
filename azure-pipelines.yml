@@ -127,6 +127,15 @@ stages:
 
       - template: azure/jobs-windows.yml
         parameters:
+          job_name: "onnxruntime"
+          port: "onnxruntime"
+      - template: azure/jobs-linux.yml
+        parameters:
+          job_name: "onnxruntime"
+          port: "onnxruntime"
+
+      - template: azure/jobs-windows.yml
+        parameters:
           job_name: "farmhash"
           port: "farmhash"
       - template: azure/jobs-uwp.yml

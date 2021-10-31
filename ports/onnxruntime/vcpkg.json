@@ -18,6 +18,7 @@
     "cpuinfo",
     "cxxopts",
     "re2",
+    "safeint",
     {
       "name": "nsync",
       "platform": "linux"

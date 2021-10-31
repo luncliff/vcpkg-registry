@@ -530,3 +530,40 @@ index e9ff2e5..8ffe1ab 100644
  target_include_directories(winml_test_adapter PRIVATE ${ONNXRUNTIME_ROOT} ${eigen_INCLUDE_DIRS})
  add_dependencies(winml_test_adapter ${onnxruntime_EXTERNAL_DEPENDENCIES})
  target_include_directories(winml_test_adapter PRIVATE ${winml_adapter_dir})
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 377653e..7df5b67 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -20,6 +20,7 @@ project(onnxruntime C CXX)
+ # Needed for Java
+ set (CMAKE_C_STANDARD 99)
+ 
++include(GNUInstallDirs)
+ include(CheckCXXCompilerFlag)
+ include(CheckLanguage)
+ include(CMakeDependentOption)
+@@ -836,9 +837,7 @@ set(ONNXRUNTIME_INCLUDE_DIR ${REPO_ROOT}/include/onnxruntime)
+ # add_subdirectory(external/date EXCLUDE_FROM_ALL)
+ find_package(date CONFIG REQUIRED) # date::date date::date-tz
+ 
+-set(SAFEINT_INCLUDE_DIR ${REPO_ROOT}/cmake/external/SafeInt)
+-add_library(safeint_interface INTERFACE)
+-target_include_directories(safeint_interface INTERFACE ${SAFEINT_INCLUDE_DIR})
++find_path(SAFEINT_INCLUDE_DIR "SafeInt.hpp")
+ 
+ # set(OPTIONAL_LITE_INCLUDE_DIR ${REPO_ROOT}/cmake/external/optional-lite/include)
+ find_package(optional-lite CONFIG REQUIRED)
+diff --git a/cmake/onnxruntime_common.cmake b/cmake/onnxruntime_common.cmake
+index bd33b34..08cf656 100644
+--- a/cmake/onnxruntime_common.cmake
++++ b/cmake/onnxruntime_common.cmake
+@@ -107,7 +107,8 @@ target_include_directories(onnxruntime_common
+     PUBLIC
+         ${OPTIONAL_LITE_INCLUDE_DIR})
+ 
+-target_link_libraries(onnxruntime_common safeint_interface Boost::headers)
++target_include_directories(onnxruntime_common PUBLIC ${SAFEINT_INCLUDE_DIR})
++target_link_libraries(onnxruntime_common Boost::headers)
+ 
+ if(NOT WIN32)
+   target_include_directories(onnxruntime_common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/external/nsync/public")

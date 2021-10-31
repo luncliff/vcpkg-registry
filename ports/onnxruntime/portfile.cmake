@@ -7,6 +7,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-cmake.patch
+        fix-sources.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -27,9 +28,11 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_PYTHON=OFF
         -Donnxruntime_USE_FULL_PROTOBUF=ON
         -Donnxruntime_USE_PREINSTALLED_EIGEN=ON
+        -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
+        -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=ON
 )
 vcpkg_cmake_install()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
