@@ -639,3 +639,40 @@ index 0591216..c271c94 100644
    elseif(WIN32)
      set_property(TARGET onnxruntime_providers_tensorrt APPEND_STRING PROPERTY LINK_FLAGS "-DEF:${ONNXRUNTIME_ROOT}/core/providers/tensorrt/symbols.def")
    else()
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 6e00339..0106222 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -1211,7 +1211,7 @@ function(onnxruntime_add_shared_library target_name)
+ endfunction()
+ 
+ function(onnxruntime_add_static_library target_name)
+-  add_library(${target_name} ${ARGN})
++  add_library(${target_name} STATIC ${ARGN})
+   onnxruntime_configure_target(${target_name})
+ endfunction()
+ 
+diff --git a/cmake/onnxruntime_graph.cmake b/cmake/onnxruntime_graph.cmake
+index 641761c..91e2871 100644
+--- a/cmake/onnxruntime_graph.cmake
++++ b/cmake/onnxruntime_graph.cmake
+@@ -82,7 +82,7 @@ if (onnxruntime_ENABLE_TRAINING OR onnxruntime_ENABLE_TRAINING_OPS)
+ endif()
+ 
+ onnxruntime_add_static_library(onnxruntime_graph ${onnxruntime_graph_lib_src})
+-add_dependencies(onnxruntime_graph onnx_proto flatbuffers::flatbuffers)
++target_link_libraries(onnxruntime_graph PRIVATE onnx onnx_proto ${PROTOBUF_LIB} flatbuffers::flatbuffers)
+ onnxruntime_add_include_to_target(onnxruntime_graph onnxruntime_common onnx onnx_proto ${PROTOBUF_LIB} flatbuffers::flatbuffers)
+ if(NOT MSVC)
+   target_compile_options(onnxruntime_graph PRIVATE "-Wno-parentheses")
+diff --git a/cmake/onnxruntime_opschema_lib.cmake b/cmake/onnxruntime_opschema_lib.cmake
+index 9966339..b135ef0 100644
+--- a/cmake/onnxruntime_opschema_lib.cmake
++++ b/cmake/onnxruntime_opschema_lib.cmake
+@@ -32,5 +32,5 @@ set (OPSCHEMA_LIB_DEPENDENCIES onnx onnx_proto ${PROTOBUF_LIB} flatbuffers::flat
+ # ${CMAKE_CURRENT_BINARY_DIR} is so that #include "onnxruntime_config.h" is found
+ target_include_directories(ort_opschema_lib PRIVATE ${ONNXRUNTIME_ROOT} ${ORTTRAINING_ROOT} ${CMAKE_CURRENT_BINARY_DIR})
+ onnxruntime_add_include_to_target(ort_opschema_lib onnxruntime_common onnx onnx_proto protobuf::libprotobuf flatbuffers::flatbuffers)
+-add_dependencies(ort_opschema_lib ${OPSCHEMA_LIB_DEPENDENCIES})
++target_link_libraries(ort_opschema_lib PRIVATE ${OPSCHEMA_LIB_DEPENDENCIES})
+ 
