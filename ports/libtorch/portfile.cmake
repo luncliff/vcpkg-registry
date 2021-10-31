@@ -122,6 +122,7 @@ vcpkg_cmake_configure(
         -DUSE_KINETO=OFF
         -DUSE_ROCM=OFF
         -DUSE_DEPLOY=OFF
+        -DUSE_BREAKPAD=OFF
     # OPTIONS_RELEASE
     #     -DBUILD_LIBTORCH_CPU_WITH_DEBUG=ON # Enable RelWithDebInfo
     MAYBE_UNUSED_VARIABLES
@@ -142,6 +143,7 @@ file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
                     "${CURRENT_PACKAGES_DIR}/include/c10/benchmark"
                     "${CURRENT_PACKAGES_DIR}/include/c10/test"
                     "${CURRENT_PACKAGES_DIR}/include/c10/cuda"
+                    "${CURRENT_PACKAGES_DIR}/include/c10d/quantization"
                     "${CURRENT_PACKAGES_DIR}/include/caffe2/ideep/operators/quantization"
                     "${CURRENT_PACKAGES_DIR}/include/caffe2/python"
                     "${CURRENT_PACKAGES_DIR}/include/caffe2/share/contrib/depthwise"
