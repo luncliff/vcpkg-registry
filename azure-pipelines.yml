@@ -107,10 +107,30 @@ stages:
         parameters:
           job_name: "libtorch"
           port: "libtorch"
+      - template: azure/jobs-linux.yml
+        parameters:
+          job_name: "libtorch_nnpack"
+          port: "libtorch"
+          features: "[xnnpack,qnnpack,nnpack]"
+      - template: azure/jobs-linux.yml
+        parameters:
+          job_name: "libtorch_fbgemm"
+          port: "libtorch"
+          features: "[xnnpack,fbgemm]"
+      - template: azure/jobs-linux.yml
+        parameters:
+          job_name: "libtorch_dist"
+          port: "libtorch"
+          features: "[xnnpack,dist]"
       - template: azure/jobs-osx.yml
         parameters:
           job_name: "libtorch"
           port: "libtorch"
+      - template: azure/jobs-osx.yml
+        parameters:
+          job_name: "libtorch_nnpack"
+          port: "libtorch"
+          features: "[xnnpack,qnnpack,nnpack]"
 
       - template: azure/jobs-windows.yml
         parameters:
