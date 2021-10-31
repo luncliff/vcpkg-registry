@@ -1,0 +1,82 @@
+diff --git a/aten/src/ATen/native/quantized/cpu/qembeddingbag_prepack.cpp b/aten/src/ATen/native/quantized/cpu/qembeddingbag_prepack.cpp
+index 614e274..b59a4d4 100644
+--- a/aten/src/ATen/native/quantized/cpu/qembeddingbag_prepack.cpp
++++ b/aten/src/ATen/native/quantized/cpu/qembeddingbag_prepack.cpp
+@@ -8,7 +8,9 @@
+ #include <torch/library.h>
+ 
+ #include <c10/util/irange.h>
+-
++#if defined(USE_FBGEMM)
++#include <fbgemm/QuantUtils.h>
++#endif
+ torch::class_<EmbeddingPackedParamsBase> register_embedding_params();
+ 
+ /*
+diff --git a/caffe2/onnx/onnxifi_graph_info.h b/caffe2/onnx/onnxifi_graph_info.h
+index 06c1ce4..67fe01d 100644
+--- a/caffe2/onnx/onnxifi_graph_info.h
++++ b/caffe2/onnx/onnxifi_graph_info.h
+@@ -7,7 +7,7 @@
+ 
+ #include "caffe2/core/logging.h"
+ #include "caffe2/opt/shape_info.h"
+-#include "foxi/onnxifi_loader.h"
++#include "onnx/onnxifi_loader.h"
+ 
+ namespace caffe2 {
+ namespace onnx {
+diff --git a/caffe2/onnx/onnxifi_init.h b/caffe2/onnx/onnxifi_init.h
+index 26ae914..02fbe94 100644
+--- a/caffe2/onnx/onnxifi_init.h
++++ b/caffe2/onnx/onnxifi_init.h
+@@ -1,6 +1,6 @@
+ #pragma once
+ 
+-#include "foxi/onnxifi_loader.h"
++#include "onnx/onnxifi_loader.h"
+ 
+ namespace caffe2 {
+ namespace onnx {
+diff --git a/caffe2/opt/onnxifi_op.cc b/caffe2/opt/onnxifi_op.cc
+index bf6005f..0885c6f 100644
+--- a/caffe2/opt/onnxifi_op.cc
++++ b/caffe2/opt/onnxifi_op.cc
+@@ -112,6 +112,7 @@ void copyDescriptor(
+     onnxTensorDescriptorV1* to) {
+   to->dataType = from->dataType;
+   to->buffer = from->buffer;
++
+   to->isOffline = from->isOffline;
+   to->quantizationParams = from->quantizationParams;
+   to->quantizationAxis = from->quantizationAxis;
+@@ -153,6 +154,7 @@ void BlobToTensorDescriptor(
+       blob->TypeName());
+   desc->tag = ONNXIFI_TAG_TENSOR_DESCRIPTOR_V1;
+   desc->memoryType = ONNXIFI_MEMORY_TYPE_CPU;
++
+   desc->isOffline = false;
+ 
+   if (is_int8tensor) {
+diff --git a/caffe2/opt/onnxifi_op.h b/caffe2/opt/onnxifi_op.h
+index 9e3aa80..de11512 100644
+--- a/caffe2/opt/onnxifi_op.h
++++ b/caffe2/opt/onnxifi_op.h
+@@ -306,7 +306,7 @@ class OnnxifiOp final : public Operator<Context> {
+       onnxGraph graph{nullptr};
+ 
+       static const uint64_t auxPropertiesListAOT[] = {
+-          ONNXIFI_OPTIMIZATION_AOT, ONNXIFI_GRAPH_PROPERTY_NONE};
++          ONNXIFI_OPTIMIZATION_LOW_DELAY, ONNXIFI_GRAPH_PROPERTY_NONE};
+       auto ret = lib_->onnxInitGraph(
+           backend,
+           use_glow_aot_ ? auxPropertiesListAOT : nullptr,
+@@ -318,7 +318,7 @@ class OnnxifiOp final : public Operator<Context> {
+           static_cast<uint32_t>(max_seq_size_),
+           defered_blob_reader);
+       if (ret != ONNXIFI_STATUS_SUCCESS) {
+-        if (ret == ONNXIFI_STATUS_FATAL_ERROR) {
++        if (ret == ONNXIFI_STATUS_INTERNAL_ERROR) {
+           C10_THROW_ERROR(
+               OnnxfiBackendSystemError, "Fatal error during onnxInitGraph");
+         } else {
