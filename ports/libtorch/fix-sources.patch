@@ -80,3 +80,16 @@ index 9e3aa80..de11512 100644
            C10_THROW_ERROR(
                OnnxfiBackendSystemError, "Fatal error during onnxInitGraph");
          } else {
+diff --git a/caffe2/opt/onnxifi_op.cc b/caffe2/opt/onnxifi_op.cc
+index 0885c6f..ad50265 100644
+--- a/caffe2/opt/onnxifi_op.cc
++++ b/caffe2/opt/onnxifi_op.cc
+@@ -626,8 +626,6 @@ string mapOnnxStatusToString(onnxStatus status) {
+       return "ONNXIFI_STATUS_BACKEND_UNAVAILABLE";
+     case ONNXIFI_STATUS_INTERNAL_ERROR:
+       return "ONNXIFI_STATUS_INTERNAL_ERROR";
+-    case ONNXIFI_STATUS_FATAL_ERROR:
+-      return "ONNXIFI_STATUS_FATAL_ERROR";
+     default:
+       return "ONNXIFI_STATUS_STRING_NOT_MAPPED";
+   }

@@ -20,7 +20,7 @@ jobs:
       vmImage: ubuntu-20.04
     timeoutInMinutes: "300"
     steps:
-      - powershell: sudo apt-get install -y libnuma-dev
+      - powershell: sudo apt-get install -y libnuma-dev nasm
         displayName: "Install APT packages"
       - powershell: pip install typing-extensions pybind11 numpy pyyaml
         displayName: "Install Python packages"
