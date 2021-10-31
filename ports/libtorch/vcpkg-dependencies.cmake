@@ -1,5 +1,6 @@
 # caffe2/core/macros.h.in
 set(CAFFE2_USE_GOOGLE_GLOG 1)
+# set(CAFFE2_FORCE_FALLBACK_CUDA_MPI 0)
 
 # aten/src/ATen/Config.h.in
 set(AT_POCKETFFT_ENABLED 0)
@@ -177,4 +178,25 @@ if(USE_TENSORPIPE)
   find_package(unofficial-libuv CONFIG REQUIRED) # unofficial::libuv::libuv
   find_package(tensorpipe CONFIG REQUIRED) # tensorpipe
   list(APPEND Caffe2_DEPENDENCY_LIBS unofficial::libuv::libuv tensorpipe)
+endif()
+
+if(USE_MPI)
+  find_package(MPI REQUIRED) # API package: libopenmpi-dev
+  if(NOT MPI_CXX_FOUND)
+    message(FATAL_ERROR "Failed to find MPI_CXX")
+  endif()
+  include_directories(SYSTEM ${MPI_CXX_INCLUDE_PATH})
+  list(APPEND Caffe2_DEPENDENCY_LIBS ${MPI_CXX_LIBRARIES})
+  list(APPEND CMAKE_EXE_LINKER_FLAGS ${MPI_CXX_LINK_FLAGS})
+
+  find_program(OMPI_INFO NAMES ompi_info HINTS ${MPI_CXX_LIBRARIES}/../bin)
+  if(OMPI_INFO)
+    execute_process(COMMAND ${OMPI_INFO} OUTPUT_VARIABLE _output)
+    if(_output MATCHES "smcuda")
+      message(STATUS "Found OpenMPI with CUDA support built.")
+    else()
+      message(WARNING "OpenMPI found, but it is not built with CUDA support.")
+      set(CAFFE2_FORCE_FALLBACK_CUDA_MPI 1)
+    endif()
+  endif()
 endif()
