@@ -1,3 +1,10 @@
+vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
+
+if("training" IN_LIST FEATURES)
+    if(VCPKG_TARGET_IS_LINUX)
+        message(WARNING "This feature requires 'libopenmpi-dev' package")
+    endif()
+endif()
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
@@ -14,6 +21,9 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         training onnxruntime_ENABLE_TRAINING
         training onnxruntime_ENABLE_TRAINING_OPS
+        cuda     onnxruntime_USE_CUDA
+        cuda     onnxruntime_USE_NCCL
+        tensorrt onnxruntime_USE_TENSORRT
 )
 
 vcpkg_cmake_configure(
@@ -21,13 +31,14 @@ vcpkg_cmake_configure(
     OPTIONS
         ${FEATURE_OPTIONS}
         -DBUILD_PKGCONFIG_FILES=ON
-        -Donnxruntime_PREFER_SYSTEM_LIB=ON
-        -Donnxruntime_USE_EXTENSIONS=OFF
-        -Donnxruntime_USE_MPI=${VCPKG_TARGET_IS_LINUX}
+        -Donnxruntime_BUILD_SHARED_LIB=ON
         -Donnxruntime_BUILD_UNIT_TESTS=OFF
-        -Donnxruntime_ENABLE_PYTHON=OFF
+        -Donnxruntime_PREFER_SYSTEM_LIB=ON
         -Donnxruntime_USE_FULL_PROTOBUF=ON
         -Donnxruntime_USE_PREINSTALLED_EIGEN=ON
+        -Donnxruntime_USE_EXTENSIONS=OFF
+        -Donnxruntime_USE_MPI=${VCPKG_TARGET_IS_LINUX}
+        -Donnxruntime_ENABLE_PYTHON=OFF
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
@@ -36,7 +47,6 @@ vcpkg_cmake_configure(
 )
 vcpkg_cmake_install()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
-vcpkg_cmake_config_fixup(CONFIG_PATH "share/${PORT}")
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 

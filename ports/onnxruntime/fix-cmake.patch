@@ -567,3 +567,75 @@ index bd33b34..08cf656 100644
  
  if(NOT WIN32)
    target_include_directories(onnxruntime_common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/external/nsync/public")
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 7df5b67..6e00339 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -1795,7 +1795,8 @@ if(WIN32)
+   list(APPEND onnxruntime_EXTERNAL_LIBRARIES ${SYS_PATH_LIB} Shlwapi)
+   list(APPEND onnxruntime_EXTERNAL_LIBRARIES debug Dbghelp)
+ else()
+-  list(APPEND onnxruntime_EXTERNAL_LIBRARIES nsync_cpp)
++  find_library(NSYNC_LIBPATH NAMES nsync nsync_cpp)
++  list(APPEND onnxruntime_EXTERNAL_LIBRARIES ${NSYNC_LIBPATH})
+   list(APPEND onnxruntime_EXTERNAL_LIBRARIES ${CMAKE_DL_LIBS} Threads::Threads)
+ endif()
+ 
+diff --git a/cmake/onnxruntime_common.cmake b/cmake/onnxruntime_common.cmake
+index 08cf656..e0e11bc 100644
+--- a/cmake/onnxruntime_common.cmake
++++ b/cmake/onnxruntime_common.cmake
+@@ -214,7 +214,7 @@ if (ARM64 OR ARM OR X86 OR X64 OR X86_64)
+     # Its functionality in detecting x86 cpu features are lacking, so is support for Windows.
+ 
+     target_include_directories(onnxruntime_common PRIVATE ${PYTORCH_CPUINFO_INCLUDE_DIR})
+-    target_link_libraries(onnxruntime_common cpuinfo)
+-    list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo clog)
++    target_link_libraries(onnxruntime_common unofficial::cpuinfo::cpuinfo)
++    list(APPEND onnxruntime_EXTERNAL_LIBRARIES unofficial::cpuinfo::clog unofficial::cpuinfo::cpuinfo)
+   endif()
+ endif()
+diff --git a/cmake/onnxruntime_providers.cmake b/cmake/onnxruntime_providers.cmake
+index 0591216..c271c94 100644
+--- a/cmake/onnxruntime_providers.cmake
++++ b/cmake/onnxruntime_providers.cmake
+@@ -416,10 +416,10 @@ if (onnxruntime_USE_CUDA)
+ 
+   if(APPLE)
+     set_property(TARGET onnxruntime_providers_cuda APPEND_STRING PROPERTY LINK_FLAGS "-Xlinker -exported_symbols_list ${ONNXRUNTIME_ROOT}/core/providers/cuda/exported_symbols.lst")
+-    target_link_libraries(onnxruntime_providers_cuda PRIVATE nsync_cpp)
++    target_link_libraries(onnxruntime_providers_cuda PRIVATE ${NSYNC_LIBPATH})
+   elseif(UNIX)
+     set_property(TARGET onnxruntime_providers_cuda APPEND_STRING PROPERTY LINK_FLAGS "-Xlinker --version-script=${ONNXRUNTIME_ROOT}/core/providers/cuda/version_script.lds -Xlinker --gc-sections")
+-    target_link_libraries(onnxruntime_providers_cuda PRIVATE nsync_cpp)
++    target_link_libraries(onnxruntime_providers_cuda PRIVATE ${NSYNC_LIBPATH})
+   elseif(WIN32)
+     set_property(TARGET onnxruntime_providers_cuda APPEND_STRING PROPERTY LINK_FLAGS "-DEF:${ONNXRUNTIME_ROOT}/core/providers/cuda/symbols.def")
+   else()
+@@ -464,10 +464,10 @@ if (onnxruntime_USE_DNNL)
+       INSTALL_RPATH "@loader_path"
+       BUILD_WITH_INSTALL_RPATH TRUE
+       INSTALL_RPATH_USE_LINK_PATH FALSE)
+-    target_link_libraries(onnxruntime_providers_dnnl PRIVATE nsync_cpp)
++    target_link_libraries(onnxruntime_providers_dnnl PRIVATE ${NSYNC_LIBPATH})
+   elseif(UNIX)
+     set_property(TARGET onnxruntime_providers_dnnl APPEND_STRING PROPERTY LINK_FLAGS "-Xlinker --version-script=${ONNXRUNTIME_ROOT}/core/providers/dnnl/version_script.lds -Xlinker --gc-sections -Xlinker -rpath=\$ORIGIN")
+-    target_link_libraries(onnxruntime_providers_dnnl PRIVATE nsync_cpp)
++    target_link_libraries(onnxruntime_providers_dnnl PRIVATE ${NSYNC_LIBPATH})
+   elseif(WIN32)
+     set_property(TARGET onnxruntime_providers_dnnl APPEND_STRING PROPERTY LINK_FLAGS "-DEF:${ONNXRUNTIME_ROOT}/core/providers/dnnl/symbols.def")
+   else()
+@@ -554,11 +554,11 @@ if (onnxruntime_USE_TENSORRT)
+ 
+   if(APPLE)
+     set_property(TARGET onnxruntime_providers_tensorrt APPEND_STRING PROPERTY LINK_FLAGS "-Xlinker -exported_symbols_list ${ONNXRUNTIME_ROOT}/core/providers/tensorrt/exported_symbols.lst")
+-    target_link_libraries(onnxruntime_providers_tensorrt PRIVATE nsync_cpp)
++    target_link_libraries(onnxruntime_providers_tensorrt PRIVATE ${NSYNC_LIBPATH})
+   elseif(UNIX)
+     set_property(TARGET onnxruntime_providers_tensorrt APPEND_STRING PROPERTY COMPILE_FLAGS "-Wno-deprecated-declarations")
+     set_property(TARGET onnxruntime_providers_tensorrt APPEND_STRING PROPERTY LINK_FLAGS "-Xlinker --version-script=${ONNXRUNTIME_ROOT}/core/providers/tensorrt/version_script.lds -Xlinker --gc-sections")
+-    target_link_libraries(onnxruntime_providers_tensorrt PRIVATE nsync_cpp stdc++fs)
++    target_link_libraries(onnxruntime_providers_tensorrt PRIVATE ${NSYNC_LIBPATH} stdc++fs)
+   elseif(WIN32)
+     set_property(TARGET onnxruntime_providers_tensorrt APPEND_STRING PROPERTY LINK_FLAGS "-DEF:${ONNXRUNTIME_ROOT}/core/providers/tensorrt/symbols.def")
+   else()

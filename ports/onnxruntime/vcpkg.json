@@ -3,7 +3,7 @@
   "version-semver": "1.9.1",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "www.onnxruntime.ai",
-  "supports": "windows & linux",
+  "supports": "(windows & !static) & linux",
   "dependencies": [
     "zlib",
     "eigen3",
@@ -30,21 +30,17 @@
     {
       "name": "vcpkg-cmake",
       "host": true
-    },
-    {
-      "name": "vcpkg-cmake-config",
-      "host": true
     }
   ],
-  "default-features": [
-    "inference"
-  ],
   "features": {
-    "inference": {
-      "description": "Turn on build options for ML inference"
-    },
     "training": {
       "description": "Turn on build options for ML training"
+    },
+    "cuda": {
+      "description": "Build with CUDA/NCCL support"
+    },
+    "tensrorrt": {
+      "description": "Build with NVIDIA TensorRT support"
     }
   }
 }
