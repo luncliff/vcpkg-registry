@@ -138,9 +138,9 @@ stages:
           features: "[dist,leveldb,zstd]"
       - template: azure/jobs-osx.yml
         parameters:
-          job_name: "libtorch_dist"
+          job_name: "libtorch_opencv"
           port: "libtorch"
-          features: "[tbb,opencv3,opencl]"
+          features: "[tbb,opencv3]"
 
       - template: azure/jobs-windows.yml
         parameters:
