@@ -106,7 +106,9 @@ endif()
 
 if(USE_LMDB)
   find_package(LMDB) # from cmake/Modules/FindLMDB.cmake
-  if(NOT LMDB_FOUND)
+  if(LMDB_FOUND)
+    list(APPEND Caffe2_DEPENDENCY_LIBS ${LMDB_LIBRARIES})
+  else()
     find_package(lmdb CONFIG REQUIRED) # lmdb
     list(APPEND Caffe2_DEPENDENCY_LIBS lmdb)
   endif()
