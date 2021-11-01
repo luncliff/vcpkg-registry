@@ -74,12 +74,6 @@
         "fbgemm"
       ]
     },
-    "fftw3": {
-      "description": "Build with FFTW (Fastest Fourier Transform in the West)",
-      "dependencies": [
-        "fftw3"
-      ]
-    },
     "leveldb": {
       "description": "Build with LevelDB",
       "dependencies": [

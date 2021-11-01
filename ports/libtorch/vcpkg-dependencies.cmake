@@ -1,10 +1,12 @@
 # caffe2/core/macros.h.in
 set(CAFFE2_USE_GOOGLE_GLOG 1)
+set(CAFFE2_USE_LITE_PROTO 0)
 # set(CAFFE2_FORCE_FALLBACK_CUDA_MPI 0)
 
 # aten/src/ATen/Config.h.in
 set(AT_POCKETFFT_ENABLED 0)
 set(AT_MKL_ENABLED 0)
+set(AT_FFTW_ENABLED 0)
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 if(BUILD_PYTHON)
@@ -203,4 +205,23 @@ if(USE_MPI)
       set(CAFFE2_FORCE_FALLBACK_CUDA_MPI 1)
     endif()
   endif()
+endif()
+
+if(USE_OPENCV)
+  find_package(OpenCV 4 COMPONENTS core highgui imgproc imgcodecs optflow videoio video)
+  if(NOT OpenCV_FOUND)
+    find_package(OpenCV 3 REQUIRED COMPONENTS core highgui imgproc imgcodecs videoio video)
+  endif()
+  include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
+  list(APPEND Caffe2_DEPENDENCY_LIBS ${OpenCV_LIBS})
+  if(MSVC AND USE_CUDA)
+    list(APPEND Caffe2_CUDA_DEPENDENCY_LIBS ${OpenCV_LIBS})
+  endif()
+endif()
+
+if(USE_OPENCL)
+  find_package(OpenCL REQUIRED)
+  include_directories(SYSTEM ${OpenCL_INCLUDE_DIRS})
+  include_directories(${CMAKE_CURRENT_LIST_DIR}/../caffe2/contrib/opencl)
+  list(APPEND Caffe2_DEPENDENCY_LIBS ${OpenCL_LIBRARIES})
 endif()

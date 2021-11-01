@@ -23,8 +23,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     python  USE_NUMPY
     python  USE_SYSTEM_BIND11
     zstd    USE_ZSTD
-    fftw3   USE_FFTW
-    fftw3   AT_FFTW_ENABLED
     mkl     USE_MKLDNN
     mkl     USE_MKLDNN_CBLAS
     mkl     CAFFE2_USE_MKL
@@ -112,6 +110,7 @@ vcpkg_cmake_configure(
         -DUSE_MPI=${VCPKG_TARGET_IS_LINUX} # Linux package `libopenmpi-dev`
         -DUSE_METAL=${VCPKG_TARGET_IS_OSX}
         -DUSE_PYTORCH_METAL=${VCPKG_TARGET_IS_OSX}
+        -DUSE_PYTORCH_METAL_EXPORT=${VCPKG_TARGET_IS_OSX}
         -DUSE_BLAS=ON # Eigen, MKL, or Accelerate
         -DUSE_GFLAGS=ON
         -DUSE_GLOG=ON
@@ -124,11 +123,13 @@ vcpkg_cmake_configure(
         -DUSE_ROCM=OFF
         -DUSE_DEPLOY=OFF
         -DUSE_BREAKPAD=OFF
+        -DUSE_FFTW=OFF
     # OPTIONS_RELEASE
     #     -DBUILD_LIBTORCH_CPU_WITH_DEBUG=ON # Enable RelWithDebInfo
     MAYBE_UNUSED_VARIABLES
         USE_SYSTEM_BIND11
         USE_VULKAN_WRAPPER
+        MKLDNN_CPU_RUNTIME
 )
 vcpkg_cmake_build(TARGET __aten_op_header_gen) # explicit codegen is required
 vcpkg_cmake_install()
