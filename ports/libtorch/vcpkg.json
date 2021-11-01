@@ -93,12 +93,6 @@
         "nnpack"
       ]
     },
-    "opencl": {
-      "description": "Build with OpenCL",
-      "dependencies": [
-        "opencl"
-      ]
-    },
     "opencv3": {
       "description": "Build with OpenCV 3.x",
       "dependencies": [

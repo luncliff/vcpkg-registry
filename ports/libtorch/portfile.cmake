@@ -23,6 +23,8 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     python  USE_NUMPY
     python  USE_SYSTEM_BIND11
     zstd    USE_ZSTD
+    fftw3   USE_FFTW
+    fftw3   AT_FFTW_ENABLED
     mkl     USE_MKLDNN
     mkl     USE_MKLDNN_CBLAS
     mkl     CAFFE2_USE_MKL
