@@ -118,7 +118,9 @@ if(USE_LEVELDB)
   find_package(Snappy CONFIG REQUIRED) # Snappy::snappy
   list(APPEND Caffe2_DEPENDENCY_LIBS Snappy::snappy)
   find_package(LevelDB) # from cmake/Modules/FindLevelDB.cmake
-  if(NOT LevelDB_FOUND)
+  if(LevelDB_FOUND)
+    list(APPEND Caffe2_DEPENDENCY_LIBS ${LevelDB_LIBRARIES})
+  else()
     find_package(leveldb CONFIG REQUIRED) # leveldb::leveldb
     list(APPEND Caffe2_DEPENDENCY_LIBS leveldb::leveldb)
   endif()
