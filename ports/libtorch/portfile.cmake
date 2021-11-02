@@ -3,26 +3,25 @@ vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/pytorch
-    REF v1.8.1
-    SHA512 33f5fe813641bdcdcbf5cde4bf8eb5af7fc6f8b3ab37067b0ec10eebda56cdca0c1b42053448ebdd2ab959adb3e9532646324a72729562f8e253229534b39146
+    REF v1.10.0
+    SHA512 92b70e6170a7f173c4a9cb29f6cec6dfa598587aa9cf6a620ec861b95da6ea555cbc7285914c0dab6cfc8af320fad4999be4a788acc1f15140664a67ad9dc35d
     HEAD_REF master
     PATCHES
-        fix-cmake-targets.patch
-        # todo: Minimize these patches
-        # Editing ${SOURCE_PATH}/cmake/Dependencies.cmake makes HORRIBLE readability...
-        # Add build option check to deal with targets from other packages
-        fix-cmake-dependencies.patch
-        # some sources breaks the build ...
-        change-foxi-sources.patch
-        change-protobuf-sources.patch
+        fix-cmake.patch
+        fix-sources.patch
 )
-file(REMOVE_RECURSE "${SOURCE_PATH}/caffe2/core/macros.h") # The file is dummy. We must use generated header files
+# The file is dummy. We must use generated header files
+file(REMOVE_RECURSE "${SOURCE_PATH}/caffe2/core/macros.h") 
+
+# Editing ${SOURCE_PATH}/cmake/Dependencies.cmake makes HORRIBLE readability...
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/vcpkg-dependencies.cmake DESTINATION ${SOURCE_PATH}/cmake)
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
   FEATURES
     dist    USE_DISTRIBUTED # MPI, Gloo, TensorPipe
     python  BUILD_PYTHON # requires: pybind11, numpy, typing-extensions, pyyaml
     python  USE_NUMPY
+    python  USE_SYSTEM_BIND11
     zstd    USE_ZSTD
     fftw3   USE_FFTW
     fftw3   AT_FFTW_ENABLED
@@ -110,8 +109,10 @@ vcpkg_cmake_configure(
         -DUSE_SYSTEM_LIBS=ON
         -DUSE_NUMA=${VCPKG_TARGET_IS_LINUX} # Linux package `libnuma-dev`
         -DUSE_GLOO=${VCPKG_TARGET_IS_LINUX}
+        -DUSE_MPI=${VCPKG_TARGET_IS_LINUX} # Linux package `libopenmpi-dev`
         -DUSE_METAL=${VCPKG_TARGET_IS_OSX}
         -DUSE_PYTORCH_METAL=${VCPKG_TARGET_IS_OSX}
+        -DUSE_PYTORCH_METAL_EXPORT=${VCPKG_TARGET_IS_OSX}
         -DUSE_BLAS=ON # Eigen, MKL, or Accelerate
         -DUSE_GFLAGS=ON
         -DUSE_GLOG=ON
@@ -122,6 +123,15 @@ vcpkg_cmake_configure(
         -DUSE_PYTORCH_QNNPACK=OFF
         -DUSE_KINETO=OFF
         -DUSE_ROCM=OFF
+        -DUSE_DEPLOY=OFF
+        -DUSE_BREAKPAD=OFF
+        -DUSE_FFTW=OFF
+    # OPTIONS_RELEASE
+    #     -DBUILD_LIBTORCH_CPU_WITH_DEBUG=ON # Enable RelWithDebInfo
+    MAYBE_UNUSED_VARIABLES
+        USE_SYSTEM_BIND11
+        USE_VULKAN_WRAPPER
+        MKLDNN_CPU_RUNTIME
 )
 vcpkg_cmake_build(TARGET __aten_op_header_gen) # explicit codegen is required
 vcpkg_cmake_install()
@@ -137,6 +147,7 @@ file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
                     "${CURRENT_PACKAGES_DIR}/include/c10/benchmark"
                     "${CURRENT_PACKAGES_DIR}/include/c10/test"
                     "${CURRENT_PACKAGES_DIR}/include/c10/cuda"
+                    "${CURRENT_PACKAGES_DIR}/include/c10d/quantization"
                     "${CURRENT_PACKAGES_DIR}/include/caffe2/ideep/operators/quantization"
                     "${CURRENT_PACKAGES_DIR}/include/caffe2/python"
                     "${CURRENT_PACKAGES_DIR}/include/caffe2/share/contrib/depthwise"
