@@ -76,20 +76,20 @@ else()
 
 endif()
 message(STATUS "Found NDK: ${NDK_DIR_NAME} (${NDK_MAJOR_VERSION}.${NDK_MINOR_VERSION})")
+string(COMPARE GREATER ${NDK_MAJOR_VERSION} 21 NDK_VERSION_OVER_21)
 unset(NDK_DIR_NAME)
 
 # Provide some paths to help using Vulkan SDK
-string(COMPARE GREATER ${NDK_MAJOR_VERSION} 21 NDK_VERSION_OVER_21)
+set(ENV{VULKAN_SDK} $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/${NDK_HOST_TAG}/sysroot/usr)
+message(STATUS "Using ENV{VULKAN_SDK}: $ENV{VULKAN_SDK}")
 if(NDK_VERSION_OVER_21)
-    set(ENV{VULKAN_SDK} $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/${NDK_HOST_TAG}/sysroot/usr)
-    message(STATUS "Using ENV{VULKAN_SDK}: $ENV{VULKAN_SDK}")
     # If your API level is 30, libvulkan.so is at 
     #  $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/30
     find_file(NDK_VULKAN_LIB_PATH NAME libvulkan.so PATHS $ENV{VULKAN_SDK}/lib/x86_64-linux-android/${NDK_API_LEVEL})
 else()
     # If your API level is 30, libvulkan.so is at 
     #  $ENV{ANDROID_NDK_HOME}/platforms/android-30/arch-arm64/usr/lib
-    find_file(NDK_VULKAN_LIB_PATH NAME vulkan PATHS $ENV{ANDROID_NDK_HOME}/platforms/android-${NDK_API_LEVEL}/arch-${VCPKG_TARGET_ARCHITECTURE}/usr/lib/)
+    find_file(NDK_VULKAN_LIB_PATH NAME libvulkan.so PATHS $ENV{ANDROID_NDK_HOME}/platforms/android-${NDK_API_LEVEL}/arch-${VCPKG_TARGET_ARCHITECTURE}/usr/lib/)
 endif()
 if(NDK_VULKAN_LIB_PATH)
     message(STATUS "Found libvulkan.so: ${NDK_VULKAN_LIB_PATH}")
