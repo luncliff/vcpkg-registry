@@ -1,0 +1,47 @@
+{
+  "name": "onnxruntime",
+  "version-semver": "1.9.1",
+  "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
+  "homepage": "www.onnxruntime.ai",
+  "supports": "(windows & !static) | linux | osx",
+  "dependencies": [
+    "zlib",
+    "eigen3",
+    "date",
+    "nsync",
+    "optional-lite",
+    "boost-mp11",
+    "boost-config",
+    "onnx",
+    "protobuf",
+    "flatbuffers",
+    "nlohmann-json",
+    "cpuinfo",
+    "cxxopts",
+    "re2",
+    "safeint",
+    {
+      "name": "nsync",
+      "platform": "linux"
+    },
+    {
+      "name": "wil",
+      "platform": "windows"
+    },
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ],
+  "features": {
+    "training": {
+      "description": "Turn on build options for ML training"
+    },
+    "cuda": {
+      "description": "Build with CUDA/NCCL support"
+    },
+    "tensrorrt": {
+      "description": "Build with NVIDIA TensorRT support"
+    }
+  }
+}
