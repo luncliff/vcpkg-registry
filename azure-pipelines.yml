@@ -154,7 +154,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-uwp"
             inputs:
-              vcpkgArguments: "farmhash openssl3 zlib-ng"
+              vcpkgArguments: "openssl3 zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-uwp
@@ -190,21 +190,21 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-android"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 xnnpack zlib-ng"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-android
           - task: run-vcpkg@0
             displayName: "x64-android"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 xnnpack zlib-ng"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-android
           - task: run-vcpkg@0
             displayName: "arm-android"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 xnnpack zlib-ng"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm-android
@@ -243,14 +243,14 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 zlib-ng"
+              vcpkgArguments: "cpuinfo openssl3 zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
           - task: run-vcpkg@0
             displayName: "arm64-osx"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 zlib-ng"
+              vcpkgArguments: "cpuinfo openssl3 zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-osx
