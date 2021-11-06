@@ -119,12 +119,12 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: x86-windows
           - task: run-vcpkg@0
-              displayName: "arm64-windows"
-              inputs:
-                vcpkgArguments: "zlib-ng openssl3"
-                vcpkgGitCommitId: $(vcpkg.commit)
-              env:
-                VCPKG_DEFAULT_TRIPLET: arm64-windows
+            displayName: "arm64-windows"
+            inputs:
+              vcpkgArguments: "zlib-ng openssl3"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-windows
 
       - job: "port_uwp"
         displayName: "Windows(UWP)"
