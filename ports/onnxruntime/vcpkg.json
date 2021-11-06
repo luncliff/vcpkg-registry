@@ -3,11 +3,12 @@
   "version-semver": "1.9.1",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "www.onnxruntime.ai",
-  "supports": "(windows & !static) | linux",
+  "supports": "(windows & !static) | linux | osx",
   "dependencies": [
     "zlib",
     "eigen3",
     "date",
+    "nsync",
     "optional-lite",
     "boost-mp11",
     "boost-config",
