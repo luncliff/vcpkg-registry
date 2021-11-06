@@ -16,7 +16,7 @@ Customized triplet to build NDK(x86_64)
 Some varialbe to help [FindVulkan.cmake](https://cmake.org/cmake/help/latest/module/FindVulkan.html) in NDK
 
 * `ENV{VULKAN_SDK}`: /path/to/sysroot/usr
-* `NDK_VULKAN_LIB_PATH`: result of `find_file` for `libvulkan.so`
+* `NDK_VULKAN_LIB_PATH`, `Vulkan_LIBRARY`: result of `find_file` for `libvulkan.so`
 
 ### See Also
 
@@ -93,6 +93,7 @@ else()
 endif()
 if(NDK_VULKAN_LIB_PATH)
     message(STATUS "Found libvulkan.so: ${NDK_VULKAN_LIB_PATH}")
+    set(Vulkan_LIBRARY ${NDK_VULKAN_LIB_PATH})
 endif()
 
 message(STATUS) # trailing LF for readability
