@@ -39,15 +39,15 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: x64-windows
           VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
 
-      - task: run-vcpkg@0
-        displayName: "x86-windows: ${{ parameters.port }}"
-        inputs:
-          vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae"
-          vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
-        env:
-          VCPKG_DEFAULT_TRIPLET: x86-windows
-          VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
-        condition: succeeded()
+      # - task: run-vcpkg@0
+      #   displayName: "x86-windows: ${{ parameters.port }}"
+      #   inputs:
+      #     vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae"
+      #     vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
+      #   env:
+      #     VCPKG_DEFAULT_TRIPLET: x86-windows
+      #     VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+      #   condition: succeeded()
 
       - task: CopyFiles@2
         inputs:
