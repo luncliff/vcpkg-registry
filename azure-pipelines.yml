@@ -30,65 +30,30 @@ stages:
   - stage: "Triplets"
     # condition: startsWith(variables['build.sourceBranch'], 'refs/heads/triplet/')
     jobs:
-      - job: "arm64_android"
+      - job: "Android"
         pool:
           vmImage: ubuntu-20.04
         steps:
           - template: azure/run-with-overlay-triplet.yml
             parameters:
-              port: "ijg-libjpeg"
+              port: "vulkan-android-test"
               triplet: "arm64-android"
           - template: azure/run-with-overlay-triplet.yml
             parameters:
-              port: "zlib-ng"
-              features: "[core]"
-              triplet: "arm64-android"
-      - job: "x64_android"
-        pool:
-          vmImage: ubuntu-20.04
-        steps:
-          - template: azure/run-with-overlay-triplet.yml
-            parameters:
-              port: "ijg-libjpeg"
+              port: "vulkan-android-test"
               triplet: "x64-android"
           - template: azure/run-with-overlay-triplet.yml
             parameters:
-              port: "zlib-ng"
-              features: "[core]"
-              triplet: "x64-android"
-      - job: "arm_android"
-        pool:
-          vmImage: ubuntu-20.04
-        steps:
-          - template: azure/run-with-overlay-triplet.yml
-            parameters:
-              port: "ijg-libjpeg"
+              port: "vulkan-android-test"
               triplet: "arm-android"
-          - template: azure/run-with-overlay-triplet.yml
-            parameters:
-              port: "zlib-ng"
-              features: "[core]"
-              triplet: "arm-android"
-      - job: "x64_ios_simulator"
+      - job: "ios_simulator"
         pool:
           vmImage: macOS-10.15
         steps:
           - template: azure/run-with-overlay-triplet.yml
             parameters:
-              port: "ijg-libjpeg"
-              triplet: "x64-ios-simulator"
-          - template: azure/run-with-overlay-triplet.yml
-            parameters:
               port: "zlib-ng"
               features: "[core]"
-              triplet: "x64-ios-simulator"
-      - job: "arm64_ios_simulator"
-        pool:
-          vmImage: macOS-11
-        steps:
-          - template: azure/run-with-overlay-triplet.yml
-            parameters:
-              port: "ijg-libjpeg"
               triplet: "x64-ios-simulator"
           - template: azure/run-with-overlay-triplet.yml
             parameters:
