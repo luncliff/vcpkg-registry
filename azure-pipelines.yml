@@ -25,41 +25,61 @@ variables:
     value: "true"
   - name: VCPKG_FEATURE_FLAGS
     value: "binarycaching,manifest"
+  - name: VCPKG_OVERLAY_PORTS
+    value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
 
 stages:
   - stage: "Triplets"
     # condition: startsWith(variables['build.sourceBranch'], 'refs/heads/triplet/')
     jobs:
-      - job: "Android"
+      - job: "triplet_android"
+        displayName: "Android"
         pool:
           vmImage: ubuntu-20.04
+        variables:
+          - name: VCPKG_OVERLAY_TRIPLETS
+            value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
         steps:
-          - template: azure/run-with-overlay-triplet.yml
-            parameters:
-              port: "vulkan-android-test"
-              triplet: "arm64-android"
-          - template: azure/run-with-overlay-triplet.yml
-            parameters:
-              port: "vulkan-android-test"
-              triplet: "x64-android"
-          - template: azure/run-with-overlay-triplet.yml
-            parameters:
-              port: "vulkan-android-test"
-              triplet: "arm-android"
-      - job: "ios_simulator"
+          - task: run-vcpkg@0
+            displayName: "arm64-android: vulkan-android-test"
+            inputs:
+              vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
+              vcpkgArguments: "vulkan-android-test"
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-android # --triplet ${triplet}
+          - task: run-vcpkg@0
+            displayName: "x64-android: vulkan-android-test"
+            inputs:
+              vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
+              vcpkgArguments: "vulkan-android-test"
+            env:
+              VCPKG_DEFAULT_TRIPLET: x64-android
+          - task: run-vcpkg@0
+            displayName: "arm-android: vulkan-android-test"
+            inputs:
+              vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
+              vcpkgArguments: "vulkan-android-test"
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm-android
+      - job: "triplet_ios_simulator"
+        displayName: "iOS Simulator"
         pool:
-          vmImage: macOS-10.15
+          vmImage: macOS-11
         steps:
-          - template: azure/run-with-overlay-triplet.yml
-            parameters:
-              port: "zlib-ng"
-              features: "[core]"
-              triplet: "x64-ios-simulator"
-          - template: azure/run-with-overlay-triplet.yml
-            parameters:
-              port: "zlib-ng"
-              features: "[core]"
-              triplet: "x64-ios-simulator"
+          - task: run-vcpkg@0
+            displayName: "arm64-ios-simulator: zlib-ng"
+            inputs:
+              vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
+              vcpkgArguments: "zlib-ng --debug"
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
+          - task: run-vcpkg@0
+            displayName: "x64-ios-simulator: zlib-ng"
+            inputs:
+              vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
+              vcpkgArguments: "zlib-ng --debug"
+            env:
+              VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
 
   - stage: "Ports" # Check build status of the ports
     jobs:
