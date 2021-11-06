@@ -42,6 +42,8 @@ execute_process(
 )
 message(STATUS "Detected SDK: ${VCPKG_OSX_SYSROOT}")
 
-set(VCPKG_CMAKE_SYSTEM_VERSION 11.0) 
+if(NOT DEFINED VCPKG_CMAKE_SYSTEM_VERSION)
+    set(VCPKG_CMAKE_SYSTEM_VERSION 11.0) 
+endif()
 set(VCPKG_CXX_FLAGS "-mios-simulator-version-min=${VCPKG_CMAKE_SYSTEM_VERSION}")
 set(VCPKG_C_FLAGS "${VCPKG_CXX_FLAGS}")

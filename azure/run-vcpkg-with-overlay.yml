@@ -17,7 +17,7 @@ steps:
   - task: run-vcpkg@0
     displayName: "${{ parameters.triplet }}: ${{ parameters.port }}"
     inputs:
-      vcpkgGitCommitId: "2a31089e777fc187f1cc05338250b8e1810cfb52" # mainstream 2021-10-02
+      vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
       vcpkgArguments: "${{ parameters.port }}" # vcpkg install ${port} ...
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ parameters.triplet }} # --triplet ${triplet}

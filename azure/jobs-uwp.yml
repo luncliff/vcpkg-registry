@@ -29,7 +29,7 @@ jobs:
       - task: run-vcpkg@0
         displayName: "x64-uwp: ${{ parameters.port }}"
         inputs:
-          vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
+          vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
           vcpkgArguments: "${{ parameters.port }}"
         env:
           VCPKG_DEFAULT_TRIPLET: x64-uwp
@@ -38,7 +38,7 @@ jobs:
       - task: run-vcpkg@0
         displayName: "arm64-uwp: ${{ parameters.port }}"
         inputs:
-          vcpkgGitCommitId: "a875d756749fd441305b458523df671e8f2e6cae" # mainstream 2021-10-28
+          vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
           vcpkgArguments: "${{ parameters.port }}"
         env:
           VCPKG_DEFAULT_TRIPLET: arm64-uwp
