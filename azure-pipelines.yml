@@ -21,12 +21,14 @@ schedules:
         - main
 
 variables:
+  - name: vcpkg.commit
+    value: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
+  - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
+    value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
   - name: VCPKG_DISABLE_METRICS
     value: "true"
   - name: VCPKG_FEATURE_FLAGS
     value: "binarycaching,manifest"
-  - name: VCPKG_OVERLAY_PORTS
-    value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
 
 stages:
   - stage: "Triplets"
@@ -69,15 +71,15 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-ios-simulator: zlib-ng"
             inputs:
-              vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
               vcpkgArguments: "zlib-ng --debug"
+              vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
           - task: run-vcpkg@0
             displayName: "x64-ios-simulator: zlib-ng"
             inputs:
-              vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
               vcpkgArguments: "zlib-ng --debug"
+              vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
 
@@ -87,6 +89,167 @@ stages:
         parameters:
           job_name: "vcpkg_host_python3"
           port: "vcpkg-host-python3"
+
+      - job: "port_windows"
+        displayName: "Windows"
+        pool:
+          vmImage: windows-2019
+        timeoutInMinutes: "300"
+        steps:
+          - task: UsePythonVersion@0
+            displayName: "Setup: Python 3.9"
+            inputs:
+              versionSpec: "3.9"
+              addToPath: true
+              architecture: "x64"
+          - powershell: pip install typing-extensions pybind11 numpy pyyaml
+            displayName: "Install Python packages"
+          - task: run-vcpkg@0
+            displayName: "x64-windows"
+            inputs:
+              vcpkgArguments: "farmhash onnx onnxruntime openssl3 tensorflow-lite libdispatch zlib-ng"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: x64-windows
+          - task: run-vcpkg@0
+            displayName: "x86-windows"
+            inputs:
+              vcpkgArguments: "farmhash onnx onnxruntime openssl3 tensorflow-lite libdispatch zlib-ng"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: x86-windows
+          - task: run-vcpkg@0
+              displayName: "arm64-windows"
+              inputs:
+                vcpkgArguments: "zlib-ng openssl3"
+                vcpkgGitCommitId: $(vcpkg.commit)
+              env:
+                VCPKG_DEFAULT_TRIPLET: arm64-windows
+
+      - job: "port_uwp"
+        displayName: "Windows(UWP)"
+        pool:
+          vmImage: windows-2019
+        timeoutInMinutes: "300"
+        steps:
+          - task: UsePythonVersion@0
+            displayName: "Setup: Python 3.9"
+            inputs:
+              versionSpec: "3.9"
+              addToPath: true
+              architecture: "x64"
+          - powershell: pip install typing-extensions pybind11 numpy pyyaml
+            displayName: "Install Python packages"
+          - task: run-vcpkg@0
+            displayName: "x64-uwp"
+            inputs:
+              vcpkgArguments: "farmhash openssl3 zlib-ng"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: x64-uwp
+          - task: run-vcpkg@0
+            displayName: "arm64-uwp"
+            inputs:
+              vcpkgArguments: "farmhash openssl3 zlib-ng"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-uwp
+
+      - job: "port_linux"
+        displayName: "Linux"
+        pool:
+          vmImage: ubuntu-20.04
+        timeoutInMinutes: "300"
+        steps:
+          - powershell: sudo apt-get install -y libnuma-dev libopenmpi-dev nasm
+            displayName: "Install APT packages"
+          - powershell: pip install typing-extensions pybind11 numpy pyyaml
+            displayName: "Install Python packages"
+          - task: run-vcpkg@0
+            displayName: "x64-linux"
+            inputs:
+              vcpkgArguments: "cpuinfo farmhash onnx onnxruntime openssl3 tensorflow-lite zlib-ng"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: x64-linux
+
+      - job: "port_android"
+        displayName: "Android"
+        pool:
+          vmImage: ubuntu-20.04
+        timeoutInMinutes: "300"
+        steps:
+          - powershell: sudo apt-get install -y libnuma-dev libopenmpi-dev nasm
+            displayName: "Install APT packages"
+          - powershell: pip install typing-extensions pybind11 numpy pyyaml
+            displayName: "Install Python packages"
+          - task: run-vcpkg@0
+            displayName: "arm64-android"
+            inputs:
+              vcpkgArguments: "cpuinfo farmhash openssl3 xnnpack zlib-ng"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-android
+          - task: run-vcpkg@0
+            displayName: "x64-android"
+            inputs:
+              vcpkgArguments: "cpuinfo farmhash openssl3 xnnpack zlib-ng"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: x64-android
+          - task: run-vcpkg@0
+            displayName: "arm-android"
+            inputs:
+              vcpkgArguments: "cpuinfo farmhash openssl3 xnnpack zlib-ng"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm-android
+
+      - job: "port_osx"
+        displayName: "Mac(10.15)"
+        pool:
+          vmImage: macOS-10.15
+        timeoutInMinutes: "300"
+        steps:
+          - powershell: brew install autoconf automake libtool
+            displayName: "Install HomeBrew packages"
+          - task: UsePythonVersion@0
+            displayName: "Setup: Python 3.9"
+            inputs:
+              versionSpec: "3.9"
+              addToPath: true
+              architecture: "x64"
+          - powershell: pip install typing-extensions pybind11 numpy pyyaml
+            displayName: "Install Python packages"
+          - task: run-vcpkg@0
+            displayName: "x64-osx"
+            inputs:
+              vcpkgArguments: "cpuinfo farmhash onnx onnxruntime openssl3 tensorflow-lite xnnpack zlib-ng"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: x64-osx
+
+      - job: "port_ios"
+        displayName: "iOS(11)"
+        pool:
+          vmImage: macOS-11
+        timeoutInMinutes: "300"
+        steps:
+          - powershell: brew install autoconf automake libtool
+          - task: run-vcpkg@0
+            displayName: "arm64-ios"
+            inputs:
+              vcpkgArguments: "cpuinfo farmhash openssl3 zlib-ng"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-ios
+          - task: run-vcpkg@0
+            displayName: "arm64-osx"
+            inputs:
+              vcpkgArguments: "cpuinfo farmhash openssl3 zlib-ng"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-osx
 
       - template: azure/jobs-linux.yml
         parameters:
@@ -127,146 +290,10 @@ stages:
           port: "libtorch"
           features: "[tbb,opencv3]"
 
-      - template: azure/jobs-windows.yml
-        parameters:
-          job_name: "libdispatch"
-          port: "libdispatch"
-      - template: azure/jobs-arm-windows.yml
-        parameters:
-          job_name: "libdispatch"
-          port: "libdispatch"
       # - template: azure/jobs-android.yml # todo: decide NDK version coverage
       #   parameters:
       #     job_name: "libdispatch"
       #     port: "libdispatch"
-
-      - template: azure/jobs-windows.yml
-        parameters:
-          job_name: "onnxruntime"
-          port: "onnxruntime"
-      - template: azure/jobs-linux.yml
-        parameters:
-          job_name: "onnxruntime"
-          port: "onnxruntime"
-      - template: azure/jobs-osx.yml
-        parameters:
-          job_name: "onnxruntime"
-          port: "onnxruntime"
-
-      - template: azure/jobs-windows.yml
-        parameters:
-          job_name: "onnx"
-          port: "onnx"
-      - template: azure/jobs-osx.yml
-        parameters:
-          job_name: "onnx"
-          port: "onnx"
-      - template: azure/jobs-linux.yml
-        parameters:
-          job_name: "onnx"
-          port: "onnx"
-
-      - template: azure/jobs-windows.yml
-        parameters:
-          job_name: "farmhash"
-          port: "farmhash"
-      - template: azure/jobs-uwp.yml
-        parameters:
-          job_name: "farmhash"
-          port: "farmhash"
-      - template: azure/jobs-linux.yml
-        parameters:
-          job_name: "farmhash"
-          port: "farmhash"
-      - template: azure/jobs-android.yml
-        parameters:
-          job_name: "farmhash"
-          port: "farmhash"
-      - template: azure/jobs-osx.yml
-        parameters:
-          job_name: "farmhash"
-          port: "farmhash"
-      - template: azure/jobs-ios.yml
-        parameters:
-          job_name: "farmhash"
-          port: "farmhash"
-
-      - template: azure/jobs-windows.yml
-        parameters:
-          job_name: "zlib_ng"
-          port: "zlib-ng"
-      - template: azure/jobs-linux.yml
-        parameters:
-          job_name: "zlib_ng"
-          port: "zlib-ng"
-      - template: azure/jobs-osx.yml
-        parameters:
-          job_name: "zlib_ng"
-          port: "zlib-ng"
-      - template: azure/jobs-arm-windows.yml
-        parameters:
-          job_name: "zlib_ng"
-          port: "zlib-ng"
-
-      - template: azure/jobs-windows.yml
-        parameters:
-          job_name: "openssl3"
-          port: "openssl3"
-      - template: azure/jobs-linux.yml
-        parameters:
-          job_name: "openssl3"
-          port: "openssl3"
-      - template: azure/jobs-osx.yml
-        parameters:
-          job_name: "openssl3"
-          port: "openssl3"
-      - template: azure/jobs-uwp.yml
-        parameters:
-          job_name: "openssl3"
-          port: "openssl3"
-      - template: azure/jobs-arm-windows.yml
-        parameters:
-          job_name: "openssl3"
-          port: "openssl3"
-      - template: azure/jobs-android.yml
-        parameters:
-          job_name: "openssl3"
-          port: "openssl3"
-      - template: azure/jobs-ios.yml
-        parameters:
-          job_name: "openssl3"
-          port: "openssl3"
-
-      - template: azure/jobs-windows.yml
-        parameters:
-          job_name: "tflite"
-          port: "tensorflow-lite"
-      - template: azure/jobs-linux.yml
-        parameters:
-          job_name: "tflite"
-          port: "tensorflow-lite"
-      - template: azure/jobs-osx.yml
-        parameters:
-          job_name: "tflite"
-          port: "tensorflow-lite"
-
-      - template: azure/jobs-android.yml
-        parameters:
-          job_name: "xnnpack"
-          port: "xnnpack"
-      - template: azure/jobs-ios.yml
-        parameters:
-          job_name: "xnnpack"
-          port: "xnnpack"
-
-      - template: azure/jobs-android.yml
-        parameters:
-          job_name: "cpuinfo"
-          port: "cpuinfo"
-      - template: azure/jobs-ios.yml
-        parameters:
-          job_name: "cpuinfo"
-          port: "cpuinfo"
 
   - stage: "Scripts" # todo: Use of this registry
     jobs:
@@ -293,14 +320,6 @@ stages:
               Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\pkgconfig"
               Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\cmake"
             condition: failed()
-      - job: "PowerShell"
-        pool:
-          vmImage: ubuntu-20.04
-        steps:
-          - task: PowerShell@2
-            displayName: "Check port versions"
-            inputs:
-              filePath: "scripts/check-sha.ps1"
 
   # todo: Deploy stage
   #   Status notification + GitHub release
