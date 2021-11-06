@@ -36,7 +36,7 @@ stages:
         steps:
           - template: azure/run-with-overlay-triplet.yml
             parameters:
-              port: "ijg-libjpeg"
+              port: "vulkan"
               triplet: "arm64-android"
           - template: azure/run-with-overlay-triplet.yml
             parameters:
@@ -49,7 +49,7 @@ stages:
         steps:
           - template: azure/run-with-overlay-triplet.yml
             parameters:
-              port: "ijg-libjpeg"
+              port: "vulkan"
               triplet: "x64-android"
           - template: azure/run-with-overlay-triplet.yml
             parameters:
@@ -62,7 +62,7 @@ stages:
         steps:
           - template: azure/run-with-overlay-triplet.yml
             parameters:
-              port: "ijg-libjpeg"
+              port: "vulkan"
               triplet: "arm-android"
           - template: azure/run-with-overlay-triplet.yml
             parameters:
