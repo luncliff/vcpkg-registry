@@ -89,7 +89,7 @@ if(NDK_VERSION_OVER_21)
 else()
     # If your API level is 30, libvulkan.so is at 
     #  $ENV{ANDROID_NDK_HOME}/platforms/android-30/arch-x86_64/usr/lib
-    find_file(NDK_VULKAN_LIB_PATH NAME libvulkan.so PATHS $ENV{ANDROID_NDK_HOME}/platforms/android-${NDK_API_LEVEL}/arch-${VCPKG_TARGET_ARCHITECTURE}/usr/lib/)
+    find_file(NDK_VULKAN_LIB_PATH NAME libvulkan.so PATHS $ENV{ANDROID_NDK_HOME}/platforms/android-${NDK_API_LEVEL}/arch-x86_64/usr/lib/)
 endif()
 if(NDK_VULKAN_LIB_PATH)
     message(STATUS "Found libvulkan.so: ${NDK_VULKAN_LIB_PATH}")
