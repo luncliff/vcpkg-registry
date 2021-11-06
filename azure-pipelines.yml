@@ -63,10 +63,14 @@ stages:
               vcpkgArguments: "vulkan-android-test"
             env:
               VCPKG_DEFAULT_TRIPLET: arm-android
+
       - job: "triplet_ios_simulator"
         displayName: "iOS Simulator"
         pool:
           vmImage: macOS-11
+        variables:
+          - name: VCPKG_OVERLAY_TRIPLETS
+            value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
         steps:
           - task: run-vcpkg@0
             displayName: "arm64-ios-simulator: zlib-ng"
