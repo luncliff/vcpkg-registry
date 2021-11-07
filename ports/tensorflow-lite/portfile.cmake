@@ -37,12 +37,14 @@ file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
                     "${CURRENT_PACKAGES_DIR}/debug/share"
                     "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/python" # todo: Python feature
-                    "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/flex"
-                    "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/coreml"
-                    "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/java"
-                    "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/hexagon"
-                    "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/nnapi" # todo: NNAPI if Android
 )
-if(NOT "gpu" IN_LIST FEATURES)
-    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/gpu")
+if("gpu" IN_LIST FEATURES)
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/flex"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/coreml"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/java"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/hexagon"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/nnapi" # todo: NNAPI if Android
+    )
+else()
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates")
 endif()
