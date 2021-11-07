@@ -1,6 +1,7 @@
 {
   "name": "tensorflow-lite",
   "version-semver": "2.6.0",
+  "port-version": 1,
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://www.tensorflow.org/",
   "license": "Apache-2.0",
@@ -12,18 +13,31 @@
     "gemmlowp",
     "neon2sse",
     "ruy",
+    "xnnpack",
     {
       "name": "vcpkg-cmake",
       "host": true
-    },
-    "xnnpack"
+    }
   ],
   "features": {
-    "gpu": {
-      "description": "Enable GPU",
+    "google-angle": {
+      "description": "Link EGL, OpenGL ES code with Google/ANGLE",
       "dependencies": [
+        "angle"
+      ]
+    },
+    "gpu": {
+      "description": "Enable GPU delegates (Windows only)",
+      "dependencies": [
+        "fp16",
+        "egl-registry",
+        "opengl-registry",
         "opencl",
-        "vulkan"
+        "vulkan-headers",
+        {
+          "name": "flatbuffers",
+          "host": true
+        }
       ]
     }
   }

@@ -276,6 +276,12 @@ stages:
       #     job_name: "libdispatch"
       #     port: "libdispatch"
 
+      - template: azure/jobs-windows.yml
+        parameters:
+          job_name: "tflite_gpu"
+          port: "tensorflow-lite"
+          features: "[google-angle,gpu]"
+
   - stage: "Scripts" # todo: Use of this registry
     jobs:
       - job: "CMake"
