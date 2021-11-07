@@ -271,10 +271,10 @@ stages:
           port: "libtorch"
           features: "[xnnpack,qnnpack,nnpack,leveldb,zstd,opencv3]"
 
-      # - template: azure/jobs-android.yml # todo: decide NDK version coverage
-      #   parameters:
-      #     job_name: "libdispatch"
-      #     port: "libdispatch"
+      - template: azure/jobs-android.yml
+        parameters:
+          job_name: "libdispatch"
+          port: "libdispatch"
 
   - stage: "Scripts" # todo: Use of this registry
     jobs:
