@@ -22,7 +22,7 @@ schedules:
 
 variables:
   - name: vcpkg.commit
-    value: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
+    value: "843e0ba0d8f9c9c572e45564263eedfc7745e74f" # mainstream 2021-10-28
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
   - name: VCPKG_DISABLE_METRICS
@@ -39,28 +39,28 @@ stages:
         pool:
           vmImage: ubuntu-20.04
         variables:
-          - name: VCPKG_OVERLAY_TRIPLETS
+          - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
             value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
         steps:
           - task: run-vcpkg@0
             displayName: "arm64-android: vulkan-android-test"
             inputs:
-              vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
               vcpkgArguments: "vulkan-android-test"
+              vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-android # --triplet ${triplet}
           - task: run-vcpkg@0
             displayName: "x64-android: vulkan-android-test"
             inputs:
-              vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
               vcpkgArguments: "vulkan-android-test"
+              vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-android
           - task: run-vcpkg@0
             displayName: "arm-android: vulkan-android-test"
             inputs:
-              vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
               vcpkgArguments: "vulkan-android-test"
+              vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm-android
 
@@ -69,7 +69,7 @@ stages:
         pool:
           vmImage: macOS-11
         variables:
-          - name: VCPKG_OVERLAY_TRIPLETS
+          - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
             value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
         steps:
           - task: run-vcpkg@0
@@ -111,7 +111,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-windows"
             inputs:
-              vcpkgArguments: "farmhash openssl3 tensorflow-lite libdispatch zlib-ng"
+              vcpkgArguments: "farmhash openssl3 onnxruntime tensorflow-lite libdispatch zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-windows
@@ -172,7 +172,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-linux"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 tensorflow-lite zlib-ng"
+              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorflow-lite zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-linux
@@ -228,7 +228,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-osx"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 tensorflow-lite xnnpack zlib-ng"
+              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorflow-lite xnnpack zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-osx
@@ -259,16 +259,7 @@ stages:
         parameters:
           job_name: "libtorch"
           port: "libtorch"
-      - template: azure/jobs-linux.yml
-        parameters:
-          job_name: "libtorch_nnpack"
-          port: "libtorch"
-          features: "[xnnpack,qnnpack,nnpack]"
-      - template: azure/jobs-linux.yml
-        parameters:
-          job_name: "libtorch_fbgemm"
-          port: "libtorch"
-          features: "[xnnpack,fbgemm]"
+          features: "[xnnpack,qnnpack,nnpack,fbgemm]"
       - template: azure/jobs-linux.yml
         parameters:
           job_name: "libtorch_dist"
@@ -278,34 +269,7 @@ stages:
         parameters:
           job_name: "libtorch"
           port: "libtorch"
-      - template: azure/jobs-osx.yml
-        parameters:
-          job_name: "libtorch_nnpack"
-          port: "libtorch"
-          features: "[xnnpack,qnnpack,nnpack]"
-      - template: azure/jobs-osx.yml
-        parameters:
-          job_name: "libtorch_dist"
-          port: "libtorch"
-          features: "[dist,leveldb,zstd]"
-      - template: azure/jobs-osx.yml
-        parameters:
-          job_name: "libtorch_opencv"
-          port: "libtorch"
-          features: "[tbb,opencv3]"
-
-      - template: azure/jobs-windows.yml
-        parameters:
-          job_name: "onnxruntime"
-          port: "onnxruntime"
-      - template: azure/jobs-osx.yml
-        parameters:
-          job_name: "onnxruntime"
-          port: "onnxruntime"
-      - template: azure/jobs-linux.yml
-        parameters:
-          job_name: "onnxruntime"
-          port: "onnxruntime"
+          features: "[xnnpack,qnnpack,nnpack,leveldb,zstd,opencv3]"
 
       # - template: azure/jobs-android.yml # todo: decide NDK version coverage
       #   parameters:
