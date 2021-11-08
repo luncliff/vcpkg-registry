@@ -1,0 +1,125 @@
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 97a9e21d..4c5c0b32 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -211,14 +211,45 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
+ populate_tflite_source_vars("c" TFLITE_C_SRCS)
+ populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
+ if(TFLITE_ENABLE_GPU)
+-  find_package(opencl_headers REQUIRED)
+-  find_package(vulkan_headers REQUIRED)
+-  find_package(fp16_headers REQUIRED)
+-  # Android NDK already has OpenGL, EGL headers.
+-  if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
+-    find_package(opengl_headers REQUIRED)
+-    find_package(egl_headers REQUIRED)
+-  endif()
++  # OpenGL, EGL headers will be installed with vcpkg
++  find_package(OpenCL REQUIRED)
++  # find_package(Vulkan REQUIRED)
++  find_program(FLATC_BINPATH NAMES flatc REQUIRED)
++  add_custom_target(gl_delegate_codegen
++    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums common.fbs # gl/common_generated.h
++    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums metadata.fbs # gl/metadata_generated.h
++    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums workgroups.fbs # gl/workgroups_generated.h
++    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums compiled_model.fbs # gl/compiled_model_generated.h
++    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/delegates/gpu/gl
++  )
++
++  find_library(EGL_LIBPATH NAMES libEGL REQUIRED)
++  find_library(GLES_LIBPATH NAMES libGLESv3${CMAKE_DEBUG_POSTFIX} libGLESv2${CMAKE_DEBUG_POSTFIX} REQUIRED)
++  populate_tflite_source_vars(
++    "delegates/gpu/gl" TFLITE_DELEGATES_GPU_GL_SRCS
++    FILTER "(_test)\\.(cc|h)$"
++  )
++  populate_tflite_source_vars(
++    "delegates/gpu/gl/compiler" TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS
++    FILTER "(_test)\\.(cc|h)$"
++  )
++  populate_tflite_source_vars(
++    "delegates/gpu/gl/converters" TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS
++    FILTER "(_test)\\.(cc|h)$"
++  )
++  populate_tflite_source_vars(
++    "delegates/gpu/gl/kernels" TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS
++    FILTER "(_test)\\.(cc|h)$"
++  )
++  populate_tflite_source_vars(
++    "delegates/gpu/gl/runtime" TFLITE_DELEGATES_GPU_GL_RUNTIME_SRCS
++    FILTER "(_test)\\.(cc|h)$"
++  )
++  populate_tflite_source_vars(
++    "delegates/gpu/gl/workgroups" TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS
++    FILTER "(_test)\\.(cc|h)$"
++  )
++
+   populate_tflite_source_vars(
+     "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
+     FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
+@@ -288,11 +319,22 @@ if(TFLITE_ENABLE_GPU)
+     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SRCS}
+     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SPECIAL_SRCS}
+     ${TFLITE_DELEGATES_GPU_COMMON_TRANSFORMATIONS_SRCS}
++    ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/gl_interop.cc
++    ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/egl_sync.cc
++    ${TFLITE_SOURCE_DIR}/delegates/gpu/gl_delegate.cc
++    ${TFLITE_DELEGATES_GPU_GL_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_RUNTIME_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS}
+   )
+-  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
++  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DEGL_EGLEXT_PROTOTYPES" "-DEGL_NO_X11")
+   list(APPEND TFLITE_TARGET_DEPENDENCIES
+     absl::any
+     absl::flat_hash_map
++    OpenCL::OpenCL # Vulkan::Headers
++    ${EGL_LIBPATH} ${GLES_LIBPATH}
+   )
+ endif()
+ if(_TFLITE_ENABLE_NNAPI)
+diff --git a/tensorflow/lite/delegates/gpu/gl/runtime.cc b/tensorflow/lite/delegates/gpu/gl/runtime.cc
+index ce029efa..213a4134 100644
+--- a/tensorflow/lite/delegates/gpu/gl/runtime.cc
++++ b/tensorflow/lite/delegates/gpu/gl/runtime.cc
+@@ -86,27 +86,22 @@ absl::Status MakeGlTexture(const Object& object, const ObjectData& data,
+       if (data.size() % 2 != 0) {
+         return absl::InvalidArgumentError("Texture size is not aligned");
+       }
+-      return absl::visit(
+-          TextureF16Maker{
+-              .data = absl::MakeConstSpan(
+-                  reinterpret_cast<const uint16_t*>(data.data()),
+-                  data.size() / 2),
+-              .gl_texture = gl_texture,
+-          },
+-          object.size);
++      TextureF16Maker maker{};
++      maker.data = absl::MakeConstSpan(
++          reinterpret_cast<const uint16_t*>(data.data()), data.size() / 2);
++      maker.gl_texture = gl_texture;
++      return absl::visit(maker, object.size);
+     }
+     case DataType::FLOAT32: {
+       if (data.size() % sizeof(float) != 0) {
+         return absl::InvalidArgumentError("Texture size is not aligned");
+       }
+-      return absl::visit(
+-          TextureF32Maker{
+-              .data = absl::MakeConstSpan(
+-                  reinterpret_cast<const float*>(data.data()),
+-                  data.size() / sizeof(float)),
+-              .gl_texture = gl_texture,
+-          },
+-          object.size);
++      TextureF32Maker maker{};
++      maker.data =
++          absl::MakeConstSpan(reinterpret_cast<const float*>(data.data()),
++                              data.size() / sizeof(float));
++      maker.gl_texture = gl_texture;
++      return absl::visit(maker, object.size);
+     }
+     default:
+       return absl::InvalidArgumentError("Unsupported textures data type.");

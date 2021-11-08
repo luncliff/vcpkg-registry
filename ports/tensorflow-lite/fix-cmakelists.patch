@@ -83,9 +83,10 @@ index f5cc9b97..6da3bdde 100644
 +        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
 +        FILES_MATCHING PATTERN "*.h"
 +)
-+install(DIRECTORY   ${TFLITE_SOURCE_DIR}
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow
-+        FILES_MATCHING PATTERN "*.h"
++install(FILES  ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.h
++               ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/gpu_api_delegate.h
++               ${TFLITE_SOURCE_DIR}/delegates/gpu/gl_delegate.h
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/gpu
 +)
 +install(FILES ${TF_SOURCE_DIR}/core/public/version.h 
 +        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/core/public
@@ -95,7 +96,6 @@ index f5cc9b97..6da3bdde 100644
 +        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 +        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 +)
-+
 +return()
 +
  # The kernel tests.
