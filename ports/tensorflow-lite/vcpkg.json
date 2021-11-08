@@ -13,11 +13,11 @@
     "gemmlowp",
     "neon2sse",
     "ruy",
-    "xnnpack",
     {
       "name": "vcpkg-cmake",
       "host": true
-    }
+    },
+    "xnnpack"
   ],
   "features": {
     "google-angle": {
@@ -29,15 +29,15 @@
     "gpu": {
       "description": "Enable GPU delegates (Windows only)",
       "dependencies": [
-        "fp16",
         "egl-registry",
-        "opengl-registry",
-        "opencl",
-        "vulkan-headers",
         {
           "name": "flatbuffers",
           "host": true
-        }
+        },
+        "fp16",
+        "opencl",
+        "opengl-registry",
+        "vulkan-headers"
       ]
     }
   }

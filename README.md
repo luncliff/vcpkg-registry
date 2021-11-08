@@ -19,9 +19,6 @@ Targets...
 
 ### Setup
 
-Currently stopped supporting registry feature support.
-It is planned, but not today. It will be supported when this repo gets another Git tag.
-
 ```console
 user@host:~$ git clone https://github.com/microsoft/vcpkg
 ...
@@ -29,6 +26,13 @@ user@host:~$ pushd ./vcpkg/
 ~/vcpkg ~
 user@host:~/vcpkg$ git clone https://github.com/luncliff/vcpkg-registry registry
 ...
+```
+
+Don't forget to check [the vcpkg environment variables](https://github.com/microsoft/vcpkg/blob/master/docs/users/config-environment.md) are correct.
+
+The overall file organization is like the following.
+
+```console
 user@host:~/vcpkg$ tree -L 2 ./registry/
 ./registry/
 ├── LICENSE
@@ -58,17 +62,7 @@ user@host:~/vcpkg$ tree -L 2 ./registry/
     └── x64-ios-simulator.cmake
 ```
 
-### Search
-
-#### with Overlay
-
-Just provide the path of `port/` folder. 
-
-```console
-user@host:~/vcpkg$ ./vcpkg search --overlay-ports=registry/ports cpuinfo
-```
-
-#### ~~with Registry~~
+#### For Registry
 
 For registry customization, configure your [vcpkg-configuration.json](https://github.com/microsoft/vcpkg/blob/master/docs/specifications/registries.md).
 
@@ -79,7 +73,8 @@ user@host:~/vcpkg$ cat ./vcpkg-configuration.json | jq
 ...
 ```
 
-Sould be like the following. Notice that this repo contains `openssl3` and `tensorflow-lite`, but the configuration is specifying only `tensorflow-lite`.
+The sample configuration can be like this.
+The `ports/` folder contains `openssl3` and `tensorflow-lite`. Put them in the "packages".
 
 ```json
 {
@@ -88,6 +83,7 @@ Sould be like the following. Notice that this repo contains `openssl3` and `tens
             "kind": "git",
             "repository": "https://github.com/luncliff/vcpkg-registry",
             "packages": [
+                "openssl3",
                 "tensorflow-lite"
             ],
             "baseline": "0000..."
@@ -98,7 +94,15 @@ Sould be like the following. Notice that this repo contains `openssl3` and `tens
 
 ### Install
 
-#### with Ports
+#### with Ports (Overlay)
+
+Just provide the path of `port/` folder. 
+
+```console
+user@host:~/vcpkg$ ./vcpkg install --overlay-ports="registry/ports" cpuinfo
+```
+
+If it doesn't work, check the command options.
 
 ```console
 user@host:~/vcpkg$ ./vcpkg help install
@@ -110,7 +114,13 @@ Options:
 ...
 ```
 
-#### with Triplets
+#### with Triplets (Overlay)
+
+```console
+user@host:~/vcpkg$ ./vcpkg install --overlay-triplets="registry/triplets" --triplet x64-ios-simulator zlib-ng
+```
+
+If it doesn't work, check the command options.
 
 ```console
 user@host:~/vcpkg$ ./vcpkg help install
@@ -159,27 +169,21 @@ These triplets acquire `VCPKG_OSX_SYSROOT` for iOS Simulator SDK. Also, specifie
 
 These triplets won't do much work. I recommend you to use https://github.com/leetal/ios-cmake with [`VCPKG_CHAINLOAD_TOOLCHAIN_FILE`](https://github.com/microsoft/vcpkg/blob/master/docs/users/triplets.md#vcpkg_chainload_toolchain_file).
 
-#### ~~with Registry~~
-
-> This part will be updated later. Currently not supported.
+#### with Registry
 
 Provide the feature flags to install with registry informations in `vcpkg-configuration.json`.
 
 ```console
-user@host:~/vcpkg$ ./vcpkg install lua --feature-flags=registries
+user@host:~/vcpkg$ ./vcpkg install --feature-flags=registries openssl3
 Computing installation plan...
-The following packages will be built and installed:
-    lua[core]:x64-osx -> 5.3.5#6 -- /.../.cache/vcpkg/registries/git-trees/80fa373569847b12eeae2f949d922a6d7330767f
-Detecting compiler hash for triplet x64-osx...
-Could not locate cached archive: /.../.cache/vcpkg/archives/1a/1a78479217231fdfb06605d33607532000273de1.zip
-Starting package 1/1: lua:x64-osx
+...
 ```
 
 After the installation, you can `list` the packages.
 
 ```console
-user@host:~/vcpkg$ ./vcpkg list lua
-lua:x64-osx       5.3.5#6          ...
+user@host:~/vcpkg$ ./vcpkg list openssl3
+...
 ```
 
 ## License

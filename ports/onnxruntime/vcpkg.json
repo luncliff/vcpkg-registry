@@ -5,43 +5,43 @@
   "homepage": "www.onnxruntime.ai",
   "supports": "(windows & !static) | linux | osx",
   "dependencies": [
-    "zlib",
-    "eigen3",
-    "date",
-    "nsync",
-    "optional-lite",
-    "boost-mp11",
     "boost-config",
-    "onnx",
-    "protobuf",
-    "flatbuffers",
-    "nlohmann-json",
+    "boost-mp11",
     "cpuinfo",
     "cxxopts",
-    "re2",
-    "safeint",
+    "date",
+    "eigen3",
+    "flatbuffers",
+    "nlohmann-json",
+    "nsync",
     {
       "name": "nsync",
       "platform": "linux"
+    },
+    "onnx",
+    "optional-lite",
+    "protobuf",
+    "re2",
+    "safeint",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
     },
     {
       "name": "wil",
       "platform": "windows"
     },
-    {
-      "name": "vcpkg-cmake",
-      "host": true
-    }
+    "zlib"
   ],
   "features": {
-    "training": {
-      "description": "Turn on build options for ML training"
-    },
     "cuda": {
       "description": "Build with CUDA/NCCL support"
     },
     "tensrorrt": {
       "description": "Build with NVIDIA TensorRT support"
+    },
+    "training": {
+      "description": "Turn on build options for ML training"
     }
   }
 }

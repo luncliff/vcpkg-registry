@@ -1,0 +1,9 @@
+{
+  "versions": [
+    {
+      "git-tree": "2f5c7140da63c9427eb9c48686b914152fd689f8",
+      "version-string": "swift-5.5",
+      "port-version": 1
+    }
+  ]
+}

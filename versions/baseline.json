@@ -1,0 +1,68 @@
+{
+  "default": {
+    "cpuinfo": {
+      "baseline": "2021-10-10",
+      "port-version": 0
+    },
+    "eigen3": {
+      "baseline": "3.4.0",
+      "port-version": 0
+    },
+    "farmhash": {
+      "baseline": "2021-10-28",
+      "port-version": 0
+    },
+    "fbgemm": {
+      "baseline": "2021-10-31",
+      "port-version": 0
+    },
+    "libdispatch": {
+      "baseline": "swift-5.5",
+      "port-version": 1
+    },
+    "libtorch": {
+      "baseline": "1.10.0",
+      "port-version": 0
+    },
+    "onnx": {
+      "baseline": "1.10.2",
+      "port-version": 0
+    },
+    "onnxruntime": {
+      "baseline": "1.9.1",
+      "port-version": 0
+    },
+    "openssl3": {
+      "baseline": "3.0.0",
+      "port-version": 0
+    },
+    "ruy": {
+      "baseline": "2021-10-10",
+      "port-version": 0
+    },
+    "tensorflow-lite": {
+      "baseline": "2.6.0",
+      "port-version": 1
+    },
+    "tensorpipe": {
+      "baseline": "2021-04-26",
+      "port-version": 0
+    },
+    "vcpkg-host-python3": {
+      "baseline": "2021-10-01",
+      "port-version": 0
+    },
+    "xnnpack": {
+      "baseline": "2021-10-10",
+      "port-version": 1
+    },
+    "zenny-atomic": {
+      "baseline": "2021-10-15",
+      "port-version": 0
+    },
+    "zlib-ng": {
+      "baseline": "2.0.5",
+      "port-version": 0
+    }
+  }
+}

@@ -1,17 +1,17 @@
 {
   "name": "vulkan-android-test",
   "version-date": "2011-21-06",
-  "homepage": "https://github.com/luncliff/vcpkg-registry",
   "description": [
     "'vulkan' port will test ENV{VULKAN_SDK} and header include.",
     "This test port will show use of NDK_VULKAN_LIB_PATH and check whether linkage works well"
   ],
+  "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "android",
   "dependencies": [
-    "vulkan",
     {
       "name": "vcpkg-cmake",
       "host": true
-    }
+    },
+    "vulkan"
   ]
 }
