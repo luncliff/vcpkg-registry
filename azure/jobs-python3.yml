@@ -5,14 +5,9 @@
 #   https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops#job-reuse
 #
 
-parameters:
-  - name: job_name
-    type: string
-  - name: port
-    type: string
-
 jobs:
-  - job: "windows_${{ parameters.job_name }}"
+  - job: "windows_host_python3"
+    displayName: "Windows: Python3"
     pool:
       vmImage: windows-2019
     steps:
@@ -23,21 +18,45 @@ jobs:
           addToPath: true
           architecture: "x64"
       - powershell: env
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port: "${{ parameters.port }}-test"
-          triplet: "x64-windows"
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port: "${{ parameters.port }}-test"
-          triplet: "x86-windows"
+      - task: run-vcpkg@0
+        displayName: "x64-windows: vcpkg-host-python3-test"
+        inputs:
+          vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
+          vcpkgArguments: "vcpkg-host-python3-test"
+        env:
+          VCPKG_DEFAULT_TRIPLET: x64-windows
+          VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+          VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/vcpkg-host-python3-test"
+          Contents: |
+            ?(*.log|*.txt|*.cmake)
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          OverWrite: true
+        condition: failed()
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/vcpkg-host-python3"
+          Contents: |
+            ?(*.log|*.txt|*.cmake)
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          OverWrite: true
+        condition: always()
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Staged Logs"
+        inputs:
+          PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+          ArtifactName: "$(Agent.JobName)"
+        condition: always()
       - powershell: pip list
         displayName: "Show installed Python packages"
 
-  - job: "linux_${{ parameters.job_name }}"
+  - job: "linux_host_python3"
+    displayName: "Linux: Python3"
     pool:
       vmImage: ubuntu-20.04
-    dependsOn: "windows_${{ parameters.job_name }}" # Less the build stress
+    dependsOn: "windows_host_python3" # Less the build stress
     steps:
       - powershell: |
           python3 -m pip install typing-extensions numpy
@@ -50,17 +69,45 @@ jobs:
             Get-ChildItem $site_package_dir
           }
         displayName: "Check Python User Site"
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port: "${{ parameters.port }}-test"
-          triplet: "x64-linux"
+      - task: run-vcpkg@0
+        displayName: "x64-linux: vcpkg-host-python3-test"
+        inputs:
+          vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
+          vcpkgArguments: "vcpkg-host-python3-test"
+        env:
+          VCPKG_DEFAULT_TRIPLET: x64-linux
+          VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+          VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/vcpkg-host-python3-test"
+          Contents: |
+            ?(*.log|*.txt|*.cmake)
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          OverWrite: true
+        condition: failed()
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/vcpkg-host-python3"
+          Contents: |
+            ?(*.log|*.txt|*.cmake)
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          OverWrite: true
+        condition: always()
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Staged Logs"
+        inputs:
+          PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+          ArtifactName: "$(Agent.JobName)"
+        condition: always()
       - powershell: pip list
         displayName: "Show installed Python packages"
 
-  - job: "osx_${{ parameters.job_name }}"
+  - job: "osx_host_python3"
+    displayName: "Mac(10.15): Python3"
     pool:
       vmImage: macOS-10.15
-    dependsOn: "windows_${{ parameters.job_name }}" # Less the build stress
+    dependsOn: "windows_host_python3" # Less the build stress
     steps:
       - task: UsePythonVersion@0
         displayName: "Setup: Python 3.9"
@@ -71,13 +118,36 @@ jobs:
       - powershell: pip install pybind11
         displayName: "Install Python packages"
       - powershell: env
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port: "${{ parameters.port }}-test"
-          triplet: "x64-osx"
-      - template: run-vcpkg-with-overlay.yml
-        parameters:
-          port: "${{ parameters.port }}-test"
-          triplet: "arm64-osx"
+      - task: run-vcpkg@0
+        displayName: "x64-osx: vcpkg-host-python3-test"
+        inputs:
+          vcpkgGitCommitId: "1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0" # mainstream 2021-11-06
+          vcpkgArguments: "vcpkg-host-python3-test"
+        env:
+          VCPKG_DEFAULT_TRIPLET: x64-osx
+          VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
+          VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/vcpkg-host-python3-test"
+          Contents: |
+            ?(*.log|*.txt|*.cmake)
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          OverWrite: true
+        condition: failed()
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/vcpkg-host-python3"
+          Contents: |
+            ?(*.log|*.txt|*.cmake)
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          OverWrite: true
+        condition: always()
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Staged Logs"
+        inputs:
+          PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+          ArtifactName: "$(Agent.JobName)"
+        condition: always()
       - powershell: pip list
         displayName: "Show installed Python packages"
