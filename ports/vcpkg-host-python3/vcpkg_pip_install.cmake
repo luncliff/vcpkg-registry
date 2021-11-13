@@ -42,10 +42,6 @@ endif()
 
 * `Python3_NumPy_INCLUDE_DIRS`: from `find_package(Python3 NumPy)`
 
-#### pybind11
-
-* `pybind11_DIR`: Possible path for `find_package(pybind11 CONFIG)`
-
 ### See Also
 
 * https://pip.pypa.io/en/stable/cli/pip_install/
@@ -106,7 +102,6 @@ function(vcpkg_pip_install)
     endif()
     # if 'pybind11', find pybind11
     if(arg_PACKAGE STREQUAL pybind11)
-        get_filename_component(pybind11_DIR "${PY3_LIBRARY_ROOT_DIR}/pybind11/share/cmake"   ABSOLUTE)
         # note: pybind11 can't be found in script mode.
         # find_package(pybind11 CONFIG
         #     PATHS "${PY3_LIBRARY_ROOT_DIR}/pybind11/share/cmake"
@@ -115,8 +110,5 @@ function(vcpkg_pip_install)
         # message(VERBOSE "  includes: ${pybind11_INCLUDE_DIR}")
         # message(VERBOSE "  defines: ${pybind11_DEFINITIONS}")
         # message(VERBOSE "  libs: ${pybind11_LIBRARIES}")
-        message(VERBOSE "pybind11:")
-        message(VERBOSE "  dir: ${pybind11_DIR}")
-        set(pybind11_DIR ${pybind11_DIR} PARENT_SCOPE)
     endif()
 endfunction()
