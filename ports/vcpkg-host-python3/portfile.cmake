@@ -26,7 +26,7 @@ string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "static" Python3_USE_STATIC_LIBS
 # - Python3_FIND_VIRTUALENV
 # - Python3_FIND_IMPLEMENTATIONS
 # - Python3_FIND_UNVERSIONED_NAMES
-find_package(Python3 REQUIRED
+find_package(Python3 3.9 REQUIRED
 COMPONENTS
     Interpreter Development
 OPTIONAL_COMPONENTS 

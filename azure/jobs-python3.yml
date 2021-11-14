@@ -11,9 +11,9 @@ jobs:
       vmImage: windows-2019
     steps:
       - task: UsePythonVersion@0
-        displayName: "Setup: Python 3.10"
+        displayName: "Setup: Python 3.9"
         inputs:
-          versionSpec: "3.10"
+          versionSpec: "3.9"
           addToPath: true
           architecture: "x64"
       - powershell: env
@@ -107,9 +107,9 @@ jobs:
     dependsOn: "windows_host_python3" # Less the build stress
     steps:
       - task: UsePythonVersion@0
-        displayName: "Setup: Python 3.10"
+        displayName: "Setup: Python 3.9"
         inputs:
-          versionSpec: "3.10"
+          versionSpec: "3.9"
           addToPath: true
           architecture: "x64"
       - powershell: pip install pybind11
