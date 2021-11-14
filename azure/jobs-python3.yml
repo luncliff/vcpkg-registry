@@ -7,7 +7,6 @@
 
 jobs:
   - job: "windows_host_python3"
-    displayName: "Windows: Python3"
     pool:
       vmImage: windows-2019
     steps:
@@ -53,7 +52,6 @@ jobs:
         displayName: "Show installed Python packages"
 
   - job: "linux_host_python3"
-    displayName: "Linux: Python3"
     pool:
       vmImage: ubuntu-20.04
     dependsOn: "windows_host_python3" # Less the build stress
@@ -104,7 +102,6 @@ jobs:
         displayName: "Show installed Python packages"
 
   - job: "osx_host_python3"
-    displayName: "Mac(10.15): Python3"
     pool:
       vmImage: macOS-10.15
     dependsOn: "windows_host_python3" # Less the build stress
