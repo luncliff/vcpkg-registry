@@ -34,7 +34,7 @@ jobs:
       - task: run-vcpkg@0
         displayName: "x64-osx: ${{ parameters.port }}"
         inputs:
-          vcpkgGitCommitId: "843e0ba0d8f9c9c572e45564263eedfc7745e74f" # mainstream 2021-10-28
+          vcpkgGitCommitId: "cbc22a396c88d098247fe7f79f0913a952e1f77d" # mainstream 2021-11-17
           vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
         env:
           VCPKG_DEFAULT_TRIPLET: x64-osx
