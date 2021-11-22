@@ -259,7 +259,7 @@ stages:
         parameters:
           job_name: "libtorch"
           port: "libtorch"
-          features: "[xnnpack,qnnpack,nnpack,fbgemm]"
+          features: "[xnnpack,qnnpack,fbgemm]"
       - template: azure/jobs-linux.yml
         parameters:
           job_name: "libtorch_dist"
@@ -269,7 +269,7 @@ stages:
         parameters:
           job_name: "libtorch"
           port: "libtorch"
-          features: "[xnnpack,qnnpack,nnpack,leveldb,zstd,opencv3]"
+          features: "[xnnpack,qnnpack,leveldb,zstd,opencv3]"
 
       - template: azure/jobs-android.yml
         parameters:
