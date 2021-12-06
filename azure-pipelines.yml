@@ -89,11 +89,6 @@ stages:
 
   - stage: "Ports" # Check build status of the ports
     jobs:
-      - template: azure/jobs-python3.yml
-        parameters:
-          job_name: "vcpkg_host_python3"
-          port: "vcpkg-host-python3"
-
       - job: "port_windows"
         displayName: "Windows"
         pool:
