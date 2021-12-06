@@ -85,7 +85,7 @@ message(STATUS "Using ENV{VULKAN_SDK}: $ENV{VULKAN_SDK}")
 if(NDK_VERSION_OVER_21)
     # If your API level is 30, libvulkan.so is at 
     #  $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/arm-linux-androideabi/30
-    find_file(NDK_VULKAN_LIB_PATH NAME libvulkan.so PATHS $ENV{VULKAN_SDK}/lib/x86_64-linux-android/${NDK_API_LEVEL})
+    find_file(NDK_VULKAN_LIB_PATH NAME libvulkan.so PATHS $ENV{VULKAN_SDK}/lib/arm-linux-android/${NDK_API_LEVEL})
 else()
     # If your API level is 30, libvulkan.so is at 
     #  $ENV{ANDROID_NDK_HOME}/platforms/android-30/arch-arm/usr/lib
