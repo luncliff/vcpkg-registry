@@ -22,7 +22,7 @@ schedules:
 
 variables:
   - name: vcpkg.commit
-    value: "843e0ba0d8f9c9c572e45564263eedfc7745e74f" # mainstream 2021-10-28
+    value: "cbc22a396c88d098247fe7f79f0913a952e1f77d" # mainstream 2021-11-17
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
   - name: VCPKG_DISABLE_METRICS
@@ -89,11 +89,6 @@ stages:
 
   - stage: "Ports" # Check build status of the ports
     jobs:
-      - template: azure/jobs-python3.yml
-        parameters:
-          job_name: "vcpkg_host_python3"
-          port: "vcpkg-host-python3"
-
       - job: "port_windows"
         displayName: "Windows"
         pool:
@@ -259,7 +254,7 @@ stages:
         parameters:
           job_name: "libtorch"
           port: "libtorch"
-          features: "[xnnpack,qnnpack,nnpack,fbgemm]"
+          features: "[xnnpack,qnnpack,fbgemm]"
       - template: azure/jobs-linux.yml
         parameters:
           job_name: "libtorch_dist"
@@ -269,7 +264,7 @@ stages:
         parameters:
           job_name: "libtorch"
           port: "libtorch"
-          features: "[xnnpack,qnnpack,nnpack,leveldb,zstd,opencv3]"
+          features: "[xnnpack,qnnpack,leveldb,zstd,opencv3]"
 
       - template: azure/jobs-android.yml
         parameters:
