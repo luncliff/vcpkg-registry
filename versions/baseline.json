@@ -45,7 +45,7 @@
       "port-version": 1
     },
     "tensorpipe": {
-      "baseline": "2021-04-26",
+      "baseline": "2021-11-13",
       "port-version": 0
     },
     "vcpkg-host-python3": {
