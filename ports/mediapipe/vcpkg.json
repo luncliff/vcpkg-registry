@@ -1,0 +1,28 @@
+{
+  "name": "mediapipe",
+  "version-semver": "0.8.8",
+  "description": "Cross-platform, customizable ML solutions for live and streaming media.",
+  "homepage": "https://mediapipe.dev",
+  "supports": "windows",
+  "dependencies": [
+    "glog",
+    "stb",
+    "protobuf",
+    "tensorflow-lite",
+    "abseil",
+    {
+      "name": "ceres",
+      "features": [
+        "eigensparse"
+      ]
+    }
+  ],
+  "features": {
+    "opencv4": {
+      "description": "Build with OpenCV 4",
+      "dependencies": [
+        "opencv4"
+      ]
+    }
+  }
+}
