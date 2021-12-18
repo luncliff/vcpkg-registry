@@ -11,10 +11,26 @@
     "tensorflow-lite",
     "abseil",
     {
+      "name": "egl-registry",
+      "platform": "windows"
+    },
+    {
+      "name": "opengl-registry",
+      "platform": "windows"
+    },
+    {
       "name": "ceres",
       "features": [
         "eigensparse"
       ]
+    },
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
     }
   ],
   "features": {

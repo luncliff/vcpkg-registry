@@ -1,0 +1,16 @@
+diff --git a/mediapipe/gpu/gl_context.h b/mediapipe/gpu/gl_context.h
+index 6cab706..0c89751 100644
+--- a/mediapipe/gpu/gl_context.h
++++ b/mediapipe/gpu/gl_context.h
+@@ -14,9 +14,9 @@
+ 
+ #ifndef MEDIAPIPE_GPU_GL_CONTEXT_H_
+ #define MEDIAPIPE_GPU_GL_CONTEXT_H_
+-
++#if __has_include(<pthread.h>)
+ #include <pthread.h>
+-
++#endif
+ #include <atomic>
+ #include <functional>
+ #include <memory>
