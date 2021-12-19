@@ -8,8 +8,9 @@
     "glog",
     "stb",
     "protobuf",
-    "tensorflow-lite",
+    "tensorflow",
     "abseil",
+    "eigen3",
     {
       "name": "egl-registry",
       "platform": "windows"

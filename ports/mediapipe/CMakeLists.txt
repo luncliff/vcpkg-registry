@@ -13,6 +13,7 @@ find_package(protobuf CONFIG REQUIRED) # protobuf::libprotobuf, Protobuf_PROTOC_
 find_package(absl CONFIG REQUIRED)
 find_package(gflags CONFIG REQUIRED)
 find_package(glog CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
 if(USE_OPENCV4)
     find_package(OpenCV 4 REQUIRED COMPONENTS imgproc highgui)
 endif()
@@ -44,6 +45,7 @@ list(APPEND framework_deps_proto_files
 )
 
 list(APPEND framework_stream_handler_proto_files
+    mediapipe/framework/stream_handler/default_input_stream_handler.proto
     mediapipe/framework/stream_handler/fixed_size_input_stream_handler.proto
     mediapipe/framework/stream_handler/sync_set_input_stream_handler.proto
     mediapipe/framework/stream_handler/timestamp_align_input_stream_handler.proto
@@ -127,9 +129,10 @@ add_library(mediapipe
     # mediapipe/framework/deps
     ${proto_descriptor_SRCS}
     # mediapipe/framework/stream_handler
-    ${fixed_size_input_stream_handler_SRC}
-    ${sync_set_input_stream_handler_SRC}
-    ${timestamp_align_input_stream_handler_SRC}
+    ${default_input_stream_handler_SRCS}
+    ${fixed_size_input_stream_handler_SRCS}
+    ${sync_set_input_stream_handler_SRCS}
+    ${timestamp_align_input_stream_handler_SRCS}
     # mediapipe/framework/formats
     ${affine_transform_data_SRCS}
     ${classification_SRCS}
@@ -339,8 +342,6 @@ PRIVATE
     mediapipe/framework/formats/yuv_image.h
     mediapipe/framework/formats/motion/optical_flow_field.cc
     mediapipe/framework/formats/motion/optical_flow_field.h
-    mediapipe/framework/stream_handler/mux_input_stream_handler_test.cc
-    mediapipe/framework/stream_handler/default_input_stream_handler.proto
     mediapipe/framework/stream_handler/barrier_input_stream_handler.cc
     mediapipe/framework/stream_handler/default_input_stream_handler.cc
     mediapipe/framework/stream_handler/default_input_stream_handler.h
@@ -350,7 +351,6 @@ PRIVATE
     mediapipe/framework/stream_handler/in_order_output_stream_handler.cc
     mediapipe/framework/stream_handler/in_order_output_stream_handler.h
     mediapipe/framework/stream_handler/mux_input_stream_handler.cc
-    mediapipe/framework/stream_handler/set_input_stream_handler_test.cc
     mediapipe/framework/stream_handler/sync_set_input_stream_handler.cc
     mediapipe/framework/stream_handler/timestamp_align_input_stream_handler.cc
     mediapipe/gpu/egl_surface_holder.h
@@ -359,11 +359,11 @@ PRIVATE
     mediapipe/gpu/gl_calculator_helper_impl.h
     mediapipe/gpu/gl_calculator_helper.cc
     mediapipe/gpu/gl_calculator_helper.h
-    mediapipe/gpu/gl_context_eagl.cc
-    mediapipe/gpu/gl_context_egl.cc
     mediapipe/gpu/gl_context_internal.h
-    mediapipe/gpu/gl_context_nsgl.cc
-    mediapipe/gpu/gl_context_webgl.cc
+    mediapipe/gpu/gl_context_egl.cc
+    # mediapipe/gpu/gl_context_eagl.cc
+    # mediapipe/gpu/gl_context_nsgl.cc
+    # mediapipe/gpu/gl_context_webgl.cc
     mediapipe/gpu/gl_context.cc
     mediapipe/gpu/gl_context.h
     mediapipe/gpu/gl_quad_renderer.cc
@@ -429,7 +429,7 @@ PRIVATE
 
 target_link_libraries(mediapipe
 PRIVATE
-    absl::base glog::glog gflags::gflags protobuf::libprotobuf
+    absl::base glog::glog gflags::gflags protobuf::libprotobuf Eigen3::Eigen
     ${TFLITE_LIBPATH}
 )
 
