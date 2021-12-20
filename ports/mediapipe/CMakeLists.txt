@@ -18,7 +18,7 @@ if(USE_OPENCV4)
     find_package(OpenCV 4 REQUIRED COMPONENTS imgproc highgui)
 endif()
 
-find_library(TFLITE_LIBPATH NAMES tensorflow-lite REQUIRED)
+# find_library(TFLITE_LIBPATH NAMES tensorflow-lite REQUIRED)
 if(WIN32)
     find_path(EGL_INCLUDE_DIR EGL/egl.h REQUIRED)
     find_path(GLES_INCLUDE_DIR GLES3/gl32.h REQUIRED)
@@ -95,6 +95,30 @@ list(APPEND gpu_proto_files
     mediapipe/gpu/scale_mode.proto
 )
 
+list(APPEND calculator_proto_files
+    # mediapipe/calculator/internal/callback_packet_calculator.cc
+    mediapipe/calculators/internal/callback_packet_calculator.proto
+    # mediapipe/calculator/tflite
+    mediapipe/calculators/tflite/ssd_anchors_calculator.proto
+    mediapipe/calculators/tflite/tflite_converter_calculator.proto
+    mediapipe/calculators/tflite/tflite_custom_op_resolver_calculator.proto
+    mediapipe/calculators/tflite/tflite_inference_calculator.proto
+    mediapipe/calculators/tflite/tflite_tensors_to_classification_calculator.proto
+    mediapipe/calculators/tflite/tflite_tensors_to_detections_calculator.proto
+    mediapipe/calculators/tflite/tflite_tensors_to_landmarks_calculator.proto
+    mediapipe/calculators/tflite/tflite_tensors_to_segmentation_calculator.proto
+    # mediapipe/calculators/tflite/ssd_anchors_calculator.cc
+    # mediapipe/calculators/tflite/tflite_converter_calculator.cc
+    # mediapipe/calculators/tflite/tflite_custom_op_resolver_calculator.cc
+    # mediapipe/calculators/tflite/tflite_inference_calculator.cc
+    # mediapipe/calculators/tflite/tflite_model_calculator.cc
+    # mediapipe/calculators/tflite/tflite_tensors_to_classification_calculator.cc
+    # mediapipe/calculators/tflite/tflite_tensors_to_detections_calculator.cc
+    # mediapipe/calculators/tflite/tflite_tensors_to_floats_calculator.cc
+    # mediapipe/calculators/tflite/tflite_tensors_to_landmarks_calculator.cc
+    # mediapipe/calculators/tflite/tflite_tensors_to_segmentation_calculator.cc
+)
+
 foreach(proto_file  ${framework_proto_files}
                     ${framework_deps_proto_files}
                     ${framework_stream_handler_proto_files}
@@ -104,6 +128,7 @@ foreach(proto_file  ${framework_proto_files}
                     ${framework_formats_object_detection_proto_files}
                     ${framework_tool_proto_files}
                     ${gpu_proto_files}
+                    ${calculator_proto_files}
         )
     get_filename_component(protocol_name ${proto_file} NAME_WLE)
     protobuf_generate(${_append_arg}
@@ -165,6 +190,17 @@ add_library(mediapipe
     ${gl_surface_sink_calculator_SRCS}
     ${gpu_origin_SRCS}
     ${scale_mode_SRCS}
+    # mediapipe/calculators/internal
+    ${callback_packet_calculator_SRCS}
+    # mediapipe/calculator/tflite
+    ${ssd_anchors_calculator_SRCS}
+    ${tflite_converter_calculator_SRCS}
+    ${tflite_custom_op_resolver_calculator_SRCS}
+    ${tflite_inference_calculator_SRCS}
+    ${tflite_tensors_to_classification_calculator_SRCS}
+    ${tflite_tensors_to_detections_calculator_SRCS}
+    ${tflite_tensors_to_landmarks_calculator_SRCS}
+    ${tflite_tensors_to_segmentation_calculator_SRCS}
 )
 
 target_sources(mediapipe
@@ -247,8 +283,8 @@ PRIVATE
     mediapipe/framework/scheduler.cc
     mediapipe/framework/subgraph.h
     mediapipe/framework/subgraph.cc
-    mediapipe/framework/test_service.h
-    mediapipe/framework/test_service.cc
+    # mediapipe/framework/test_service.h
+    # mediapipe/framework/test_service.cc
     mediapipe/framework/thread_pool_executor.h
     mediapipe/framework/thread_pool_executor.cc
     mediapipe/framework/throttler.h
@@ -340,8 +376,8 @@ PRIVATE
     mediapipe/framework/formats/tensor.h
     mediapipe/framework/formats/video_stream_header.h
     mediapipe/framework/formats/yuv_image.h
-    mediapipe/framework/formats/motion/optical_flow_field.cc
-    mediapipe/framework/formats/motion/optical_flow_field.h
+    # mediapipe/framework/formats/motion/optical_flow_field.cc
+    # mediapipe/framework/formats/motion/optical_flow_field.h
     mediapipe/framework/stream_handler/barrier_input_stream_handler.cc
     mediapipe/framework/stream_handler/default_input_stream_handler.cc
     mediapipe/framework/stream_handler/default_input_stream_handler.h
@@ -353,6 +389,63 @@ PRIVATE
     mediapipe/framework/stream_handler/mux_input_stream_handler.cc
     mediapipe/framework/stream_handler/sync_set_input_stream_handler.cc
     mediapipe/framework/stream_handler/timestamp_align_input_stream_handler.cc
+    # mediapipe/framework/tool
+    mediapipe/framework/tool/container_util.cc
+    mediapipe/framework/tool/container_util.h
+    mediapipe/framework/tool/encode_as_c_string.cc
+    mediapipe/framework/tool/executor_util.cc
+    mediapipe/framework/tool/executor_util.h
+    mediapipe/framework/tool/fill_packet_set.cc
+    mediapipe/framework/tool/fill_packet_set.h
+    mediapipe/framework/tool/mediapipe_graph.bzl
+    mediapipe/framework/tool/message_type_util.cc
+    mediapipe/framework/tool/name_util.cc
+    mediapipe/framework/tool/name_util.h
+    mediapipe/framework/tool/options_field_util.cc
+    mediapipe/framework/tool/options_field_util.h
+    # mediapipe/framework/tool/options_lib_template.cc
+    mediapipe/framework/tool/options_map.h
+    mediapipe/framework/tool/options_registry.cc
+    mediapipe/framework/tool/options_registry.h
+    mediapipe/framework/tool/options_syntax_util.cc
+    mediapipe/framework/tool/options_syntax_util.h
+    mediapipe/framework/tool/options_util.cc
+    mediapipe/framework/tool/options_util.h
+    mediapipe/framework/tool/packet_generator_wrapper_calculator.cc
+    mediapipe/framework/tool/proto_util_lite.cc
+    mediapipe/framework/tool/proto_util_lite.h
+    # mediapipe/framework/tool/simple_subgraph_template.cc      
+    mediapipe/framework/tool/simulation_clock_executor.cc     
+    mediapipe/framework/tool/simulation_clock_executor.h      
+    mediapipe/framework/tool/simulation_clock.cc
+    mediapipe/framework/tool/simulation_clock.h
+    mediapipe/framework/tool/sink.cc
+    mediapipe/framework/tool/sink.h
+    mediapipe/framework/tool/source.cc
+    mediapipe/framework/tool/status_util.cc
+    mediapipe/framework/tool/status_util.h
+    mediapipe/framework/tool/subgraph_expansion.cc
+    mediapipe/framework/tool/subgraph_expansion.h
+    mediapipe/framework/tool/switch_container.cc
+    mediapipe/framework/tool/switch_demux_calculator.cc       
+    mediapipe/framework/tool/switch_mux_calculator.cc
+    mediapipe/framework/tool/tag_map_helper.cc
+    mediapipe/framework/tool/tag_map_helper.h
+    mediapipe/framework/tool/tag_map.cc
+    mediapipe/framework/tool/tag_map.h
+    mediapipe/framework/tool/template_expander.cc
+    mediapipe/framework/tool/template_expander.h
+    mediapipe/framework/tool/template_parser.cc
+    mediapipe/framework/tool/template_parser.h
+    mediapipe/framework/tool/text_to_binary_graph.cc
+    mediapipe/framework/tool/type_util.h
+    mediapipe/framework/tool/validate_name.cc
+    mediapipe/framework/tool/validate_name.h
+    mediapipe/framework/tool/validate_type.cc
+    mediapipe/framework/tool/validate_type.h
+    mediapipe/framework/tool/validate.cc
+    mediapipe/framework/tool/validate.h
+    # mediapipe/gpu
     mediapipe/gpu/egl_surface_holder.h
     mediapipe/gpu/gl_base.h
     mediapipe/gpu/gl_calculator_helper_impl_common.cc

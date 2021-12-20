@@ -12,6 +12,10 @@
     "abseil",
     "eigen3",
     {
+      "name": "pthreads",
+      "platform": "windows"
+    },
+    {
       "name": "egl-registry",
       "platform": "windows"
     },
