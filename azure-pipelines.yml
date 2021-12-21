@@ -23,7 +23,7 @@ schedules:
 
 variables:
   - name: vcpkg.commit
-    value: "cbc22a396c88d098247fe7f79f0913a952e1f77d" # mainstream 2021-11-17
+    value: "5ddd7f02689b7c5aab78711d77f61db5d2e5e79c" # mainstream 2021-12-01
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
   - name: VCPKG_DISABLE_METRICS

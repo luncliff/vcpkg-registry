@@ -23,7 +23,7 @@ jobs:
       - task: run-vcpkg@0
         displayName: "arm64-android: ${{ parameters.port }}"
         inputs:
-          vcpkgGitCommitId: "cbc22a396c88d098247fe7f79f0913a952e1f77d" # mainstream 2021-11-17
+          vcpkgGitCommitId: "5ddd7f02689b7c5aab78711d77f61db5d2e5e79c" # mainstream 2021-12-01
           vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
         env:
           VCPKG_DEFAULT_TRIPLET: arm64-android
@@ -34,7 +34,7 @@ jobs:
       - task: run-vcpkg@0
         displayName: "arm-android: ${{ parameters.port }}"
         inputs:
-          vcpkgGitCommitId: "cbc22a396c88d098247fe7f79f0913a952e1f77d" # mainstream 2021-11-17
+          vcpkgGitCommitId: "5ddd7f02689b7c5aab78711d77f61db5d2e5e79c" # mainstream 2021-12-01
           vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
         env:
           VCPKG_DEFAULT_TRIPLET: arm-android
@@ -45,7 +45,7 @@ jobs:
       - task: run-vcpkg@0
         displayName: "x64-android: ${{ parameters.port }}"
         inputs:
-          vcpkgGitCommitId: "cbc22a396c88d098247fe7f79f0913a952e1f77d" # mainstream 2021-11-17
+          vcpkgGitCommitId: "5ddd7f02689b7c5aab78711d77f61db5d2e5e79c" # mainstream 2021-12-01
           vcpkgArguments: "${{ parameters.port }}${{ parameters.features }}"
         env:
           VCPKG_DEFAULT_TRIPLET: x64-android
