@@ -9,9 +9,10 @@ trigger:
   branches:
     exclude:
       - docs
+      - gh-pages
 
-pr:
-  - main
+# pr:
+#   - main
 
 schedules:
   - cron: "10 4 * * 6"
@@ -250,21 +251,21 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-osx
 
-      - template: azure/jobs-linux.yml
-        parameters:
-          job_name: "libtorch"
-          port: "libtorch"
-          features: "[xnnpack,qnnpack,fbgemm]"
-      - template: azure/jobs-linux.yml
-        parameters:
-          job_name: "libtorch_dist"
-          port: "libtorch"
-          features: "[xnnpack,dist]"
-      - template: azure/jobs-osx.yml
-        parameters:
-          job_name: "libtorch"
-          port: "libtorch"
-          features: "[xnnpack,qnnpack,leveldb,zstd,opencv3]"
+      # - template: azure/jobs-linux.yml
+      #   parameters:
+      #     job_name: "libtorch"
+      #     port: "libtorch"
+      #     features: "[xnnpack,qnnpack,fbgemm]"
+      # - template: azure/jobs-linux.yml
+      #   parameters:
+      #     job_name: "libtorch_dist"
+      #     port: "libtorch"
+      #     features: "[xnnpack,dist]"
+      # - template: azure/jobs-osx.yml
+      #   parameters:
+      #     job_name: "libtorch"
+      #     port: "libtorch"
+      #     features: "[xnnpack,qnnpack,leveldb,zstd,opencv3]"
 
       - template: azure/jobs-android.yml
         parameters:
