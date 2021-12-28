@@ -22,6 +22,9 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
+        -DUSE_EGL=${VCPKG_TARGET_IS_WINDOWS}
+        -DUSE_TFLITE=${VCPKG_TARGET_IS_WINDOWS}
+        -DUSE_METAL=${VCPKG_TARGET_IS_OSX}
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()

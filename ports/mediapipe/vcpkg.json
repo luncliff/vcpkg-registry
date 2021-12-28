@@ -8,9 +8,10 @@
     "glog",
     "stb",
     "protobuf",
-    "tensorflow",
+    "tensorflow-lite",
     "abseil",
     "eigen3",
+    "libyuv",
     {
       "name": "pthreads",
       "platform": "windows"
@@ -21,6 +22,10 @@
     },
     {
       "name": "opengl-registry",
+      "platform": "windows"
+    },
+    {
+      "name": "angle",
       "platform": "windows"
     },
     {
