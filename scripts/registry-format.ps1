@@ -8,11 +8,13 @@ param
 )
 
 function RunFormat($root) {
-    vcpkg.exe version
-    vcpkg.exe format-manifest --all `
+    ./vcpkg version
+    ./vcpkg format-manifest --all `
         --x-builtin-ports-root="$root/ports" `
         --x-builtin-registry-versions-dir="$root/versions"
 }
 
-$env:Path = "$VcpkgRoot;$env:Path"
-RunFormat $RegistryRoot
+# $env:Path = "$VcpkgRoot;$env:Path"
+Push-Location $VcpkgRoot
+    RunFormat $RegistryRoot
+Pop-Location
