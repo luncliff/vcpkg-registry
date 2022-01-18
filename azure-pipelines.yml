@@ -224,7 +224,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-osx"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite xnnpack zlib-ng"
+              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite xnnpack zlib-ng metal-cpp"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-osx
@@ -239,14 +239,14 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 zlib-ng"
+              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
           - task: run-vcpkg@0
             displayName: "arm64-osx"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 zlib-ng"
+              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-osx
