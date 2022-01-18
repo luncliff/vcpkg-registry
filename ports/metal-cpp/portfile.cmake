@@ -1,4 +1,3 @@
-
 vcpkg_download_distfile(ARCHIVE
     URLS "https://developer.apple.com/metal/cpp/files/metal-cpp_macOS12_iOS15.zip"
     FILENAME metal-cpp_macOS12_iOS15.zip
