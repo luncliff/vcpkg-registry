@@ -107,7 +107,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-windows"
             inputs:
-              vcpkgArguments: "farmhash openssl3 onnxruntime tensorflow-lite libdispatch zlib-ng"
+              vcpkgArguments: "farmhash openssl3 onnxruntime tensorflow-lite[google-angle,gpu] libdispatch zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-windows
@@ -186,21 +186,21 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-android
           - task: run-vcpkg@0
             displayName: "x64-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-android
           - task: run-vcpkg@0
             displayName: "arm-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm-android
@@ -250,33 +250,6 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-osx
-
-      # - template: azure/jobs-linux.yml
-      #   parameters:
-      #     job_name: "libtorch"
-      #     port: "libtorch"
-      #     features: "[xnnpack,qnnpack,fbgemm]"
-      # - template: azure/jobs-linux.yml
-      #   parameters:
-      #     job_name: "libtorch_dist"
-      #     port: "libtorch"
-      #     features: "[xnnpack,dist]"
-      # - template: azure/jobs-osx.yml
-      #   parameters:
-      #     job_name: "libtorch"
-      #     port: "libtorch"
-      #     features: "[xnnpack,qnnpack,leveldb,zstd,opencv3]"
-
-      - template: azure/jobs-android.yml
-        parameters:
-          job_name: "libdispatch"
-          port: "libdispatch"
-
-      - template: azure/jobs-windows.yml
-        parameters:
-          job_name: "tflite_gpu"
-          port: "tensorflow-lite"
-          features: "[google-angle,gpu]"
 
   - stage: "Scripts" # todo: Use of this registry
     jobs:
