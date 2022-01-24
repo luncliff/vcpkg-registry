@@ -4,6 +4,10 @@
       "baseline": "2021-10-10",
       "port-version": 0
     },
+    "directml": {
+      "baseline": "1.6.0",
+      "port-version": 0
+    },
     "eigen3": {
       "baseline": "3.4.0",
       "port-version": 0
