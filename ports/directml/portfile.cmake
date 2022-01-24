@@ -13,7 +13,7 @@ vcpkg_execute_required_process(
     LOGNAME install-nuget
 )
 
-get_filename_component(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/${PACKAGE_NAME} ABSOLUTE)
+get_filename_component(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/${PACKAGE_NAME}.${PACKAGE_VERSION} ABSOLUTE)
 if(TARGET_TRIPLET STREQUAL x64-windows)
     set(BIN_FOLDER "x64-win")
 elseif(TARGET_TRIPLET STREQUAL x86-windows)
