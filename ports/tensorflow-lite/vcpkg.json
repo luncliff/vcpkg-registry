@@ -8,6 +8,7 @@
     "abseil",
     "eigen3",
     "farmhash",
+    "fft2d",
     "flatbuffers",
     "gemmlowp",
     "neon2sse",
