@@ -1,5 +1,5 @@
-﻿diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index f5cc9b97..6da3bdde 100644
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 76dda361..83b8ceb9 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
 @@ -124,14 +124,14 @@ macro(populate_tf_source_vars RELATIVE_DIR SOURCES_VAR)
@@ -25,7 +25,7 @@ index f5cc9b97..6da3bdde 100644
  # Generate TensorFlow Lite FlatBuffer code.
  # We used to have an actual compilation logic with flatc but decided to use
  # schema_generated.h since flatc doesn't work with cross compilation.
-@@ -315,14 +315,15 @@ else()
+@@ -357,14 +357,15 @@ else()
    )
  endif()
  if(TFLITE_ENABLE_XNNPACK)
@@ -44,7 +44,7 @@ index f5cc9b97..6da3bdde 100644
    )
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
  endif()
-@@ -413,23 +414,23 @@ add_library(tensorflow-lite
+@@ -455,23 +456,23 @@ add_library(tensorflow-lite
  )
  target_include_directories(tensorflow-lite
    PUBLIC
@@ -63,40 +63,31 @@ index f5cc9b97..6da3bdde 100644
      absl::synchronization
      absl::variant
 -    farmhash
-+    ${FARMHASH_LIBPATH}
-     fft2d_fftsg2d
+-    fft2d_fftsg2d
 -    flatbuffers
 -    gemmlowp
 -    ruy
++    fft2d_fftsg2d # todo: replace this to library path
++    ${FARMHASH_LIBPATH}
 +    flatbuffers::flatbuffers
 +    gemmlowp::gemmlowp
 +    unofficial::ruy
      ${CMAKE_DL_LIBS}
      ${TFLITE_TARGET_DEPENDENCIES}
  )
-@@ -444,6 +445,26 @@ target_compile_options(tensorflow-lite
+@@ -486,6 +487,16 @@ target_compile_options(tensorflow-lite
  )
  add_library(tensorflow::tensorflowlite ALIAS tensorflow-lite)
  
 +include(GNUInstallDirs)
-+install(DIRECTORY   ${TFLITE_SOURCE_DIR}/c
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
-+        FILES_MATCHING PATTERN "*.h"
-+)
-+install(FILES  ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.h
-+               ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/gpu_api_delegate.h
-+               ${TFLITE_SOURCE_DIR}/delegates/gpu/gl_delegate.h
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/gpu
-+)
-+install(FILES ${TF_SOURCE_DIR}/core/public/version.h 
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/core/public
-+)
++
++# Build Targets
 +install(TARGETS tensorflow-lite
 +        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 +        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 +        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 +)
-+return()
++return() # Discard the other targets
 +
  # The kernel tests.
  if(TFLITE_KERNEL_TEST)
@@ -113,3 +104,49 @@ index e7a5ed9b..84fda7cf 100644
  
  set(FFT2D_SOURCE_DIR "" CACHE PATH
    "Directory that contains the fft2d project"
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 83b8ceb9..962fcbc5 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -489,6 +489,41 @@ add_library(tensorflow::tensorflowlite ALIAS tensorflow-lite)
+ 
+ include(GNUInstallDirs)
+ 
++# C API
++install(DIRECTORY   ${TFLITE_SOURCE_DIR}/c
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
++        FILES_MATCHING PATTERN "*.h"
++)
++install(FILES ${TF_SOURCE_DIR}/core/public/version.h 
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/core/public
++)
++
++# Delegate
++install(FILES  ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.h
++               ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/gpu_api_delegate.h
++               ${TFLITE_SOURCE_DIR}/delegates/gpu/gl_delegate.h
++               ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate.h
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/gpu
++)
++# Delegate: XNNPack
++install(FILES  ${TFLITE_SOURCE_DIR}/delegates/xnnpack/xnnpack_delegate.h
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/xnnpack
++)
++# Delegate: Apple CoreML
++install(FILES  ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/coreml
++)
++# Delegate: NNAPI
++install(FILES  ${TFLITE_SOURCE_DIR}/nnapi/NeuralNetworksTypes.h
++               ${TFLITE_SOURCE_DIR}/nnapi/NeuralNetworksShim.h
++               ${TFLITE_SOURCE_DIR}/nnapi/nnapi_implementation.h
++               ${TFLITE_SOURCE_DIR}/nnapi/nnapi_util.h
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/nnapi
++)
++install(FILES  ${TFLITE_SOURCE_DIR}/delegates/nnapi/nnapi_delegate.h
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/nnapi
++)
++
+ # Build Targets
+ install(TARGETS tensorflow-lite
+         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
