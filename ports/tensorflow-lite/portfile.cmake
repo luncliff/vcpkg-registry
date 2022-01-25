@@ -12,6 +12,16 @@ vcpkg_from_github(
         fix-gpu-build.patch
         fix-eigen3-import.patch
 )
+if(VCPKG_TARGET_IS_OSX AND ("gpu" IN_LIST FEATURES))
+    # .proto files for coreml_mlmodel_codegen
+    vcpkg_from_github(
+        OUT_SOURCE_PATH COREML_SOURCE_PATH
+        REPO apple/coremltools
+        REF 5.1
+        SHA512 4cabfcdee33e2f45626a80e2a9a2aa94ffe33bfc6daff941fca32b1b8428eeec6f65f552b9370c38fa6fca7aa075ff303e1c9b9cdf6cb680b41b6185e94ce36f
+        HEAD_REF main
+    )
+endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
@@ -25,8 +35,12 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_RUY=ON
         -DTFLITE_ENABLE_XNNPACK=ON
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
+        -DCOREML_SOURCE_DIR=${COREML_SOURCE_PATH}
 )
 if("gpu" IN_LIST FEATURES)
+    if(VCPKG_TARGET_IS_OSX)
+        vcpkg_cmake_build(TARGET coreml_mlmodel_codegen)
+    endif()
     # run codegen for ".fbs" files
     vcpkg_cmake_build(TARGET gl_delegate_codegen)
 endif()
@@ -45,10 +59,11 @@ if("gpu" IN_LIST FEATURES)
                         "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/hexagon"
     )
 else()
-    if(NOT VCPKG_TARGET_IS_OSX)
+    # remove unsupported delegated for each target platform
+    if(NOT DEFINED VCPKG_TARGET_IS_OSX OR NOT VCPKG_TARGET_IS_OSX)
         file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/coreml")
     endif()
-    if(NOT VCPKG_TARGET_IS_ANDROID)
+    if(NOT DEFINED VCPKG_TARGET_IS_ANDROID OR NOT VCPKG_TARGET_IS_ANDROID)
         file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/nnapi"
                             "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/nnapi"
         )
