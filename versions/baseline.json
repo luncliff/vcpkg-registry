@@ -20,6 +20,10 @@
       "baseline": "2021-10-31",
       "port-version": 0
     },
+    "fft2d": {
+      "baseline": "1.0",
+      "port-version": 0
+    },
     "libdispatch": {
       "baseline": "swift-5.5",
       "port-version": 1

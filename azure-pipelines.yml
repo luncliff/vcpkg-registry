@@ -107,28 +107,28 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-windows"
             inputs:
-              vcpkgArguments: "farmhash openssl3 onnxruntime tensorflow-lite[google-angle,gpu] libdispatch zlib-ng directml"
+              vcpkgArguments: "farmhash openssl3 onnxruntime tensorflow-lite[google-angle,gpu] libdispatch zlib-ng directml fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-windows
           - task: run-vcpkg@0
             displayName: "x86-windows"
             inputs:
-              vcpkgArguments: "farmhash openssl3 tensorflow-lite libdispatch zlib-ng directml"
+              vcpkgArguments: "farmhash openssl3 tensorflow-lite libdispatch zlib-ng directml fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x86-windows
           - task: run-vcpkg@0
             displayName: "arm64-windows"
             inputs:
-              vcpkgArguments: "zlib-ng openssl3 directml"
+              vcpkgArguments: "zlib-ng openssl3 directml fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-windows
           - task: run-vcpkg@0
             displayName: "arm-windows"
             inputs:
-              vcpkgArguments: "directml"
+              vcpkgArguments: "directml fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm-windows
@@ -150,14 +150,14 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-uwp"
             inputs:
-              vcpkgArguments: "farmhash openssl3 zlib-ng"
+              vcpkgArguments: "farmhash openssl3 zlib-ng fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-uwp
           - task: run-vcpkg@0
             displayName: "arm64-uwp"
             inputs:
-              vcpkgArguments: "openssl3 zlib-ng"
+              vcpkgArguments: "openssl3 zlib-ng fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-uwp
@@ -175,7 +175,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-linux"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite zlib-ng directml"
+              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite zlib-ng directml fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-linux
@@ -193,21 +193,21 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-android
           - task: run-vcpkg@0
             displayName: "x64-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-android
           - task: run-vcpkg@0
             displayName: "arm-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm-android
@@ -231,7 +231,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-osx"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite xnnpack zlib-ng metal-cpp"
+              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite xnnpack zlib-ng metal-cpp fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-osx
@@ -246,14 +246,14 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp"
+              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
           - task: run-vcpkg@0
             displayName: "arm64-osx"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp"
+              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-osx
