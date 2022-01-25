@@ -107,24 +107,31 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-windows"
             inputs:
-              vcpkgArguments: "farmhash openssl3 onnxruntime tensorflow-lite[google-angle,gpu] libdispatch zlib-ng"
+              vcpkgArguments: "farmhash openssl3 onnxruntime tensorflow-lite[google-angle,gpu] libdispatch zlib-ng directml"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-windows
           - task: run-vcpkg@0
             displayName: "x86-windows"
             inputs:
-              vcpkgArguments: "farmhash openssl3 tensorflow-lite libdispatch zlib-ng"
+              vcpkgArguments: "farmhash openssl3 tensorflow-lite libdispatch zlib-ng directml"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x86-windows
           - task: run-vcpkg@0
             displayName: "arm64-windows"
             inputs:
-              vcpkgArguments: "zlib-ng openssl3"
+              vcpkgArguments: "zlib-ng openssl3 directml"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-windows
+          - task: run-vcpkg@0
+            displayName: "arm-windows"
+            inputs:
+              vcpkgArguments: "directml"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm-windows
 
       - job: "port_uwp"
         displayName: "Windows(UWP)"
@@ -168,7 +175,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-linux"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite zlib-ng"
+              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite zlib-ng directml"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-linux
