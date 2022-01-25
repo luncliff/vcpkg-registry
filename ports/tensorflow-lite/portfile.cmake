@@ -9,7 +9,7 @@ vcpkg_from_github(
     SHA512 34dcec08b73ef25cb6e5bcb0e083c2f43d8364bc9a465e59d63dc3f162a129d011e03faaecf7d563cbbe39f0c2bbf2d1795ccfb8b2ea3f108ed8db992cea9475
     PATCHES
         fix-cmakelists.patch
-        fix-gpu-build-windows.patch
+        fix-gpu-build.patch
         fix-eigen3-import.patch
 )
 

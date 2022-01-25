@@ -231,7 +231,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-osx"
             inputs:
-              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite xnnpack zlib-ng metal-cpp fft2d"
+              vcpkgArguments: "cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite[gpu] xnnpack zlib-ng metal-cpp fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-osx
