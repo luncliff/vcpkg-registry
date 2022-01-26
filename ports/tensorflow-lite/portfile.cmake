@@ -9,8 +9,9 @@ vcpkg_from_github(
     SHA512 34dcec08b73ef25cb6e5bcb0e083c2f43d8364bc9a465e59d63dc3f162a129d011e03faaecf7d563cbbe39f0c2bbf2d1795ccfb8b2ea3f108ed8db992cea9475
     PATCHES
         fix-cmakelists.patch
-        fix-gpu-build.patch
         fix-eigen3-import.patch
+        fix-gpu-build.patch
+        fix-gpu-sources.patch
 )
 if(VCPKG_TARGET_IS_OSX AND ("gpu" IN_LIST FEATURES))
     # .proto files for coreml_mlmodel_codegen
@@ -38,9 +39,6 @@ vcpkg_cmake_configure(
         -DCOREML_SOURCE_DIR=${COREML_SOURCE_PATH}
 )
 if("gpu" IN_LIST FEATURES)
-    if(VCPKG_TARGET_IS_OSX)
-        vcpkg_cmake_build(TARGET coreml_mlmodel_codegen)
-    endif()
     # run codegen for ".fbs" files
     vcpkg_cmake_build(TARGET gl_delegate_codegen)
 endif()

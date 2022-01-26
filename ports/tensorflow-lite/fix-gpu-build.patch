@@ -1,8 +1,8 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 97a9e21d..4c5c0b32 100644
+index 8bb43fd9..b520e4ea 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -211,14 +211,45 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
+@@ -212,13 +212,129 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
  populate_tflite_source_vars("c" TFLITE_C_SRCS)
  populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
  if(TFLITE_ENABLE_GPU)
@@ -13,173 +13,16 @@ index 97a9e21d..4c5c0b32 100644
 -  if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
 -    find_package(opengl_headers REQUIRED)
 -    find_package(egl_headers REQUIRED)
--  endif()
-+  # OpenGL, EGL headers will be installed with vcpkg
 +  find_package(OpenCL REQUIRED)
-+  # find_package(Vulkan REQUIRED)
-+  find_program(FLATC_BINPATH NAMES flatc REQUIRED)
-+  add_custom_target(gl_delegate_codegen
-+    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums common.fbs # gl/common_generated.h
-+    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums metadata.fbs # gl/metadata_generated.h
-+    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums workgroups.fbs # gl/workgroups_generated.h
-+    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums compiled_model.fbs # gl/compiled_model_generated.h
-+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/delegates/gpu/gl
-+  )
-+
-+  find_library(EGL_LIBPATH NAMES libEGL REQUIRED)
-+  find_library(GLES_LIBPATH NAMES libGLESv3${CMAKE_DEBUG_POSTFIX} libGLESv2${CMAKE_DEBUG_POSTFIX} REQUIRED)
-+  populate_tflite_source_vars(
-+    "delegates/gpu/gl" TFLITE_DELEGATES_GPU_GL_SRCS
-+    FILTER "(_test)\\.(cc|h)$"
-+  )
-+  populate_tflite_source_vars(
-+    "delegates/gpu/gl/compiler" TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS
-+    FILTER "(_test)\\.(cc|h)$"
-+  )
-+  populate_tflite_source_vars(
-+    "delegates/gpu/gl/converters" TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS
-+    FILTER "(_test)\\.(cc|h)$"
-+  )
-+  populate_tflite_source_vars(
-+    "delegates/gpu/gl/kernels" TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS
-+    FILTER "(_test)\\.(cc|h)$"
-+  )
-+  populate_tflite_source_vars(
-+    "delegates/gpu/gl/runtime" TFLITE_DELEGATES_GPU_GL_RUNTIME_SRCS
-+    FILTER "(_test)\\.(cc|h)$"
-+  )
-+  populate_tflite_source_vars(
-+    "delegates/gpu/gl/workgroups" TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS
-+    FILTER "(_test)\\.(cc|h)$"
-+  )
-+
-   populate_tflite_source_vars(
-     "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-     FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
-@@ -288,11 +319,22 @@ if(TFLITE_ENABLE_GPU)
-     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SRCS}
-     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SPECIAL_SRCS}
-     ${TFLITE_DELEGATES_GPU_COMMON_TRANSFORMATIONS_SRCS}
-+    ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/gl_interop.cc
-+    ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/egl_sync.cc
-+    ${TFLITE_SOURCE_DIR}/delegates/gpu/gl_delegate.cc
-+    ${TFLITE_DELEGATES_GPU_GL_SRCS}
-+    ${TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS}
-+    ${TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS}
-+    ${TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS}
-+    ${TFLITE_DELEGATES_GPU_GL_RUNTIME_SRCS}
-+    ${TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS}
-   )
--  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
-+  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DEGL_EGLEXT_PROTOTYPES" "-DEGL_NO_X11")
-   list(APPEND TFLITE_TARGET_DEPENDENCIES
-     absl::any
-     absl::flat_hash_map
-+    OpenCL::OpenCL # Vulkan::Headers
-+    ${EGL_LIBPATH} ${GLES_LIBPATH}
-   )
- endif()
- if(_TFLITE_ENABLE_NNAPI)
-diff --git a/tensorflow/lite/delegates/gpu/gl/runtime.cc b/tensorflow/lite/delegates/gpu/gl/runtime.cc
-index ce029efa..213a4134 100644
---- a/tensorflow/lite/delegates/gpu/gl/runtime.cc
-+++ b/tensorflow/lite/delegates/gpu/gl/runtime.cc
-@@ -86,27 +86,22 @@ absl::Status MakeGlTexture(const Object& object, const ObjectData& data,
-       if (data.size() % 2 != 0) {
-         return absl::InvalidArgumentError("Texture size is not aligned");
-       }
--      return absl::visit(
--          TextureF16Maker{
--              .data = absl::MakeConstSpan(
--                  reinterpret_cast<const uint16_t*>(data.data()),
--                  data.size() / 2),
--              .gl_texture = gl_texture,
--          },
--          object.size);
-+      TextureF16Maker maker{};
-+      maker.data = absl::MakeConstSpan(
-+          reinterpret_cast<const uint16_t*>(data.data()), data.size() / 2);
-+      maker.gl_texture = gl_texture;
-+      return absl::visit(maker, object.size);
-     }
-     case DataType::FLOAT32: {
-       if (data.size() % sizeof(float) != 0) {
-         return absl::InvalidArgumentError("Texture size is not aligned");
-       }
--      return absl::visit(
--          TextureF32Maker{
--              .data = absl::MakeConstSpan(
--                  reinterpret_cast<const float*>(data.data()),
--                  data.size() / sizeof(float)),
--              .gl_texture = gl_texture,
--          },
--          object.size);
-+      TextureF32Maker maker{};
-+      maker.data =
-+          absl::MakeConstSpan(reinterpret_cast<const float*>(data.data()),
-+                              data.size() / sizeof(float));
-+      maker.gl_texture = gl_texture;
-+      return absl::visit(maker, object.size);
-     }
-     default:
-       return absl::InvalidArgumentError("Unsupported textures data type.");
-diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index f4f0548d..66b5deba 100644
---- a/tensorflow/lite/CMakeLists.txt
-+++ b/tensorflow/lite/CMakeLists.txt
-@@ -212,45 +212,135 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
- populate_tflite_source_vars("c" TFLITE_C_SRCS)
- populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
- if(TFLITE_ENABLE_GPU)
--  # OpenGL, EGL headers will be installed with vcpkg
-   find_package(OpenCL REQUIRED)
--  # find_package(Vulkan REQUIRED)
--  find_program(FLATC_BINPATH NAMES flatc REQUIRED)
--  add_custom_target(gl_delegate_codegen
--    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums common.fbs # gl/common_generated.h
--    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums metadata.fbs # gl/metadata_generated.h
--    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums workgroups.fbs # gl/workgroups_generated.h
--    COMMAND ${FLATC_BINPATH} --cpp --scoped-enums compiled_model.fbs # gl/compiled_model_generated.h
--    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/delegates/gpu/gl
--  )
-+  find_package(Vulkan)
-+  find_program(PROTOC_EXECUTABLE NAMES protoc REQUIRED)
-+  # todo: CoreML tools from https://github.com/apple/coremltools/archive/3.3.zip
- 
--  find_library(EGL_LIBPATH NAMES libEGL REQUIRED)
--  find_library(GLES_LIBPATH NAMES libGLESv3${CMAKE_DEBUG_POSTFIX} libGLESv2${CMAKE_DEBUG_POSTFIX} REQUIRED)
--  populate_tflite_source_vars(
--    "delegates/gpu/gl" TFLITE_DELEGATES_GPU_GL_SRCS
--    FILTER "(_test)\\.(cc|h)$"
--  )
--  populate_tflite_source_vars(
--    "delegates/gpu/gl/compiler" TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS
--    FILTER "(_test)\\.(cc|h)$"
--  )
--  populate_tflite_source_vars(
--    "delegates/gpu/gl/converters" TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS
--    FILTER "(_test)\\.(cc|h)$"
--  )
--  populate_tflite_source_vars(
--    "delegates/gpu/gl/kernels" TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS
--    FILTER "(_test)\\.(cc|h)$"
--  )
--  populate_tflite_source_vars(
--    "delegates/gpu/gl/runtime" TFLITE_DELEGATES_GPU_GL_RUNTIME_SRCS
--    FILTER "(_test)\\.(cc|h)$"
--  )
--  populate_tflite_source_vars(
--    "delegates/gpu/gl/workgroups" TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS
--    FILTER "(_test)\\.(cc|h)$"
--  )
 +  find_program(FLATC_EXECUTABLE NAMES flatc REQUIRED)
 +  add_custom_target(gl_delegate_codegen
 +    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums common.fbs # gl/common_generated.h
 +    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums metadata.fbs # gl/metadata_generated.h
 +    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums workgroups.fbs # gl/workgroups_generated.h
 +    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums compiled_model.fbs # gl/compiled_model_generated.h
-+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/tensorflow/lite/delegates/gpu/gl
++    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/delegates/gpu/gl
 +  )
++  find_package(Vulkan)
 +  if(Vulkan_FOUND)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES Vulkan::Headers)
 +  endif()
@@ -190,10 +33,14 @@ index f4f0548d..66b5deba 100644
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES ${EGL_LIBPATH} ${GLES_LIBPATH})
 +    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DEGL_EGLEXT_PROTOTYPES" "-DEGL_NO_X11")
 +  elseif(APPLE)
++    enable_language(OBJC)
 +    enable_language(OBJCXX)
++    set(CMAKE_OBJC_STANDARD 11)
++    set(CMAKE_OBJCXX_STANDARD 14)
 +    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL")
++    # note: compile option "-fobjc-arc" is required for Objective C/C++ sources.
 +  endif()
- 
++
 +  if(WIN32 OR ANDROID)
 +    populate_tflite_source_vars(
 +      "delegates/gpu/gl" TFLITE_DELEGATES_GPU_GL_SRCS
@@ -225,231 +72,28 @@ index f4f0548d..66b5deba 100644
 +      ${TFLITE_SOURCE_DIR}/delegates/gpu/gl_delegate.cc
 +    )
 +  elseif(APPLE)
-+    list(APPEND TFLITE_DELEGATES_GPU_METAL_CXX_SRCS
-+      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/buffer.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/compute_task.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/inference_context.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/linear_storage.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/metal_arguments.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/metal_device.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/metal_spatial_tensor.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/texture2d.cc
++    find_package(Protobuf REQUIRED)
++    find_program(PROTOC_EXECUTABLE NAMES protoc REQUIRED)
++    # CoreML .proto files from https://github.com/apple/coremltools
++    file(GLOB COREML_MLMODEL_FORMAT_PROTO_FILES "${COREML_SOURCE_DIR}/mlmodel/format/*.proto")
++    protobuf_generate(
++        LANGUAGE cpp
++        IMPORT_DIRS ${COREML_SOURCE_DIR}/mlmodel/format
++        PROTOC_OUT_DIR ${COREML_SOURCE_DIR}/mlmodel/format
++        PROTOS ${COREML_MLMODEL_FORMAT_PROTO_FILES}
++        OUT_VAR COREML_MLMODEL_FORMAT_PROTO_SRCS
++    )
++    populate_tflite_source_vars(
++      "delegates/gpu/metal" TFLITE_DELEGATES_GPU_METAL_CXX_SRCS
++      FILTER "(_test)\\.(m|mm|cc|h)$"
 +    )
 +    set_source_files_properties(${TFLITE_DELEGATES_GPU_METAL_CXX_SRCS}
 +    PROPERTIES
-+      LANGUAGE OBJCXX      
-+    )
-+    list(APPEND TFLITE_DELEGATES_GPU_METAL_SRCS
-+      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/common.h
-+      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/common.mm
-+    )
-+    list(APPEND TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/activation_layer_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/add_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/concatenation_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/convolution_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/dummy_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/fully_connected_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/hardswish_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/mul_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/pad_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/pooling_layer_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/reshape_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/resize_bilinear_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/softmax_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/threshold_layer_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/util.cc
-+    )
-+    set_source_files_properties(${TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS}
-+    PROPERTIES
-+      LANGUAGE OBJCXX      
-+    )
-+    list(APPEND TFLITE_DELEGATES_COREML_BUILDERS_SRCS
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/dummy_op_builder.cc
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/dummy_op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/activation_layer_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/add_op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/concatenation_op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/convolution_op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/fully_connected_op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/hardswish_op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/mul_op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/pad_op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/pooling_layer_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/reshape_op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/resize_bilinear_op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/softmax_op_builder.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/threshold_layer_builder.h
-+    )
-+    list(APPEND TFLITE_DELEGATES_COREML_SRCS
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.h
-+    )
-+    list(APPEND TFLITE_DELEGATES_COREML_PROVIDER_SRCS
-+      ${TFLITE_SOURCE_DIR}/tools/delegates/coreml_delegate_provider.cc
-+    )
-+    list(APPEND TFLITE_TARGET_DEPENDENCIES "-framework Metal" "-framework CoreML")
-+  endif()
-   populate_tflite_source_vars(
-     "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-     FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
-@@ -307,7 +397,7 @@ if(TFLITE_ENABLE_GPU)
-   list(APPEND TFLITE_DELEGATES_GPU_SRCS
-     ${TFLITE_SOURCE_DIR}/delegates/gpu/api.cc
-     ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.cc
--    ${TFLITE_SOURCE_DIR}/experimental/acceleration/compatibility/android_info.cc
-+    # ${TFLITE_SOURCE_DIR}/experimental/acceleration/compatibility/android_info.cc
-     ${TFLITE_DELEGATES_GPU_CL_SRCS}
-     ${TFLITE_DELEGATES_GPU_CL_DEFAULT_SRCS}
-     ${TFLITE_DELEGATES_GPU_CL_KERNELS_SRCS}
-@@ -320,22 +410,24 @@ if(TFLITE_ENABLE_GPU)
-     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SRCS}
-     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SPECIAL_SRCS}
-     ${TFLITE_DELEGATES_GPU_COMMON_TRANSFORMATIONS_SRCS}
--    ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/gl_interop.cc
--    ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/egl_sync.cc
--    ${TFLITE_SOURCE_DIR}/delegates/gpu/gl_delegate.cc
-+    ${TFLITE_DELEGATES_GPU_EGL_SRCS}
-     ${TFLITE_DELEGATES_GPU_GL_SRCS}
-     ${TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS}
-     ${TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS}
-     ${TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS}
-     ${TFLITE_DELEGATES_GPU_GL_RUNTIME_SRCS}
-     ${TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS}
-+    ${TFLITE_DELEGATES_GPU_METAL_CXX_SRCS}
-+    ${TFLITE_DELEGATES_GPU_METAL_SRCS}
-+    ${TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS}
-+    ${TFLITE_DELEGATES_COREML_BUILDERS_SRCS}
-+    ${TFLITE_DELEGATES_COREML_SRCS}
-+    ${TFLITE_DELEGATES_COREML_PROVIDER_SRCS}
-   )
--  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DEGL_EGLEXT_PROTOTYPES" "-DEGL_NO_X11")
-   list(APPEND TFLITE_TARGET_DEPENDENCIES
-     absl::any
-     absl::flat_hash_map
--    OpenCL::OpenCL # Vulkan::Headers
--    ${EGL_LIBPATH} ${GLES_LIBPATH}
-+    OpenCL::OpenCL
-   )
- endif()
- if(_TFLITE_ENABLE_NNAPI)
-diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 66b5deba..e0b135da 100644
---- a/tensorflow/lite/CMakeLists.txt
-+++ b/tensorflow/lite/CMakeLists.txt
-@@ -213,18 +213,15 @@ populate_tflite_source_vars("c" TFLITE_C_SRCS)
- populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
- if(TFLITE_ENABLE_GPU)
-   find_package(OpenCL REQUIRED)
--  find_package(Vulkan)
--  find_program(PROTOC_EXECUTABLE NAMES protoc REQUIRED)
--  # todo: CoreML tools from https://github.com/apple/coremltools/archive/3.3.zip
--
-   find_program(FLATC_EXECUTABLE NAMES flatc REQUIRED)
-   add_custom_target(gl_delegate_codegen
-     COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums common.fbs # gl/common_generated.h
-     COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums metadata.fbs # gl/metadata_generated.h
-     COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums workgroups.fbs # gl/workgroups_generated.h
-     COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums compiled_model.fbs # gl/compiled_model_generated.h
--    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/tensorflow/lite/delegates/gpu/gl
-+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/delegates/gpu/gl
-   )
-+  find_package(Vulkan)
-   if(Vulkan_FOUND)
-     list(APPEND TFLITE_TARGET_DEPENDENCIES Vulkan::Headers)
-   endif()
-@@ -235,8 +232,12 @@ if(TFLITE_ENABLE_GPU)
-     list(APPEND TFLITE_TARGET_DEPENDENCIES ${EGL_LIBPATH} ${GLES_LIBPATH})
-     list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DEGL_EGLEXT_PROTOTYPES" "-DEGL_NO_X11")
-   elseif(APPLE)
-+    enable_language(OBJC)
-     enable_language(OBJCXX)
-+    set(CMAKE_OBJC_STANDARD 11)
-+    set(CMAKE_OBJCXX_STANDARD 14)
-     list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL")
-+    # todo: "-fobjc-arc" for Objective C++ sources
-   endif()
- 
-   if(WIN32 OR ANDROID)
-@@ -270,7 +271,64 @@ if(TFLITE_ENABLE_GPU)
-       ${TFLITE_SOURCE_DIR}/delegates/gpu/gl_delegate.cc
-     )
-   elseif(APPLE)
-+    find_package(protobuf CONFIG REQUIRED)
-+    find_program(PROTOC_EXECUTABLE NAMES protoc REQUIRED)
-+    # CoreML .proto files from https://github.com/apple/coremltools
-+    list(APPEND COREML_MLMODEL_FORMAT_PROTO_FILES
-+      ArrayFeatureExtractor.proto Identity.proto Normalizer.proto
-+      AudioFeaturePrint.proto Imputer.proto OneHotEncoder.proto
-+      BayesianProbitRegressor.proto ItemSimilarityRecommender.proto Parameters.proto
-+      CategoricalMapping.proto
-+      CustomModel.proto LinkedModel.proto SVM.proto
-+      DataStructures.proto MIL.proto Scaler.proto
-+      DictVectorizer.proto SoundAnalysisPreprocessing.proto
-+      FeatureTypes.proto TextClassifier.proto
-+      FeatureVectorizer.proto Model.proto TreeEnsemble.proto
-+      GLMClassifier.proto NearestNeighbors.proto VisionFeaturePrint.proto
-+      GLMRegressor.proto NeuralNetwork.proto WordEmbedding.proto
-+      Gazetteer.proto NonMaximumSuppression.proto WordTagger.proto
-+    )
-+    # todo: use protobuf_generate
-+    add_custom_target(coreml_mlmodel_codegen
-+      COMMAND ${PROTOC_EXECUTABLE} ${COREML_MLMODEL_FORMAT_PROTO_FILES} --cpp_out=${COREML_SOURCE_DIR}/mlmodel/format # -I"${COREML_SOURCE_DIR}/mlmodel/format" 
-+      WORKING_DIRECTORY ${COREML_SOURCE_DIR}/mlmodel/format
-+    )
-+    list(APPEND COREML_MLMODEL_FORMAT_PROTO_SRCS
-+      ${COREML_SOURCE_DIR}/mlmodel/format/ArrayFeatureExtractor.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/AudioFeaturePrint.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/BayesianProbitRegressor.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/CategoricalMapping.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/CustomModel.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/DataStructures.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/DictVectorizer.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/FeatureTypes.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/FeatureVectorizer.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/GLMClassifier.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/GLMRegressor.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/Gazetteer.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/Identity.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/Imputer.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/ItemSimilarityRecommender.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/LinkedModel.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/MIL.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/Model.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/NearestNeighbors.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/NeuralNetwork.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/NonMaximumSuppression.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/Normalizer.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/OneHotEncoder.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/Parameters.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/SVM.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/Scaler.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/SoundAnalysisPreprocessing.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/TextClassifier.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/TreeEnsemble.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/VisionFeaturePrint.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/WordEmbedding.pb.cc
-+      ${COREML_SOURCE_DIR}/mlmodel/format/WordTagger.pb.cc
-+    )
-     list(APPEND TFLITE_DELEGATES_GPU_METAL_CXX_SRCS
-+      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/buffer_convert.mm
-       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/buffer.cc
-       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/compute_task.cc
-       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/inference_context.cc
-@@ -282,11 +340,27 @@ if(TFLITE_ENABLE_GPU)
-     )
-     set_source_files_properties(${TFLITE_DELEGATES_GPU_METAL_CXX_SRCS}
-     PROPERTIES
--      LANGUAGE OBJCXX      
 +      LANGUAGE OBJCXX
++      COMPILE_OPTIONS "-fobjc-arc"
 +    )
 +    list(APPEND TFLITE_OBJC_SRCS
++      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/buffer_convert.mm
 +      ${TFLITE_SOURCE_DIR}/objc/sources/TFLCoreMLDelegate.m
 +      ${TFLITE_SOURCE_DIR}/objc/sources/TFLInterpreter+Internal.h
 +      ${TFLITE_SOURCE_DIR}/objc/sources/TFLQuantizationParameters+Internal.h
@@ -462,43 +106,68 @@ index 66b5deba..e0b135da 100644
 +      ${TFLITE_SOURCE_DIR}/objc/sources/TFLErrorUtil.m
 +      ${TFLITE_SOURCE_DIR}/objc/sources/TFLMetalDelegate.m
 +      ${TFLITE_SOURCE_DIR}/objc/sources/TFLTensor.m
-     )
-     list(APPEND TFLITE_DELEGATES_GPU_METAL_SRCS
-       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/common.h
-       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/common.mm
++    )
++    list(APPEND TFLITE_DELEGATES_GPU_METAL_SRCS
++      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/common.h
++      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/common.mm
 +      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate_internal.h
 +      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate.mm
-     )
-     list(APPEND TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS
-       ${TFLITE_SOURCE_DIR}/delegates/coreml/builders/activation_layer_builder.cc
-@@ -339,7 +413,7 @@ if(TFLITE_ENABLE_GPU)
-     list(APPEND TFLITE_DELEGATES_COREML_PROVIDER_SRCS
-       ${TFLITE_SOURCE_DIR}/tools/delegates/coreml_delegate_provider.cc
-     )
--    list(APPEND TFLITE_TARGET_DEPENDENCIES "-framework Metal" "-framework CoreML")
++    )
++    populate_tflite_source_vars(
++      "delegates/coreml/builders" TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS
++      FILTER "(_test)\\.(m|mm|cc|h)$"
++    )
++    set_source_files_properties(${TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS}
++    PROPERTIES
++      LANGUAGE OBJCXX
++      COMPILE_OPTIONS "-fobjc-arc"
++    )
++    list(APPEND TFLITE_DELEGATES_COREML_SRCS
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.h
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.h
++      ${TFLITE_SOURCE_DIR}/tools/delegates/coreml_delegate_provider.cc
++    )
++    set_source_files_properties(${TFLITE_OBJC_SRCS} ${TFLITE_DELEGATES_GPU_METAL_SRCS} ${TFLITE_DELEGATES_COREML_SRCS}
++    PROPERTIES
++      COMPILE_OPTIONS "-fobjc-arc"
++    )
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES "-framework Foundation" "-framework Metal" "-framework CoreML" protobuf::libprotobuf)
    endif()
    populate_tflite_source_vars(
      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-@@ -397,7 +471,7 @@ if(TFLITE_ENABLE_GPU)
-   list(APPEND TFLITE_DELEGATES_GPU_SRCS
-     ${TFLITE_SOURCE_DIR}/delegates/gpu/api.cc
-     ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.cc
--    # ${TFLITE_SOURCE_DIR}/experimental/acceleration/compatibility/android_info.cc
-+    ${TFLITE_SOURCE_DIR}/experimental/acceleration/compatibility/android_info.cc
-     ${TFLITE_DELEGATES_GPU_CL_SRCS}
-     ${TFLITE_DELEGATES_GPU_CL_DEFAULT_SRCS}
-     ${TFLITE_DELEGATES_GPU_CL_KERNELS_SRCS}
-@@ -423,6 +497,8 @@ if(TFLITE_ENABLE_GPU)
-     ${TFLITE_DELEGATES_COREML_BUILDERS_SRCS}
-     ${TFLITE_DELEGATES_COREML_SRCS}
-     ${TFLITE_DELEGATES_COREML_PROVIDER_SRCS}
+@@ -289,11 +405,26 @@ if(TFLITE_ENABLE_GPU)
+     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SRCS}
+     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SPECIAL_SRCS}
+     ${TFLITE_DELEGATES_GPU_COMMON_TRANSFORMATIONS_SRCS}
++    ${TFLITE_DELEGATES_GPU_EGL_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_RUNTIME_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS}
++    ${TFLITE_DELEGATES_GPU_METAL_CXX_SRCS}
++    ${TFLITE_DELEGATES_GPU_METAL_SRCS}
++    ${TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS}
++    ${TFLITE_DELEGATES_COREML_BUILDERS_SRCS}
++    ${TFLITE_DELEGATES_COREML_SRCS}
++    ${TFLITE_DELEGATES_COREML_PROVIDER_SRCS}
 +    ${COREML_MLMODEL_FORMAT_PROTO_SRCS}
 +    ${TFLITE_OBJC_SRCS}
    )
+-  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
    list(APPEND TFLITE_TARGET_DEPENDENCIES
      absl::any
-@@ -550,6 +626,7 @@ add_library(tensorflow-lite
+     absl::flat_hash_map
++    OpenCL::OpenCL
+   )
+ endif()
+ if(_TFLITE_ENABLE_NNAPI)
+@@ -416,6 +547,7 @@ add_library(tensorflow-lite
  target_include_directories(tensorflow-lite
    PUBLIC
      $<BUILD_INTERFACE:${TFLITE_INCLUDE_DIRS}>

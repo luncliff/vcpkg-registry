@@ -34,13 +34,14 @@
           "name": "flatbuffers",
           "host": true
         },
-        {
-          "name": "protobuf",
-          "host": true
-        },
         "fp16",
         "opencl",
         "opengl-registry",
+        {
+          "name": "protobuf",
+          "host": true,
+          "platform": "osx"
+        },
         "vulkan-headers"
       ]
     }
