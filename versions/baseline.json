@@ -20,6 +20,10 @@
       "baseline": "2021-10-31",
       "port-version": 0
     },
+    "fft2d": {
+      "baseline": "1.0",
+      "port-version": 0
+    },
     "libdispatch": {
       "baseline": "swift-5.5",
       "port-version": 1
@@ -49,8 +53,8 @@
       "port-version": 0
     },
     "tensorflow-lite": {
-      "baseline": "2.6.0",
-      "port-version": 1
+      "baseline": "2.6.1",
+      "port-version": 0
     },
     "tensorpipe": {
       "baseline": "2021-11-13",
