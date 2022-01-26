@@ -1,9 +1,9 @@
 {
   "name": "farmhash",
   "version-date": "2021-10-28",
+  "port-version": 1,
   "description": "FarmHash, a family of hash functions.",
   "homepage": "https://github.com/google/farmhash",
-  "supports": "!arm",
   "dependencies": [
     {
       "name": "vcpkg-cmake",

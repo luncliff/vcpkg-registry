@@ -193,21 +193,21 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash"       
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-android
           - task: run-vcpkg@0
             displayName: "x64-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-android
           - task: run-vcpkg@0
             displayName: "arm-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm-android
@@ -261,14 +261,14 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp fft2d"
+              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp fft2d farmhash"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
           - task: run-vcpkg@0
             displayName: "arm64-osx"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp fft2d"
+              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp fft2d farmhash"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-osx
