@@ -1,19 +1,41 @@
 
-### Changes
+### Info
 
-#### Overlay Ports
+* Project: [Boost 1.77.0(sample)](https://www.boost.org/users/history/version_1_77_0.html)
+* 2021/08/11 ~ 2021/12/08 (Next Version: "1.78.0")
 
-* `$(port)` Project URL
-* `$(port)` Project URL
+### Triplets
+
+* `x64-windows`
 * ...
 
-#### Build Check
+```bash
+# In Bash
+vcpkg install --overlay-triplets ./vcpkg-registry/triplets/ --overlay-ports ./vcpkg-registry/ports/ \
+    ${port}:${triplet} 
+```
 
-* install `$(tool)` in (VM image name)
-* install `$(tool)` in (VM image name)
+```ps1
+# In PowerShell 7+
+vcpkg install --overlay-triplets ./vcpkg-registry/triplets/ --overlay-ports ./vcpkg-registry/ports/ `
+    $port:$triplet 
+```
+### Configuration
 
-### Related Works
+"vcpkg-configuration.json" changes for the release.
 
-* URL 1
-* URL 2
-* ...
+```json
+{
+    "registries": [
+        {
+            "kind": "git",
+            "repository": "https://github.com/luncliff/vcpkg-registry",
+            "packages": [
+                "boost",
+                "boost-asio"
+            ],
+            "baseline": "..."
+        }
+    ]
+}
+```
