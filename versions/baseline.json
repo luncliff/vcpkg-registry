@@ -14,7 +14,7 @@
     },
     "farmhash": {
       "baseline": "2021-10-28",
-      "port-version": 0
+      "port-version": 1
     },
     "fbgemm": {
       "baseline": "2021-10-31",
