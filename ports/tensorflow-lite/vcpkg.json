@@ -29,14 +29,24 @@
     "gpu": {
       "description": "Enable GPU delegates (Windows only)",
       "dependencies": [
-        "egl-registry",
+        {
+          "name": "egl-registry",
+          "platform": "windows | android"
+        },
         {
           "name": "flatbuffers",
           "host": true
         },
         "fp16",
         "opencl",
-        "opengl-registry",
+        {
+          "name": "opengl-registry",
+          "platform": "windows | android"
+        },
+        {
+          "name": "protobuf",
+          "platform": "osx"
+        },
         {
           "name": "protobuf",
           "host": true,
