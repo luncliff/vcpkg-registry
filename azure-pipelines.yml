@@ -235,7 +235,22 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-osx
-
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/tensorflow-lite"
+              Contents: |
+                ?(*.log|*.txt)
+                *.cmake
+              TargetFolder: "$(Build.ArtifactStagingDirectory)"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Staged Logs"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
+            
       - job: "port_ios"
         displayName: "iOS(11)"
         pool:
