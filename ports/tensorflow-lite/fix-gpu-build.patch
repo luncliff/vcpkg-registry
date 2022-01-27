@@ -123,13 +123,13 @@ index 8bb43fd9..b520e4ea 100644
 +      COMPILE_OPTIONS "-fobjc-arc"
 +    )
 +    list(APPEND TFLITE_DELEGATES_COREML_SRCS
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.h
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h        ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.h ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.h        ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
 +      ${TFLITE_SOURCE_DIR}/tools/delegates/coreml_delegate_provider.cc
++      # ...
++      ${TFLITE_SOURCE_DIR}/tools/tool_params.cc
++      ${TFLITE_SOURCE_DIR}/tools/command_line_flags.cc 
 +    )
 +    set_source_files_properties(${TFLITE_OBJC_SRCS} ${TFLITE_DELEGATES_GPU_METAL_SRCS} ${TFLITE_DELEGATES_COREML_SRCS}
 +    PROPERTIES
