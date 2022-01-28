@@ -482,7 +482,7 @@ zlib-ng_x64-linux 폴더 밑에도 include, lib, share등 GNU 표준 스타일 �
 
 ## Host/Target 환경
 
-앞서 `vcpkg install`을 실행할 때 x64-windows, x64-linux, x64-osx와 같은 단어들을 확인할 수 있었습니다.
+`vcpkg install`을 실행할 때 x64-windows, x64-linux, x64-osx와 같은 단어들을 확인할 수 있었습니다.
 이들은 [triplets에 있는 파일들](https://github.com/microsoft/vcpkg/blob/2021.12.01/docs/users/triplets.md)의 이름과 동일합니다.
 
 ```
@@ -530,7 +530,7 @@ set(VCPKG_CMAKE_SYSTEM_VERSION 10.0)
 
 변수 이름에 `VCPKG_` 접두어를 사용하고 있습니다.
 만약 설치과정에서 패키지가 CMake를 사용한다면, [이 변수의 값들은 적절한 CMake 변수들로 치환](https://github.com/microsoft/vcpkg/blob/5ddd7f02689b7c5aab78711d77f61db5d2e5e79c/ports/vcpkg-cmake/vcpkg_cmake_configure.cmake#L302-L331)됩니다.
-이 변수들은 결과적으로는 [CMake Toolchain(Cross Compiling)](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#id12)에서 정의하는 변수들로 연결됩니다.
+결과적으로는 [CMake Toolchain(Cross Compiling)](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#id12)에서 정의하는 변수들로 연결되는 것이죠.
 [자세한 치환 방법은 각 플랫폼마다 다른데](https://github.com/microsoft/vcpkg/tree/2021.12.01/scripts/toolchains),
 이 때문에 여러분이 배포하고 있는 플랫폼에 맞는 정확한 사용법과 그 의미에 대해 알아둘 필요가 있습니다.
 관련된 CMake 변수들의 의미는 아래 2개 문서에서 찾아볼 수 있습니다.
@@ -639,7 +639,7 @@ CMake 문법에 익숙하다면 읽고 의미를 해석해보는게 도움이 �
 
 ## CMake에서 Vcpkg로 설치한 패키지를 사용하기
 
-### 1. CMake Toolchain == Vcpkg
+### 1. CMake Toolchain = Vcpkg
 
 Bootstrap을 마친 이후, CMake 프로젝트에서 Configure/Generate할 때 Toolchain으로 vcpkg.cmake 파일의 경로를 사용하면 됩니다.
 실제로 이 `CMAKE_TOOLCHAIN_FILE` 변수가 사용되는 지점은 CMake의 `project` 명령이 수행될 때 입니다.
@@ -717,15 +717,18 @@ CMake 3.19+ 버전을 사용하고 있다면 [CMake Preset](https://cmake.org/cm
 
 ### 2. Find Package/Header/Library
 
-먼저, CMake 프로젝트에서는 외부 라이브러리를 가져올(import) 때 몇가지 정해진 방법이 있다는 점을 생각해야 합니다.
-현대(Modern) CMake는 Target 기반으로 동작하고, 이들을 `target_link_libraries`를 통해서 링킹하도록 하고 있습니다.
+먼저, CMake 프로젝트에서는 외부 라이브러리를 가져올(import) 때 몇가지 정해진 방법이 있다는 점을 알아둘 필요가 있습니다.
+Modern CMake는 Target 기반으로 동작하고, Build를 수행하는 Target들은 `target_link_libraries`를 통해서 링킹하도록 하고 있습니다.
+(이미 빌드가 완료된 Imported Target들에 대해서는 `target_link_options`에서 설정된 값들, 또는 `target_link_directories`에서 확인할 수 있는 설치경로 등이 포함됩니다.)
 이에 대한 기본적인 내용을 알기 위해서는 CMake에서 작성한 3개 문서를 함께 이해하고 있어야 합니다.
 
 * https://cmake.org/cmake/help/latest/guide/using-dependencies/index.html
 * https://cmake.org/cmake/help/latest/guide/importing-exporting/index.html
 * https://cmake.org/cmake/help/latest/command/find_package.html
 
-하지만 이런 내용들은 적잖은 지적 부담이 됩니다.
+하지만 이런 내용들은 꽤나 지적 부담이 됩니다.
+특히 **어떤 상황에서 기대와 다르게 동작할 수 있는지** 알아야 한다는 점에서 말이죠...
+
 다행스럽게도 Vcpkg에서는 몇몇 중요한 CMake 명령들이 별다른 세부사항 없이도 수행되도록 지원하고 있습니다.
 이 과정에서 각 Port들이 제공하는 `vcpkg-cmake-wrapper.cmake`를 실행(CMake `include`명령)해서 `CMAKE_MODULE_PATH`를 확장하거나, 
 vcpkg.cmake에서 `CMAKE_PREFIX_PATH`, `CMAKE_FIND_ROOT_PATH`에 vcpkg 하위 폴더들을 추가하는 방법을 사용합니다.
@@ -768,12 +771,12 @@ The package libjpeg-turbo is compatible with built-in CMake targets:
 "Vcpkg 에서만 이렇게 사용하는 것이 아닌가?"라는 오해가 있을까 염려되어 부연하자면,
 **CMake Module [`FindZLIB.cmake`](https://cmake.org/cmake/help/latest/module/FindZLIB.html), [`FindJPEG.cmake`](https://cmake.org/cmake/help/latest/module/FindJPEG.html)에서 적절하게 Detect할 수 있도록** 맞도록 Vcpkg의 `zlib`, `libjpeg-turbo` Port들이 작성된 것입니다.
 
-#### [pkg-config](https://en.wikipedia.org/wiki/Pkg-config)
+#### pkg-config
 
 모든 패키지들이 **CMake만을** 지원하는 것은 아닙니다.
 여전히 `.pc`파일, 즉 [pkg-config](https://en.wikipedia.org/wiki/Pkg-config)를 사용해 include path, library search path를 전달받아 사용하는 프로젝트들도 있을 것입니다.
 
-Vcpkg의 일부 패키지들은 .pc 파일을 설치하며, [`fmt`](https://github.com/fmtlib/fmt)도 그 중 하나입니다.
+일부 패키지들은 .pc 파일을 설치하며, [`fmt`](https://github.com/fmtlib/fmt)도 그 중 하나입니다.
 해당 패키지를 설치해보면 `installed/${triplet}/lib/pkgconfig`, `installed/${triplet}/debug/lib/pkgconfig` 폴더 밑에 `fmt.pc` 파일이 생성된 것을 확인할 수 있습니다.
 
 ```pc
@@ -801,6 +804,10 @@ $ vcpkg install liburing
 ...
 ```
 
+Modern CMake는 Target기반으로 동작한다고 설명했었습니다.
+아래와 같이 Imported Target `PkgConfig::liburing`을 만들도록 하기위해 `IMPORTED_TARGET`을, 
+이렇게 생성된 Target을 현재 실행중인 CMake 스크립트들이 사용할 수 있도록 `GLOBAL`을 사용합니다.
+
 ```cmake
 find_package(PkgConfig REQUIRED)
 
@@ -817,8 +824,9 @@ PRIVATE
 
 #### [find_path](https://cmake.org/cmake/help/latest/command/find_path.html)
 
-역사적인 이유로, C++ 라이브러리들 중 상당수가 Header Only 정책을 취하고 있습니다.
-이런 프로젝트들은 Header파일만 사용하도록 설계되어 있기에, CMake는 그저 Test프로그램들의 빌드만을 수행할 뿐 실제 파일들의 설치와 `find_package`을 지원하지 않는 경우도 있습니다.
+편의상의 이유로, C++ 라이브러리들 중 상당수가 Header Only 정책을 사용하고 있습니다.
+이런 프로젝트들은 Header파일과 그 경로만 있으면 사용할 수 있도록 설계되어 있는데,
+이 때문에 CMakeLists.txt를 작성할 때 그저 Test프로그램들의 빌드만을 수행할 뿐 실제 파일들의 설치와 `find_package`을 지원하지 않는 경우가 많습니다.
 
 Vcpkg에 등록된 Header Only 패키지들은 CMake에게 "지정한 include 패턴으로 Header를 찾아라"라는 것으로 그 경로를 획득할 수 있습니다.
 
@@ -832,7 +840,7 @@ The package egl-registry is header only and can be used from CMake via:
 
 ```
 
-CMakeLists.txt를 직접 작성해 `EGL_REGISTRY_INCLUDE_DIRS`변수의 값이 어떻게 출력되는지 확인해보길 권해드립니다.
+CMakeLists.txt를 직접 작성해 `EGL_REGISTRY_INCLUDE_DIRS`변수의 값이 어떻게 출력되는지 확인해보시기 바랍니다.
 
 ```cmake
 project(test_vcpkg_import LANGUAGES CXX)
@@ -892,15 +900,15 @@ Windows 환경이라면 [lucasg/Dependencies](https://github.com/lucasg/Dependen
 ### 1. Port != Package
 
 Vcpkg는 임의의 **Package를 소스코드로부터 빌드해서 설치**하는 방식으로 동작합니다.
-이런 맥락에서, Port는 **Package를 Vcpkg에서 빌드하기 위한 방법**을 의미한다고 할 수 있습니다.
-`vcpkg` 프로그램이 Port의 정보를 바탕으로 설치를 수행하고,
+이런 맥락에서, Port는 **Package를 Vcpkg에서 빌드하기 위한 방법**을 기술한 것이라고 설명할 수 있겠습니다.
+`vcpkg` 프로그램이 Port의 내용를 바탕으로 설치를 수행하고,
 이 **설치가 완료된 결과물들이 Package**가 되는 것이죠.
-이런 뉘앙스를 각 폴더들의 이름(buildtrees, packages, installed)에서 이미 느끼셨을지도 모르겠습니다.
+이런 뉘앙스를 각 폴더들의 이름(buildtrees, packages, installed)에서 이미 직감하셨을지도 모르겠습니다.
 
-### 2. Feature
+### 2. Port Feature
 
-앞서 [`libzip`](https://github.com/nih-at/libzip)을 설치할 때 예시에서는 `libzip[core,openssl]`라고 표기했는데, 이때 `[]`안에 표기하는 것을 Feature라고 합니다.
-각 패키지들이 지원하는 Feature는 `vcpkg search` 명령을 통해 확인할 수 있습니다.
+앞서 [`libzip`](https://github.com/nih-at/libzip)을 설치할 때 예시에서는 `libzip[core,openssl]`라고 표기했는데, 이때 `[]`안에 들어있는 부분을 Port Feature라고 합니다.
+각 Port들이 지원하는 Feature는 `vcpkg search` 명령을 통해 확인할 수 있습니다.
 
 ```console
 $./vcpkg.exe search libzip
@@ -916,7 +924,7 @@ libzip[openssl]                           AES (encryption) support using OpenSSL
 
 여기서 `libzip[bzip2]`에 대한 설명이 있습니다.
 그 내용을 보면 [libzip 라이브러리](https://github.com/nih-at/libzip)에서 [`.bz2` 파일 양식](https://en.wikipedia.org/wiki/Bzip2)을 지원하도록 한다는 것이죠.
-`vcpkg install`명령을 해보면 [bzip2 라이브러리](https://sourceware.org/bzip2/)를 설치한다는 것을 알 수 있습니다.
+`vcpkg install`명령을 해보면 [bzip2 라이브러리](https://sourceware.org/bzip2/)를 함께 설치한다는 것을 알 수 있습니다.
 
 ```console
 $ ./vcpkg.exe install libzip[openssl]
@@ -971,21 +979,215 @@ Additional packages (*) will be modified to complete this operation.
 
 ## Vcpkg의 Port 작성방법
 
-> TBA
+프로젝트가 어떤 빌드 시스템을 사용하고 있느냐에 따라서 빌드 방법이 상당히 달라지게 됩니다.
+Vcpkg는 Meson, Makefile 프로젝트를 지원하기는 하지만, CMake 프로젝트를 지원하는데 특화되어 있습니다.
+[Port로 작성하려는 프로젝트의 빌드 시스템 파일이이 적절하지 않다고 판단되면 CMakeLists.txt를 내장하기도 합니다](https://github.com/microsoft/vcpkg/tree/2021.12.01/ports/7zip).
+
+몇 년 전에 비하면 Vcpkg 프로젝트는 굉장히 활발하게 움직이고 있습니다.
+[Discussions에서 검색해보는 것 만으로도](https://github.com/microsoft/vcpkg/discussions) 시간을 많이 아낄 수 있을 것이라 생각합니다.
 
 ### 1. Public Source
 
+빌드를 하려면 역시 소스코드부터 있어야겠죠.
+현재는 크게 3가지 방법이 사용되고 있습니다.
+각각 URL, GitLab, GitHub 입니다.
+
+#### Download from URL
+
+portfile.cmake에서는 Vcpkg에서 지원하는 여러 CMake function/macro들을 사용할 수 있습니다.
+그 중 단연코 가장 많이 사용하는 것들 중 하나는 [`vcpkg_download_distfile`](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_download_distfile.cmake)입니다.
+
+한번 다운로드한 뒤에는 다운로드한 파일을 재사용하고, Hash 값을 검사해 변경이 발생했는지 확인할 수 있습니다.
+[Port d3dx12](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/d3dx12/portfile.cmake#L10-L19)에서 그 예시를 볼 수 있습니다.
+
+```cmake
+vcpkg_download_distfile(D3DX12_H
+    URLS "https://raw.githubusercontent.com/walbourn/directx-vs-templates/${VERSION}/d3d12game_win32_dr/d3dx12.h"
+    FILENAME "directx-vs-templates-${VERSION}-d3dx12.h"
+    SHA512 b053a8e6593c701a0827f8a52f20e160070b8b71242fd60a57617e46b87e909e11f814fc15b084b4f83b7ff5b9a562280da64a77cee3a171ef17839315df4245
+)
+```
+
+#### Download + Extract
+
+반드시 소스파일을 다운로드 받을 필요는 없습니다.
+지금은 빌드를 준비하는 중이니, zip 파일을 받아서 압축을 해제하는 방법이 필요하겠죠.
+[Port fftw3](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/fftw3/portfile.cmake)를 예시로 확인해보겠습니다.
+
+```cmake
+vcpkg_download_distfile(ARCHIVE
+    URLS "http://www.fftw.org/fftw-3.3.10.tar.gz"
+    FILENAME "fftw-3.3.10.tar.gz"
+    SHA512 2d34b5ccac7b08740dbdacc6ebe451d8a34cf9d9bfec85a5e776e87adf94abfd803c222412d8e10fbaa4ed46f504aa87180396af1b108666cde4314a55610b40
+)
+
+vcpkg_extract_source_archive_ex(
+    OUT_SOURCE_PATH SOURCE_PATH
+    ARCHIVE ${ARCHIVE}
+    PATCHES
+        omp_test.patch
+        patch_targets.patch
+        fftw3_arch_fix.patch
+        aligned_malloc.patch
+)
+```
+
+여기서 다운로드 받을떄 tar.gz를 사용한 것에 주의해야 합니다.
+Vcpkg의 `vcpkg_extract_source_archive_ex`, 현 시점에서 구현체인 [`vcpkg_extract_source_archive`](https://github.com/microsoft/vcpkg/blob/5ddd7f02689b7c5aab78711d77f61db5d2e5e79c/scripts/cmake/vcpkg_extract_source_archive.cmake#L205-L210)을 때문입니다.
+
+#### [Source from Git](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_from_git.cmake)
+
+Git에서는 patch를 적용할 수 있다는 점이 특히 편리합니다.
+Vcpkg에서 임의의 Port를 빌드할 떄, 이미 설치한 Package들을 사용하려면 빌드 시스템 파일들이 수정되어야 하는 경우가 많습니다.
+빌드 시스템 파일을 수정해야 한다는 것은, 그만큼 많이 알고 있어야 한다는 의미기도 합니다.
+
+[Port libyuv](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/libyuv/portfile.cmake)가 이 방법을 사용하고 있습니다.
+URL을 조금 수정하면 다운로드 받기 위해 Username, Password를 전달하는 것도 가능하겠군요.
+요즘은 쉽게 무효화시킬 수 있는 Token을 사용하는 경우가 많으니 Token 값을 그대로 적어넣어도 큰 부담이 없겠습니다만, 
+꺼림칙 하다면 `vcpkg_download_distfile`의 `FILENAME`과는 달리 [CMake에서 환경변수를 사용하는](https://cmake.org/cmake/help/latest/command/set.html#set-environment-variable) 방법을 사용하는 것도 괜찮은 방법입니다.
+
+```cmake
+vcpkg_from_git(
+    OUT_SOURCE_PATH SOURCE_PATH
+    URL https://chromium.googlesource.com/libyuv/libyuv
+    REF 287158925b0e03ea4499a18b4e08478c5781541b #2021-4-15
+    PATCHES
+        fix_cmakelists.patch
+        fix-build-type.patch
+)
+```
+
+여기서 Port에서 사용하는 Patch 파일들과 `PATCHCES` 부분를 관리하는 것이 번거로운 부분 중 하나입니다.
+만약 Patch 목록이 조건부로 바뀌어야 한다면, 아래와 같이 List 변수를 사용하면 됩니다.
+
+```cmake
+if(VCPKG_TARGET_IS_WINDOWS)
+    list(APPEND PATCHES fix-windows-source.patch
+                        fix-uwp-build.patch
+    )
+endif()
+
+vcpkg_from_git(
+    OUT_SOURCE_PATH SOURCE_PATH
+    URL ${DOWNLOAD_URL}
+    REF ${DOWNLOAD_COMMIT}
+    PATCHES
+        fix-cmakelists.patch
+        ${PATCHES}
+)
+```
+
+이렇게 다운로드 받은 소스 폴더가 buildtrees 폴더 밑에 어떻게 만들어지는지 한번 확인해보길 권합니다.
+
+```cmake
+message(STATUS "Using sources: ${SOURCE_PATH}")
+```
+
+#### [Source from GitLab](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_from_gitlab.cmake)
+
+[Cairo 라이브러리](https://www.cairographics.org/)가 GitLab에서 소스파일을 제공하고 있는데,
+그러면 [Port cairo](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/cairo/portfile.cmake)를 살펴보면 사용법을 알 수 있겠군요.
+
+```cmake
+vcpkg_from_gitlab(
+    GITLAB_URL https://gitlab.freedesktop.org
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO cairo/cairo
+    REF 156cd3eaaebfd8635517c2baf61fcf3627ff7ec2 #v1.17.4
+    SHA512 2c516ad3ffe56cf646b2435d6ef3cf25e8c05aeb13d95dd18a7d0510d134d9990cba1b376063352ff99483cfc4e5d2af849afd2f9538f9136f22d44d34be362c
+    HEAD_REF master
+    PATCHES 0001-meson-fix-macOS-build-and-add-macOS-ci.patch
+            cairo_static_fix.patch
+)
+```
+
+GitLab instance에 대한 `GITLAB_URL`, Git 저장소(`REPO`)와 branch(`HEAD_REF`), 다운로드 받은 파일에 대한 Hash 값(`SHA512`)이 추가된 것을 확인할 수 있습니다.
+
+#### [Source from GitHub](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_from_github.cmake)
+
+(오픈소스 프로젝트라면) GitHub의 사용법도 거의 같습니다.
+결국 `SOURCE_PATH`에 소스코드를 준비해주는 것이 핵심 역할이고,
+그 과정에서 저장소에서 지정된 Commit을 다운로드 받아 Hash 검사를 하고, Patch를 적용하는 것이죠.
+GitHub의 Mirror 저장소에서 소스코드를 받는 Port들이 많지만 대부분 유사한 패턴으로 작성되어있습니다.
+
+```cmake
+# https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/abseil/portfile.cmake
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO abseil/abseil-cpp
+    REF 278e0a071885a22dcd2fd1b5576cc44757299343 #LTS 20210324, Patch 2
+    SHA512 a9e8e9169ebcfb8bc2eca28152ad2f655f48e6281ea932eb712333f3d0aa0b6fa1a9b184f3e2ddd75d932a54b501cc5c7bb29a1c9de5d2146f82fc5754653895
+    HEAD_REF master
+    PATCHES
+        # ...
+        fix-cxx-standard.patch
+        fix-32-bit-arm.patch
+)
+```
+
+여기서는 `GITLAB_URL`에 해당하는 부분이 보이지 않는데, [`GITHUB_HOST`로 지정할 수 있습니다](https://github.com/microsoft/vcpkg/blob/5ddd7f02689b7c5aab78711d77f61db5d2e5e79c/scripts/cmake/vcpkg_from_github.cmake#L17-L19).
+GitHub Enterprise에서 사용하는 방법은 Private Surce 부분에서 따로 다루겠습니다.
+
 ### 2. Private Source
 
-### 3. Patch
+#### Source From [GitHub Enterprise](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_from_github.cmake)
 
-### 4. Unix Makefiles
+> TBA
 
-### 5. CMake / Ninja
+### 3. Managing Patch
 
-### 6. Meson
+Patch 파일을 만드는 방법에 대해서도 가볍게 다뤄보겠습니다.
 
-### 7. Package Folder
+#### Pull Request as a patch
+
+Patch 파일을 매번 내장하는 것보단, 빌드하려는 프로젝트에 제출된 PR을 적용하는 것도 괜찮은 방법이 될 수 있습니다.
+[그 PR의 diff만 다운로드 받아서, Patch로 적용하면](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/farmhash/portfile.cmake#L4-L8) 되니까요.
+
+만약 PR 내용이 바뀌면, 나중에 Hash 값이 달라졌을테니 주기적으로 다시 빌드하는 방법으로 확인할 수 있죠.
+그런 일련의 절차가 불편할 것 같다면, `FILENAME`에 날짜 같은 것을 사용하는 것도 괜찮을 겁니다.
+[창의력을 발휘해서 실행시각에 따라서 변하는 CMake 변수](https://cmake.org/cmake/help/latest/command/string.html#timestamp)를 사용하고 싶을 수 있겠지만,
+가급적 Literal을 사용해서 고정시키는게 좋습니다.
+그래야 downloads 폴더에서 비교해볼 때 편할테니까요.
+
+```cmake
+vcpkg_download_distfile(WIN_PR_PATCH
+    URLS "https://github.com/google/farmhash/pull/40.diff"
+    FILENAME farmhash-pr-40.patch
+    SHA512 265f5c15c17da2b88c82e6016a181abe73d2d94492cdb0cba892acf67a9d40815d54fa81e07351254fe2a39aea143b125924db0e7df14aac84a7469a78612cbd
+)
+
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO google/farmhash
+    REF 0d859a811870d10f53a594927d0d0b97573ad06d
+    SHA512 7bc14931e488464c1cedbc17551fb90a8cec494d0e0860db9df8efff09000fd8d91e01060dd5c5149b1104ac4ac8bf7eb57e5b156b05ef42636938edad1518f1
+    HEAD_REF master
+    PATCHES ${WIN_PR_PATCH} # <----
+```
+
+### 4. Build with [Makefile](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_build_make.cmake)
+
+### 5. Build with [CMake](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_build_cmake.cmake)
+
+[Port spdlog](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/spdlog/portfile.cmake)를 따라서 작성하기만 해도 됩니다.
+
+```json
+```
+
+```cmake
+```
+
+### 6. Build with [Meson](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_configure_meson.cmake)
+
+```cmake
+```
+
+### 7. Packaging
+
+
+## Vcpkg의 Triplet 작성방법
+
+> TBA
 
 ## Vcpkg for Android
 
