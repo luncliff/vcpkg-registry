@@ -899,7 +899,7 @@ Windows 환경이라면 [lucasg/Dependencies](https://github.com/lucasg/Dependen
 
 ### 1. Port != Package
 
-Vcpkg는 임의의 **Package를 소스코드로부터 빌드해서 설치**하는 방식으로 동작합니다.
+Vcpkg는 임의의 Package를 **소스코드로부터 빌드해서 설치**하는 방식으로 동작합니다.
 이런 맥락에서, Port는 **Package를 Vcpkg에서 빌드하기 위한 방법**을 기술한 것이라고 설명할 수 있겠습니다.
 `vcpkg` 프로그램이 Port의 내용를 바탕으로 설치를 수행하고,
 이 **설치가 완료된 결과물들이 Package**가 되는 것이죠.
@@ -911,7 +911,7 @@ Vcpkg는 임의의 **Package를 소스코드로부터 빌드해서 설치**하�
 각 Port들이 지원하는 Feature는 `vcpkg search` 명령을 통해 확인할 수 있습니다.
 
 ```console
-$./vcpkg.exe search libzip
+$ ./vcpkg.exe search libzip
 libzip                   1.8.0            A library for reading, creating, and modifying zip archives.
 libzip[bzip2]                             Support bzip2-compressed zip archives
 libzip[commoncrypto]                      AES (encryption) support using Apple's Common Crypto API
@@ -1126,15 +1126,27 @@ vcpkg_from_github(
 ```
 
 여기서는 `GITLAB_URL`에 해당하는 부분이 보이지 않는데, [`GITHUB_HOST`로 지정할 수 있습니다](https://github.com/microsoft/vcpkg/blob/5ddd7f02689b7c5aab78711d77f61db5d2e5e79c/scripts/cmake/vcpkg_from_github.cmake#L17-L19).
-GitHub Enterprise에서 사용하는 방법은 Private Surce 부분에서 따로 다루겠습니다.
+GitHub Enterprise에서 소스코드를 다운로드 받아야 한다면 이 필드와 함께 `AUTHORIZATION_TOKEN`이 필요합니다. 해당 저장소에 접근할 수 있는 권한이 필요하기 때문입니다.
+[GitHub Settings / Developer Settings / Personal Access Tokens](https://github.com/settings/tokens)에서 해당 저장소에 접근할 수 있는(Read) 권한을 가진 Token을 생성한 후, 그 값을 적어주면 됩니다.
 
-### 2. Private Source
+```cmake
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO ...
+    REF ${commit}
+    SHA512 ${download_file_hash}
+    GITHUB_HOST https://git-dev.hellworld.com
+    AUTHORIZATION_TOKEN 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 # maintainer@hellworld.com
+)
+```
 
-#### Source From [GitHub Enterprise](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_from_github.cmake)
+특수한 목적이 아니라면 Token들은 만료일이 정해져있을 것입니다.
+**여기서 만료된 토큰으로 다운로드를 받으면 어떤일이 발생할지 한번 상상해보셨으면 좋겠습니다.**
+사용자를 확인할 수 없으니 GitHub에서는 404 페이지를 보여줄 것입니다.
+`vcpkg_from_github`은 `vcpkg_download_distfile`를 사용해 그 웹 페이지를 .tar.gz 파일로 다운로드 하게 되고, 그렇다면 SHA512 값이 잘못되었다고 오류 메세지가 출력될 것입니다.
 
-> TBA
 
-### 3. Managing Patch
+### 2. Managing Patch
 
 Patch 파일을 만드는 방법에 대해서도 가볍게 다뤄보겠습니다.
 
@@ -1165,27 +1177,211 @@ vcpkg_from_github(
     PATCHES ${WIN_PR_PATCH} # <----
 ```
 
-### 4. Build with [Makefile](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_build_make.cmake)
-
-### 5. Build with [CMake](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_build_cmake.cmake)
+### 3. Build with [CMake](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_build_cmake.cmake)
 
 [Port spdlog](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/spdlog/portfile.cmake)를 따라서 작성하기만 해도 됩니다.
 
+소스코드를 다운로드 받아, `SOURCE_PATH`에 압축을 풀어둔 다음에는 CMake 프로젝트들을 설치하기 위한 3가지 과정을 수행하게 됩니다.
+그 다음에는 Vcpkg에서 Fixup이라고 부르는, vcpkg의 설치 스타일에 맞게 파일들을 재배치하는 과정이 이어집니다.
+빌드하려는 프로젝트의 설치가 어떻게 완료되느냐에 따라 4번 과정은 생략할 수도 있습니다.
+보통 `.pc` 혹은 CMake `find_package`을 위한 파일들을 생성하지 않는 경우에 해당합니다.
+
+1. Configure/Generate
+2. Build
+3. Install
+4. Fixup
+
+#### Host dependency
+
+이런 과정을 거치려면 먼저 `${port}/vcpkg.json` 파일에서 Host dependency로 `vcpkg-cmake`, `vcpkg-cmake-config`를 사용하도록 작성해야 합니다.
+Host dependency에는 현재 빌드를 수행하고 있는 환경(Host 환경)에 따라서 달라지는 port들이 사용되며, 보통 스크립트 혹은 vcpkg의 다른 port들이 설치한 프로그램들을 사용해야 할 때 명시합니다.
+프로그램을 설치하는 port의 대표적인 예시로는 `protoc`을 설치하는 [Port protobuf](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/protobuf/portfile.cmake), `flatc`를 설치하는 [Port flatbuffers](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/flatbuffers/portfile.cmake)를 예시로 들 수 있겠습니다.
+
+보다 구체적인 예를 들자면, `x64-osx`(Host 환경)에서 `arm64-osx`(Target 환경)로 크로스 컴파일할 때 아래와 같이 출력됩니다.
+실제 사용가능한 라이브러리를 만들어야 하는 `fmt`, `spdlog`만 `arm64-osx`로 설치하고, 나머지는 Host 환경을 따르는 것이죠.
+
+```console
+$ ./vcpkg install spdlog:arm64-osx
+Computing installation plan...
+The following packages will be built and installed:
+  * fmt[core]:arm64-osx -> 8.0.1
+    spdlog[core]:arm64-osx -> 1.9.2
+  * vcpkg-cmake[core]:x64-osx -> 2021-09-13
+  * vcpkg-cmake-config[core]:x64-osx -> 2021-11-01
+Additional packages (*) will be modified to complete this operation.
+Detecting compiler hash for triplet x64-osx...
+...
+```
+
+#### [Port vcpkg-cmake](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/vcpkg-cmake)
+
+CMake를 사용하고 있지만 Host dependency가 없던 시절의 스타일대로 작성된 [Port nsync](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/nsync/vcpkg.json)를 바꾸면서 연습을 해보시면 좋겠습니다.
+
 ```json
+{
+  "name": "nsync",
+  "version": "1.24.0",
+  "description": "nsync is a C library that exports various synchronization primitives, such as mutexes",
+  "homepage": "https://github.com/google/nsync"
+}
 ```
+
+현재의 vcpkg에서는 이런식으로 작성해야 합니다.
+
+```json
+{
+  "name": "nsync",
+  "version": "1.24.0",
+  "description": "nsync is a C library that exports various synchronization primitives, such as mutexes",
+  "homepage": "https://github.com/google/nsync",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}
+```
+
+`vcpkg-cmake`는 이제 더는 사용하지 않는 `vcpkg_configure_cmake`, `vcpkg_install_cmake`를 대체하기 위한 CMake 함수들이 내장된, 이른바 Script Port입니다.
+Configure/Generate, Build, Install 단계는 아래와 같이 작성합니다.
+프로젝트에서 일정한 빌드 순서를 요구하지 않는다면, Build는 생략할 수 있습니다.
+저의 경험으로, Custom Target을 정의하고 있다면 Build 단계가 필요할 가능성이 높습니다.
 
 ```cmake
+# cmake -G Ninja -S ${SOURCE_PATH} -B . -DNSYNC_ENABLE_TESTS=OFF
+vcpkg_cmake_configure(
+    SOURCE_PATH ${SOURCE_PATH}
+    GENERATOR Ninja
+    OPTIONS
+        -DNSYNC_ENABLE_TESTS=OFF
+)
+
+# cmake --build . --target codegen
+vcpkg_cmake_build(TARGET codegen) 
+
+# cmake --build . --target install
+vcpkg_cmake_install()
 ```
 
-### 6. Build with [Meson](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_configure_meson.cmake)
+nsync는 `vcpkg_cmake_build`가 필요하지 않으니 생략하면 되겠습니다.
+
+#### Copy PDB (for Windows)
+
+Install을 마치면 이제 후속작업으로 빌드 결과물들을 정리해야 합니다.
 
 ```cmake
+vcpkg_copy_pdbs()
 ```
 
-### 7. Packaging
+Windows 환경에서 DLL을 빌드한다면 그에 상응하는 PDB도 설치합니다.
+이를 위해 사용하는 것이 `vcpkg_copy_pdbs` 입니다.
+편의상의 이유로 이 함수는 Non-Windows, Static 빌드에서는 오류를 발생시키지 않습니다. 단순히 아무일도 하지 않고 넘어깁니다.
 
+#### Library / CRT Linkage
+
+nsync의 portfile.cmake 최상단을 보면 Windows 환경에서 언제나 static으로 빌드하도록 강제하고 있습니다.
+이 라이브러리는 [`declspec(dllexport)`](https://docs.microsoft.com/en-us/cpp/cpp/dllexport-dllimport)처리가 되어있지 않기 때문에, 이와 같이 
+
+```cmake
+if(VCPKG_TARGET_IS_WINDOWS)
+    vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
+endif()
+```
+
+[`vcpkg_check_linkage`](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_check_linkage.cmake)에서는 Library, CRT 링킹을 덮어쓸 수 있습니다.
+Triplet 파일에서 기대하는 전체 구성을 무시하는 방법이기 때문에, Port들이 이 값을 덮어쓰는 것은 좋은 방법은 아닙니다.
+하지만 링킹 방법을 제한하는 형태로 설계한 프로젝트라면 그런 점도 존중해야겠죠.
+
+#### Fixup, [Port vcpkg-cmake-config](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/vcpkg-cmake-config)
+
+nsync는 fixup이 필요하지 않은 라이브러리입니다.
+하지만 가볍게 연습은 된 것 같으니, 다시 [Port spdlog](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/spdlog/portfile.cmake#L42-L43)로 이동해보겠습니다.
+여기서 주의깊게 살펴볼 부분은 `vcpkg_cmake_config_fixup`, `vcpkg_fixup_pkgconfig`입니다.
+
+```cmake
+vcpkg_cmake_configure(
+    SOURCE_PATH ${SOURCE_PATH}
+    OPTIONS
+        ${FEATURE_OPTIONS}
+        -DSPDLOG_FMT_EXTERNAL=ON
+        -DSPDLOG_INSTALL=ON
+        -DSPDLOG_BUILD_SHARED=${SPDLOG_BUILD_SHARED}
+        -DSPDLOG_WCHAR_FILENAMES=${SPDLOG_WCHAR_FILENAMES}
+        -DSPDLOG_BUILD_EXAMPLE=OFF
+)
+
+vcpkg_cmake_install()
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/spdlog)
+vcpkg_fixup_pkgconfig()
+vcpkg_copy_pdbs()
+```
+
+`vcpkg_cmake_config_fixup`를 사용하기 위해선 `vcpkg-cmake-config`라는 Host dependency가 필요합니다.
+vcpkg.json에서 일부만 가져와보면, 아래와 같이 작성되어있습니다.
+
+```json
+{
+  "name": "spdlog",
+  "version-semver": "1.9.2",
+  "dependencies": [
+    "fmt",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
+```
+
+Port vcpkg-cmake-config의 역할을 `vcpkg_cmake_config_fixup` 함수를 portfile.cmake에서 사용할 수 있도록 해주는 것입니다.
+`vcpkg_cmake_config_fixup`는 Port에서 설치하는 CMake 모듈(FindXXX.cmake) 또는 `find_package`를 위한 Config 파일(xyz-config.cmake)들을 `${CURRENT_PACKAGES_DIR}` 하위 폴더에 적절하게 재배치 하는 것입니다.
+이런 Config 파일들에는 `CMAKE_INSTALL_PREFIX`가 절대 경로로 포함되어 있는데, [이를 상대 경로로 바꾸어 vcpkg 폴더 전체의 경로가 바뀌어도 동작할 수 있도록 수정하는 작업도 함께 수행합니다](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/vcpkg-cmake-config/vcpkg_cmake_config_fixup.cmake#L34-L41).
+
+이와 관련해서, 설치한 패키지에서 경로 의존적인 문제가 발생하고, 이를 Fixup에서 해결할 수 없는 문제가 발생할수도 있습니다.
+이는 프로젝트의 CMakeLists.txt에서 적절하지 않은 방법(Trick)을 사용하고 있다는 신호입니다.
+관련 내용을 수정하거나, 차라리 vcpkg에서의 `find_package` 지원을 포기해야 합니다.
+
+[vcpkg_fixup_pkgconfig](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_fixup_pkgconfig.cmake)는 `pkg-config` 프로그램에서 사용하는 .pc 파일들을 재배치합니다.
+[마찬가지로, 경로를 수정하는 작업을 포함하고 있습니다](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_fixup_pkgconfig.cmake#L149-L160).
+
+> TBA
+
+### 4. Packaging
+
+#### Port validation
+
+그 다음은 `vcpkg` 프로그램이 수행하는 Port validation을 통과할 수 있도록 License 파일을 복사해두고, 불필요한(또는 비어있는) 폴더를 삭제합니다.
+대부분의 경우 debug 폴더의 헤더 파일들과, share 폴더를 제거하는 것으로 충분합니다.
+Fixup 과정에서 관련 파일들은 Release 빌드의 share 폴더(`"${CURRENT_PACKAGES_DIR}/share"`)로 이동했거나, 애초부터 존재하지 않았을테니까요.
+
+```cmake
+file(INSTALL "${SOURCE_PATH}/LICENSE"
+     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright
+)
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
+                    "${CURRENT_PACKAGES_DIR}/debug/share"
+)
+```
+
+이런 대략적인 작성을 마치고 추가적인 수정이 필요하다면 `vcpkg` 프로그램에서 경고 메세지를 보여줄 것입니다.
+
+### 5. Build with [Meson](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_configure_meson.cmake)
+
+> TBA
+
+### 6. Build with [Makefile](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_build_make.cmake)
+
+> TBA
 
 ## Vcpkg의 Triplet 작성방법
+
+Target 환경의 아키텍처, Library / CRT 링킹, System Library의 Root, 컴파일러  옵션 등
+여러 Port들을 설치할 때 일괄적으로 적용되어야 하는 것들은 Triplet에 작성합니다.
 
 > TBA
 
