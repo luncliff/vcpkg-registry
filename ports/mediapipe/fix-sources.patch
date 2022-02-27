@@ -6,7 +6,7 @@ index efd822a..f8ac8aa 100644
  #include "mediapipe/gpu/gpu_buffer.h"
  #include "mediapipe/gpu/gpu_service.h"
  
-+#if defined(GetObject)
++#if defined(_WIN32)
 +#undef GetObject
 +#endif
 +
@@ -23,7 +23,7 @@ index c27a8b4..1f0702b 100644
    // Workaround for b/67878799.
 -#ifndef __EMSCRIPTEN__
 +  // Windows build doesn't export the symbols
-+#if defined(__EMSCRIPTEN__) || !defined(_WIN32)
++#if !defined(_WIN32)
    absl::LeakCheckDisabler disable_leak_check;
  #endif
    ABSL_CONST_INIT thread_local std::weak_ptr<GlContext> current_context;
