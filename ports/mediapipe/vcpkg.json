@@ -5,25 +5,7 @@
   "homepage": "https://mediapipe.dev",
   "supports": "windows",
   "dependencies": [
-    "glog",
-    "stb",
-    "protobuf",
-    "tensorflow-lite",
     "abseil",
-    "eigen3",
-    "libyuv",
-    {
-      "name": "pthreads",
-      "platform": "windows"
-    },
-    {
-      "name": "egl-registry",
-      "platform": "windows"
-    },
-    {
-      "name": "opengl-registry",
-      "platform": "windows"
-    },
     {
       "name": "angle",
       "platform": "windows"
@@ -34,6 +16,22 @@
         "eigensparse"
       ]
     },
+    "eigen3",
+    "glog",
+    "libyuv",
+    "protobuf",
+    {
+      "name": "pthreads",
+      "platform": "windows"
+    },
+    "stb",
+    {
+      "name": "tensorflow-lite",
+      "features": [
+        "google-angle"
+      ],
+      "platform": "windows"
+    },
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -42,9 +40,6 @@
       "name": "vcpkg-cmake-config",
       "host": true
     }
-  ],
-  "default-features": [
-    "opencv4"
   ],
   "features": {
     "opencv4": {
