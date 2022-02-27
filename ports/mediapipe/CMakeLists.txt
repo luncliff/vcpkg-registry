@@ -12,7 +12,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 find_package(protobuf CONFIG REQUIRED) # protobuf::libprotobuf, Protobuf_PROTOC_EXECUTABLE
-
+find_package(OpenCL REQUIRED)
+find_package(gemmlowp CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
 find_package(gflags CONFIG REQUIRED)
 find_package(glog CONFIG REQUIRED)
@@ -145,7 +146,73 @@ foreach(proto_file  ${framework_proto_files}
     )
 endforeach()
 
-add_library(mediapipe
+add_library(mediapipe)
+
+set_target_properties(mediapipe
+PROPERTIES
+    WINDOWS_EXPORT_ALL_SYMBOLS TRUE
+)
+
+target_include_directories(mediapipe
+PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+target_compile_definitions(mediapipe
+PRIVATE
+    NOMINMAX _USE_MATH_DEFINES
+    _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
+    _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
+    PROTOBUF_USE_DLLS
+    _CRT_SECURE_NO_WARNINGS
+    CL_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0
+)
+
+target_link_libraries(mediapipe
+PRIVATE
+    absl::base absl::debugging absl::flags absl::leak_check_disable
+    glog::glog gflags::gflags protobuf::libprotobuf Eigen3::Eigen
+    yuv OpenCL::OpenCL gemmlowp::gemmlowp
+)
+
+if(USE_OPENCV4)
+    target_link_libraries(mediapipe
+    PRIVATE
+        opencv_highgui opencv_imgproc
+    )
+endif()
+
+if(WIN32)
+    target_include_directories(mediapipe
+    PRIVATE
+        ${EGL_INCLUDE_DIR} ${GLES_INCLUDE_DIR}
+    )
+
+    target_compile_definitions(mediapipe
+    PRIVATE
+        NOMINMAX
+        MEDIAPIPE_DISABLE_GL_COMPUTE # todo: remove this
+    )
+
+    target_compile_options(mediapipe
+    PRIVATE
+        /wd4251 # mute protobuf DLL interface related warnings
+        /wd4267 # possible lose of data
+        /wd4244
+        /wd4005 # macro redefinition
+    )
+
+    target_link_libraries(mediapipe
+    PRIVATE
+        ${PTHREAD_LIBPATH} ${TFLITE_LIBPATH}
+        unofficial::angle::libEGL unofficial::angle::libGLESv2
+    )
+
+endif()
+
+target_sources(mediapipe
+PRIVATE
     # mediapipe/framework
     ${calculator_options_SRCS}
     ${calculator_profile_SRCS}
@@ -383,11 +450,11 @@ PRIVATE
     mediapipe/framework/stream_handler/sync_set_input_stream_handler.cc
     mediapipe/framework/stream_handler/timestamp_align_input_stream_handler.cc
     # mediapipe/util
+    mediapipe/util/resource_util_default.cc
     # mediapipe/util/resource_util_android.cc
     # mediapipe/util/resource_util_apple.cc
     # mediapipe/util/resource_util_custom.h
-    # mediapipe/util/resource_util_default.cc
-    # mediapipe/util/resource_util_internal.h
+    mediapipe/util/resource_util_internal.h
     mediapipe/util/annotation_renderer.cc
     mediapipe/util/annotation_renderer.h
     # mediapipe/util/audio_decoder.cc
@@ -405,9 +472,83 @@ PRIVATE
     # mediapipe/util/tensor_to_detection.h
     mediapipe/util/time_series_util.cc
     mediapipe/util/time_series_util.h
+    # mediapipe/util/tflite
+    mediapipe/util/tflite/config.h
+    mediapipe/util/tflite/cpu_op_resolver.cc
+    mediapipe/util/tflite/cpu_op_resolver.h
+    mediapipe/util/tflite/op_resolver.cc
+    mediapipe/util/tflite/op_resolver.h
+    mediapipe/util/tflite/tflite_gpu_runner.cc
+    mediapipe/util/tflite/tflite_gpu_runner.h
+    mediapipe/util/tflite/tflite_model_loader.cc
+    mediapipe/util/tflite/tflite_model_loader.h
+    # mediapipe/util/tflite/operations
+    mediapipe/util/tflite/operations/landmarks_to_transform_matrix.cc
+    mediapipe/util/tflite/operations/landmarks_to_transform_matrix.h    
+    mediapipe/util/tflite/operations/max_pool_argmax.cc
+    mediapipe/util/tflite/operations/max_pool_argmax.h
+    mediapipe/util/tflite/operations/max_unpooling.cc
+    mediapipe/util/tflite/operations/max_unpooling.h
+    mediapipe/util/tflite/operations/transform_landmarks.cc
+    mediapipe/util/tflite/operations/transform_landmarks.h
+    mediapipe/util/tflite/operations/transform_tensor_bilinear.cc       
+    mediapipe/util/tflite/operations/transform_tensor_bilinear.h        
+    mediapipe/util/tflite/operations/transpose_conv_bias.cc
+    mediapipe/util/tflite/operations/transpose_conv_bias.h
     # mediapipe/framework/tool
+    mediapipe/framework/tool/container_util.cc
+    mediapipe/framework/tool/container_util.h
+    mediapipe/framework/tool/executor_util.cc
+    mediapipe/framework/tool/executor_util.h
+    mediapipe/framework/tool/fill_packet_set.cc
+    mediapipe/framework/tool/fill_packet_set.h
+
+    ## see mediapipe/framework/tool/mediapipe_graph.bzl
+    mediapipe/framework/tool/name_util.cc
+    mediapipe/framework/tool/name_util.h
+    mediapipe/framework/tool/options_field_util.cc
+    mediapipe/framework/tool/options_field_util.h
+    # mediapipe/framework/tool/options_lib_template.cc
+    mediapipe/framework/tool/options_map.h
+    mediapipe/framework/tool/options_registry.cc
+    mediapipe/framework/tool/options_registry.h
+    mediapipe/framework/tool/options_syntax_util.cc
+    mediapipe/framework/tool/options_syntax_util.h
+    mediapipe/framework/tool/options_util.cc
+    mediapipe/framework/tool/options_util.h
+    # mediapipe/framework/tool/packet_generator_wrapper_calculator.cc
+    mediapipe/framework/tool/proto_util_lite.cc
+    mediapipe/framework/tool/proto_util_lite.h
+    # mediapipe/framework/tool/simple_subgraph_template.cc      
+    mediapipe/framework/tool/simulation_clock_executor.cc     
+    mediapipe/framework/tool/simulation_clock_executor.h      
+    mediapipe/framework/tool/simulation_clock.cc
+    mediapipe/framework/tool/simulation_clock.h
+    mediapipe/framework/tool/sink.cc
+    mediapipe/framework/tool/sink.h
+    # mediapipe/framework/tool/source.cc
+    mediapipe/framework/tool/status_util.cc
+    mediapipe/framework/tool/status_util.h
+    mediapipe/framework/tool/subgraph_expansion.cc
+    mediapipe/framework/tool/subgraph_expansion.h
+    mediapipe/framework/tool/switch_container.cc
+    mediapipe/framework/tool/switch_demux_calculator.cc       
+    mediapipe/framework/tool/switch_mux_calculator.cc
+    mediapipe/framework/tool/tag_map_helper.cc
+    mediapipe/framework/tool/tag_map_helper.h
     mediapipe/framework/tool/tag_map.cc
     mediapipe/framework/tool/tag_map.h
+    mediapipe/framework/tool/template_expander.cc
+    mediapipe/framework/tool/template_expander.h
+    # mediapipe/framework/tool/template_parser.cc
+    # mediapipe/framework/tool/template_parser.h
+    mediapipe/framework/tool/type_util.h
+    mediapipe/framework/tool/validate_name.cc
+    mediapipe/framework/tool/validate_name.h
+    mediapipe/framework/tool/validate_type.cc
+    mediapipe/framework/tool/validate_type.h
+    mediapipe/framework/tool/validate.cc
+    mediapipe/framework/tool/validate.h
 )
 
 target_sources(mediapipe
@@ -465,9 +606,11 @@ if(USE_EGL)
         mediapipe/gpu/gl_texture_buffer.cc
         mediapipe/gpu/gl_texture_buffer.h
         mediapipe/gpu/gl_thread_collector.h
+        mediapipe/gpu/gl_texture_view.h
+        mediapipe/gpu/gl_texture_view.cc
     )
 elseif(USE_METAL)
-    # see mediapipe/gpu/metal.bzl
+    ## see mediapipe/gpu/metal.bzl
     target_sources(mediapipe
     PRIVATE
         mediapipe/gpu/metal_shader_base.h
@@ -483,7 +626,7 @@ elseif(USE_METAL)
 endif()
 
 if(USE_TFLITE)
-    # see mediapipe/gpu/metal.bzl
+    ## see mediapipe/gpu/metal.bzl
     target_sources(mediapipe
     PRIVATE
         # mediapipe/calculator/tflite
@@ -508,61 +651,6 @@ if(USE_TFLITE)
     )
 endif()
 
-target_include_directories(mediapipe
-PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-target_compile_definitions(mediapipe
-PRIVATE
-    NOMINMAX _USE_MATH_DEFINES
-    _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
-    _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
-    PROTOBUF_USE_DLLS
-)
-
-target_link_libraries(mediapipe
-PRIVATE
-    absl::base absl::debugging absl::flags
-    glog::glog gflags::gflags protobuf::libprotobuf Eigen3::Eigen
-    yuv
-)
-
-if(USE_OPENCV4)
-    target_link_libraries(mediapipe
-    PRIVATE
-        opencv_highgui opencv_imgproc
-    )
-endif()
-
-if(WIN32)
-    target_include_directories(mediapipe
-    PRIVATE
-        ${EGL_INCLUDE_DIR} ${GLES_INCLUDE_DIR}
-    )
-
-    target_compile_definitions(mediapipe
-    PRIVATE
-        NOMINMAX
-        MEDIAPIPE_DISABLE_GL_COMPUTE # todo: remove this
-    )
-
-    target_compile_options(mediapipe
-    PRIVATE
-        /wd4251 # mute protobuf DLL interface related warnings
-        /wd4267 # possible lose of data
-        /wd4244
-        /wd4005 # macro redefinition
-    )
-
-    target_link_libraries(mediapipe
-    PRIVATE
-        ${PTHREAD_LIBPATH} ${TFLITE_LIBPATH}
-        unofficial::angle::libEGL unofficial::angle::libGLESv2
-    )
-
-endif()
 
 install(FILES ${framework_proto_files}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mediapipe/framework
@@ -592,9 +680,15 @@ install(FILES ${gpu_proto_files}
 install(DIRECTORY mediapipe/models
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mediapipe
 )
+install(FILES   README.md
+                # mediapipe/docs/README.md
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mediapipe
+)
+install(FILES   mediapipe/framework/api2/README.md
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mediapipe/api2
+)
 
-install(FILES   # mediapipe/framework/api2/README.md
-                mediapipe/framework/api2/builder.h
+install(FILES   mediapipe/framework/api2/builder.h
                 mediapipe/framework/api2/const_str.h
                 mediapipe/framework/api2/contract.h
                 mediapipe/framework/api2/node.h
@@ -611,63 +705,3 @@ install(TARGETS mediapipe
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-
-# mediapipe/framework/tool
-if(NOT BUILD_TOOLS)
-    return()
-endif()
-# mediapipe/framework/tool/container_util.cc
-# mediapipe/framework/tool/container_util.h
-# mediapipe/framework/tool/encode_as_c_string.cc
-# mediapipe/framework/tool/executor_util.cc
-# mediapipe/framework/tool/executor_util.h
-# mediapipe/framework/tool/fill_packet_set.cc
-# mediapipe/framework/tool/fill_packet_set.h
-# mediapipe/framework/tool/mediapipe_graph.bzl
-# mediapipe/framework/tool/message_type_util.cc
-# mediapipe/framework/tool/name_util.cc
-# mediapipe/framework/tool/name_util.h
-# mediapipe/framework/tool/options_field_util.cc
-# mediapipe/framework/tool/options_field_util.h
-# # mediapipe/framework/tool/options_lib_template.cc
-# mediapipe/framework/tool/options_map.h
-# mediapipe/framework/tool/options_registry.cc
-# mediapipe/framework/tool/options_registry.h
-# mediapipe/framework/tool/options_syntax_util.cc
-# mediapipe/framework/tool/options_syntax_util.h
-# mediapipe/framework/tool/options_util.cc
-# mediapipe/framework/tool/options_util.h
-# mediapipe/framework/tool/packet_generator_wrapper_calculator.cc
-# mediapipe/framework/tool/proto_util_lite.cc
-# mediapipe/framework/tool/proto_util_lite.h
-# # mediapipe/framework/tool/simple_subgraph_template.cc      
-# mediapipe/framework/tool/simulation_clock_executor.cc     
-# mediapipe/framework/tool/simulation_clock_executor.h      
-# mediapipe/framework/tool/simulation_clock.cc
-# mediapipe/framework/tool/simulation_clock.h
-# mediapipe/framework/tool/sink.cc
-# mediapipe/framework/tool/sink.h
-# mediapipe/framework/tool/source.cc
-# mediapipe/framework/tool/status_util.cc
-# mediapipe/framework/tool/status_util.h
-# mediapipe/framework/tool/subgraph_expansion.cc
-# mediapipe/framework/tool/subgraph_expansion.h
-# mediapipe/framework/tool/switch_container.cc
-# mediapipe/framework/tool/switch_demux_calculator.cc       
-# mediapipe/framework/tool/switch_mux_calculator.cc
-# mediapipe/framework/tool/tag_map_helper.cc
-# mediapipe/framework/tool/tag_map_helper.h
-# mediapipe/framework/tool/tag_map.cc
-# mediapipe/framework/tool/tag_map.h
-# mediapipe/framework/tool/template_expander.cc
-# mediapipe/framework/tool/template_expander.h
-# mediapipe/framework/tool/template_parser.cc
-# mediapipe/framework/tool/template_parser.h
-# mediapipe/framework/tool/text_to_binary_graph.cc
-# mediapipe/framework/tool/type_util.h
-# mediapipe/framework/tool/validate_name.cc
-# mediapipe/framework/tool/validate_name.h
-# mediapipe/framework/tool/validate_type.cc
-# mediapipe/framework/tool/validate_type.h
-# mediapipe/framework/tool/validate.cc
-# mediapipe/framework/tool/validate.h

@@ -13,3 +13,17 @@ index efd822a..f8ac8aa 100644
  namespace mediapipe {
  
  // The constructor and destructor need to be defined here so that
+diff --git a/mediapipe/gpu/gl_context.cc b/mediapipe/gpu/gl_context.cc
+index c27a8b4..1f0702b 100644
+--- a/mediapipe/gpu/gl_context.cc
++++ b/mediapipe/gpu/gl_context.cc
+@@ -447,7 +447,8 @@ void GlContext::RunWithoutWaiting(GlVoidFunction gl_func) {
+ 
+ std::weak_ptr<GlContext>& GlContext::CurrentContext() {
+   // Workaround for b/67878799.
+-#ifndef __EMSCRIPTEN__
++  // Windows build doesn't export the symbols
++#if defined(__EMSCRIPTEN__) || !defined(_WIN32)
+   absl::LeakCheckDisabler disable_leak_check;
+ #endif
+   ABSL_CONST_INIT thread_local std::weak_ptr<GlContext> current_context;
