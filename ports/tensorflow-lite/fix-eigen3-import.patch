@@ -1,5 +1,5 @@
-﻿diff --git a/tensorflow/c/kernels/histogram_summary_op.cc b/tensorflow/c/kernels/histogram_summary_op.cc
-index a18a6829..60623104 100644
+diff --git a/tensorflow/c/kernels/histogram_summary_op.cc b/tensorflow/c/kernels/histogram_summary_op.cc
+index bd69f3f6..73e07627 100644
 --- a/tensorflow/c/kernels/histogram_summary_op.cc
 +++ b/tensorflow/c/kernels/histogram_summary_op.cc
 @@ -13,7 +13,7 @@ limitations under the License.
@@ -12,7 +12,7 @@ index a18a6829..60623104 100644
  #include "tensorflow/c/tf_status.h"
  #include "tensorflow/c/tf_tensor.h"
 diff --git a/tensorflow/c/kernels/summary_op.cc b/tensorflow/c/kernels/summary_op.cc
-index 1b9f45cd..285b8307 100644
+index 9568d8b1..00f79820 100644
 --- a/tensorflow/c/kernels/summary_op.cc
 +++ b/tensorflow/c/kernels/summary_op.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -25,7 +25,7 @@ index 1b9f45cd..285b8307 100644
  #include "tensorflow/c/kernels/tensor_shape_utils.h"
  #include "tensorflow/c/tf_status.h"
 diff --git a/tensorflow/c/kernels_test.cc b/tensorflow/c/kernels_test.cc
-index 4fc5e46c..41462eee 100644
+index 501e3ac5..29302236 100644
 --- a/tensorflow/c/kernels_test.cc
 +++ b/tensorflow/c/kernels_test.cc
 @@ -28,7 +28,7 @@ limitations under the License.
@@ -77,20 +77,20 @@ index 870fdc30..2733e015 100644
  #include "tensorflow/compiler/xla/shape_util.h"
  #include "tensorflow/compiler/xla/test.h"
 diff --git a/tensorflow/compiler/mlir/lite/ir/tfl_ops.cc b/tensorflow/compiler/mlir/lite/ir/tfl_ops.cc
-index 618f8928..cdb2a523 100644
+index 592e9bf5..74ce2e03 100644
 --- a/tensorflow/compiler/mlir/lite/ir/tfl_ops.cc
 +++ b/tensorflow/compiler/mlir/lite/ir/tfl_ops.cc
-@@ -21,7 +21,7 @@ limitations under the License.
- #include <iterator>
+@@ -22,7 +22,7 @@ limitations under the License.
  #include <numeric>
+ #include <string>
  
 -#include "third_party/eigen3/Eigen/Core"
 +#include "Eigen/Core"
  #include "llvm/ADT/APFloat.h"
  #include "llvm/ADT/APInt.h"
- #include "llvm/ADT/STLExtras.h"
+ #include "llvm/ADT/ArrayRef.h"
 diff --git a/tensorflow/compiler/mlir/lite/transforms/dense_to_sparse.cc b/tensorflow/compiler/mlir/lite/transforms/dense_to_sparse.cc
-index 1e873b95..127931f2 100644
+index 0a74b243..c02756bf 100644
 --- a/tensorflow/compiler/mlir/lite/transforms/dense_to_sparse.cc
 +++ b/tensorflow/compiler/mlir/lite/transforms/dense_to_sparse.cc
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -102,13 +102,26 @@ index 1e873b95..127931f2 100644
  #include "mlir/Dialect/StandardOps/IR/Ops.h"  // from @llvm-project
  #include "mlir/IR/Attributes.h"  // from @llvm-project
  #include "mlir/IR/Builders.h"  // from @llvm-project
+diff --git a/tensorflow/compiler/mlir/tfrt/benchmarks/benchmark.h b/tensorflow/compiler/mlir/tfrt/benchmarks/benchmark.h
+index 5bef10df..dd3fa674 100644
+--- a/tensorflow/compiler/mlir/tfrt/benchmarks/benchmark.h
++++ b/tensorflow/compiler/mlir/tfrt/benchmarks/benchmark.h
+@@ -20,7 +20,7 @@ limitations under the License.
+ 
+ #include <memory>
+ 
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "llvm/ADT/StringMap.h"
+ #include "llvm/Support/FormatVariadic.h"
+ #include "llvm/Support/MemoryBuffer.h"
 diff --git a/tensorflow/compiler/tf2tensorrt/kernels/trt_engine_op_test.cc b/tensorflow/compiler/tf2tensorrt/kernels/trt_engine_op_test.cc
-index 50344d1a..81ffb585 100644
+index b4439bc4..a3d6131f 100644
 --- a/tensorflow/compiler/tf2tensorrt/kernels/trt_engine_op_test.cc
 +++ b/tensorflow/compiler/tf2tensorrt/kernels/trt_engine_op_test.cc
-@@ -23,7 +23,7 @@ limitations under the License.
- #include "absl/container/inlined_vector.h"
+@@ -24,7 +24,7 @@ limitations under the License.
  #include "absl/strings/str_cat.h"
+ #include "absl/strings/string_view.h"
  #include "absl/types/span.h"
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/FixedPoint"
 +#include "unsupported/Eigen/CXX11/FixedPoint"
@@ -142,10 +155,10 @@ index cf937371..3458fda3 100644
  #include "tensorflow/core/platform/bfloat16.h"
  #include "tensorflow/core/platform/types.h"
 diff --git a/tensorflow/compiler/xla/pjrt/tfrt_cpu_pjrt_client.cc b/tensorflow/compiler/xla/pjrt/tfrt_cpu_pjrt_client.cc
-index 9a0f7d0b..5f24156e 100644
+index bf294131..cc07bd59 100644
 --- a/tensorflow/compiler/xla/pjrt/tfrt_cpu_pjrt_client.cc
 +++ b/tensorflow/compiler/xla/pjrt/tfrt_cpu_pjrt_client.cc
-@@ -25,7 +25,7 @@ limitations under the License.
+@@ -27,7 +27,7 @@ limitations under the License.
  #include "absl/synchronization/mutex.h"
  #include "absl/types/optional.h"
  #include "absl/types/span.h"
@@ -155,7 +168,7 @@ index 9a0f7d0b..5f24156e 100644
  #include "tensorflow/compiler/xla/client/xla_computation.h"
  #include "tensorflow/compiler/xla/layout.h"
 diff --git a/tensorflow/compiler/xla/pjrt/tfrt_cpu_pjrt_client.h b/tensorflow/compiler/xla/pjrt/tfrt_cpu_pjrt_client.h
-index e016c2dd..e1d918c3 100644
+index 2263bed9..95179a0f 100644
 --- a/tensorflow/compiler/xla/pjrt/tfrt_cpu_pjrt_client.h
 +++ b/tensorflow/compiler/xla/pjrt/tfrt_cpu_pjrt_client.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -181,10 +194,10 @@ index 6d1f1d11..b546e181 100644
  namespace xla {
  
 diff --git a/tensorflow/compiler/xla/pjrt/transpose_test.cc b/tensorflow/compiler/xla/pjrt/transpose_test.cc
-index c45dbc80..09cd8300 100644
+index 5f18153e..3de95052 100644
 --- a/tensorflow/compiler/xla/pjrt/transpose_test.cc
 +++ b/tensorflow/compiler/xla/pjrt/transpose_test.cc
-@@ -17,7 +17,7 @@ limitations under the License.
+@@ -23,7 +23,7 @@ limitations under the License.
  
  #include "absl/container/inlined_vector.h"
  #include "absl/numeric/int128.h"
@@ -207,7 +220,7 @@ index 63f48ba5..90e0acc2 100644
  #include "tensorflow/compiler/xla/service/platform_util.h"
  #include "tensorflow/compiler/xla/status_macros.h"
 diff --git a/tensorflow/compiler/xla/service/cpu/cpu_runtime_test.cc b/tensorflow/compiler/xla/service/cpu/cpu_runtime_test.cc
-index 266ed432..d2926d50 100644
+index 21e0f11d..e658a51f 100644
 --- a/tensorflow/compiler/xla/service/cpu/cpu_runtime_test.cc
 +++ b/tensorflow/compiler/xla/service/cpu/cpu_runtime_test.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -218,9 +231,9 @@ index 266ed432..d2926d50 100644
 +#include "unsupported/Eigen/CXX11/Tensor"
  #include "tensorflow/compiler/xla/array2d.h"
  #include "tensorflow/compiler/xla/client/local_client.h"
- #include "tensorflow/compiler/xla/service/cpu/runtime_matmul.h"
+ #include "tensorflow/compiler/xla/service/cpu/runtime_custom_call_status.h"
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_conv2d.h b/tensorflow/compiler/xla/service/cpu/runtime_conv2d.h
-index 7337c907..6d663a41 100644
+index 26cb0a7a..4f5f51b6 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_conv2d.h
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_conv2d.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -233,7 +246,7 @@ index 7337c907..6d663a41 100644
  
  extern "C" {
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_conv2d_impl.h b/tensorflow/compiler/xla/service/cpu/runtime_conv2d_impl.h
-index ec634e7f..58ecfe2e 100644
+index f485ab6a..23dc0264 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_conv2d_impl.h
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_conv2d_impl.h
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -246,7 +259,7 @@ index ec634e7f..58ecfe2e 100644
  #include "tensorflow/core/platform/types.h"
  
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_fft_impl.h b/tensorflow/compiler/xla/service/cpu/runtime_fft_impl.h
-index 124e7d58..7655878a 100644
+index 2b45f0a7..ff835d53 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_fft_impl.h
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_fft_impl.h
 @@ -17,8 +17,8 @@ limitations under the License.
@@ -261,7 +274,7 @@ index 124e7d58..7655878a 100644
  #include "tensorflow/core/platform/types.h"
  
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_fork_join.cc b/tensorflow/compiler/xla/service/cpu/runtime_fork_join.cc
-index 7fc0a267..377e5296 100644
+index 5c409a0d..d7384217 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_fork_join.cc
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_fork_join.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -274,7 +287,7 @@ index 7fc0a267..377e5296 100644
  #include "tensorflow/core/platform/blocking_counter.h"
  #include "tensorflow/core/platform/dynamic_annotations.h"
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_key_value_sort.cc b/tensorflow/compiler/xla/service/cpu/runtime_key_value_sort.cc
-index 2cee5816..0e4d490d 100644
+index 39840da5..6bf14e42 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_key_value_sort.cc
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_key_value_sort.cc
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -287,7 +300,7 @@ index 2cee5816..0e4d490d 100644
  #include "tensorflow/core/platform/macros.h"
  #include "tensorflow/core/platform/types.h"
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_key_value_sort.h b/tensorflow/compiler/xla/service/cpu/runtime_key_value_sort.h
-index 50c2911c..8bc4523d 100644
+index 064961f5..12ae3d5a 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_key_value_sort.h
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_key_value_sort.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -300,7 +313,7 @@ index 50c2911c..8bc4523d 100644
  
  extern "C" {
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_matmul.cc b/tensorflow/compiler/xla/service/cpu/runtime_matmul.cc
-index 7e19b383..76c5dde2 100644
+index fbd1d2f5..48b17bc7 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_matmul.cc
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_matmul.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -313,7 +326,7 @@ index 7e19b383..76c5dde2 100644
  #include "tensorflow/compiler/xla/service/cpu/runtime_lightweight_check.h"
  #include "tensorflow/core/platform/dynamic_annotations.h"
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_matmul.h b/tensorflow/compiler/xla/service/cpu/runtime_matmul.h
-index 11dfc5c1..e7ba8a38 100644
+index da714e3e..26925e76 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_matmul.h
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_matmul.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -326,7 +339,7 @@ index 11dfc5c1..e7ba8a38 100644
  
  extern "C" {
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_matmul_mkl.cc b/tensorflow/compiler/xla/service/cpu/runtime_matmul_mkl.cc
-index 37236254..93b967b6 100644
+index 41916f9c..aa5715e5 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_matmul_mkl.cc
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_matmul_mkl.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -339,7 +352,7 @@ index 37236254..93b967b6 100644
  
  using tensorflow::int32;
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_conv2d.h b/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_conv2d.h
-index 44b20172..3db31a49 100644
+index 4e16115a..27249b46 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_conv2d.h
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_conv2d.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -352,7 +365,7 @@ index 44b20172..3db31a49 100644
  
  extern "C" {
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_matmul.cc b/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_matmul.cc
-index a8112c11..622f01e3 100644
+index 193ec849..89894264 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_matmul.cc
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_matmul.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -365,7 +378,7 @@ index a8112c11..622f01e3 100644
  #include "tensorflow/core/platform/types.h"
  
 diff --git a/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_matmul.h b/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_matmul.h
-index 61fe224d..5a06a7f7 100644
+index 5461f48a..d69e3f19 100644
 --- a/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_matmul.h
 +++ b/tensorflow/compiler/xla/service/cpu/runtime_single_threaded_matmul.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -378,7 +391,7 @@ index 61fe224d..5a06a7f7 100644
  
  extern "C" {
 diff --git a/tensorflow/compiler/xla/service/hlo_runner.cc b/tensorflow/compiler/xla/service/hlo_runner.cc
-index 60105714..f4d40eb0 100644
+index 780d24b3..8da46769 100644
 --- a/tensorflow/compiler/xla/service/hlo_runner.cc
 +++ b/tensorflow/compiler/xla/service/hlo_runner.cc
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -391,7 +404,7 @@ index 60105714..f4d40eb0 100644
  #include "tensorflow/compiler/xla/service/executable.h"
  #include "tensorflow/compiler/xla/service/hlo_module_group.h"
 diff --git a/tensorflow/compiler/xla/tests/cpu_gpu_fusion_test.cc b/tensorflow/compiler/xla/tests/cpu_gpu_fusion_test.cc
-index c884fcca..c6052dc0 100644
+index cca584ad..d31dfa8f 100644
 --- a/tensorflow/compiler/xla/tests/cpu_gpu_fusion_test.cc
 +++ b/tensorflow/compiler/xla/tests/cpu_gpu_fusion_test.cc
 @@ -25,7 +25,7 @@ limitations under the License.
@@ -404,7 +417,7 @@ index c884fcca..c6052dc0 100644
  #include "tensorflow/compiler/xla/client/client_library.h"
  #include "tensorflow/compiler/xla/client/xla_builder.h"
 diff --git a/tensorflow/compiler/xla/tests/local_client_test_base.cc b/tensorflow/compiler/xla/tests/local_client_test_base.cc
-index 5fe4d285..cf3ebab7 100644
+index c801f148..69deb4db 100644
 --- a/tensorflow/compiler/xla/tests/local_client_test_base.cc
 +++ b/tensorflow/compiler/xla/tests/local_client_test_base.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -417,7 +430,7 @@ index 5fe4d285..cf3ebab7 100644
  #include "tensorflow/compiler/xla/client/xla_computation.h"
  #include "tensorflow/compiler/xla/map_util.h"
 diff --git a/tensorflow/compiler/xla/tools/replay_computation.cc b/tensorflow/compiler/xla/tools/replay_computation.cc
-index 46053ace..17540ce6 100644
+index 6d174887..f83c1cf9 100644
 --- a/tensorflow/compiler/xla/tools/replay_computation.cc
 +++ b/tensorflow/compiler/xla/tools/replay_computation.cc
 @@ -51,7 +51,7 @@ limitations under the License.
@@ -430,7 +443,7 @@ index 46053ace..17540ce6 100644
  #include "tensorflow/compiler/xla/client/client_library.h"
  #include "tensorflow/compiler/xla/client/global_data.h"
 diff --git a/tensorflow/compiler/xla/types.h b/tensorflow/compiler/xla/types.h
-index f55b0d82..b7e84183 100644
+index c1b05dc7..a387ef73 100644
 --- a/tensorflow/compiler/xla/types.h
 +++ b/tensorflow/compiler/xla/types.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -443,7 +456,7 @@ index f55b0d82..b7e84183 100644
  #include "tensorflow/core/platform/types.h"
  
 diff --git a/tensorflow/core/common_runtime/gpu/gpu_device.cc b/tensorflow/core/common_runtime/gpu/gpu_device.cc
-index d38650a6..22f92f86 100644
+index df739bed..aaa06701 100644
 --- a/tensorflow/core/common_runtime/gpu/gpu_device.cc
 +++ b/tensorflow/core/common_runtime/gpu/gpu_device.cc
 @@ -35,7 +35,7 @@ limitations under the License.
@@ -456,7 +469,7 @@ index d38650a6..22f92f86 100644
  #include "tensorflow/core/common_runtime/device/device_id_utils.h"
  #include "tensorflow/core/common_runtime/device_factory.h"
 diff --git a/tensorflow/core/common_runtime/gpu/gpu_device.h b/tensorflow/core/common_runtime/gpu/gpu_device.h
-index 1ddebda4..f195125e 100644
+index 50f27a8e..6ef3d980 100644
 --- a/tensorflow/core/common_runtime/gpu/gpu_device.h
 +++ b/tensorflow/core/common_runtime/gpu/gpu_device.h
 @@ -25,7 +25,7 @@ limitations under the License.
@@ -469,7 +482,7 @@ index 1ddebda4..f195125e 100644
  #include "tensorflow/core/common_runtime/device_factory.h"
  #include "tensorflow/core/common_runtime/gpu/gpu_event_mgr.h"
 diff --git a/tensorflow/core/common_runtime/local_device.cc b/tensorflow/core/common_runtime/local_device.cc
-index 84f3eca5..bc182671 100644
+index 7df9eb72..79aeb56f 100644
 --- a/tensorflow/core/common_runtime/local_device.cc
 +++ b/tensorflow/core/common_runtime/local_device.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -508,7 +521,7 @@ index 9af0879a..5adc001c 100644
  #include "tensorflow/core/framework/allocator.h"
  #include "tensorflow/core/framework/tensor.pb.h"
 diff --git a/tensorflow/core/data/dataset_test_base.cc b/tensorflow/core/data/dataset_test_base.cc
-index 32852983..c2be8955 100644
+index d9af09e0..7ae8bff4 100644
 --- a/tensorflow/core/data/dataset_test_base.cc
 +++ b/tensorflow/core/data/dataset_test_base.cc
 @@ -25,7 +25,7 @@ limitations under the License.
@@ -521,7 +534,7 @@ index 32852983..c2be8955 100644
  #include "tensorflow/core/common_runtime/device_factory.h"
  #include "tensorflow/core/common_runtime/device_mgr.h"
 diff --git a/tensorflow/core/framework/bfloat16.cc b/tensorflow/core/framework/bfloat16.cc
-index c79b0dfb..825242c2 100644
+index 336109fe..4797148b 100644
 --- a/tensorflow/core/framework/bfloat16.cc
 +++ b/tensorflow/core/framework/bfloat16.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -547,7 +560,7 @@ index 6fd071c0..7802cc73 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/framework/device_base.cc b/tensorflow/core/framework/device_base.cc
-index 3eca8c86..10916439 100644
+index 4c81e450..48aab6bf 100644
 --- a/tensorflow/core/framework/device_base.cc
 +++ b/tensorflow/core/framework/device_base.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -591,7 +604,7 @@ index 6bd8af3a..626f20d7 100644
  
  #include "tensorflow/core/platform/types.h"
 diff --git a/tensorflow/core/framework/ops_util.h b/tensorflow/core/framework/ops_util.h
-index aaf2361c..8460ca77 100644
+index 110fa044..0dda79f5 100644
 --- a/tensorflow/core/framework/ops_util.h
 +++ b/tensorflow/core/framework/ops_util.h
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -604,7 +617,7 @@ index aaf2361c..8460ca77 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/lib/core/status.h"
 diff --git a/tensorflow/core/framework/register_types_traits.h b/tensorflow/core/framework/register_types_traits.h
-index ff6c9fb3..fa321c2f 100644
+index 8388e81a..efeb7736 100644
 --- a/tensorflow/core/framework/register_types_traits.h
 +++ b/tensorflow/core/framework/register_types_traits.h
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -617,7 +630,7 @@ index ff6c9fb3..fa321c2f 100644
  typedef Eigen::GpuDevice GPUDevice;
  
 diff --git a/tensorflow/core/framework/rendezvous_test.cc b/tensorflow/core/framework/rendezvous_test.cc
-index fd66987b..14e6fdd4 100644
+index 788d7921..4ffbfd17 100644
 --- a/tensorflow/core/framework/rendezvous_test.cc
 +++ b/tensorflow/core/framework/rendezvous_test.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -630,7 +643,7 @@ index fd66987b..14e6fdd4 100644
  #include "tensorflow/core/framework/tensor.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/framework/run_handler.cc b/tensorflow/core/framework/run_handler.cc
-index bf3b14a4..78d29480 100644
+index 77733ba1..c868573f 100644
 --- a/tensorflow/core/framework/run_handler.cc
 +++ b/tensorflow/core/framework/run_handler.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -643,7 +656,7 @@ index bf3b14a4..78d29480 100644
  #include "tensorflow/core/lib/core/threadpool_interface.h"
  #include "tensorflow/core/lib/strings/strcat.h"
 diff --git a/tensorflow/core/framework/run_handler_test.cc b/tensorflow/core/framework/run_handler_test.cc
-index 28aae2c2..747b3838 100644
+index 329334a3..2db0c839 100644
 --- a/tensorflow/core/framework/run_handler_test.cc
 +++ b/tensorflow/core/framework/run_handler_test.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -656,7 +669,7 @@ index 28aae2c2..747b3838 100644
  #include "tensorflow/core/framework/tensor_testutil.h"
  #include "tensorflow/core/graph/graph.h"
 diff --git a/tensorflow/core/framework/tensor.h b/tensorflow/core/framework/tensor.h
-index 33a240d8..d5bb3fc8 100644
+index d4ffb110..7ba852e7 100644
 --- a/tensorflow/core/framework/tensor.h
 +++ b/tensorflow/core/framework/tensor.h
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -669,7 +682,7 @@ index 33a240d8..d5bb3fc8 100644
  #include "tensorflow/core/framework/tensor_shape.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/framework/tensor_shape.h b/tensorflow/core/framework/tensor_shape.h
-index a690123f..8f520a67 100644
+index c18bad8d..4811c210 100644
 --- a/tensorflow/core/framework/tensor_shape.h
 +++ b/tensorflow/core/framework/tensor_shape.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -682,7 +695,7 @@ index a690123f..8f520a67 100644
  #include "tensorflow/core/lib/core/errors.h"
  #include "tensorflow/core/lib/core/status.h"
 diff --git a/tensorflow/core/framework/tensor_slice.h b/tensorflow/core/framework/tensor_slice.h
-index 82f21fb1..4a7f6851 100644
+index f67cc099..90a53252 100644
 --- a/tensorflow/core/framework/tensor_slice.h
 +++ b/tensorflow/core/framework/tensor_slice.h
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -695,7 +708,7 @@ index 82f21fb1..4a7f6851 100644
  #include "tensorflow/core/framework/tensor_slice.pb.h"
  #include "tensorflow/core/lib/core/status.h"
 diff --git a/tensorflow/core/framework/tensor_types.h b/tensorflow/core/framework/tensor_types.h
-index 6f981db1..90324f9d 100644
+index 94ef5d41..8ca0d0cf 100644
 --- a/tensorflow/core/framework/tensor_types.h
 +++ b/tensorflow/core/framework/tensor_types.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -704,11 +717,11 @@ index 6f981db1..90324f9d 100644
  
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 +#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/platform/logging.h"
  
  namespace tensorflow {
- 
 diff --git a/tensorflow/core/framework/types.h b/tensorflow/core/framework/types.h
-index 9f3e37ba..90427e16 100644
+index 6186ddd4..b6778748 100644
 --- a/tensorflow/core/framework/types.h
 +++ b/tensorflow/core/framework/types.h
 @@ -20,11 +20,11 @@ limitations under the License.
@@ -739,7 +752,7 @@ index 1c45a397..4151a9b9 100644
  #include "tensorflow/core/framework/types.h"
  #include "tensorflow/core/lib/core/status_test_util.h"
 diff --git a/tensorflow/core/grappler/clusters/utils.cc b/tensorflow/core/grappler/clusters/utils.cc
-index 9e4fb649..90141297 100644
+index 736c8a11..01e75943 100644
 --- a/tensorflow/core/grappler/clusters/utils.cc
 +++ b/tensorflow/core/grappler/clusters/utils.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -752,7 +765,7 @@ index 9e4fb649..90141297 100644
  #if GOOGLE_CUDA
  #include "third_party/gpus/cuda/include/cuda.h"
 diff --git a/tensorflow/core/grappler/costs/op_level_cost_estimator.cc b/tensorflow/core/grappler/costs/op_level_cost_estimator.cc
-index 757619a2..a6b17694 100644
+index 10acbf54..e458a537 100644
 --- a/tensorflow/core/grappler/costs/op_level_cost_estimator.cc
 +++ b/tensorflow/core/grappler/costs/op_level_cost_estimator.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -765,7 +778,7 @@ index 757619a2..a6b17694 100644
  #include "tensorflow/core/framework/attr_value_util.h"
  #include "tensorflow/core/framework/tensor.pb.h"
 diff --git a/tensorflow/core/grappler/costs/utils.cc b/tensorflow/core/grappler/costs/utils.cc
-index c6bc7555..dcdc6f99 100644
+index b6dddf00..3ba5d73f 100644
 --- a/tensorflow/core/grappler/costs/utils.cc
 +++ b/tensorflow/core/grappler/costs/utils.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -817,7 +830,7 @@ index d64d3061..64cd26e9 100644
  
  #include "tensorflow/core/kernels/aggregate_ops.h"
 diff --git a/tensorflow/core/kernels/argmax_op.cc b/tensorflow/core/kernels/argmax_op.cc
-index 14787972..a82b23f7 100644
+index b0b99ac0..ddef9664 100644
 --- a/tensorflow/core/kernels/argmax_op.cc
 +++ b/tensorflow/core/kernels/argmax_op.cc
 @@ -25,7 +25,7 @@ limitations under the License.
@@ -856,7 +869,7 @@ index ca822a58..9ce9ccea 100644
  #include "tensorflow/core/framework/tensor_types.h"
  
 diff --git a/tensorflow/core/kernels/avgpooling_op.cc b/tensorflow/core/kernels/avgpooling_op.cc
-index d291ca5b..aa2f6035 100644
+index 0429d50c..fe594426 100644
 --- a/tensorflow/core/kernels/avgpooling_op.cc
 +++ b/tensorflow/core/kernels/avgpooling_op.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -895,7 +908,7 @@ index 76b156f8..b34b5214 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/batchtospace_op.cc b/tensorflow/core/kernels/batchtospace_op.cc
-index 389aa416..39f78663 100644
+index 2ffb4080..845d43d8 100644
 --- a/tensorflow/core/kernels/batchtospace_op.cc
 +++ b/tensorflow/core/kernels/batchtospace_op.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -934,7 +947,7 @@ index b941b27a..84183e11 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/bias_op.cc b/tensorflow/core/kernels/bias_op.cc
-index 4b0117ec..4f369f85 100644
+index b8ba10be..f909b349 100644
 --- a/tensorflow/core/kernels/bias_op.cc
 +++ b/tensorflow/core/kernels/bias_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -947,7 +960,7 @@ index 4b0117ec..4f369f85 100644
  #include "tensorflow/core/framework/numeric_op.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/bias_op.h b/tensorflow/core/kernels/bias_op.h
-index e6be4833..cc5a50f6 100644
+index e86c851e..82c656ab 100644
 --- a/tensorflow/core/kernels/bias_op.h
 +++ b/tensorflow/core/kernels/bias_op.h
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -960,7 +973,7 @@ index e6be4833..cc5a50f6 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/bias_op_gpu.h b/tensorflow/core/kernels/bias_op_gpu.h
-index 372a403e..0ebd497a 100644
+index 9414f35c..f4581d88 100644
 --- a/tensorflow/core/kernels/bias_op_gpu.h
 +++ b/tensorflow/core/kernels/bias_op_gpu.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -986,7 +999,7 @@ index 054552a0..27ec4a82 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/framework/types.h"
 diff --git a/tensorflow/core/kernels/boosted_trees/stats_ops.cc b/tensorflow/core/kernels/boosted_trees/stats_ops.cc
-index dc8c4110..8663878b 100644
+index fe486953..439c2fae 100644
 --- a/tensorflow/core/kernels/boosted_trees/stats_ops.cc
 +++ b/tensorflow/core/kernels/boosted_trees/stats_ops.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -999,7 +1012,7 @@ index dc8c4110..8663878b 100644
  #include "tensorflow/core/framework/tensor.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/boosted_trees/training_ops.cc b/tensorflow/core/kernels/boosted_trees/training_ops.cc
-index e9167774..fecd6c75 100644
+index 3115d105..a12bfefe 100644
 --- a/tensorflow/core/kernels/boosted_trees/training_ops.cc
 +++ b/tensorflow/core/kernels/boosted_trees/training_ops.cc
 @@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
@@ -1012,7 +1025,7 @@ index e9167774..fecd6c75 100644
  #include "tensorflow/core/framework/tensor_shape.h"
  #include "tensorflow/core/kernels/boosted_trees/boosted_trees.pb.h"
 diff --git a/tensorflow/core/kernels/boosted_trees/tree_helper.h b/tensorflow/core/kernels/boosted_trees/tree_helper.h
-index 5e4e5a7f..9331e9ca 100644
+index 6e8c912a..381d167f 100644
 --- a/tensorflow/core/kernels/boosted_trees/tree_helper.h
 +++ b/tensorflow/core/kernels/boosted_trees/tree_helper.h
 @@ -18,8 +18,8 @@ limitations under the License.
@@ -1053,7 +1066,7 @@ index db6f1871..4a1e9f6f 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/broadcast_to_op.h b/tensorflow/core/kernels/broadcast_to_op.h
-index 6ae860c2..cf0db8e2 100644
+index 92994865..1e9e8359 100644
 --- a/tensorflow/core/kernels/broadcast_to_op.h
 +++ b/tensorflow/core/kernels/broadcast_to_op.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -1092,7 +1105,7 @@ index 998a2721..83e55167 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/cast_op.h b/tensorflow/core/kernels/cast_op.h
-index 4210b0a2..3de44bea 100644
+index cf0f0b44..ed951e15 100644
 --- a/tensorflow/core/kernels/cast_op.h
 +++ b/tensorflow/core/kernels/cast_op.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -1131,7 +1144,7 @@ index b85ed34f..8c7f9620 100644
  #include "tensorflow/core/framework/register_types.h"
  
 diff --git a/tensorflow/core/kernels/concat_lib_gpu.cc b/tensorflow/core/kernels/concat_lib_gpu.cc
-index 5093c32e..7b5649fc 100644
+index 15e59533..631c8773 100644
 --- a/tensorflow/core/kernels/concat_lib_gpu.cc
 +++ b/tensorflow/core/kernels/concat_lib_gpu.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -1157,7 +1170,7 @@ index 79aa08d3..aff44694 100644
  #include "tensorflow/core/kernels/concat_lib.h"
  #include "tensorflow/core/kernels/gpu_device_array_gpu.h"
 diff --git a/tensorflow/core/kernels/concat_op.cc b/tensorflow/core/kernels/concat_op.cc
-index 3a241c0e..775188b4 100644
+index ecbdefc9..0820a837 100644
 --- a/tensorflow/core/kernels/concat_op.cc
 +++ b/tensorflow/core/kernels/concat_op.cc
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -1170,7 +1183,7 @@ index 3a241c0e..775188b4 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/conditional_accumulator_base.h b/tensorflow/core/kernels/conditional_accumulator_base.h
-index d61b2c10..1fb4f15e 100644
+index 7bc5e6e3..2335c99a 100644
 --- a/tensorflow/core/kernels/conditional_accumulator_base.h
 +++ b/tensorflow/core/kernels/conditional_accumulator_base.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -1183,7 +1196,7 @@ index d61b2c10..1fb4f15e 100644
  
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/constant_op.cc b/tensorflow/core/kernels/constant_op.cc
-index d8fcd973..96c00c4b 100644
+index 746c775a..19218ea3 100644
 --- a/tensorflow/core/kernels/constant_op.cc
 +++ b/tensorflow/core/kernels/constant_op.cc
 @@ -24,7 +24,7 @@ limitations under the License.
@@ -1209,7 +1222,7 @@ index 34f7036a..d4cc852d 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/platform/macros.h"
 diff --git a/tensorflow/core/kernels/conv_2d.h b/tensorflow/core/kernels/conv_2d.h
-index 87df4a84..ee7d3f19 100644
+index 8cec43b1..90ac500a 100644
 --- a/tensorflow/core/kernels/conv_2d.h
 +++ b/tensorflow/core/kernels/conv_2d.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -1222,7 +1235,7 @@ index 87df4a84..ee7d3f19 100644
  #include "tensorflow/core/kernels/eigen_backward_spatial_convolutions.h"
  #include "tensorflow/core/kernels/eigen_spatial_convolutions.h"
 diff --git a/tensorflow/core/kernels/conv_ops.h b/tensorflow/core/kernels/conv_ops.h
-index 2f093837..88aeb1e2 100644
+index e5e1e263..c652c540 100644
 --- a/tensorflow/core/kernels/conv_ops.h
 +++ b/tensorflow/core/kernels/conv_ops.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -1261,7 +1274,7 @@ index 45bc46a9..66c25fcb 100644
  #include "tensorflow/core/framework/tensor_types.h"
  
 diff --git a/tensorflow/core/kernels/cudnn_rnn_ops.cc b/tensorflow/core/kernels/cudnn_rnn_ops.cc
-index af363c64..baaedfde 100644
+index 870e7343..f5d8c59e 100644
 --- a/tensorflow/core/kernels/cudnn_rnn_ops.cc
 +++ b/tensorflow/core/kernels/cudnn_rnn_ops.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -1274,7 +1287,7 @@ index af363c64..baaedfde 100644
  #include "tensorflow/core/framework/kernel_def_builder.h"
  #include "tensorflow/core/framework/op.h"
 diff --git a/tensorflow/core/kernels/cwise_op_gpu_select.cu.cc b/tensorflow/core/kernels/cwise_op_gpu_select.cu.cc
-index 709d20a7..ed8a0dd5 100644
+index ff364f67..08b96dba 100644
 --- a/tensorflow/core/kernels/cwise_op_gpu_select.cu.cc
 +++ b/tensorflow/core/kernels/cwise_op_gpu_select.cu.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -1313,7 +1326,7 @@ index 78f77caa..8d209759 100644
  
  namespace Eigen {
 diff --git a/tensorflow/core/kernels/data_format_ops.cc b/tensorflow/core/kernels/data_format_ops.cc
-index 00724b63..a973c6b1 100644
+index c3888228..3677adab 100644
 --- a/tensorflow/core/kernels/data_format_ops.cc
 +++ b/tensorflow/core/kernels/data_format_ops.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -1326,7 +1339,7 @@ index 00724b63..a973c6b1 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/data_format_ops.h b/tensorflow/core/kernels/data_format_ops.h
-index 0ec89876..885bc52a 100644
+index 39877188..7e21522e 100644
 --- a/tensorflow/core/kernels/data_format_ops.h
 +++ b/tensorflow/core/kernels/data_format_ops.h
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -1352,7 +1365,7 @@ index e1df486b..621dd58b 100644
  #include "tensorflow/core/util/gpu_kernel_helper.h"
  #include "tensorflow/core/util/gpu_launch_config.h"
 diff --git a/tensorflow/core/kernels/decode_proto_op.cc b/tensorflow/core/kernels/decode_proto_op.cc
-index 7752b2f5..79d99a20 100644
+index 4a74eb88..8944b39c 100644
 --- a/tensorflow/core/kernels/decode_proto_op.cc
 +++ b/tensorflow/core/kernels/decode_proto_op.cc
 @@ -33,7 +33,7 @@ limitations under the License.
@@ -1391,12 +1404,12 @@ index 77db7e32..4189e5a0 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/kernels/assign_op.h"
 diff --git a/tensorflow/core/kernels/depthtospace_op.cc b/tensorflow/core/kernels/depthtospace_op.cc
-index 1df0ae06..085b6cea 100644
+index 72037dd3..5240fae4 100644
 --- a/tensorflow/core/kernels/depthtospace_op.cc
 +++ b/tensorflow/core/kernels/depthtospace_op.cc
 @@ -23,7 +23,7 @@ limitations under the License.
- 
- #include "tensorflow/core/kernels/depthtospace_op.h"
+ #include <string>
+ #include <utility>
  
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 +#include "unsupported/Eigen/CXX11/Tensor"
@@ -1417,7 +1430,7 @@ index 272468b7..94202868 100644
  #include "tensorflow/core/util/tensor_format.h"
  
 diff --git a/tensorflow/core/kernels/depthwise_conv_op.h b/tensorflow/core/kernels/depthwise_conv_op.h
-index 568e8ab6..b549d91b 100644
+index 52076d46..93720e19 100644
 --- a/tensorflow/core/kernels/depthwise_conv_op.h
 +++ b/tensorflow/core/kernels/depthwise_conv_op.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -1430,7 +1443,7 @@ index 568e8ab6..b549d91b 100644
  #include "tensorflow/core/util/tensor_format.h"
  
 diff --git a/tensorflow/core/kernels/depthwise_conv_op_gpu.h b/tensorflow/core/kernels/depthwise_conv_op_gpu.h
-index ac06c733..caee43df 100644
+index c11bf651..6beea5c4 100644
 --- a/tensorflow/core/kernels/depthwise_conv_op_gpu.h
 +++ b/tensorflow/core/kernels/depthwise_conv_op_gpu.h
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -1443,7 +1456,7 @@ index ac06c733..caee43df 100644
  #include "tensorflow/core/kernels/depthwise_conv_op.h"
  #include "tensorflow/core/platform/types.h"
 diff --git a/tensorflow/core/kernels/diag_op.cc b/tensorflow/core/kernels/diag_op.cc
-index f34fc6c6..5f929ef2 100644
+index f0d2cce0..22cd73d2 100644
 --- a/tensorflow/core/kernels/diag_op.cc
 +++ b/tensorflow/core/kernels/diag_op.cc
 @@ -24,7 +24,7 @@ limitations under the License.
@@ -1456,7 +1469,7 @@ index f34fc6c6..5f929ef2 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/dilation_ops.cc b/tensorflow/core/kernels/dilation_ops.cc
-index 996ddb62..53e3189c 100644
+index 13b74701..926a8225 100644
 --- a/tensorflow/core/kernels/dilation_ops.cc
 +++ b/tensorflow/core/kernels/dilation_ops.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -1508,7 +1521,7 @@ index 4e03a787..d80c9a27 100644
  namespace Eigen {
  
 diff --git a/tensorflow/core/kernels/eigen_backward_cuboid_convolutions.h b/tensorflow/core/kernels/eigen_backward_cuboid_convolutions.h
-index 9a2d431b..bf313f86 100644
+index 958f1149..718039aa 100644
 --- a/tensorflow/core/kernels/eigen_backward_cuboid_convolutions.h
 +++ b/tensorflow/core/kernels/eigen_backward_cuboid_convolutions.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -1517,11 +1530,11 @@ index 9a2d431b..bf313f86 100644
  
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 +#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/kernels/eigen_cuboid_convolution.h"
  
  namespace Eigen {
- 
 diff --git a/tensorflow/core/kernels/eigen_backward_spatial_convolutions.h b/tensorflow/core/kernels/eigen_backward_spatial_convolutions.h
-index 8c4c86ac..369cc689 100644
+index 881efed4..e2670502 100644
 --- a/tensorflow/core/kernels/eigen_backward_spatial_convolutions.h
 +++ b/tensorflow/core/kernels/eigen_backward_spatial_convolutions.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -1530,9 +1543,9 @@ index 8c4c86ac..369cc689 100644
  
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 +#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/kernels/eigen_spatial_convolutions.h"
  
  namespace Eigen {
- 
 diff --git a/tensorflow/core/kernels/eigen_benchmark.h b/tensorflow/core/kernels/eigen_benchmark.h
 index 8b35bfdc..d1afedbb 100644
 --- a/tensorflow/core/kernels/eigen_benchmark.h
@@ -1591,7 +1604,7 @@ index 965a2835..f8f421c2 100644
  namespace Eigen {
  namespace internal {
 diff --git a/tensorflow/core/kernels/eigen_cuboid_convolution.h b/tensorflow/core/kernels/eigen_cuboid_convolution.h
-index d12db1b9..f45ef267 100644
+index bf0cdd59..33208577 100644
 --- a/tensorflow/core/kernels/eigen_cuboid_convolution.h
 +++ b/tensorflow/core/kernels/eigen_cuboid_convolution.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -1646,7 +1659,7 @@ index 3e708ced..e0eb72de 100644
  // Note the following header is used in both TF and TFLite. Particularly, it's
  // used for float TFLite Conv2D.
 diff --git a/tensorflow/core/kernels/encode_proto_op.cc b/tensorflow/core/kernels/encode_proto_op.cc
-index 288b74c4..efdbb80a 100644
+index 7e47bb07..088a1008 100644
 --- a/tensorflow/core/kernels/encode_proto_op.cc
 +++ b/tensorflow/core/kernels/encode_proto_op.cc
 @@ -24,7 +24,7 @@ limitations under the License.
@@ -1672,7 +1685,7 @@ index 045a96ac..1f6bd645 100644
  #include "tensorflow/core/platform/types.h"
  
 diff --git a/tensorflow/core/kernels/fft_ops.cc b/tensorflow/core/kernels/fft_ops.cc
-index fc29f49d..7de31519 100644
+index 14d0ebd9..cc13d0f2 100644
 --- a/tensorflow/core/kernels/fft_ops.cc
 +++ b/tensorflow/core/kernels/fft_ops.cc
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -1685,7 +1698,7 @@ index fc29f49d..7de31519 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/fill_functor.cc b/tensorflow/core/kernels/fill_functor.cc
-index 4a4352e2..22f2d967 100644
+index bc9e6a9a..bb6ce243 100644
 --- a/tensorflow/core/kernels/fill_functor.cc
 +++ b/tensorflow/core/kernels/fill_functor.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -1711,7 +1724,7 @@ index 1f3bdf98..862e02e1 100644
  #include "tensorflow/core/framework/types.h"
  
 diff --git a/tensorflow/core/kernels/fractional_avg_pool_op.cc b/tensorflow/core/kernels/fractional_avg_pool_op.cc
-index 7c396126..ebd06108 100644
+index afc72287..bef0a863 100644
 --- a/tensorflow/core/kernels/fractional_avg_pool_op.cc
 +++ b/tensorflow/core/kernels/fractional_avg_pool_op.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -1724,7 +1737,7 @@ index 7c396126..ebd06108 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/lib/random/random.h"
 diff --git a/tensorflow/core/kernels/fractional_max_pool_op.cc b/tensorflow/core/kernels/fractional_max_pool_op.cc
-index 1a2a783d..f7b45101 100644
+index 7519c846..2b9e3504 100644
 --- a/tensorflow/core/kernels/fractional_max_pool_op.cc
 +++ b/tensorflow/core/kernels/fractional_max_pool_op.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -1737,7 +1750,7 @@ index 1a2a783d..f7b45101 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/lib/random/random.h"
 diff --git a/tensorflow/core/kernels/functional_ops.cc b/tensorflow/core/kernels/functional_ops.cc
-index cdf20449..f8ea54c8 100644
+index 881d9a3a..a7cb5ca8 100644
 --- a/tensorflow/core/kernels/functional_ops.cc
 +++ b/tensorflow/core/kernels/functional_ops.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -1746,11 +1759,11 @@ index cdf20449..f8ea54c8 100644
  
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 +#include "unsupported/Eigen/CXX11/Tensor"
- #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
  #include "tensorflow/core/common_runtime/device.h"
  #include "tensorflow/core/framework/device_base.h"
+ #include "tensorflow/core/framework/function.h"
 diff --git a/tensorflow/core/kernels/fused_batch_norm_op.cc b/tensorflow/core/kernels/fused_batch_norm_op.cc
-index fe43b62a..437e46cf 100644
+index 1278365c..e48c632b 100644
 --- a/tensorflow/core/kernels/fused_batch_norm_op.cc
 +++ b/tensorflow/core/kernels/fused_batch_norm_op.cc
 @@ -28,7 +28,7 @@ limitations under the License.
@@ -1789,7 +1802,7 @@ index 546cf39e..bbfab113 100644
  #include "tensorflow/core/framework/tensor.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/gather_functor.h b/tensorflow/core/kernels/gather_functor.h
-index 919f631f..e2f48e70 100644
+index eaa2514f..d303af9a 100644
 --- a/tensorflow/core/kernels/gather_functor.h
 +++ b/tensorflow/core/kernels/gather_functor.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -1802,7 +1815,7 @@ index 919f631f..e2f48e70 100644
  #include "tensorflow/core/framework/bounds_check.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/gather_functor_batched.h b/tensorflow/core/kernels/gather_functor_batched.h
-index 5b61448b..80eedd91 100644
+index 41b5ec82..1d308610 100644
 --- a/tensorflow/core/kernels/gather_functor_batched.h
 +++ b/tensorflow/core/kernels/gather_functor_batched.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -1815,7 +1828,7 @@ index 5b61448b..80eedd91 100644
  #include "tensorflow/core/framework/bounds_check.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/gather_nd_op.h b/tensorflow/core/kernels/gather_nd_op.h
-index 5de12f0f..b5b50278 100644
+index 672be53f..40c8a9f2 100644
 --- a/tensorflow/core/kernels/gather_nd_op.h
 +++ b/tensorflow/core/kernels/gather_nd_op.h
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -1828,7 +1841,7 @@ index 5de12f0f..b5b50278 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/generate_vocab_remapping_op.cc b/tensorflow/core/kernels/generate_vocab_remapping_op.cc
-index e60abc45..4a104e60 100644
+index e508cae4..f233adfa 100644
 --- a/tensorflow/core/kernels/generate_vocab_remapping_op.cc
 +++ b/tensorflow/core/kernels/generate_vocab_remapping_op.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -1867,7 +1880,7 @@ index d06c6d37..ccbaa829 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/platform/macros.h"
 diff --git a/tensorflow/core/kernels/image/adjust_contrast_op.cc b/tensorflow/core/kernels/image/adjust_contrast_op.cc
-index b43964aa..4167734b 100644
+index 85dedf62..0891a363 100644
 --- a/tensorflow/core/kernels/image/adjust_contrast_op.cc
 +++ b/tensorflow/core/kernels/image/adjust_contrast_op.cc
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -1893,7 +1906,7 @@ index 4bff5f73..bd6d4d60 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/image/adjust_hue_op.cc b/tensorflow/core/kernels/image/adjust_hue_op.cc
-index 764665be..a9ba2ef8 100644
+index 902e4785..d8ed9a31 100644
 --- a/tensorflow/core/kernels/image/adjust_hue_op.cc
 +++ b/tensorflow/core/kernels/image/adjust_hue_op.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -1906,7 +1919,7 @@ index 764665be..a9ba2ef8 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/image/adjust_hue_op.h b/tensorflow/core/kernels/image/adjust_hue_op.h
-index 6a5758a4..feaace0e 100644
+index db2c92ef..b87c3265 100644
 --- a/tensorflow/core/kernels/image/adjust_hue_op.h
 +++ b/tensorflow/core/kernels/image/adjust_hue_op.h
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -1919,7 +1932,7 @@ index 6a5758a4..feaace0e 100644
  #include "tensorflow/core/framework/types.h"
  
 diff --git a/tensorflow/core/kernels/image/adjust_saturation_op.cc b/tensorflow/core/kernels/image/adjust_saturation_op.cc
-index 41b0988c..b1575d9a 100644
+index faaa30d5..58cd05a6 100644
 --- a/tensorflow/core/kernels/image/adjust_saturation_op.cc
 +++ b/tensorflow/core/kernels/image/adjust_saturation_op.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -1932,7 +1945,7 @@ index 41b0988c..b1575d9a 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/image/adjust_saturation_op.h b/tensorflow/core/kernels/image/adjust_saturation_op.h
-index 4a1a619e..51faf49b 100644
+index f14b3c02..2ad268a1 100644
 --- a/tensorflow/core/kernels/image/adjust_saturation_op.h
 +++ b/tensorflow/core/kernels/image/adjust_saturation_op.h
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -1971,7 +1984,7 @@ index 486aa1f5..5040f5e8 100644
  #include "tensorflow/core/framework/tensor_types.h"
  
 diff --git a/tensorflow/core/kernels/image/crop_and_resize_op.cc b/tensorflow/core/kernels/image/crop_and_resize_op.cc
-index 41e30e54..719f6884 100644
+index 0fd905ac..baf95ace 100644
 --- a/tensorflow/core/kernels/image/crop_and_resize_op.cc
 +++ b/tensorflow/core/kernels/image/crop_and_resize_op.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -1997,7 +2010,7 @@ index c26380e3..0aafe0f0 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/image/extract_image_patches_op.h b/tensorflow/core/kernels/image/extract_image_patches_op.h
-index ba952275..b2c74317 100644
+index 3017ac41..28ed357e 100644
 --- a/tensorflow/core/kernels/image/extract_image_patches_op.h
 +++ b/tensorflow/core/kernels/image/extract_image_patches_op.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -2010,7 +2023,7 @@ index ba952275..b2c74317 100644
  #include "tensorflow/core/framework/tensor_types.h"
  
 diff --git a/tensorflow/core/kernels/image/extract_volume_patches_op.h b/tensorflow/core/kernels/image/extract_volume_patches_op.h
-index 9daf5b36..ce2b1c04 100644
+index b3294bc7..9c81e61a 100644
 --- a/tensorflow/core/kernels/image/extract_volume_patches_op.h
 +++ b/tensorflow/core/kernels/image/extract_volume_patches_op.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -2036,7 +2049,7 @@ index a12cd3e6..c2682124 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/image/image_ops.h b/tensorflow/core/kernels/image/image_ops.h
-index abaccf88..0d6e7373 100644
+index dd677c48..1adf7328 100644
 --- a/tensorflow/core/kernels/image/image_ops.h
 +++ b/tensorflow/core/kernels/image/image_ops.h
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -2049,7 +2062,7 @@ index abaccf88..0d6e7373 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/platform/types.h"
 diff --git a/tensorflow/core/kernels/image/mirror_pad_op.cc b/tensorflow/core/kernels/image/mirror_pad_op.cc
-index c156531e..6998affd 100644
+index 9b9ba452..d5074096 100644
 --- a/tensorflow/core/kernels/image/mirror_pad_op.cc
 +++ b/tensorflow/core/kernels/image/mirror_pad_op.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -2088,7 +2101,7 @@ index 1ec4c853..b97d542b 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/image/non_max_suppression_op.cu.cc b/tensorflow/core/kernels/image/non_max_suppression_op.cu.cc
-index 382810bd..decc281f 100644
+index 1040100a..c9a4231e 100644
 --- a/tensorflow/core/kernels/image/non_max_suppression_op.cu.cc
 +++ b/tensorflow/core/kernels/image/non_max_suppression_op.cu.cc
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -2114,7 +2127,7 @@ index d6d3b68b..099a1aa2 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/image/resize_area_op.cc b/tensorflow/core/kernels/image/resize_area_op.cc
-index 6eefebb7..13d0a82a 100644
+index 5d2b2e0c..88692bcd 100644
 --- a/tensorflow/core/kernels/image/resize_area_op.cc
 +++ b/tensorflow/core/kernels/image/resize_area_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -2127,7 +2140,7 @@ index 6eefebb7..13d0a82a 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/image/resize_bicubic_op.cc b/tensorflow/core/kernels/image/resize_bicubic_op.cc
-index 9de2a586..a4802222 100644
+index 9debcd11..490c39ae 100644
 --- a/tensorflow/core/kernels/image/resize_bicubic_op.cc
 +++ b/tensorflow/core/kernels/image/resize_bicubic_op.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -2140,7 +2153,7 @@ index 9de2a586..a4802222 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/image/resize_bilinear_op.cc b/tensorflow/core/kernels/image/resize_bilinear_op.cc
-index 3229a747..19764be0 100644
+index e8909ef7..7a636ce9 100644
 --- a/tensorflow/core/kernels/image/resize_bilinear_op.cc
 +++ b/tensorflow/core/kernels/image/resize_bilinear_op.cc
 @@ -28,7 +28,7 @@ limitations under the License.
@@ -2166,7 +2179,7 @@ index 34a6b320..4d45222b 100644
  #include "tensorflow/core/framework/tensor_types.h"
  
 diff --git a/tensorflow/core/kernels/image/resize_nearest_neighbor_op.cc b/tensorflow/core/kernels/image/resize_nearest_neighbor_op.cc
-index 10dd2262..673f3cee 100644
+index a54b60f0..bdec9c35 100644
 --- a/tensorflow/core/kernels/image/resize_nearest_neighbor_op.cc
 +++ b/tensorflow/core/kernels/image/resize_nearest_neighbor_op.cc
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -2179,7 +2192,7 @@ index 10dd2262..673f3cee 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/image/scale_and_translate_op.cc b/tensorflow/core/kernels/image/scale_and_translate_op.cc
-index 1011af7d..153659f6 100644
+index bb05fa62..66c4ee52 100644
 --- a/tensorflow/core/kernels/image/scale_and_translate_op.cc
 +++ b/tensorflow/core/kernels/image/scale_and_translate_op.cc
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -2218,7 +2231,7 @@ index 97af8c7d..2ceea9ce 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/platform/env.h"
 diff --git a/tensorflow/core/kernels/in_topk_op.h b/tensorflow/core/kernels/in_topk_op.h
-index f48932cd..05bab796 100644
+index 25d49e2a..8dfedf45 100644
 --- a/tensorflow/core/kernels/in_topk_op.h
 +++ b/tensorflow/core/kernels/in_topk_op.h
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -2270,7 +2283,7 @@ index 465ef96a..aed19dda 100644
  #include "tensorflow/core/framework/tensor_types.h"
  
 diff --git a/tensorflow/core/kernels/linalg/banded_triangular_solve_op.cc b/tensorflow/core/kernels/linalg/banded_triangular_solve_op.cc
-index b719f55b..072dcf8d 100644
+index 72ad0829..808b9c36 100644
 --- a/tensorflow/core/kernels/linalg/banded_triangular_solve_op.cc
 +++ b/tensorflow/core/kernels/linalg/banded_triangular_solve_op.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -2283,7 +2296,7 @@ index b719f55b..072dcf8d 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/linalg/cholesky_grad.cc b/tensorflow/core/kernels/linalg/cholesky_grad.cc
-index 31a5570c..9b46c78f 100644
+index 417c6a95..d0d2fd26 100644
 --- a/tensorflow/core/kernels/linalg/cholesky_grad.cc
 +++ b/tensorflow/core/kernels/linalg/cholesky_grad.cc
 @@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
@@ -2296,12 +2309,12 @@ index 31a5570c..9b46c78f 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/linalg/cholesky_op.cc b/tensorflow/core/kernels/linalg/cholesky_op.cc
-index eae09124..96d13aa0 100644
+index faf04ca3..18a1c338 100644
 --- a/tensorflow/core/kernels/linalg/cholesky_op.cc
 +++ b/tensorflow/core/kernels/linalg/cholesky_op.cc
-@@ -19,8 +19,8 @@ limitations under the License.
- #define EIGEN_USE_GPU
- #endif  // GOOGLE_CUDA
+@@ -15,8 +15,8 @@ limitations under the License.
+ 
+ // See docs in ../ops/linalg_ops.cc.
  
 -#include "third_party/eigen3/Eigen/Cholesky"
 -#include "third_party/eigen3/Eigen/Core"
@@ -2310,17 +2323,21 @@ index eae09124..96d13aa0 100644
  #include "tensorflow/core/framework/kernel_def_builder.h"
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
-@@ -31,7 +31,7 @@ limitations under the License.
- #include "tensorflow/core/platform/types.h"
+diff --git a/tensorflow/core/kernels/linalg/cholesky_op_gpu.cu.cc b/tensorflow/core/kernels/linalg/cholesky_op_gpu.cu.cc
+index 28d0481b..822354a4 100644
+--- a/tensorflow/core/kernels/linalg/cholesky_op_gpu.cu.cc
++++ b/tensorflow/core/kernels/linalg/cholesky_op_gpu.cu.cc
+@@ -17,7 +17,7 @@ limitations under the License.
  
- #if GOOGLE_CUDA
+ #define EIGEN_USE_GPU
+ 
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 +#include "unsupported/Eigen/CXX11/Tensor"
- #include "tensorflow/core/kernels/linalg/matrix_band_part_op.h"
- #include "tensorflow/core/platform/stream_executor.h"
- #include "tensorflow/core/util/cuda_solvers.h"
+ #include "tensorflow/core/framework/kernel_def_builder.h"
+ #include "tensorflow/core/framework/op_kernel.h"
+ #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/linalg/determinant_op.cc b/tensorflow/core/kernels/linalg/determinant_op.cc
-index 8f0b0b61..b34688a2 100644
+index 75b90ce0..da686942 100644
 --- a/tensorflow/core/kernels/linalg/determinant_op.cc
 +++ b/tensorflow/core/kernels/linalg/determinant_op.cc
 @@ -19,11 +19,11 @@ limitations under the License.
@@ -2338,7 +2355,7 @@ index 8f0b0b61..b34688a2 100644
  #include "tensorflow/core/framework/numeric_types.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/linalg/determinant_op_gpu.cu.cc b/tensorflow/core/kernels/linalg/determinant_op_gpu.cu.cc
-index d9b82141..6e62277d 100644
+index 2deb68aa..8583698f 100644
 --- a/tensorflow/core/kernels/linalg/determinant_op_gpu.cu.cc
 +++ b/tensorflow/core/kernels/linalg/determinant_op_gpu.cu.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -2349,9 +2366,9 @@ index d9b82141..6e62277d 100644
 +#include "unsupported/Eigen/CXX11/Tensor"
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/kernels/linalg/determinant_op.h"
- #include "tensorflow/core/util/cuda_solvers.h"
+ #include "tensorflow/core/util/gpu_device_functions.h"
 diff --git a/tensorflow/core/kernels/linalg/eig_op_impl.h b/tensorflow/core/kernels/linalg/eig_op_impl.h
-index a7aff7c2..81e8ed92 100644
+index a9671155..9128e933 100644
 --- a/tensorflow/core/kernels/linalg/eig_op_impl.h
 +++ b/tensorflow/core/kernels/linalg/eig_op_impl.h
 @@ -18,8 +18,8 @@ limitations under the License.
@@ -2379,7 +2396,7 @@ index f22f33c6..b9be8089 100644
  
  #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 diff --git a/tensorflow/core/kernels/linalg/einsum_op_impl.h b/tensorflow/core/kernels/linalg/einsum_op_impl.h
-index ba01d108..6e7eb922 100644
+index 6f643345..a96f0c70 100644
 --- a/tensorflow/core/kernels/linalg/einsum_op_impl.h
 +++ b/tensorflow/core/kernels/linalg/einsum_op_impl.h
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -2392,7 +2409,7 @@ index ba01d108..6e7eb922 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/linalg/linalg_ops_common.cc b/tensorflow/core/kernels/linalg/linalg_ops_common.cc
-index c8d33e43..da86a6e3 100644
+index bb55f7de..043413e1 100644
 --- a/tensorflow/core/kernels/linalg/linalg_ops_common.cc
 +++ b/tensorflow/core/kernels/linalg/linalg_ops_common.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -2405,7 +2422,7 @@ index c8d33e43..da86a6e3 100644
  #include "tensorflow/core/framework/kernel_def_builder.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/linalg/linalg_ops_common.h b/tensorflow/core/kernels/linalg/linalg_ops_common.h
-index 3ab37480..f7a81518 100644
+index 5038013b..8b03e0db 100644
 --- a/tensorflow/core/kernels/linalg/linalg_ops_common.h
 +++ b/tensorflow/core/kernels/linalg/linalg_ops_common.h
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -2418,7 +2435,7 @@ index 3ab37480..f7a81518 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/linalg/lu_op.cc b/tensorflow/core/kernels/linalg/lu_op.cc
-index f9591d1b..5e18e868 100644
+index 0234058d..ffd29aa5 100644
 --- a/tensorflow/core/kernels/linalg/lu_op.cc
 +++ b/tensorflow/core/kernels/linalg/lu_op.cc
 @@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
@@ -2433,7 +2450,7 @@ index f9591d1b..5e18e868 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/linalg/lu_op_gpu.cu.cc b/tensorflow/core/kernels/linalg/lu_op_gpu.cu.cc
-index 9d23a350..cc094d53 100644
+index 0b3df0ec..0a2da9fa 100644
 --- a/tensorflow/core/kernels/linalg/lu_op_gpu.cu.cc
 +++ b/tensorflow/core/kernels/linalg/lu_op_gpu.cu.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -2446,7 +2463,7 @@ index 9d23a350..cc094d53 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/linalg/matrix_band_part_op.cc b/tensorflow/core/kernels/linalg/matrix_band_part_op.cc
-index 23619bac..ed1fde84 100644
+index 9390b35d..4f71aa7e 100644
 --- a/tensorflow/core/kernels/linalg/matrix_band_part_op.cc
 +++ b/tensorflow/core/kernels/linalg/matrix_band_part_op.cc
 @@ -27,7 +27,7 @@ limitations under the License.
@@ -2472,7 +2489,7 @@ index 9c734b7f..062c78a1 100644
  #include "tensorflow/core/kernels/linalg/matrix_band_part_op.h"
  #include "tensorflow/core/util/gpu_kernel_helper.h"
 diff --git a/tensorflow/core/kernels/linalg/matrix_diag_op.cc b/tensorflow/core/kernels/linalg/matrix_diag_op.cc
-index c797afa4..2d1ad33d 100644
+index 1506df17..a632266a 100644
 --- a/tensorflow/core/kernels/linalg/matrix_diag_op.cc
 +++ b/tensorflow/core/kernels/linalg/matrix_diag_op.cc
 @@ -26,7 +26,7 @@ limitations under the License.
@@ -2513,7 +2530,7 @@ index 73407614..a1c7adf0 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/linalg/matrix_inverse_op.cc b/tensorflow/core/kernels/linalg/matrix_inverse_op.cc
-index dc51776f..1b05e6cb 100644
+index 05f9d6da..40ebb438 100644
 --- a/tensorflow/core/kernels/linalg/matrix_inverse_op.cc
 +++ b/tensorflow/core/kernels/linalg/matrix_inverse_op.cc
 @@ -19,8 +19,8 @@ limitations under the License.
@@ -2535,7 +2552,7 @@ index dc51776f..1b05e6cb 100644
 +#include "unsupported/Eigen/CXX11/Tensor"
  #include "tensorflow/core/kernels/linalg/eye_functor.h"
  #include "tensorflow/core/kernels/transpose_functor.h"
- #include "tensorflow/core/util/cuda_solvers.h"
+ #include "tensorflow/core/util/gpu_solvers.h"
 diff --git a/tensorflow/core/kernels/linalg/matrix_logarithm_op.cc b/tensorflow/core/kernels/linalg/matrix_logarithm_op.cc
 index 79d5472f..3151c94e 100644
 --- a/tensorflow/core/kernels/linalg/matrix_logarithm_op.cc
@@ -2552,7 +2569,7 @@ index 79d5472f..3151c94e 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/linalg/matrix_set_diag_op.cc b/tensorflow/core/kernels/linalg/matrix_set_diag_op.cc
-index 19cbc371..52007eb6 100644
+index 4e894337..7c79ebf9 100644
 --- a/tensorflow/core/kernels/linalg/matrix_set_diag_op.cc
 +++ b/tensorflow/core/kernels/linalg/matrix_set_diag_op.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -2565,7 +2582,7 @@ index 19cbc371..52007eb6 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/linalg/matrix_solve_ls_op_impl.h b/tensorflow/core/kernels/linalg/matrix_solve_ls_op_impl.h
-index 1818d228..ee7927d2 100644
+index d1502ed4..ea46fff5 100644
 --- a/tensorflow/core/kernels/linalg/matrix_solve_ls_op_impl.h
 +++ b/tensorflow/core/kernels/linalg/matrix_solve_ls_op_impl.h
 @@ -18,9 +18,9 @@ limitations under the License.
@@ -2582,7 +2599,7 @@ index 1818d228..ee7927d2 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/linalg/matrix_solve_op.cc b/tensorflow/core/kernels/linalg/matrix_solve_op.cc
-index 70f02bdd..608d9278 100644
+index c98b2133..0fe48767 100644
 --- a/tensorflow/core/kernels/linalg/matrix_solve_op.cc
 +++ b/tensorflow/core/kernels/linalg/matrix_solve_op.cc
 @@ -20,8 +20,8 @@ limitations under the License.
@@ -2599,11 +2616,11 @@ index 70f02bdd..608d9278 100644
 @@ -32,7 +32,7 @@ limitations under the License.
  #include "tensorflow/core/platform/types.h"
  
- #if GOOGLE_CUDA
+ #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 +#include "unsupported/Eigen/CXX11/Tensor"
  #include "tensorflow/core/kernels/transpose_functor.h"
- #include "tensorflow/core/util/cuda_solvers.h"
+ #include "tensorflow/core/util/gpu_solvers.h"
  #endif
 diff --git a/tensorflow/core/kernels/linalg/matrix_square_root_op.cc b/tensorflow/core/kernels/linalg/matrix_square_root_op.cc
 index ce43e358..33f06c1d 100644
@@ -2621,7 +2638,7 @@ index ce43e358..33f06c1d 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/linalg/matrix_triangular_solve_op_impl.h b/tensorflow/core/kernels/linalg/matrix_triangular_solve_op_impl.h
-index ce5392e6..abdfaebc 100644
+index 55ed757b..e193ca35 100644
 --- a/tensorflow/core/kernels/linalg/matrix_triangular_solve_op_impl.h
 +++ b/tensorflow/core/kernels/linalg/matrix_triangular_solve_op_impl.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -2641,9 +2658,9 @@ index ce5392e6..abdfaebc 100644
 +#include "unsupported/Eigen/CXX11/Tensor"
  #include "tensorflow/core/kernels/transpose_functor.h"
  #include "tensorflow/core/platform/stream_executor.h"
- #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
+ #include "tensorflow/core/util/gpu_solvers.h"
 diff --git a/tensorflow/core/kernels/linalg/qr_op_impl.h b/tensorflow/core/kernels/linalg/qr_op_impl.h
-index 876594bc..5e0a265e 100644
+index d6a60483..cec26bf9 100644
 --- a/tensorflow/core/kernels/linalg/qr_op_impl.h
 +++ b/tensorflow/core/kernels/linalg/qr_op_impl.h
 @@ -28,7 +28,7 @@ limitations under the License.
@@ -2665,7 +2682,7 @@ index 876594bc..5e0a265e 100644
  #include "tensorflow/core/kernels/linalg/eye_functor.h"
  #include "tensorflow/core/kernels/linalg/matrix_band_part_op.h"
 diff --git a/tensorflow/core/kernels/linalg/self_adjoint_eig_op.cc b/tensorflow/core/kernels/linalg/self_adjoint_eig_op.cc
-index ebf1955b..23227827 100644
+index b14f8aa0..9dc1e154 100644
 --- a/tensorflow/core/kernels/linalg/self_adjoint_eig_op.cc
 +++ b/tensorflow/core/kernels/linalg/self_adjoint_eig_op.cc
 @@ -15,8 +15,8 @@ limitations under the License.
@@ -2680,7 +2697,7 @@ index ebf1955b..23227827 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/linalg/self_adjoint_eig_v2_op_gpu.cc b/tensorflow/core/kernels/linalg/self_adjoint_eig_v2_op_gpu.cc
-index 778c50ff..06373b47 100644
+index c05f49d5..adc3c528 100644
 --- a/tensorflow/core/kernels/linalg/self_adjoint_eig_v2_op_gpu.cc
 +++ b/tensorflow/core/kernels/linalg/self_adjoint_eig_v2_op_gpu.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -2693,7 +2710,7 @@ index 778c50ff..06373b47 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/linalg/self_adjoint_eig_v2_op_impl.h b/tensorflow/core/kernels/linalg/self_adjoint_eig_v2_op_impl.h
-index 56f2936a..a7c69d1f 100644
+index 572612e3..add12151 100644
 --- a/tensorflow/core/kernels/linalg/self_adjoint_eig_v2_op_impl.h
 +++ b/tensorflow/core/kernels/linalg/self_adjoint_eig_v2_op_impl.h
 @@ -18,8 +18,8 @@ limitations under the License.
@@ -2708,7 +2725,7 @@ index 56f2936a..a7c69d1f 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/linalg/svd_op_gpu.cu.cc b/tensorflow/core/kernels/linalg/svd_op_gpu.cu.cc
-index 4fc41940..59b67e14 100644
+index a3532f76..fce84edd 100644
 --- a/tensorflow/core/kernels/linalg/svd_op_gpu.cu.cc
 +++ b/tensorflow/core/kernels/linalg/svd_op_gpu.cu.cc
 @@ -30,7 +30,7 @@ limitations under the License.
@@ -2721,7 +2738,7 @@ index 4fc41940..59b67e14 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/linalg/svd_op_impl.h b/tensorflow/core/kernels/linalg/svd_op_impl.h
-index 87be3142..5888721d 100644
+index bdd0a6e3..07fab4de 100644
 --- a/tensorflow/core/kernels/linalg/svd_op_impl.h
 +++ b/tensorflow/core/kernels/linalg/svd_op_impl.h
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -2734,7 +2751,7 @@ index 87be3142..5888721d 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/list_kernels.cc b/tensorflow/core/kernels/list_kernels.cc
-index 488e0233..b0851162 100644
+index 5f7943a9..3dc8e037 100644
 --- a/tensorflow/core/kernels/list_kernels.cc
 +++ b/tensorflow/core/kernels/list_kernels.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -2760,7 +2777,7 @@ index b95a065e..dd73df3f 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/list_kernels.h b/tensorflow/core/kernels/list_kernels.h
-index c17e7f4f..ccd494cd 100644
+index 539f7e52..30cff486 100644
 --- a/tensorflow/core/kernels/list_kernels.h
 +++ b/tensorflow/core/kernels/list_kernels.h
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -2773,7 +2790,7 @@ index c17e7f4f..ccd494cd 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/load_and_remap_matrix_op.cc b/tensorflow/core/kernels/load_and_remap_matrix_op.cc
-index 5ec28c70..5a51568e 100644
+index 3fa75325..a439e704 100644
 --- a/tensorflow/core/kernels/load_and_remap_matrix_op.cc
 +++ b/tensorflow/core/kernels/load_and_remap_matrix_op.cc
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -2786,7 +2803,7 @@ index 5ec28c70..5a51568e 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/lrn_op.cc b/tensorflow/core/kernels/lrn_op.cc
-index afe94edd..749a4dcc 100644
+index fad12d7c..1dc37831 100644
 --- a/tensorflow/core/kernels/lrn_op.cc
 +++ b/tensorflow/core/kernels/lrn_op.cc
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -2812,7 +2829,7 @@ index 51a4d0e8..fbfeb2d5 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/lib/hash/hash.h"
 diff --git a/tensorflow/core/kernels/matmul_op_impl.h b/tensorflow/core/kernels/matmul_op_impl.h
-index 49ab7ab3..de346a69 100644
+index 06864452..20b2842b 100644
 --- a/tensorflow/core/kernels/matmul_op_impl.h
 +++ b/tensorflow/core/kernels/matmul_op_impl.h
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -2825,7 +2842,7 @@ index 49ab7ab3..de346a69 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/maxpooling_op.cc b/tensorflow/core/kernels/maxpooling_op.cc
-index 7e3085e8..7f65294e 100644
+index 10625e4b..2637b049 100644
 --- a/tensorflow/core/kernels/maxpooling_op.cc
 +++ b/tensorflow/core/kernels/maxpooling_op.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -2851,7 +2868,7 @@ index 9be7e933..6e6219df 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/mkl/mkl_batch_matmul_op.cc b/tensorflow/core/kernels/mkl/mkl_batch_matmul_op.cc
-index a4a22f46..1e277012 100644
+index 79677299..b5b88f84 100644
 --- a/tensorflow/core/kernels/mkl/mkl_batch_matmul_op.cc
 +++ b/tensorflow/core/kernels/mkl/mkl_batch_matmul_op.cc
 @@ -25,7 +25,7 @@ limitations under the License.
@@ -2994,7 +3011,7 @@ index 69ba49d4..0bb3760d 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/cpu_op_add.cc b/tensorflow/core/kernels/mlir_generated/cpu_op_add.cc
-index 7df2e59e..c4ebe822 100644
+index 32e8e4ca..d4b64476 100644
 --- a/tensorflow/core/kernels/mlir_generated/cpu_op_add.cc
 +++ b/tensorflow/core/kernels/mlir_generated/cpu_op_add.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3020,7 +3037,7 @@ index 3097ab39..7ed6a87c 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_and.cc b/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_and.cc
-index 01a4b737..3ef2efe2 100644
+index 989fc6c9..19c53f17 100644
 --- a/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_and.cc
 +++ b/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_and.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3033,7 +3050,7 @@ index 01a4b737..3ef2efe2 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_or.cc b/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_or.cc
-index d1f8e455..92e539b6 100644
+index 07bd4009..ee6abc6a 100644
 --- a/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_or.cc
 +++ b/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_or.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3046,7 +3063,7 @@ index d1f8e455..92e539b6 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_xor.cc b/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_xor.cc
-index da167b19..9a8b8bb4 100644
+index 5b5310ec..d8f86a58 100644
 --- a/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_xor.cc
 +++ b/tensorflow/core/kernels/mlir_generated/cpu_op_bitwise_xor.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3098,7 +3115,7 @@ index 3d4c1295..562422ef 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/cpu_op_invert.cc b/tensorflow/core/kernels/mlir_generated/cpu_op_invert.cc
-index a99ca145..68003c2e 100644
+index 0eac7d6e..1e653203 100644
 --- a/tensorflow/core/kernels/mlir_generated/cpu_op_invert.cc
 +++ b/tensorflow/core/kernels/mlir_generated/cpu_op_invert.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -3111,7 +3128,7 @@ index a99ca145..68003c2e 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/cpu_op_left_shift.cc b/tensorflow/core/kernels/mlir_generated/cpu_op_left_shift.cc
-index 55b4ea18..4066ec60 100644
+index f0ba9f88..3d84e7c6 100644
 --- a/tensorflow/core/kernels/mlir_generated/cpu_op_left_shift.cc
 +++ b/tensorflow/core/kernels/mlir_generated/cpu_op_left_shift.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3124,7 +3141,7 @@ index 55b4ea18..4066ec60 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/cpu_op_right_shift.cc b/tensorflow/core/kernels/mlir_generated/cpu_op_right_shift.cc
-index dc4f8a45..ed9e9615 100644
+index 27556130..7f0a0545 100644
 --- a/tensorflow/core/kernels/mlir_generated/cpu_op_right_shift.cc
 +++ b/tensorflow/core/kernels/mlir_generated/cpu_op_right_shift.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3254,7 +3271,7 @@ index cc5de22e..746d2827 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_add.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_add.cc
-index 758c942b..14984220 100644
+index a10193f8..cf2f38dc 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_add.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_add.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3345,7 +3362,7 @@ index 8b4fb09d..af6344fd 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_and.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_and.cc
-index 71e69298..29bdc05f 100644
+index 63b590db..96b6c8f0 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_and.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_and.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3358,7 +3375,7 @@ index 71e69298..29bdc05f 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_or.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_or.cc
-index 791896ec..712ca7f2 100644
+index f7c228b0..8e7a4f97 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_or.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_or.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3371,7 +3388,7 @@ index 791896ec..712ca7f2 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_xor.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_xor.cc
-index 593b5399..4a992e06 100644
+index 93b6d30f..8dff5b12 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_xor.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_bitwise_xor.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3384,7 +3401,7 @@ index 593b5399..4a992e06 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_cast.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_cast.cc
-index d4102241..be9cd2c2 100644
+index fc098a83..4aeee9d1 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_cast.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_cast.cc
 @@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
@@ -3488,7 +3505,7 @@ index bcba9697..8960e90f 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_div.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_div.cc
-index 538ca0c0..e1c032c5 100644
+index ba7a2a97..6af24c1e 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_div.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_div.cc
 @@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
@@ -3527,7 +3544,7 @@ index e2a7f54d..449f6be9 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_equal.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_equal.cc
-index 75c2acb4..da81d66f 100644
+index 729ed02c..e369c9cb 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_equal.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_equal.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -3618,7 +3635,7 @@ index db0df1fd..4ef631aa 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_greater.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_greater.cc
-index 83f33472..63c0964e 100644
+index 7597795d..53d0db65 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_greater.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_greater.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -3631,7 +3648,7 @@ index 83f33472..63c0964e 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_greater_equal.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_greater_equal.cc
-index cd082b5d..1606f68e 100644
+index 91ca719b..8906aba3 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_greater_equal.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_greater_equal.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -3657,7 +3674,7 @@ index 1c0f210d..24f9718d 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_invert.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_invert.cc
-index 3c4f4ac3..bc8fbad5 100644
+index da3d16e8..3037dd16 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_invert.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_invert.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -3709,7 +3726,7 @@ index 8da39e88..333ea2ae 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_left_shift.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_left_shift.cc
-index 4a0f99a2..45d3f36d 100644
+index a7bb1319..e01a0fac 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_left_shift.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_left_shift.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3722,7 +3739,7 @@ index 4a0f99a2..45d3f36d 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_less.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_less.cc
-index c4b72b16..eb1150b7 100644
+index 678d2556..5b14b606 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_less.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_less.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -3735,7 +3752,7 @@ index c4b72b16..eb1150b7 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_less_equal.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_less_equal.cc
-index 676225fd..562be02b 100644
+index d80e654d..1b6644b2 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_less_equal.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_less_equal.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -3813,7 +3830,7 @@ index 04f5c7a7..aafaca88 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_maximum.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_maximum.cc
-index 3c458212..f4fed6e9 100644
+index 87b7081d..ac51c77b 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_maximum.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_maximum.cc
 @@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
@@ -3826,7 +3843,7 @@ index 3c458212..f4fed6e9 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_minimum.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_minimum.cc
-index 4b57487d..39d2a5e3 100644
+index d6336ce3..1b9a50c2 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_minimum.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_minimum.cc
 @@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
@@ -3839,9 +3856,22 @@ index 4b57487d..39d2a5e3 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_mul.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_mul.cc
-index 1cb25ede..15301dd5 100644
+index 9e6eda18..ed0d4eac 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_mul.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_mul.cc
+@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
+ 
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/kernels/mlir_generated/base_gpu_op.h"
+ 
+ namespace tensorflow {
+diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_mul_no_nan.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_mul_no_nan.cc
+index 5a17393b..c080360a 100644
+--- a/tensorflow/core/kernels/mlir_generated/gpu_op_mul_no_nan.cc
++++ b/tensorflow/core/kernels/mlir_generated/gpu_op_mul_no_nan.cc
 @@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
  limitations under the License.
  ==============================================================================*/
@@ -3865,12 +3895,25 @@ index 1ff96216..b9acc368 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_not_equal.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_not_equal.cc
-index 45e99a7c..69ef5b56 100644
+index 2a2b2d75..3fe162ec 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_not_equal.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_not_equal.cc
 @@ -15,7 +15,7 @@ limitations under the License.
  
  #include <complex>
+ 
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/kernels/mlir_generated/base_gpu_op.h"
+ 
+ namespace tensorflow {
+diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_ones_like.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_ones_like.cc
+index 4a39e056..f9660bbb 100644
+--- a/tensorflow/core/kernels/mlir_generated/gpu_op_ones_like.cc
++++ b/tensorflow/core/kernels/mlir_generated/gpu_op_ones_like.cc
+@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
  
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 +#include "unsupported/Eigen/CXX11/Tensor"
@@ -3943,7 +3986,7 @@ index 00b35b5f..debebb03 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_right_shift.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_right_shift.cc
-index 659ed57d..c3820071 100644
+index 691d114d..c041e44f 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_right_shift.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_right_shift.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3956,7 +3999,7 @@ index 659ed57d..c3820071 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_rint.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_rint.cc
-index 07c721d3..7548f30e 100644
+index 49e0db27..b1debf76 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_rint.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_rint.cc
 @@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
@@ -4007,6 +4050,32 @@ index 4ac33d70..01b8c694 100644
  #include "tensorflow/core/kernels/mlir_generated/base_gpu_op.h"
  
  namespace tensorflow {
+diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_selu.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_selu.cc
+index a11d1267..b619a206 100644
+--- a/tensorflow/core/kernels/mlir_generated/gpu_op_selu.cc
++++ b/tensorflow/core/kernels/mlir_generated/gpu_op_selu.cc
+@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
+ 
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/kernels/mlir_generated/base_gpu_op.h"
+ 
+ namespace tensorflow {
+diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_sigmoid.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_sigmoid.cc
+index d486812e..d949acd4 100644
+--- a/tensorflow/core/kernels/mlir_generated/gpu_op_sigmoid.cc
++++ b/tensorflow/core/kernels/mlir_generated/gpu_op_sigmoid.cc
+@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
+ 
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/kernels/mlir_generated/base_gpu_op.h"
+ 
+ namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_sign.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_sign.cc
 index a88f3824..1e661c68 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_sign.cc
@@ -4037,6 +4106,32 @@ diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_sinh.cc b/tensorflow/
 index 9d45456e..366b1da4 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_sinh.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_sinh.cc
+@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
+ 
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/kernels/mlir_generated/base_gpu_op.h"
+ 
+ namespace tensorflow {
+diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_softplus.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_softplus.cc
+index c34f9c31..cada0dc2 100644
+--- a/tensorflow/core/kernels/mlir_generated/gpu_op_softplus.cc
++++ b/tensorflow/core/kernels/mlir_generated/gpu_op_softplus.cc
+@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
+ 
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/kernels/mlir_generated/base_gpu_op.h"
+ 
+ namespace tensorflow {
+diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_softsign.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_softsign.cc
+index 4e05ea60..26da212b 100644
+--- a/tensorflow/core/kernels/mlir_generated/gpu_op_softsign.cc
++++ b/tensorflow/core/kernels/mlir_generated/gpu_op_softsign.cc
 @@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
  limitations under the License.
  ==============================================================================*/
@@ -4086,7 +4181,7 @@ index cbb1a932..01ff9d3a 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_sub.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_sub.cc
-index 4abe6d6f..8c788ca1 100644
+index 643c30d3..cc9ca94c 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_sub.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_sub.cc
 @@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
@@ -4138,7 +4233,7 @@ index b1a57557..488a4586 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_xlog1py.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_xlog1py.cc
-index 41087f24..75ac5de9 100644
+index 0077513c..e1b63e58 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_xlog1py.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_xlog1py.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -4151,9 +4246,22 @@ index 41087f24..75ac5de9 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_xlogy.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_xlogy.cc
-index 4a43b3b4..bcc22fd1 100644
+index 47f7df19..f3c00644 100644
 --- a/tensorflow/core/kernels/mlir_generated/gpu_op_xlogy.cc
 +++ b/tensorflow/core/kernels/mlir_generated/gpu_op_xlogy.cc
+@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/kernels/mlir_generated/base_gpu_op.h"
+ 
+ namespace tensorflow {
+diff --git a/tensorflow/core/kernels/mlir_generated/gpu_op_zeros_like.cc b/tensorflow/core/kernels/mlir_generated/gpu_op_zeros_like.cc
+index 7808aac2..03312efe 100644
+--- a/tensorflow/core/kernels/mlir_generated/gpu_op_zeros_like.cc
++++ b/tensorflow/core/kernels/mlir_generated/gpu_op_zeros_like.cc
 @@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
@@ -4177,7 +4285,7 @@ index 104d50b7..0c3fba38 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/multinomial_op.cc b/tensorflow/core/kernels/multinomial_op.cc
-index 1802bbd4..4179aee6 100644
+index dcabf6c1..dbfe3ace 100644
 --- a/tensorflow/core/kernels/multinomial_op.cc
 +++ b/tensorflow/core/kernels/multinomial_op.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -4216,7 +4324,7 @@ index 3bf3ee51..35e20899 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/nn_ops_test.cc b/tensorflow/core/kernels/nn_ops_test.cc
-index bff83abc..3e763093 100644
+index d4e89b85..35e39b64 100644
 --- a/tensorflow/core/kernels/nn_ops_test.cc
 +++ b/tensorflow/core/kernels/nn_ops_test.cc
 @@ -27,7 +27,7 @@ limitations under the License.
@@ -4229,7 +4337,7 @@ index bff83abc..3e763093 100644
  #include "tensorflow/cc/ops/nn_ops_internal.h"
  #include "tensorflow/core/common_runtime/device_factory.h"
 diff --git a/tensorflow/core/kernels/one_hot_op.cc b/tensorflow/core/kernels/one_hot_op.cc
-index e6cb84ba..048b3d1e 100644
+index 3fe16246..6f3a7986 100644
 --- a/tensorflow/core/kernels/one_hot_op.cc
 +++ b/tensorflow/core/kernels/one_hot_op.cc
 @@ -25,7 +25,7 @@ limitations under the License.
@@ -4255,7 +4363,7 @@ index c702b542..120d3b56 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/platform/macros.h"
 diff --git a/tensorflow/core/kernels/ops_util_test.cc b/tensorflow/core/kernels/ops_util_test.cc
-index 02f460d5..c5fb2022 100644
+index f2f33005..c3c968d7 100644
 --- a/tensorflow/core/kernels/ops_util_test.cc
 +++ b/tensorflow/core/kernels/ops_util_test.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -4268,7 +4376,7 @@ index 02f460d5..c5fb2022 100644
  #include "tensorflow/core/framework/tensor.h"
  #include "tensorflow/core/platform/test.h"
 diff --git a/tensorflow/core/kernels/pack_op.cc b/tensorflow/core/kernels/pack_op.cc
-index 1418159f..d822764f 100644
+index 5a0df2a2..5f2dec19 100644
 --- a/tensorflow/core/kernels/pack_op.cc
 +++ b/tensorflow/core/kernels/pack_op.cc
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -4281,7 +4389,7 @@ index 1418159f..d822764f 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/pad_op.cc b/tensorflow/core/kernels/pad_op.cc
-index 22fd29ed..819ac13d 100644
+index a0a6a2f2..f9d8a07b 100644
 --- a/tensorflow/core/kernels/pad_op.cc
 +++ b/tensorflow/core/kernels/pad_op.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -4294,7 +4402,7 @@ index 22fd29ed..819ac13d 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/pad_op.h b/tensorflow/core/kernels/pad_op.h
-index ae79f515..9253f6f1 100644
+index 62f8415f..48fc70b5 100644
 --- a/tensorflow/core/kernels/pad_op.h
 +++ b/tensorflow/core/kernels/pad_op.h
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -4320,7 +4428,7 @@ index af972a1e..5b8c4f0c 100644
  #include "tensorflow/core/kernels/parameterized_truncated_normal_op.h"
  #include "tensorflow/core/lib/random/philox_random.h"
 diff --git a/tensorflow/core/kernels/pooling_ops_3d.cc b/tensorflow/core/kernels/pooling_ops_3d.cc
-index 56a55bc2..c4dc0a35 100644
+index 3eee1f75..5f3cf6bc 100644
 --- a/tensorflow/core/kernels/pooling_ops_3d.cc
 +++ b/tensorflow/core/kernels/pooling_ops_3d.cc
 @@ -18,8 +18,8 @@ limitations under the License.
@@ -4335,7 +4443,7 @@ index 56a55bc2..c4dc0a35 100644
  #include "tensorflow/core/framework/numeric_op.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/pooling_ops_common.h b/tensorflow/core/kernels/pooling_ops_common.h
-index dacbb872..99b54f59 100644
+index 8890e24a..2e99f2f9 100644
 --- a/tensorflow/core/kernels/pooling_ops_common.h
 +++ b/tensorflow/core/kernels/pooling_ops_common.h
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -4348,7 +4456,7 @@ index dacbb872..99b54f59 100644
  #include "tensorflow/core/framework/numeric_op.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/pooling_ops_common_gpu.h b/tensorflow/core/kernels/pooling_ops_common_gpu.h
-index 8e391f35..d950bd78 100644
+index a6a1c5ac..504574ca 100644
 --- a/tensorflow/core/kernels/pooling_ops_common_gpu.h
 +++ b/tensorflow/core/kernels/pooling_ops_common_gpu.h
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -4361,7 +4469,7 @@ index 8e391f35..d950bd78 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/population_count_op.cc b/tensorflow/core/kernels/population_count_op.cc
-index 6e90320c..b6a1a01c 100644
+index 11719b4a..254411a4 100644
 --- a/tensorflow/core/kernels/population_count_op.cc
 +++ b/tensorflow/core/kernels/population_count_op.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -4387,7 +4495,7 @@ index 6721c7ad..79fa935d 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/quantization_utils.h b/tensorflow/core/kernels/quantization_utils.h
-index 1e464029..d32a5390 100644
+index 19a2de1e..e6f1a942 100644
 --- a/tensorflow/core/kernels/quantization_utils.h
 +++ b/tensorflow/core/kernels/quantization_utils.h
 @@ -32,7 +32,7 @@ limitations under the License.
@@ -4400,7 +4508,7 @@ index 1e464029..d32a5390 100644
  #include "public/gemmlowp.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/quantization_utils_test.cc b/tensorflow/core/kernels/quantization_utils_test.cc
-index 81b3f4ff..ae7deca1 100644
+index 09b2804b..f3eff366 100644
 --- a/tensorflow/core/kernels/quantization_utils_test.cc
 +++ b/tensorflow/core/kernels/quantization_utils_test.cc
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -4413,7 +4521,7 @@ index 81b3f4ff..ae7deca1 100644
  #include "tensorflow/core/framework/tensor_testutil.h"
  #include "tensorflow/core/framework/types.h"
 diff --git a/tensorflow/core/kernels/quantize_and_dequantize_op.h b/tensorflow/core/kernels/quantize_and_dequantize_op.h
-index c286a10a..6382e5b7 100644
+index 0eea68be..f9ea137a 100644
 --- a/tensorflow/core/kernels/quantize_and_dequantize_op.h
 +++ b/tensorflow/core/kernels/quantize_and_dequantize_op.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -4426,7 +4534,7 @@ index c286a10a..6382e5b7 100644
  #include "tensorflow/core/framework/tensor.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/quantize_down_and_shrink_range.cc b/tensorflow/core/kernels/quantize_down_and_shrink_range.cc
-index 9893a855..c15c5f3c 100644
+index 1b948c81..087ca037 100644
 --- a/tensorflow/core/kernels/quantize_down_and_shrink_range.cc
 +++ b/tensorflow/core/kernels/quantize_down_and_shrink_range.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -4465,7 +4573,7 @@ index 21e6bb46..473404ed 100644
  #include "tensorflow/core/framework/node_def_builder.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/quantized_concat_op.cc b/tensorflow/core/kernels/quantized_concat_op.cc
-index 80315edb..29b4acb0 100644
+index 1c93e2eb..70e90c95 100644
 --- a/tensorflow/core/kernels/quantized_concat_op.cc
 +++ b/tensorflow/core/kernels/quantized_concat_op.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -4491,7 +4599,7 @@ index d62094cc..cccb0d33 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/quantized_pooling_ops.cc b/tensorflow/core/kernels/quantized_pooling_ops.cc
-index 663ceb06..3a0c37ec 100644
+index 17df3c22..33c87bd8 100644
 --- a/tensorflow/core/kernels/quantized_pooling_ops.cc
 +++ b/tensorflow/core/kernels/quantized_pooling_ops.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -4504,7 +4612,7 @@ index 663ceb06..3a0c37ec 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/random_op.h b/tensorflow/core/kernels/random_op.h
-index 5c861534..0e09934a 100644
+index da3ea882..e52d509e 100644
 --- a/tensorflow/core/kernels/random_op.h
 +++ b/tensorflow/core/kernels/random_op.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -4530,7 +4638,7 @@ index 9d7c56e3..7eb73089 100644
  #include "tensorflow/core/lib/random/philox_random.h"
  #include "tensorflow/core/lib/random/random_distributions.h"
 diff --git a/tensorflow/core/kernels/reduction_gpu_kernels.cu.h b/tensorflow/core/kernels/reduction_gpu_kernels.cu.h
-index a7238b2f..e9ae7c0b 100644
+index f1f04d45..59814a3d 100644
 --- a/tensorflow/core/kernels/reduction_gpu_kernels.cu.h
 +++ b/tensorflow/core/kernels/reduction_gpu_kernels.cu.h
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -4543,7 +4651,7 @@ index a7238b2f..e9ae7c0b 100644
  #include "tensorflow/core/kernels/reduction_ops.h"
  #include "tensorflow/core/lib/core/bits.h"
 diff --git a/tensorflow/core/kernels/reduction_ops.h b/tensorflow/core/kernels/reduction_ops.h
-index d1066d65..fe18ba1c 100644
+index f55b4b9f..49eedede 100644
 --- a/tensorflow/core/kernels/reduction_ops.h
 +++ b/tensorflow/core/kernels/reduction_ops.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -4556,7 +4664,7 @@ index d1066d65..fe18ba1c 100644
  #include "tensorflow/core/framework/tensor_types.h"
  
 diff --git a/tensorflow/core/kernels/reduction_ops_common.h b/tensorflow/core/kernels/reduction_ops_common.h
-index 2dbf5f7d..c1a55c2a 100644
+index c9b7d6a2..f327569d 100644
 --- a/tensorflow/core/kernels/reduction_ops_common.h
 +++ b/tensorflow/core/kernels/reduction_ops_common.h
 @@ -23,8 +23,8 @@ limitations under the License.
@@ -4584,7 +4692,7 @@ index 2415f1db..ef446d1b 100644
  #include "tensorflow/core/framework/tensor_types.h"
  
 diff --git a/tensorflow/core/kernels/redux_functor.h b/tensorflow/core/kernels/redux_functor.h
-index e07fa536..b42b7d93 100644
+index 6681becd..9fbb7607 100644
 --- a/tensorflow/core/kernels/redux_functor.h
 +++ b/tensorflow/core/kernels/redux_functor.h
 @@ -18,8 +18,8 @@ limitations under the License.
@@ -4599,7 +4707,7 @@ index e07fa536..b42b7d93 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/platform/types.h"
 diff --git a/tensorflow/core/kernels/reference_gemm.h b/tensorflow/core/kernels/reference_gemm.h
-index c9cc04ed..f0c1bad4 100644
+index 77bed943..9ad96954 100644
 --- a/tensorflow/core/kernels/reference_gemm.h
 +++ b/tensorflow/core/kernels/reference_gemm.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -4612,7 +4720,7 @@ index c9cc04ed..f0c1bad4 100644
  
  // This is an unoptimized but debuggable implementation of the GEMM matrix
 diff --git a/tensorflow/core/kernels/relu_op.cc b/tensorflow/core/kernels/relu_op.cc
-index bb2587f1..8c926e87 100644
+index 3cadfb9a..83843120 100644
 --- a/tensorflow/core/kernels/relu_op.cc
 +++ b/tensorflow/core/kernels/relu_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -4651,7 +4759,7 @@ index f83252cc..bb40bdf2 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/relu_op_gpu.cu.cc b/tensorflow/core/kernels/relu_op_gpu.cu.cc
-index 23baa4a3..8b7fb261 100644
+index 0993f7a5..0627b785 100644
 --- a/tensorflow/core/kernels/relu_op_gpu.cu.cc
 +++ b/tensorflow/core/kernels/relu_op_gpu.cu.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -4690,7 +4798,7 @@ index 3259e5dd..29294036 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/type_traits.h"
 diff --git a/tensorflow/core/kernels/reverse_op.cc b/tensorflow/core/kernels/reverse_op.cc
-index 560fac71..bc10ab90 100644
+index 5bb95a40..e87b2500 100644
 --- a/tensorflow/core/kernels/reverse_op.cc
 +++ b/tensorflow/core/kernels/reverse_op.cc
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -4716,7 +4824,7 @@ index 44e7967c..7cace619 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/reverse_sequence_op.cc b/tensorflow/core/kernels/reverse_sequence_op.cc
-index 1282deb2..5389f7e1 100644
+index 8055b29b..78ca4d17 100644
 --- a/tensorflow/core/kernels/reverse_sequence_op.cc
 +++ b/tensorflow/core/kernels/reverse_sequence_op.cc
 @@ -25,7 +25,7 @@ limitations under the License.
@@ -4729,7 +4837,7 @@ index 1282deb2..5389f7e1 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/reverse_sequence_op.h b/tensorflow/core/kernels/reverse_sequence_op.h
-index d6ba2781..d853860f 100644
+index f9f69050..2c3bcadc 100644
 --- a/tensorflow/core/kernels/reverse_sequence_op.h
 +++ b/tensorflow/core/kernels/reverse_sequence_op.h
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -4742,7 +4850,7 @@ index d6ba2781..d853860f 100644
  #include "tensorflow/core/platform/types.h"
  
 diff --git a/tensorflow/core/kernels/rnn/blas_gemm.h b/tensorflow/core/kernels/rnn/blas_gemm.h
-index 126e1ede..8d31e1ec 100644
+index 71ca745e..05d897b8 100644
 --- a/tensorflow/core/kernels/rnn/blas_gemm.h
 +++ b/tensorflow/core/kernels/rnn/blas_gemm.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -4755,7 +4863,7 @@ index 126e1ede..8d31e1ec 100644
  #include "tensorflow/core/kernels/eigen_activations.h"
  #include "tensorflow/core/platform/types.h"
 diff --git a/tensorflow/core/kernels/rnn/gru_ops.cc b/tensorflow/core/kernels/rnn/gru_ops.cc
-index 8735e57c..e93b9705 100644
+index 702e6188..da854c02 100644
 --- a/tensorflow/core/kernels/rnn/gru_ops.cc
 +++ b/tensorflow/core/kernels/rnn/gru_ops.cc
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -4781,7 +4889,7 @@ index 6705f5fd..34bc184e 100644
  #include "tensorflow/core/kernels/rnn/blas_gemm.h"
  #include "tensorflow/core/platform/types.h"
 diff --git a/tensorflow/core/kernels/rnn/lstm_ops.cc b/tensorflow/core/kernels/rnn/lstm_ops.cc
-index dfd77f9c..5d62381a 100644
+index 711fc8f0..e2ca2daf 100644
 --- a/tensorflow/core/kernels/rnn/lstm_ops.cc
 +++ b/tensorflow/core/kernels/rnn/lstm_ops.cc
 @@ -24,7 +24,7 @@ limitations under the License.
@@ -4794,7 +4902,7 @@ index dfd77f9c..5d62381a 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/rnn/lstm_ops.h b/tensorflow/core/kernels/rnn/lstm_ops.h
-index 834a9231..592835c0 100644
+index f6c4079b..35469a73 100644
 --- a/tensorflow/core/kernels/rnn/lstm_ops.h
 +++ b/tensorflow/core/kernels/rnn/lstm_ops.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -4820,7 +4928,7 @@ index 7de8046b..b058b332 100644
  #include "tensorflow/core/kernels/rnn/lstm_ops.h"
  #include "tensorflow/core/platform/logging.h"
 diff --git a/tensorflow/core/kernels/roll_op.h b/tensorflow/core/kernels/roll_op.h
-index 469b4491..870cc2c3 100644
+index e41d7bcb..5462847d 100644
 --- a/tensorflow/core/kernels/roll_op.h
 +++ b/tensorflow/core/kernels/roll_op.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -4833,7 +4941,7 @@ index 469b4491..870cc2c3 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/scan_ops.cc b/tensorflow/core/kernels/scan_ops.cc
-index 20f6b864..e97cef77 100644
+index 2919dc04..03b0ca05 100644
 --- a/tensorflow/core/kernels/scan_ops.cc
 +++ b/tensorflow/core/kernels/scan_ops.cc
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -4846,7 +4954,7 @@ index 20f6b864..e97cef77 100644
  #include "tensorflow/core/framework/numeric_op.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/scan_ops.h b/tensorflow/core/kernels/scan_ops.h
-index 0584e0ac..cc29400d 100644
+index fad042d3..ea07b95c 100644
 --- a/tensorflow/core/kernels/scan_ops.h
 +++ b/tensorflow/core/kernels/scan_ops.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -4874,7 +4982,7 @@ index 5af04c7a..888dc4b0 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/scatter_nd_op.h b/tensorflow/core/kernels/scatter_nd_op.h
-index a0dd682c..230c4392 100644
+index 6b0bde71..d3dff4de 100644
 --- a/tensorflow/core/kernels/scatter_nd_op.h
 +++ b/tensorflow/core/kernels/scatter_nd_op.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -4913,7 +5021,7 @@ index 64b69af4..c5877f5e 100644
  #include "tensorflow/core/kernels/scatter_nd_op.h"
  #include "tensorflow/core/platform/types.h"
 diff --git a/tensorflow/core/kernels/sdca_internal.cc b/tensorflow/core/kernels/sdca_internal.cc
-index ed7149bf..2f598e9f 100644
+index cbec9a5e..e9977bb4 100644
 --- a/tensorflow/core/kernels/sdca_internal.cc
 +++ b/tensorflow/core/kernels/sdca_internal.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -4926,7 +5034,7 @@ index ed7149bf..2f598e9f 100644
  #include "tensorflow/core/lib/math/math_util.h"
  #include "tensorflow/core/lib/random/simple_philox.h"
 diff --git a/tensorflow/core/kernels/sdca_internal.h b/tensorflow/core/kernels/sdca_internal.h
-index 8bdfeb1a..2d586cf9 100644
+index 0bed4ea1..d275b86a 100644
 --- a/tensorflow/core/kernels/sdca_internal.h
 +++ b/tensorflow/core/kernels/sdca_internal.h
 @@ -27,7 +27,7 @@ limitations under the License.
@@ -4939,7 +5047,7 @@ index 8bdfeb1a..2d586cf9 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/sdca_ops.cc b/tensorflow/core/kernels/sdca_ops.cc
-index b2fc9b88..764ecbdb 100644
+index 98b4fd1c..8d766046 100644
 --- a/tensorflow/core/kernels/sdca_ops.cc
 +++ b/tensorflow/core/kernels/sdca_ops.cc
 @@ -27,7 +27,7 @@ limitations under the License.
@@ -4965,12 +5073,12 @@ index f075bf0f..21271fce 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/framework/types.h"
 diff --git a/tensorflow/core/kernels/segment_reduction_ops.h b/tensorflow/core/kernels/segment_reduction_ops.h
-index 8faf8acb..00882f30 100644
+index 9d83ffc3..88a4fbe4 100644
 --- a/tensorflow/core/kernels/segment_reduction_ops.h
 +++ b/tensorflow/core/kernels/segment_reduction_ops.h
-@@ -23,7 +23,7 @@ limitations under the License.
- // non-GPU targets. This only breaks in clang, because it's more strict for
- // template code and GpuAtomicMax is used in template context.
+@@ -16,7 +16,7 @@ limitations under the License.
+ #ifndef TENSORFLOW_CORE_KERNELS_SEGMENT_REDUCTION_OPS_H_
+ #define TENSORFLOW_CORE_KERNELS_SEGMENT_REDUCTION_OPS_H_
  
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 +#include "unsupported/Eigen/CXX11/Tensor"
@@ -4978,7 +5086,7 @@ index 8faf8acb..00882f30 100644
  #include "tensorflow/core/framework/tensor_shape.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/segment_reduction_ops_impl.h b/tensorflow/core/kernels/segment_reduction_ops_impl.h
-index 2868b7d3..cf728d88 100644
+index a44ede6d..d8de08bc 100644
 --- a/tensorflow/core/kernels/segment_reduction_ops_impl.h
 +++ b/tensorflow/core/kernels/segment_reduction_ops_impl.h
 @@ -25,8 +25,8 @@ limitations under the License.
@@ -4993,20 +5101,20 @@ index 2868b7d3..cf728d88 100644
  #include "tensorflow/core/framework/numeric_op.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/set_kernels.cc b/tensorflow/core/kernels/set_kernels.cc
-index fd6c7040..a84f9f9f 100644
+index d18fbcc0..37202c15 100644
 --- a/tensorflow/core/kernels/set_kernels.cc
 +++ b/tensorflow/core/kernels/set_kernels.cc
-@@ -27,7 +27,7 @@ limitations under the License.
- #include <set>
- #include <string>
+@@ -29,7 +29,7 @@ limitations under the License.
  
+ #include "absl/container/btree_set.h"
+ #include "absl/container/flat_hash_set.h"
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 +#include "unsupported/Eigen/CXX11/Tensor"
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/slice_op.cc b/tensorflow/core/kernels/slice_op.cc
-index 3bf3ce4c..7f7cbf07 100644
+index 4a4886f9..b75128a5 100644
 --- a/tensorflow/core/kernels/slice_op.cc
 +++ b/tensorflow/core/kernels/slice_op.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -5019,7 +5127,7 @@ index 3bf3ce4c..7f7cbf07 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/slice_op.h b/tensorflow/core/kernels/slice_op.h
-index 1d662f63..7d10c7c7 100644
+index d2d2a550..47ae6d35 100644
 --- a/tensorflow/core/kernels/slice_op.h
 +++ b/tensorflow/core/kernels/slice_op.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -5045,7 +5153,7 @@ index a35233bb..1946e6da 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/sobol_op.cc b/tensorflow/core/kernels/sobol_op.cc
-index b613cd90..c54cc12e 100644
+index 94fff6ba..80537f85 100644
 --- a/tensorflow/core/kernels/sobol_op.cc
 +++ b/tensorflow/core/kernels/sobol_op.cc
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -5054,7 +5162,7 @@ index b613cd90..c54cc12e 100644
  
 -#include "third_party/eigen3/Eigen/Core"
 +#include "Eigen/Core"
- #include "sobol_data.h"
+ #include "sobol_data.h"  // from @sobol_data
  #include "tensorflow/core/framework/device_base.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/softmax_op.cc b/tensorflow/core/kernels/softmax_op.cc
@@ -5097,7 +5205,7 @@ index 160cf4f4..f8060de7 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/softplus_op.cc b/tensorflow/core/kernels/softplus_op.cc
-index 0c0f3309..a5f06434 100644
+index 98a53db4..31d84afe 100644
 --- a/tensorflow/core/kernels/softplus_op.cc
 +++ b/tensorflow/core/kernels/softplus_op.cc
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -5123,7 +5231,7 @@ index b7f60107..6f628450 100644
  #include "tensorflow/core/framework/tensor_types.h"
  
 diff --git a/tensorflow/core/kernels/softsign_op.cc b/tensorflow/core/kernels/softsign_op.cc
-index df1c61f4..32b0c818 100644
+index ffcbff87..d390b8b9 100644
 --- a/tensorflow/core/kernels/softsign_op.cc
 +++ b/tensorflow/core/kernels/softsign_op.cc
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -5149,7 +5257,7 @@ index 61ff6eee..20ffa3d2 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/spacetobatch_functor.h b/tensorflow/core/kernels/spacetobatch_functor.h
-index 00d3a53b..6a6efe60 100644
+index 98828af7..3faed8ed 100644
 --- a/tensorflow/core/kernels/spacetobatch_functor.h
 +++ b/tensorflow/core/kernels/spacetobatch_functor.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -5162,7 +5270,7 @@ index 00d3a53b..6a6efe60 100644
  #include "tensorflow/core/framework/tensor.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/spacetobatch_op.cc b/tensorflow/core/kernels/spacetobatch_op.cc
-index d5a2b319..ef85c719 100644
+index 009500f7..fb0c801f 100644
 --- a/tensorflow/core/kernels/spacetobatch_op.cc
 +++ b/tensorflow/core/kernels/spacetobatch_op.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -5175,12 +5283,12 @@ index d5a2b319..ef85c719 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/spacetodepth_op.cc b/tensorflow/core/kernels/spacetodepth_op.cc
-index a292894e..dc40ab39 100644
+index 6cd08b2a..44ccf932 100644
 --- a/tensorflow/core/kernels/spacetodepth_op.cc
 +++ b/tensorflow/core/kernels/spacetodepth_op.cc
 @@ -23,7 +23,7 @@ limitations under the License.
- 
- #include "tensorflow/core/kernels/spacetodepth_op.h"
+ #include <string>
+ #include <utility>
  
 -#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 +#include "unsupported/Eigen/CXX11/Tensor"
@@ -5201,7 +5309,7 @@ index 9d28be5f..30611b0f 100644
  #include "tensorflow/core/util/tensor_format.h"
  
 diff --git a/tensorflow/core/kernels/sparse/add_op.cc b/tensorflow/core/kernels/sparse/add_op.cc
-index 707e7302..07b01580 100644
+index 89b83d9d..63161ff1 100644
 --- a/tensorflow/core/kernels/sparse/add_op.cc
 +++ b/tensorflow/core/kernels/sparse/add_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -5214,7 +5322,7 @@ index 707e7302..07b01580 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/sparse/conj_op.cc b/tensorflow/core/kernels/sparse/conj_op.cc
-index 147160fb..8fc9a977 100644
+index c16722a6..e6c0f595 100644
 --- a/tensorflow/core/kernels/sparse/conj_op.cc
 +++ b/tensorflow/core/kernels/sparse/conj_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -5227,7 +5335,7 @@ index 147160fb..8fc9a977 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/sparse/csr_sparse_matrix_to_dense_op.cc b/tensorflow/core/kernels/sparse/csr_sparse_matrix_to_dense_op.cc
-index 2e5afbdc..77fe31db 100644
+index 5b871b59..edeee28e 100644
 --- a/tensorflow/core/kernels/sparse/csr_sparse_matrix_to_dense_op.cc
 +++ b/tensorflow/core/kernels/sparse/csr_sparse_matrix_to_dense_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -5240,7 +5348,7 @@ index 2e5afbdc..77fe31db 100644
  #include "tensorflow/core/framework/op.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/sparse/csr_sparse_matrix_to_sparse_tensor_op.cc b/tensorflow/core/kernels/sparse/csr_sparse_matrix_to_sparse_tensor_op.cc
-index db138291..3e83cb7a 100644
+index dda7fd33..45aeb4f2 100644
 --- a/tensorflow/core/kernels/sparse/csr_sparse_matrix_to_sparse_tensor_op.cc
 +++ b/tensorflow/core/kernels/sparse/csr_sparse_matrix_to_sparse_tensor_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -5253,7 +5361,7 @@ index db138291..3e83cb7a 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/sparse/dense_to_csr_sparse_matrix_op.cc b/tensorflow/core/kernels/sparse/dense_to_csr_sparse_matrix_op.cc
-index 5c62a44f..1a0927fc 100644
+index cbb94387..22814686 100644
 --- a/tensorflow/core/kernels/sparse/dense_to_csr_sparse_matrix_op.cc
 +++ b/tensorflow/core/kernels/sparse/dense_to_csr_sparse_matrix_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -5266,7 +5374,7 @@ index 5c62a44f..1a0927fc 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_reference.h"
 diff --git a/tensorflow/core/kernels/sparse/kernels.cc b/tensorflow/core/kernels/sparse/kernels.cc
-index dff9aeb8..08f3d27f 100644
+index f8846852..f6a4c5e6 100644
 --- a/tensorflow/core/kernels/sparse/kernels.cc
 +++ b/tensorflow/core/kernels/sparse/kernels.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -5279,7 +5387,7 @@ index dff9aeb8..08f3d27f 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/lib/core/errors.h"
 diff --git a/tensorflow/core/kernels/sparse/kernels.h b/tensorflow/core/kernels/sparse/kernels.h
-index 0c4ef9e2..dfe63c31 100644
+index f1a31d95..dced9c67 100644
 --- a/tensorflow/core/kernels/sparse/kernels.h
 +++ b/tensorflow/core/kernels/sparse/kernels.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -5305,7 +5413,7 @@ index 6b11e643..352a88cc 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/kernels/gpu_device_array.h"
 diff --git a/tensorflow/core/kernels/sparse/kernels_test.cc b/tensorflow/core/kernels/sparse/kernels_test.cc
-index 116a80ac..6e4a0e62 100644
+index 39ab6fa0..672b6c1c 100644
 --- a/tensorflow/core/kernels/sparse/kernels_test.cc
 +++ b/tensorflow/core/kernels/sparse/kernels_test.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -5318,7 +5426,7 @@ index 116a80ac..6e4a0e62 100644
  #include "tensorflow/core/framework/tensor_shape.h"
  #include "tensorflow/core/framework/tensor_testutil.h"
 diff --git a/tensorflow/core/kernels/sparse/mat_mul_op.cc b/tensorflow/core/kernels/sparse/mat_mul_op.cc
-index d1cd8cc1..8d86ae1f 100644
+index 7f3ddd13..0374c529 100644
 --- a/tensorflow/core/kernels/sparse/mat_mul_op.cc
 +++ b/tensorflow/core/kernels/sparse/mat_mul_op.cc
 @@ -19,9 +19,9 @@ limitations under the License.
@@ -5335,7 +5443,7 @@ index d1cd8cc1..8d86ae1f 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/sparse/mul_op.cc b/tensorflow/core/kernels/sparse/mul_op.cc
-index 539874cb..bfd17a3e 100644
+index b14b3e59..f692d8ef 100644
 --- a/tensorflow/core/kernels/sparse/mul_op.cc
 +++ b/tensorflow/core/kernels/sparse/mul_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -5348,7 +5456,7 @@ index 539874cb..bfd17a3e 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/sparse/nnz_op.cc b/tensorflow/core/kernels/sparse/nnz_op.cc
-index d6762044..3f41fffe 100644
+index 749f9041..4e8b3fc5 100644
 --- a/tensorflow/core/kernels/sparse/nnz_op.cc
 +++ b/tensorflow/core/kernels/sparse/nnz_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -5361,7 +5469,7 @@ index d6762044..3f41fffe 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/sparse/softmax_op.cc b/tensorflow/core/kernels/sparse/softmax_op.cc
-index 87ec5d80..9db5431c 100644
+index ddec9744..c274e475 100644
 --- a/tensorflow/core/kernels/sparse/softmax_op.cc
 +++ b/tensorflow/core/kernels/sparse/softmax_op.cc
 @@ -24,7 +24,7 @@ limitations under the License.
@@ -5374,7 +5482,7 @@ index 87ec5d80..9db5431c 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/sparse/sparse_cholesky_op.cc b/tensorflow/core/kernels/sparse/sparse_cholesky_op.cc
-index 47ab2523..c71deaaf 100644
+index ce111c71..5da6e1f7 100644
 --- a/tensorflow/core/kernels/sparse/sparse_cholesky_op.cc
 +++ b/tensorflow/core/kernels/sparse/sparse_cholesky_op.cc
 @@ -21,11 +21,11 @@ limitations under the License.
@@ -5395,7 +5503,7 @@ index 47ab2523..c71deaaf 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/sparse/sparse_mat_mul_op.cc b/tensorflow/core/kernels/sparse/sparse_mat_mul_op.cc
-index 05b73ef9..a83e248b 100644
+index bc30999c..8f1c1cf8 100644
 --- a/tensorflow/core/kernels/sparse/sparse_mat_mul_op.cc
 +++ b/tensorflow/core/kernels/sparse/sparse_mat_mul_op.cc
 @@ -22,8 +22,8 @@ limitations under the License.
@@ -5410,7 +5518,7 @@ index 05b73ef9..a83e248b 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/sparse/sparse_matrix.h b/tensorflow/core/kernels/sparse/sparse_matrix.h
-index 234d40b1..213cb6fa 100644
+index 3476aa48..97067dc1 100644
 --- a/tensorflow/core/kernels/sparse/sparse_matrix.h
 +++ b/tensorflow/core/kernels/sparse/sparse_matrix.h
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -5423,7 +5531,7 @@ index 234d40b1..213cb6fa 100644
  #include "tensorflow/core/framework/tensor.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/sparse/sparse_matrix_components_op.cc b/tensorflow/core/kernels/sparse/sparse_matrix_components_op.cc
-index 2832d66e..073fd170 100644
+index 39ff9b7a..b7cf521e 100644
 --- a/tensorflow/core/kernels/sparse/sparse_matrix_components_op.cc
 +++ b/tensorflow/core/kernels/sparse/sparse_matrix_components_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -5436,7 +5544,7 @@ index 2832d66e..073fd170 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/sparse/sparse_ordering_amd_op.cc b/tensorflow/core/kernels/sparse/sparse_ordering_amd_op.cc
-index cf8b003a..8a4d9b8b 100644
+index 0bdbfb74..e6d50de2 100644
 --- a/tensorflow/core/kernels/sparse/sparse_ordering_amd_op.cc
 +++ b/tensorflow/core/kernels/sparse/sparse_ordering_amd_op.cc
 @@ -17,11 +17,11 @@ limitations under the License.
@@ -5457,7 +5565,7 @@ index cf8b003a..8a4d9b8b 100644
  #include "tensorflow/core/framework/op.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/sparse/sparse_tensor_to_csr_sparse_matrix_op.cc b/tensorflow/core/kernels/sparse/sparse_tensor_to_csr_sparse_matrix_op.cc
-index 2548ceaa..74faddb9 100644
+index 942a538d..2b1340c9 100644
 --- a/tensorflow/core/kernels/sparse/sparse_tensor_to_csr_sparse_matrix_op.cc
 +++ b/tensorflow/core/kernels/sparse/sparse_tensor_to_csr_sparse_matrix_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -5470,7 +5578,7 @@ index 2548ceaa..74faddb9 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_reference.h"
 diff --git a/tensorflow/core/kernels/sparse/transpose_op.cc b/tensorflow/core/kernels/sparse/transpose_op.cc
-index 78321104..08036ef9 100644
+index 03a552db..5351c6b6 100644
 --- a/tensorflow/core/kernels/sparse/transpose_op.cc
 +++ b/tensorflow/core/kernels/sparse/transpose_op.cc
 @@ -26,8 +26,8 @@ limitations under the License.
@@ -5498,7 +5606,7 @@ index 924221b6..06c9ee7e 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/sparse/zeros_op.h b/tensorflow/core/kernels/sparse/zeros_op.h
-index a98e8f4a..8fdba3cf 100644
+index cc579515..76cbff4b 100644
 --- a/tensorflow/core/kernels/sparse/zeros_op.h
 +++ b/tensorflow/core/kernels/sparse/zeros_op.h
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -5510,8 +5618,21 @@ index a98e8f4a..8fdba3cf 100644
  #include "tensorflow/core/framework/op.h"
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor_types.h"
+diff --git a/tensorflow/core/kernels/sparse_concat_op_gpu.cu.cc b/tensorflow/core/kernels/sparse_concat_op_gpu.cu.cc
+index 72067fa4..8bec980a 100644
+--- a/tensorflow/core/kernels/sparse_concat_op_gpu.cu.cc
++++ b/tensorflow/core/kernels/sparse_concat_op_gpu.cu.cc
+@@ -17,7 +17,7 @@ limitations under the License.
+ 
+ #define EIGEN_USE_GPU
+ 
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/framework/register_types.h"
+ #include "tensorflow/core/framework/tensor.h"
+ #include "tensorflow/core/framework/tensor_shape.h"
 diff --git a/tensorflow/core/kernels/sparse_cross_op.cc b/tensorflow/core/kernels/sparse_cross_op.cc
-index 43b3bedc..9e251457 100644
+index da9fe3bf..3a4bbe84 100644
 --- a/tensorflow/core/kernels/sparse_cross_op.cc
 +++ b/tensorflow/core/kernels/sparse_cross_op.cc
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -5524,7 +5645,7 @@ index 43b3bedc..9e251457 100644
  #include "tensorflow/core/framework/op_def_builder.h"
  #include "tensorflow/core/framework/op_kernel.h"
 diff --git a/tensorflow/core/kernels/sparse_dense_binary_op_shared.cc b/tensorflow/core/kernels/sparse_dense_binary_op_shared.cc
-index dda05dbc..e2773004 100644
+index 4dbe6d81..b8a22e85 100644
 --- a/tensorflow/core/kernels/sparse_dense_binary_op_shared.cc
 +++ b/tensorflow/core/kernels/sparse_dense_binary_op_shared.cc
 @@ -35,7 +35,7 @@ limitations under the License.
@@ -5537,7 +5658,7 @@ index dda05dbc..e2773004 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/sparse_fill_empty_rows_op_gpu.cu.cc b/tensorflow/core/kernels/sparse_fill_empty_rows_op_gpu.cu.cc
-index 409f50a6..1f4de4b5 100644
+index f2be3456..3188142b 100644
 --- a/tensorflow/core/kernels/sparse_fill_empty_rows_op_gpu.cu.cc
 +++ b/tensorflow/core/kernels/sparse_fill_empty_rows_op_gpu.cu.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -5550,7 +5671,7 @@ index 409f50a6..1f4de4b5 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/sparse_matmul_op.cc b/tensorflow/core/kernels/sparse_matmul_op.cc
-index a02afafa..88b3e7da 100644
+index 6bf9dfa3..f634b89d 100644
 --- a/tensorflow/core/kernels/sparse_matmul_op.cc
 +++ b/tensorflow/core/kernels/sparse_matmul_op.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -5589,7 +5710,7 @@ index e4185956..e40e8908 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/sparse_softmax_op.cc b/tensorflow/core/kernels/sparse_softmax_op.cc
-index 548080b8..93e59ae5 100644
+index 062ff77d..5e2e210a 100644
 --- a/tensorflow/core/kernels/sparse_softmax_op.cc
 +++ b/tensorflow/core/kernels/sparse_softmax_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -5602,7 +5723,7 @@ index 548080b8..93e59ae5 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/sparse_sparse_binary_op_shared.cc b/tensorflow/core/kernels/sparse_sparse_binary_op_shared.cc
-index eb993a59..32626add 100644
+index da823334..7fdf1343 100644
 --- a/tensorflow/core/kernels/sparse_sparse_binary_op_shared.cc
 +++ b/tensorflow/core/kernels/sparse_sparse_binary_op_shared.cc
 @@ -33,7 +33,7 @@ limitations under the License.
@@ -5641,7 +5762,7 @@ index a71b3693..8ca651fa 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/framework/types.h"
 diff --git a/tensorflow/core/kernels/sparse_to_dense_op.cc b/tensorflow/core/kernels/sparse_to_dense_op.cc
-index a75acc52..735f12c0 100644
+index b378b5fa..c4dece7b 100644
 --- a/tensorflow/core/kernels/sparse_to_dense_op.cc
 +++ b/tensorflow/core/kernels/sparse_to_dense_op.cc
 @@ -26,7 +26,7 @@ limitations under the License.
@@ -5667,7 +5788,7 @@ index a7fbe4af..a4a1e392 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/sparse_xent_op.cc b/tensorflow/core/kernels/sparse_xent_op.cc
-index b9c1d40d..8153ad54 100644
+index c9fa0b11..10e4f278 100644
 --- a/tensorflow/core/kernels/sparse_xent_op.cc
 +++ b/tensorflow/core/kernels/sparse_xent_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -5719,7 +5840,7 @@ index 674083b7..e2388ef5 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/split_lib_gpu.h b/tensorflow/core/kernels/split_lib_gpu.h
-index f2c343ae..ccdfd50f 100644
+index 1d1a9e9d..b9aaa2fc 100644
 --- a/tensorflow/core/kernels/split_lib_gpu.h
 +++ b/tensorflow/core/kernels/split_lib_gpu.h
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -5732,7 +5853,7 @@ index f2c343ae..ccdfd50f 100644
  #include "tensorflow/core/kernels/gpu_device_array_gpu.h"
  #include "tensorflow/core/kernels/split_lib.h"
 diff --git a/tensorflow/core/kernels/split_op.cc b/tensorflow/core/kernels/split_op.cc
-index 6f2cd965..b6c36da0 100644
+index 4e966e1b..e32acd59 100644
 --- a/tensorflow/core/kernels/split_op.cc
 +++ b/tensorflow/core/kernels/split_op.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -5745,7 +5866,7 @@ index 6f2cd965..b6c36da0 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/split_v_op.cc b/tensorflow/core/kernels/split_v_op.cc
-index d3f9f50c..018660fb 100644
+index fd83eb67..e4b22f8f 100644
 --- a/tensorflow/core/kernels/split_v_op.cc
 +++ b/tensorflow/core/kernels/split_v_op.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -5758,7 +5879,7 @@ index d3f9f50c..018660fb 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/strided_slice_op.cc b/tensorflow/core/kernels/strided_slice_op.cc
-index 0582d0cb..b56135b9 100644
+index 30f083da..3072d080 100644
 --- a/tensorflow/core/kernels/strided_slice_op.cc
 +++ b/tensorflow/core/kernels/strided_slice_op.cc
 @@ -24,7 +24,7 @@ limitations under the License.
@@ -5771,7 +5892,7 @@ index 0582d0cb..b56135b9 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/strided_slice_op.h b/tensorflow/core/kernels/strided_slice_op.h
-index dce93bf1..e113aeb3 100644
+index 387842b9..fe883eb4 100644
 --- a/tensorflow/core/kernels/strided_slice_op.h
 +++ b/tensorflow/core/kernels/strided_slice_op.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -5784,7 +5905,7 @@ index dce93bf1..e113aeb3 100644
  #include "tensorflow/core/framework/tensor_types.h"
  #include "tensorflow/core/framework/variant_encode_decode.h"
 diff --git a/tensorflow/core/kernels/strided_slice_op_impl.h b/tensorflow/core/kernels/strided_slice_op_impl.h
-index ab679bbb..2495c490 100644
+index 11af7092..0b5d769d 100644
 --- a/tensorflow/core/kernels/strided_slice_op_impl.h
 +++ b/tensorflow/core/kernels/strided_slice_op_impl.h
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -5797,7 +5918,7 @@ index ab679bbb..2495c490 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/substr_op.cc b/tensorflow/core/kernels/substr_op.cc
-index 8ca14c4d..ea64f3cf 100644
+index 49024798..867b1dba 100644
 --- a/tensorflow/core/kernels/substr_op.cc
 +++ b/tensorflow/core/kernels/substr_op.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -5810,7 +5931,7 @@ index 8ca14c4d..ea64f3cf 100644
  #include "tensorflow/core/framework/kernel_def_builder.h"
  #include "tensorflow/core/framework/op.h"
 diff --git a/tensorflow/core/kernels/tensor_array.cc b/tensorflow/core/kernels/tensor_array.cc
-index 8613ed8c..71a3478b 100644
+index 88d68441..7552b9d9 100644
 --- a/tensorflow/core/kernels/tensor_array.cc
 +++ b/tensorflow/core/kernels/tensor_array.cc
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -5823,7 +5944,7 @@ index 8613ed8c..71a3478b 100644
  #include "tensorflow/core/framework/tensor_util.h"
  #include "tensorflow/core/kernels/aggregate_ops_cpu.h"
 diff --git a/tensorflow/core/kernels/tensor_array_ops.cc b/tensorflow/core/kernels/tensor_array_ops.cc
-index 58d1f725..15a11882 100644
+index fed26e36..616ae40d 100644
 --- a/tensorflow/core/kernels/tensor_array_ops.cc
 +++ b/tensorflow/core/kernels/tensor_array_ops.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -5836,7 +5957,7 @@ index 58d1f725..15a11882 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/tensor_to_hash_bucket_op.cc b/tensorflow/core/kernels/tensor_to_hash_bucket_op.cc
-index 4242009d..c79c091b 100644
+index 2d630917..317bf654 100644
 --- a/tensorflow/core/kernels/tensor_to_hash_bucket_op.cc
 +++ b/tensorflow/core/kernels/tensor_to_hash_bucket_op.cc
 @@ -15,7 +15,7 @@ limitations under the License.
@@ -5849,7 +5970,7 @@ index 4242009d..c79c091b 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/kernels/tensor_to_hash_bucket_op.h b/tensorflow/core/kernels/tensor_to_hash_bucket_op.h
-index 3c5f71b6..a8252d92 100644
+index 90c4f208..e6804524 100644
 --- a/tensorflow/core/kernels/tensor_to_hash_bucket_op.h
 +++ b/tensorflow/core/kernels/tensor_to_hash_bucket_op.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -5875,7 +5996,7 @@ index 37f88e66..a84a3c03 100644
  #include "tensorflow/core/kernels/tensor_to_hash_bucket_op.h"
  #include "tensorflow/core/util/gpu_kernel_helper.h"
 diff --git a/tensorflow/core/kernels/tile_functor.h b/tensorflow/core/kernels/tile_functor.h
-index d5e63c83..43f4b1cf 100644
+index 71325920..5946521b 100644
 --- a/tensorflow/core/kernels/tile_functor.h
 +++ b/tensorflow/core/kernels/tile_functor.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -5901,7 +6022,7 @@ index 191553f4..d0892f7f 100644
  #include "tensorflow/core/kernels/ops_util.h"
  #include "tensorflow/core/kernels/tile_functor.h"
 diff --git a/tensorflow/core/kernels/tile_ops.cc b/tensorflow/core/kernels/tile_ops.cc
-index 7d967d87..5ced2383 100644
+index f86bd413..3f8f29d0 100644
 --- a/tensorflow/core/kernels/tile_ops.cc
 +++ b/tensorflow/core/kernels/tile_ops.cc
 @@ -23,7 +23,7 @@ limitations under the License.
@@ -5927,7 +6048,7 @@ index 6a9de388..55ae3606 100644
  #include "tensorflow/core/platform/types.h"
  
 diff --git a/tensorflow/core/kernels/topk_op.cc b/tensorflow/core/kernels/topk_op.cc
-index ffcbdd55..50a789f5 100644
+index ae823034..b636216e 100644
 --- a/tensorflow/core/kernels/topk_op.cc
 +++ b/tensorflow/core/kernels/topk_op.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -5940,7 +6061,7 @@ index ffcbdd55..50a789f5 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/topk_op.h b/tensorflow/core/kernels/topk_op.h
-index 1fdbc5b1..8d226beb 100644
+index 92f7c52b..2e915913 100644
 --- a/tensorflow/core/kernels/topk_op.h
 +++ b/tensorflow/core/kernels/topk_op.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -5966,7 +6087,7 @@ index 278011a1..a2bb7a10 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/training_ops.h b/tensorflow/core/kernels/training_ops.h
-index db0257af..9db18d5d 100644
+index 75e43804..9e8c6f96 100644
 --- a/tensorflow/core/kernels/training_ops.h
 +++ b/tensorflow/core/kernels/training_ops.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -5979,7 +6100,7 @@ index db0257af..9db18d5d 100644
  #include "tensorflow/core/lib/core/status.h"
  #include "tensorflow/core/platform/types.h"
 diff --git a/tensorflow/core/kernels/transpose_functor_cpu.cc b/tensorflow/core/kernels/transpose_functor_cpu.cc
-index 6d0dd984..3a222cad 100644
+index 76d0e698..1c99b71c 100644
 --- a/tensorflow/core/kernels/transpose_functor_cpu.cc
 +++ b/tensorflow/core/kernels/transpose_functor_cpu.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -6005,7 +6126,7 @@ index 07476858..40f4bf0e 100644
  #include "tensorflow/core/kernels/transpose_functor.h"
  #include "tensorflow/core/util/gpu_kernel_helper.h"
 diff --git a/tensorflow/core/kernels/unary_ops_composition.cc b/tensorflow/core/kernels/unary_ops_composition.cc
-index dc8c9b77..1499567e 100644
+index 5dfb42d6..ec771280 100644
 --- a/tensorflow/core/kernels/unary_ops_composition.cc
 +++ b/tensorflow/core/kernels/unary_ops_composition.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -6018,7 +6139,7 @@ index dc8c9b77..1499567e 100644
  #include "tensorflow/core/kernels/cwise_ops.h"
  #include "tensorflow/core/kernels/cwise_ops_common.h"
 diff --git a/tensorflow/core/kernels/unicode_ops.cc b/tensorflow/core/kernels/unicode_ops.cc
-index ab09dbe1..6f22243c 100644
+index 3e304cab..37985058 100644
 --- a/tensorflow/core/kernels/unicode_ops.cc
 +++ b/tensorflow/core/kernels/unicode_ops.cc
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -6031,7 +6152,7 @@ index ab09dbe1..6f22243c 100644
  #include "unicode/schriter.h"  // from @icu
  #include "unicode/uchar.h"  // from @icu
 diff --git a/tensorflow/core/kernels/unique_op_gpu.cu.h b/tensorflow/core/kernels/unique_op_gpu.cu.h
-index 617675ce..6bd34b93 100644
+index c4ccada9..365858f6 100644
 --- a/tensorflow/core/kernels/unique_op_gpu.cu.h
 +++ b/tensorflow/core/kernels/unique_op_gpu.cu.h
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -6044,7 +6165,7 @@ index 617675ce..6bd34b93 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/tensor.h"
 diff --git a/tensorflow/core/kernels/unpack_op.cc b/tensorflow/core/kernels/unpack_op.cc
-index 1bdb2474..d65424fc 100644
+index 60fccd3e..5789328f 100644
 --- a/tensorflow/core/kernels/unpack_op.cc
 +++ b/tensorflow/core/kernels/unpack_op.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -6057,7 +6178,7 @@ index 1bdb2474..d65424fc 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/kernels/unravel_index_op.cc b/tensorflow/core/kernels/unravel_index_op.cc
-index d5adef3b..3a3f934e 100644
+index cff04387..b68a842c 100644
 --- a/tensorflow/core/kernels/unravel_index_op.cc
 +++ b/tensorflow/core/kernels/unravel_index_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -6070,7 +6191,7 @@ index d5adef3b..3a3f934e 100644
  namespace tensorflow {
  
 diff --git a/tensorflow/core/kernels/where_op.cc b/tensorflow/core/kernels/where_op.cc
-index cd08ef3e..b0120545 100644
+index 72546e8b..232aab93 100644
 --- a/tensorflow/core/kernels/where_op.cc
 +++ b/tensorflow/core/kernels/where_op.cc
 @@ -25,7 +25,7 @@ limitations under the License.
@@ -6109,7 +6230,7 @@ index 98f216c1..39e0b4a4 100644
  #include "tensorflow/core/framework/register_types.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/kernels/xent_op.cc b/tensorflow/core/kernels/xent_op.cc
-index 2c252b5f..4ee524ee 100644
+index 7d8ad52c..d0158228 100644
 --- a/tensorflow/core/kernels/xent_op.cc
 +++ b/tensorflow/core/kernels/xent_op.cc
 @@ -19,7 +19,7 @@ limitations under the License.
@@ -6135,7 +6256,7 @@ index 23d3ad39..924bd13b 100644
  #include "tensorflow/core/framework/tensor_types.h"
  
 diff --git a/tensorflow/core/lib/random/random_distributions.h b/tensorflow/core/lib/random/random_distributions.h
-index 9d9eff00..2fd40769 100644
+index 9abcd502..b9bc594a 100644
 --- a/tensorflow/core/lib/random/random_distributions.h
 +++ b/tensorflow/core/lib/random/random_distributions.h
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -6161,7 +6282,7 @@ index 3e3ab2ce..d40e64c5 100644
  
  namespace tensorflow {
 diff --git a/tensorflow/core/platform/threadpool.cc b/tensorflow/core/platform/threadpool.cc
-index 18aa7684..182909e9 100644
+index eb340b49..31e0f683 100644
 --- a/tensorflow/core/platform/threadpool.cc
 +++ b/tensorflow/core/platform/threadpool.cc
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -6186,11 +6307,63 @@ index ef54df9e..4033d73c 100644
  
  namespace tensorflow {
  namespace thread {
+diff --git a/tensorflow/core/tfrt/run_handler_thread_pool/run_handler.cc b/tensorflow/core/tfrt/run_handler_thread_pool/run_handler.cc
+index 0c33c413..774e3e03 100644
+--- a/tensorflow/core/tfrt/run_handler_thread_pool/run_handler.cc
++++ b/tensorflow/core/tfrt/run_handler_thread_pool/run_handler.cc
+@@ -16,7 +16,7 @@ limitations under the License.
+ #include <atomic>
+ #define EIGEN_USE_THREADS
+ 
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/lib/core/threadpool_interface.h"
+ #include "tensorflow/core/lib/strings/strcat.h"
+ #include "tensorflow/core/platform/context.h"
+diff --git a/tensorflow/core/tfrt/run_handler_thread_pool/run_handler_test.cc b/tensorflow/core/tfrt/run_handler_thread_pool/run_handler_test.cc
+index 83250fb9..07dae79f 100644
+--- a/tensorflow/core/tfrt/run_handler_thread_pool/run_handler_test.cc
++++ b/tensorflow/core/tfrt/run_handler_thread_pool/run_handler_test.cc
+@@ -27,7 +27,7 @@ limitations under the License.
+ 
+ #include "absl/memory/memory.h"
+ #include "absl/synchronization/barrier.h"
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/lib/core/blocking_counter.h"
+ #include "tensorflow/core/lib/strings/strcat.h"
+ #include "tensorflow/core/platform/logging.h"
+diff --git a/tensorflow/core/tfrt/utils/tensor_util.cc b/tensorflow/core/tfrt/utils/tensor_util.cc
+index 31aaf5ee..94d3ba86 100644
+--- a/tensorflow/core/tfrt/utils/tensor_util.cc
++++ b/tensorflow/core/tfrt/utils/tensor_util.cc
+@@ -23,7 +23,7 @@ limitations under the License.
+ 
+ #include "absl/container/inlined_vector.h"
+ #include "absl/strings/str_cat.h"
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/framework/tensor.h"
+ #include "tensorflow/core/framework/tensor_shape.h"
+ #include "tensorflow/core/framework/types.h"
+diff --git a/tensorflow/core/tpu/kernels/sharding_util_ops.cc b/tensorflow/core/tpu/kernels/sharding_util_ops.cc
+index fbb26a49..a40c585e 100644
+--- a/tensorflow/core/tpu/kernels/sharding_util_ops.cc
++++ b/tensorflow/core/tpu/kernels/sharding_util_ops.cc
+@@ -20,7 +20,7 @@ limitations under the License.
+ 
+ #include "absl/strings/string_view.h"
+ #include "absl/types/span.h"
+-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
++#include "unsupported/Eigen/CXX11/Tensor"
+ #include "tensorflow/core/framework/kernel_def.pb.h"
+ #include "tensorflow/core/framework/op_kernel.h"
+ #include "tensorflow/core/framework/op_requires.h"
 diff --git a/tensorflow/core/tpu/kernels/tpu_functional_ops.cc b/tensorflow/core/tpu/kernels/tpu_functional_ops.cc
-index e9e49b8c..08924e5c 100644
+index 4b27f293..269ba98d 100644
 --- a/tensorflow/core/tpu/kernels/tpu_functional_ops.cc
 +++ b/tensorflow/core/tpu/kernels/tpu_functional_ops.cc
-@@ -24,7 +24,7 @@ limitations under the License.
+@@ -25,7 +25,7 @@ limitations under the License.
  #include "absl/base/call_once.h"
  #include "absl/strings/str_cat.h"
  #include "absl/synchronization/mutex.h"
@@ -6239,7 +6412,7 @@ index a546436a..6389473f 100644
  #include "tensorflow/core/lib/core/status.h"
  
 diff --git a/tensorflow/core/util/ctc/ctc_loss_calculator.h b/tensorflow/core/util/ctc/ctc_loss_calculator.h
-index 8cce828c..996f4630 100644
+index 53bdfc0b..d7591f77 100644
 --- a/tensorflow/core/util/ctc/ctc_loss_calculator.h
 +++ b/tensorflow/core/util/ctc/ctc_loss_calculator.h
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -6252,7 +6425,7 @@ index 8cce828c..996f4630 100644
  #include "tensorflow/core/lib/core/errors.h"
  #include "tensorflow/core/lib/core/status.h"
 diff --git a/tensorflow/core/util/gpu_device_functions.h b/tensorflow/core/util/gpu_device_functions.h
-index 225ad7b1..c937a96a 100644
+index 76fdbe77..041262f5 100644
 --- a/tensorflow/core/util/gpu_device_functions.h
 +++ b/tensorflow/core/util/gpu_device_functions.h
 @@ -31,7 +31,7 @@ limitations under the License.
@@ -6278,7 +6451,7 @@ index 3e2adc0f..eeb4ebc1 100644
  #include "tensorflow/core/platform/logging.h"
  #include "tensorflow/core/platform/stream_executor.h"
 diff --git a/tensorflow/core/util/image_resizer_state.h b/tensorflow/core/util/image_resizer_state.h
-index fa9785d1..b834608c 100644
+index 48e51705..b3e04823 100644
 --- a/tensorflow/core/util/image_resizer_state.h
 +++ b/tensorflow/core/util/image_resizer_state.h
 @@ -27,7 +27,7 @@ limitations under the License.
@@ -6291,7 +6464,7 @@ index fa9785d1..b834608c 100644
  #include "tensorflow/core/framework/op_kernel.h"
  #include "tensorflow/core/framework/register_types.h"
 diff --git a/tensorflow/core/util/sparse/dim_comparator.h b/tensorflow/core/util/sparse/dim_comparator.h
-index 498df7a0..16dfd01a 100644
+index 7274969e..707860b9 100644
 --- a/tensorflow/core/util/sparse/dim_comparator.h
 +++ b/tensorflow/core/util/sparse/dim_comparator.h
 @@ -16,7 +16,7 @@ limitations under the License.
@@ -6304,7 +6477,7 @@ index 498df7a0..16dfd01a 100644
  #include "tensorflow/core/lib/gtl/array_slice.h"
  #include "tensorflow/core/platform/logging.h"
 diff --git a/tensorflow/core/util/sparse/group_iterator.h b/tensorflow/core/util/sparse/group_iterator.h
-index 1e71444c..d75f39e1 100644
+index 748b344d..d7d74b6d 100644
 --- a/tensorflow/core/util/sparse/group_iterator.h
 +++ b/tensorflow/core/util/sparse/group_iterator.h
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -6317,7 +6490,7 @@ index 1e71444c..d75f39e1 100644
  #include "tensorflow/core/lib/core/status.h"
  #include "tensorflow/core/platform/logging.h"
 diff --git a/tensorflow/core/util/sparse/sparse_tensor.h b/tensorflow/core/util/sparse/sparse_tensor.h
-index 341290db..ff33fd84 100644
+index 23bd8fa8..49a09fca 100644
 --- a/tensorflow/core/util/sparse/sparse_tensor.h
 +++ b/tensorflow/core/util/sparse/sparse_tensor.h
 @@ -21,7 +21,7 @@ limitations under the License.
@@ -6330,7 +6503,7 @@ index 341290db..ff33fd84 100644
  #include "tensorflow/core/framework/tensor.h"
  #include "tensorflow/core/framework/tensor_types.h"
 diff --git a/tensorflow/core/util/sparse/sparse_tensor_test.cc b/tensorflow/core/util/sparse/sparse_tensor_test.cc
-index f898ba58..e4196477 100644
+index 67c7111f..e096922a 100644
 --- a/tensorflow/core/util/sparse/sparse_tensor_test.cc
 +++ b/tensorflow/core/util/sparse/sparse_tensor_test.cc
 @@ -18,7 +18,7 @@ limitations under the License.
@@ -6395,7 +6568,7 @@ index bea97e3c..10474920 100644
  #include "tensorflow/lite/kernels/internal/compatibility.h"
  
 diff --git a/tensorflow/lite/interpreter_test.cc b/tensorflow/lite/interpreter_test.cc
-index 8b009929..ae517a87 100644
+index 04abf7ab..f52c6418 100644
 --- a/tensorflow/lite/interpreter_test.cc
 +++ b/tensorflow/lite/interpreter_test.cc
 @@ -29,7 +29,7 @@ limitations under the License.
@@ -6405,8 +6578,8 @@ index 8b009929..ae517a87 100644
 -#include "third_party/eigen3/Eigen/Core"
 +#include "Eigen/Core"
  #include "tensorflow/lite/c/builtin_op_data.h"
- #include "tensorflow/lite/external_cpu_backend_context.h"
- #include "tensorflow/lite/interpreter_test_util.h"
+ #include "tensorflow/lite/c/c_api_types.h"
+ #include "tensorflow/lite/delegates/utils/simple_delegate.h"
 diff --git a/tensorflow/lite/kernels/cpu_backend_gemm_eigen.cc b/tensorflow/lite/kernels/cpu_backend_gemm_eigen.cc
 index ebde7a0b..1fcf6bf4 100644
 --- a/tensorflow/lite/kernels/cpu_backend_gemm_eigen.cc
@@ -6460,7 +6633,7 @@ index 965a37d4..ba3439ee 100644
  namespace tflite {
  namespace custom {
 diff --git a/tensorflow/lite/kernels/dequantize.h b/tensorflow/lite/kernels/dequantize.h
-index 30739eb2..c3ae6262 100644
+index 91a3335d..ab5d53d0 100644
 --- a/tensorflow/lite/kernels/dequantize.h
 +++ b/tensorflow/lite/kernels/dequantize.h
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -6473,7 +6646,7 @@ index 30739eb2..c3ae6262 100644
  #include "tensorflow/lite/kernels/internal/optimized/optimized_ops.h"
  #include "tensorflow/lite/kernels/internal/reference/dequantize.h"
 diff --git a/tensorflow/lite/kernels/dequantize_test.cc b/tensorflow/lite/kernels/dequantize_test.cc
-index e609d32a..dea05208 100644
+index a652fb25..5119cc31 100644
 --- a/tensorflow/lite/kernels/dequantize_test.cc
 +++ b/tensorflow/lite/kernels/dequantize_test.cc
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -6514,7 +6687,7 @@ index 296b3923..c4829baf 100644
  #include "ruy/profiler/instrumentation.h"  // from @ruy
  #include "tensorflow/lite/c/common.h"
 diff --git a/tensorflow/lite/kernels/internal/reference/reference_ops.h b/tensorflow/lite/kernels/internal/reference/reference_ops.h
-index bc1ffd96..ac5e45fe 100644
+index 969db741..25622a6c 100644
 --- a/tensorflow/lite/kernels/internal/reference/reference_ops.h
 +++ b/tensorflow/lite/kernels/internal/reference/reference_ops.h
 @@ -26,7 +26,7 @@ limitations under the License.
@@ -6539,6 +6712,19 @@ index 8d36543d..0c107bb6 100644
  #include "tensorflow/lite/c/builtin_op_data.h"
  #include "tensorflow/lite/kernels/internal/tensor_utils_common.h"
  
+diff --git a/tensorflow/lite/kernels/internal/utils/sparsity_format_converter.h b/tensorflow/lite/kernels/internal/utils/sparsity_format_converter.h
+index b77522e0..6ee1f530 100644
+--- a/tensorflow/lite/kernels/internal/utils/sparsity_format_converter.h
++++ b/tensorflow/lite/kernels/internal/utils/sparsity_format_converter.h
+@@ -17,7 +17,7 @@ limitations under the License.
+ 
+ #include <vector>
+ 
+-#include "third_party/eigen3/Eigen/Core"
++#include "Eigen/Core"
+ #include "tensorflow/lite/c/common.h"
+ 
+ namespace tflite {
 diff --git a/tensorflow/lite/kernels/numeric_verify_test.cc b/tensorflow/lite/kernels/numeric_verify_test.cc
 index 9e83000b..c1330550 100644
 --- a/tensorflow/lite/kernels/numeric_verify_test.cc
@@ -6553,7 +6739,7 @@ index 9e83000b..c1330550 100644
  #include "tensorflow/lite/interpreter.h"
  #include "tensorflow/lite/kernels/internal/tensor_ctypes.h"
 diff --git a/tensorflow/lite/tools/optimize/quantization_utils.cc b/tensorflow/lite/tools/optimize/quantization_utils.cc
-index cb32d2dc..1b83b8bd 100644
+index d46be403..d191a466 100644
 --- a/tensorflow/lite/tools/optimize/quantization_utils.cc
 +++ b/tensorflow/lite/tools/optimize/quantization_utils.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -6565,19 +6751,6 @@ index cb32d2dc..1b83b8bd 100644
  #include "tensorflow/lite/c/common.h"
  #include "tensorflow/lite/core/api/error_reporter.h"
  #include "tensorflow/lite/kernels/internal/cppmath.h"
-diff --git a/tensorflow/lite/tools/optimize/sparsity/format_converter.h b/tensorflow/lite/tools/optimize/sparsity/format_converter.h
-index 17806131..fe833377 100644
---- a/tensorflow/lite/tools/optimize/sparsity/format_converter.h
-+++ b/tensorflow/lite/tools/optimize/sparsity/format_converter.h
-@@ -17,7 +17,7 @@ limitations under the License.
- 
- #include <vector>
- 
--#include "third_party/eigen3/Eigen/Core"
-+#include "Eigen/Core"
- #include "tensorflow/lite/c/common.h"
- 
- namespace tflite {
 diff --git a/tensorflow/python/client/tf_session_wrapper.cc b/tensorflow/python/client/tf_session_wrapper.cc
 index 5dd75c8a..3824ac83 100644
 --- a/tensorflow/python/client/tf_session_wrapper.cc
@@ -6618,7 +6791,7 @@ index 0c15e638..b97a2208 100644
  #include "tensorflow/core/platform/test.h"
  #include "tensorflow/python/tools/aot_compiled_vars_and_arithmetic.h"
 diff --git a/tensorflow/stream_executor/cuda/cuda_blas.cc b/tensorflow/stream_executor/cuda/cuda_blas.cc
-index ca0ea2be..f1f7fc7a 100644
+index 210239cd..7997c61d 100644
 --- a/tensorflow/stream_executor/cuda/cuda_blas.cc
 +++ b/tensorflow/stream_executor/cuda/cuda_blas.cc
 @@ -49,7 +49,7 @@ limitations under the License.
@@ -6631,7 +6804,7 @@ index ca0ea2be..f1f7fc7a 100644
  #include "tensorflow/core/util/env_var.h"
  #include "tensorflow/stream_executor/cuda/cuda_activation.h"
 diff --git a/tensorflow/stream_executor/cuda/cuda_dnn.cc b/tensorflow/stream_executor/cuda/cuda_dnn.cc
-index 0be3ac7c..4b50fce8 100644
+index 3cd03f2e..9dbbc386 100644
 --- a/tensorflow/stream_executor/cuda/cuda_dnn.cc
 +++ b/tensorflow/stream_executor/cuda/cuda_dnn.cc
 @@ -22,7 +22,7 @@ limitations under the License.
@@ -6642,9 +6815,9 @@ index 0be3ac7c..4b50fce8 100644
 +#include "Eigen/Core"
  #include "tensorflow/core/lib/core/errors.h"
  #include "tensorflow/core/platform/tensor_float_32_utils.h"
- #include "tensorflow/core/util/env_var.h"
+ #include "tensorflow/core/util/determinism.h"
 diff --git a/tensorflow/stream_executor/rocm/rocm_blas.cc b/tensorflow/stream_executor/rocm/rocm_blas.cc
-index 008ba5f4..fdeea62f 100644
+index 407f547a..f1453e4f 100644
 --- a/tensorflow/stream_executor/rocm/rocm_blas.cc
 +++ b/tensorflow/stream_executor/rocm/rocm_blas.cc
 @@ -24,7 +24,7 @@ limitations under the License.
@@ -6657,7 +6830,7 @@ index 008ba5f4..fdeea62f 100644
  #include "tensorflow/stream_executor/gpu/gpu_activation.h"
  #include "tensorflow/stream_executor/gpu/gpu_executor.h"
 diff --git a/tensorflow/stream_executor/rocm/rocm_dnn.cc b/tensorflow/stream_executor/rocm/rocm_dnn.cc
-index d99b507a..ba962088 100644
+index cc8b8fad..f05196a8 100644
 --- a/tensorflow/stream_executor/rocm/rocm_dnn.cc
 +++ b/tensorflow/stream_executor/rocm/rocm_dnn.cc
 @@ -20,7 +20,7 @@ limitations under the License.
@@ -6670,7 +6843,7 @@ index d99b507a..ba962088 100644
  #include "tensorflow/core/lib/hash/hash.h"
  #include "tensorflow/core/util/env_var.h"
 diff --git a/tensorflow/stream_executor/stream.cc b/tensorflow/stream_executor/stream.cc
-index 93aa79ee..37ee5088 100644
+index bea47c5f..46fca211 100644
 --- a/tensorflow/stream_executor/stream.cc
 +++ b/tensorflow/stream_executor/stream.cc
 @@ -16,7 +16,7 @@ limitations under the License.

@@ -1,17 +1,27 @@
 
-# Currently links with an internal library 'fft2d'
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
+
+if("mediapipe" IN_LIST FEATURES)
+    # Patches from google/mediapipe v0.8.9
+    list(APPEND FEATURE_PATCHES
+        org_tensorflow_custom_ops.diff
+        # org_tensorflow_compatibility_fixes.diff
+        support-mediapipe.patch
+    )
+endif()
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.6.1
-    SHA512 34dcec08b73ef25cb6e5bcb0e083c2f43d8364bc9a465e59d63dc3f162a129d011e03faaecf7d563cbbe39f0c2bbf2d1795ccfb8b2ea3f108ed8db992cea9475
+    REF v2.7.0
+    SHA512 f1e892583c7b3a73d4d39ec65dc135a5b02c789b357d57414ad2b6d05ad9fbfc8ef81918ba6410e314abd6928b76f764e6ef64c0b0c84b58b50796634be03f39
     PATCHES
         fix-cmakelists.patch
+        fix-debug-build.patch
         fix-eigen3-import.patch
         fix-gpu-build.patch
         fix-gpu-sources.patch
+        ${FEATURE_PATCHES}
 )
 if(VCPKG_TARGET_IS_OSX AND ("gpu" IN_LIST FEATURES))
     # .proto files for coreml_mlmodel_codegen

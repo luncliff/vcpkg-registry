@@ -1,8 +1,8 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 8bb43fd9..b520e4ea 100644
+index 5d6bdd2d..7790951d 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -212,13 +212,129 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
+@@ -216,13 +216,129 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
  populate_tflite_source_vars("c" TFLITE_C_SRCS)
  populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
  if(TFLITE_ENABLE_GPU)
@@ -129,7 +129,7 @@ index 8bb43fd9..b520e4ea 100644
 +      ${TFLITE_SOURCE_DIR}/tools/delegates/coreml_delegate_provider.cc
 +      # ...
 +      ${TFLITE_SOURCE_DIR}/tools/tool_params.cc
-+      ${TFLITE_SOURCE_DIR}/tools/command_line_flags.cc 
++      ${TFLITE_SOURCE_DIR}/tools/command_line_flags.cc
 +    )
 +    set_source_files_properties(${TFLITE_OBJC_SRCS} ${TFLITE_DELEGATES_GPU_METAL_SRCS} ${TFLITE_DELEGATES_COREML_SRCS}
 +    PROPERTIES
@@ -139,10 +139,10 @@ index 8bb43fd9..b520e4ea 100644
    endif()
    populate_tflite_source_vars(
      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-@@ -289,11 +405,26 @@ if(TFLITE_ENABLE_GPU)
-     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SRCS}
-     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SPECIAL_SRCS}
+@@ -295,11 +411,26 @@ if(TFLITE_ENABLE_GPU)
      ${TFLITE_DELEGATES_GPU_COMMON_TRANSFORMATIONS_SRCS}
+     ${TFLITE_SOURCE_DIR}/tools/versioning/gpu_compatibility.cc
+     ${TFLITE_SOURCE_DIR}/tools/versioning/op_signature.cc
 +    ${TFLITE_DELEGATES_GPU_EGL_SRCS}
 +    ${TFLITE_DELEGATES_GPU_GL_SRCS}
 +    ${TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS}
@@ -167,7 +167,7 @@ index 8bb43fd9..b520e4ea 100644
    )
  endif()
  if(_TFLITE_ENABLE_NNAPI)
-@@ -416,6 +547,7 @@ add_library(tensorflow-lite
+@@ -423,6 +554,7 @@ add_library(tensorflow-lite
  target_include_directories(tensorflow-lite
    PUBLIC
      $<BUILD_INTERFACE:${TFLITE_INCLUDE_DIRS}>

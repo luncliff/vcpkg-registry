@@ -1,7 +1,6 @@
 {
   "name": "tensorflow-lite",
-  "version-semver": "2.6.1",
-  "port-version": 1,
+  "version-semver": "2.7.0",
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://www.tensorflow.org/",
   "license": "Apache-2.0",
@@ -21,6 +20,17 @@
     "xnnpack"
   ],
   "features": {
+    "mediapipe": {
+      "description": "Apply patches of Google/mediapipe",
+      "dependencies": [
+        {
+          "name": "tensorflow-lite",
+          "features": [
+            "gpu"
+          ]
+        }
+      ]
+    },
     "google-angle": {
       "description": "Link EGL, OpenGL ES code with Google/ANGLE",
       "dependencies": [

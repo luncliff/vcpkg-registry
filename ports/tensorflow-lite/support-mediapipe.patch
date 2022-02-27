@@ -1,0 +1,55 @@
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 7790951d..40b7a51c 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -356,6 +356,9 @@ if(TFLITE_ENABLE_GPU)
+     "delegates/gpu/common/default" TFLITE_DELEGATES_GPU_COMMON_DEFAULT_SRCS
+     FILTER "(_test)\\.(cc|h)$"
+   )
++  populate_tflite_source_vars(
++    "delegates/gpu/common/mediapipe" TFLITE_DELEGATES_GPU_COMMON_MEDIAPIPE_SRCS
++  )
+   populate_tflite_source_vars(
+     "delegates/gpu/common/memory_management"
+     TFLITE_DELEGATES_GPU_COMMON_MEMORY_MANAGEMENT_SRCS
+@@ -401,6 +404,7 @@ if(TFLITE_ENABLE_GPU)
+     ${TFLITE_DELEGATES_GPU_CL_DEFAULT_SRCS}
+     ${TFLITE_DELEGATES_GPU_CL_KERNELS_SRCS}
+     ${TFLITE_DELEGATES_GPU_COMMON_DEFAULT_SRCS}
++    ${TFLITE_DELEGATES_GPU_COMMON_MEDIAPIPE_SRCS}
+     ${TFLITE_DELEGATES_GPU_COMMON_MEMORY_MANAGEMENT_SRCS}
+     ${TFLITE_DELEGATES_GPU_COMMON_SELECTORS_SRCS}
+     ${TFLITE_DELEGATES_GPU_COMMON_SELECTORS_DEFAULT_SRCS}
+diff --git a/tensorflow/lite/delegates/gpu/common/default/custom_parsers.cc b/tensorflow/lite/delegates/gpu/common/default/custom_parsers.cc
+index c1738395..713d7377 100644
+--- a/tensorflow/lite/delegates/gpu/common/default/custom_parsers.cc
++++ b/tensorflow/lite/delegates/gpu/common/default/custom_parsers.cc
+@@ -23,13 +23,3 @@ limitations under the License.
+ #include "tensorflow/lite/delegates/gpu/common/operation_parser.h"
+ #include "tensorflow/lite/delegates/gpu/common/unimplemented_operation_parser.h"
+ 
+-namespace tflite {
+-namespace gpu {
+-
+-std::unique_ptr<TFLiteOperationParser> NewCustomOperationParser(
+-    absl::string_view op_name) {
+-  return absl::make_unique<UnimplementedOperationParser>(op_name);
+-}
+-
+-}  // namespace gpu
+-}  // namespace tflite
+diff --git a/tensorflow/lite/delegates/gpu/common/default/custom_transformations.cc b/tensorflow/lite/delegates/gpu/common/default/custom_transformations.cc
+index c57b9276..02eb1ae1 100644
+--- a/tensorflow/lite/delegates/gpu/common/default/custom_transformations.cc
++++ b/tensorflow/lite/delegates/gpu/common/default/custom_transformations.cc
+@@ -17,10 +17,3 @@ limitations under the License.
+ 
+ #include "tensorflow/lite/delegates/gpu/common/model_transformer.h"
+ 
+-namespace tflite {
+-namespace gpu {
+-
+-bool ApplyCustomTransformations(ModelTransformer* transformer) { return true; }
+-
+-}  // namespace gpu
+-}  // namespace tflite

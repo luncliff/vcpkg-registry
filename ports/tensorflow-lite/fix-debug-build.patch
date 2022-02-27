@@ -1,0 +1,42 @@
+diff --git a/tensorflow/lite/simple_memory_arena.cc b/tensorflow/lite/simple_memory_arena.cc
+index 1c7a0384..077c6768 100644
+--- a/tensorflow/lite/simple_memory_arena.cc
++++ b/tensorflow/lite/simple_memory_arena.cc
+@@ -168,11 +168,18 @@ TfLiteStatus SimpleMemoryArena::ReleaseBuffer() {
+   return kTfLiteOk;
+ }
+ 
++#if defined(_WIN32) && defined(_DEBUG)
++// there is another implementation for debug build
++void DumpArenaInfo(
++    const std::string& name, const std::vector<int>& execution_plan,
++    size_t arena_size, const std::vector<ArenaAllocWithUsageInterval>& allocs);
++#else
+ // Using weak symbols to create a pluggable debugging module.
+ TFLITE_ATTRIBUTE_WEAK void DumpArenaInfo(
+     const std::string& name, const std::vector<int>& execution_plan,
+     size_t arena_size, const std::vector<ArenaAllocWithUsageInterval>& allocs) {
+ }
++#endif
+ 
+ void SimpleMemoryArena::DumpDebugInfo(
+     const std::string& name, const std::vector<int>& execution_plan) const {
+diff --git a/tensorflow/lite/simple_memory_arena_debug_dump.cc b/tensorflow/lite/simple_memory_arena_debug_dump.cc
+index 256fa0b9..ab662ee6 100644
+--- a/tensorflow/lite/simple_memory_arena_debug_dump.cc
++++ b/tensorflow/lite/simple_memory_arena_debug_dump.cc
+@@ -20,6 +20,9 @@ limitations under the License.
+ #include <vector>
+ 
+ #include "tensorflow/lite/simple_memory_arena.h"
++#if defined(_WIN32) && !defined(_DEBUG)
++// Discard DumpArenaInfo
++#else
+ 
+ namespace tflite {
+ namespace {
+@@ -194,3 +197,4 @@ void DumpArenaInfo(const std::string& name,
+   printf("===End of %s ===\n\n", name.c_str());
+ }
+ }  // namespace tflite
++#endif

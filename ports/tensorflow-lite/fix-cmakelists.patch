@@ -81,8 +81,10 @@ index 76dda361..f4f0548d 100644
  add_library(tensorflow::tensorflowlite ALIAS tensorflow-lite)
  
 +include(GNUInstallDirs)
-+
-+# C API
++install(DIRECTORY   ${TFLITE_SOURCE_DIR}/delegates
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
++        FILES_MATCHING PATTERN "*.h"
++)
 +install(DIRECTORY   ${TFLITE_SOURCE_DIR}/c
 +        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
 +        FILES_MATCHING PATTERN "*.h"
@@ -90,7 +92,6 @@ index 76dda361..f4f0548d 100644
 +install(FILES ${TF_SOURCE_DIR}/core/public/version.h
 +        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/core/public
 +)
-+
 +# Delegate
 +install(FILES  ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.h
 +               ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/gpu_api_delegate.h
@@ -116,7 +117,6 @@ index 76dda361..f4f0548d 100644
 +install(FILES  ${TFLITE_SOURCE_DIR}/delegates/nnapi/nnapi_delegate.h
 +        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/nnapi
 +)
-+
 +# Build Targets
 +install(TARGETS tensorflow-lite
 +        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -128,3 +128,19 @@ index 76dda361..f4f0548d 100644
  # The kernel tests.
  if(TFLITE_KERNEL_TEST)
    enable_testing()
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 477a0093..8d0f0675 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -578,6 +578,11 @@ target_compile_options(tensorflow-lite
+ )
+ add_library(tensorflow::tensorflowlite ALIAS tensorflow-lite)
+ 
++set_target_properties(tensorflow-lite
++  PROPERTIES
++    WINDOWS_EXPORT_ALL_SYMBOLS TRUE
++)
++
+ include(GNUInstallDirs)
+ install(DIRECTORY   ${TFLITE_SOURCE_DIR}
+         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow
