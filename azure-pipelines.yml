@@ -107,7 +107,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-windows"
             inputs:
-              vcpkgArguments: "gemmlowp farmhash openssl3 onnxruntime tensorflow-lite[google-angle] libdispatch zlib-ng directml fft2d mediapipe[gpu]"
+              vcpkgArguments: "gemmlowp farmhash openssl3 onnxruntime tensorflow-lite[google-angle] libdispatch zlib-ng directml fft2d mediapipe"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-windows

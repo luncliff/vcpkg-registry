@@ -1,12 +1,9 @@
-# if(VCPKG_TARGET_IS_WINDOWS)
-#     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
-# endif()
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/mediapipe
     REF v0.8.9
-    SHA512 0
+    SHA512 e8ff4e4ed6ec97924f46e5fc673f85f8e8a83d77515798d0a187af09b649ba9cd96b894d8a1ebc83103bcc3809f7e132a67c489abb5d198ef17cb50664d3f712
     HEAD_REF master
     # PATCHES
     #     fix-sources.patch
