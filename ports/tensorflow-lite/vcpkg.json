@@ -20,13 +20,17 @@
     "xnnpack"
   ],
   "features": {
+    "private": {
+      "description": "Install private headers"
+    },
     "mediapipe": {
       "description": "Apply patches of Google/mediapipe",
       "dependencies": [
         {
           "name": "tensorflow-lite",
           "features": [
-            "gpu"
+            "gpu",
+            "private"
           ]
         }
       ]

@@ -1,8 +1,8 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 7790951d..40b7a51c 100644
+index 87fd59b9..f9e49aab 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -356,6 +356,9 @@ if(TFLITE_ENABLE_GPU)
+@@ -349,6 +349,9 @@ if(TFLITE_ENABLE_GPU)
      "delegates/gpu/common/default" TFLITE_DELEGATES_GPU_COMMON_DEFAULT_SRCS
      FILTER "(_test)\\.(cc|h)$"
    )
@@ -12,7 +12,7 @@ index 7790951d..40b7a51c 100644
    populate_tflite_source_vars(
      "delegates/gpu/common/memory_management"
      TFLITE_DELEGATES_GPU_COMMON_MEMORY_MANAGEMENT_SRCS
-@@ -401,6 +404,7 @@ if(TFLITE_ENABLE_GPU)
+@@ -394,6 +397,7 @@ if(TFLITE_ENABLE_GPU)
      ${TFLITE_DELEGATES_GPU_CL_DEFAULT_SRCS}
      ${TFLITE_DELEGATES_GPU_CL_KERNELS_SRCS}
      ${TFLITE_DELEGATES_GPU_COMMON_DEFAULT_SRCS}

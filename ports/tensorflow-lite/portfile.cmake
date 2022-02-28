@@ -23,6 +23,12 @@ vcpkg_from_github(
         fix-gpu-sources.patch
         ${FEATURE_PATCHES}
 )
+
+# Changing Eigen3's include path requires a big diff...
+# Workaround it by copying existing Eigen3 sources
+# file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
+# file(COPY "${CURRENT_INSTALLED_DIR}/include/eigen3" DESTINATION "${SOURCE_PATH}/third_party")
+
 if(VCPKG_TARGET_IS_OSX AND ("gpu" IN_LIST FEATURES))
     # .proto files for coreml_mlmodel_codegen
     vcpkg_from_github(
@@ -45,6 +51,7 @@ endif()
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gpu      TFLITE_ENABLE_GPU
+        private  TFLITE_PRIVATE_HEADERS
 )
 
 vcpkg_cmake_configure(
@@ -55,6 +62,8 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_XNNPACK=ON
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
         -DCOREML_SOURCE_DIR=${COREML_SOURCE_PATH}
+    MAYBE_UNUSED_VARIABLES
+        COREML_SOURCE_DIR
 )
 if("gpu" IN_LIST FEATURES)
     # run codegen for ".fbs" files
@@ -69,6 +78,16 @@ file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
                     "${CURRENT_PACKAGES_DIR}/debug/share"
                     "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/python" # todo: Python feature
 )
+
+if("private" IN_LIST FEATURES)
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/gpu/common/default"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/gpu/common/selectors/default"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/gpu/common/selectors/mediapipe"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/gpu/java"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/gpu/metal"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/gpu/cl/testing"
+    )
+endif()
 if("gpu" IN_LIST FEATURES)
     file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/flex"
                         "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/java"
