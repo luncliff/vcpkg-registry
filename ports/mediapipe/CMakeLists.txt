@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.18)
-project(mediapipe LANGUAGES CXX VERSION 0.8.8)
+project(mediapipe LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
-option(USE_EGL      "Build with OpenGL ES API"      ON)
+option(USE_EGL      "Build with OpenGL ES API"      OFF)
 option(USE_METAL    "Build with Apple Metal API"    OFF)
 option(USE_TFLITE   "Build with TensorFlow Lite"    ON)
 option(USE_OPENCV4  "Build with OpenCV 4.x"         OFF)
@@ -31,6 +31,71 @@ if(WIN32 OR USE_EGL)
     find_package(unofficial-angle CONFIG REQUIRED) # unofficial::angle::libEGL unofficial::angle::libGLESv2
     find_path(EGL_INCLUDE_DIR EGL/egl.h REQUIRED)
     find_path(GLES_INCLUDE_DIR GLES3/gl32.h REQUIRED)
+endif()
+
+add_library(mediapipe)
+
+set_target_properties(mediapipe
+PROPERTIES
+    WINDOWS_EXPORT_ALL_SYMBOLS TRUE
+)
+
+target_include_directories(mediapipe
+PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+target_compile_definitions(mediapipe
+PRIVATE
+    NOMINMAX _USE_MATH_DEFINES
+    _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
+    _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
+    PROTOBUF_USE_DLLS
+    _CRT_SECURE_NO_WARNINGS
+    CL_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0
+)
+
+target_link_libraries(mediapipe
+PRIVATE
+    absl::base absl::debugging absl::flags absl::leak_check_disable
+    glog::glog gflags::gflags protobuf::libprotobuf Eigen3::Eigen
+    yuv OpenCL::OpenCL gemmlowp::gemmlowp
+)
+
+if(USE_OPENCV4)
+    target_link_libraries(mediapipe
+    PRIVATE
+        opencv_highgui opencv_imgproc
+    )
+endif()
+
+if(WIN32)
+    target_include_directories(mediapipe
+    PRIVATE
+        ${EGL_INCLUDE_DIR} ${GLES_INCLUDE_DIR}
+    )
+
+    target_compile_definitions(mediapipe
+    PRIVATE
+        NOMINMAX
+        MEDIAPIPE_DISABLE_GL_COMPUTE # todo: remove this
+    )
+
+    target_compile_options(mediapipe
+    PRIVATE
+        /wd4251 # mute protobuf DLL interface related warnings
+        /wd4267 # possible lose of data
+        /wd4244
+        /wd4005 # macro redefinition
+    )
+
+    target_link_libraries(mediapipe
+    PRIVATE
+        ${PTHREAD_LIBPATH} ${TFLITE_LIBPATH}
+        unofficial::angle::libEGL unofficial::angle::libGLESv2
+    )
+
 endif()
 
 # for protobuf_generate
@@ -145,71 +210,6 @@ foreach(proto_file  ${framework_proto_files}
         OUT_VAR ${protocol_name}_SRCS
     )
 endforeach()
-
-add_library(mediapipe)
-
-set_target_properties(mediapipe
-PROPERTIES
-    WINDOWS_EXPORT_ALL_SYMBOLS TRUE
-)
-
-target_include_directories(mediapipe
-PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-target_compile_definitions(mediapipe
-PRIVATE
-    NOMINMAX _USE_MATH_DEFINES
-    _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
-    _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
-    PROTOBUF_USE_DLLS
-    _CRT_SECURE_NO_WARNINGS
-    CL_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0
-)
-
-target_link_libraries(mediapipe
-PRIVATE
-    absl::base absl::debugging absl::flags absl::leak_check_disable
-    glog::glog gflags::gflags protobuf::libprotobuf Eigen3::Eigen
-    yuv OpenCL::OpenCL gemmlowp::gemmlowp
-)
-
-if(USE_OPENCV4)
-    target_link_libraries(mediapipe
-    PRIVATE
-        opencv_highgui opencv_imgproc
-    )
-endif()
-
-if(WIN32)
-    target_include_directories(mediapipe
-    PRIVATE
-        ${EGL_INCLUDE_DIR} ${GLES_INCLUDE_DIR}
-    )
-
-    target_compile_definitions(mediapipe
-    PRIVATE
-        NOMINMAX
-        MEDIAPIPE_DISABLE_GL_COMPUTE # todo: remove this
-    )
-
-    target_compile_options(mediapipe
-    PRIVATE
-        /wd4251 # mute protobuf DLL interface related warnings
-        /wd4267 # possible lose of data
-        /wd4244
-        /wd4005 # macro redefinition
-    )
-
-    target_link_libraries(mediapipe
-    PRIVATE
-        ${PTHREAD_LIBPATH} ${TFLITE_LIBPATH}
-        unofficial::angle::libEGL unofficial::angle::libGLESv2
-    )
-
-endif()
 
 target_sources(mediapipe
 PRIVATE

@@ -6,10 +6,10 @@ index efd822a..f8ac8aa 100644
  #include "mediapipe/gpu/gpu_buffer.h"
  #include "mediapipe/gpu/gpu_service.h"
  
++// https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-getobjecta
 +#if defined(_WIN32)
 +#undef GetObject
 +#endif
-+
  namespace mediapipe {
  
  // The constructor and destructor need to be defined here so that
