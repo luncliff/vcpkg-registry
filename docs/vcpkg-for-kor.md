@@ -529,7 +529,7 @@ set(VCPKG_CMAKE_SYSTEM_VERSION 10.0)
 ```
 
 변수 이름에 `VCPKG_` 접두어를 사용하고 있습니다.
-만약 설치과정에서 패키지가 CMake를 사용한다면, [이 변수의 값들은 적절한 CMake 변수들로 치환](https://github.com/microsoft/vcpkg/blob/5ddd7f02689b7c5aab78711d77f61db5d2e5e79c/ports/vcpkg-cmake/vcpkg_cmake_configure.cmake#L302-L331)됩니다.
+만약 설치과정에서 패키지가 CMake를 사용한다면, [이 변수의 값들은 적절한 CMake 변수들로 치환](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/vcpkg-cmake/vcpkg_cmake_configure.cmake#L302-L331)됩니다.
 결과적으로는 [CMake Toolchain(Cross Compiling)](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#id12)에서 정의하는 변수들로 연결되는 것이죠.
 [자세한 치환 방법은 각 플랫폼마다 다른데](https://github.com/microsoft/vcpkg/tree/2021.12.01/scripts/toolchains),
 이 때문에 여러분이 배포하고 있는 플랫폼에 맞는 정확한 사용법과 그 의미에 대해 알아둘 필요가 있습니다.
@@ -554,7 +554,7 @@ Triplet 파일에는 정의해야하는 변수가 5개 있습니다.
 각각의 의미를 설명하자면, 아래와 같습니다.
 
 * `VCPKG_CMAKE_SYSTEM_NAME`, `VCPKG_TARGET_ARCHITECTURE`:  
-  [Target System, Architecture를 의미합니다.](https://github.com/microsoft/vcpkg/blob/2021.12.01/docs/maintainers/control-files.md#supports). 현실적인 이유로 인해, 이 변수들에 사용할 수 있는 값은 [CMake의 지원범위](https://cmake.org/cmake/help/latest/manual/cmake-variables.7.html)를 따릅니다. 실제로 Vcpkg에서 원하는 기대값들은 [ports/vcpkg-cmake/vcpkg_cmake_configure.cmake](https://github.com/microsoft/vcpkg/blob/5ddd7f02689b7c5aab78711d77f61db5d2e5e79c/ports/vcpkg-cmake/vcpkg_cmake_configure.cmake#L280-L303)에서 확인할 수 있습니다.
+  [Target System, Architecture를 의미합니다.](https://github.com/microsoft/vcpkg/blob/2021.12.01/docs/maintainers/control-files.md#supports). 현실적인 이유로 인해, 이 변수들에 사용할 수 있는 값은 [CMake의 지원범위](https://cmake.org/cmake/help/latest/manual/cmake-variables.7.html)를 따릅니다. 실제로 Vcpkg에서 원하는 기대값들은 [ports/vcpkg-cmake/vcpkg_cmake_configure.cmake](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/vcpkg-cmake/vcpkg_cmake_configure.cmake#L280-L303)에서 확인할 수 있습니다.
 
 * `VCPKG_CRT_LINKAGE`:  
   Target환경이 Windows 일때만 의미가 있습니다. `static`은 `/MT[d]`, `dynamic`은 `/MD[d]` 컴파일러 옵션으로 연결됩니다. 이 부분이 다소 [곤란한 문제](https://docs.microsoft.com/en-us/cpp/c-runtime-library/potential-errors-passing-crt-objects-across-dll-boundaries)가 될 수 있다는 것을 Windows 개발자 분들은 아마 알고 계시리라 생각합니다.
@@ -629,13 +629,6 @@ triplets 폴더를 보면 community 라는 하위 폴더가 있습니다.
 >
 > 비교적 많이 사용되는 [Android 환경에 대한 안내는 2020년 5월](https://github.com/microsoft/vcpkg/pull/11264)에, [iOS 환경에 대한 지원은 2020년 4월](https://github.com/microsoft/vcpkg/pull/6275) 추가되었습니다.
 >
-
-### 4. Triplet 작성하기
-
-이 저장소에는 [Android](../triplets/arm64-android.cmake), [iOS Simulator](../triplets/arm64-ios-simulator.cmake)를 대상으로 하는 Triplet이 몇개 있습니다.
-CMake 문법에 익숙하다면 읽고 의미를 해석해보는게 도움이 되리라 생각합니다.
-
-> TBA
 
 ## CMake에서 Vcpkg로 설치한 패키지를 사용하기
 
@@ -854,7 +847,7 @@ message(STATUS "Detected EGL: ${EGL_REGISTRY_INCLUDE_DIRS})
 Vcpkg의 패키지들이 생성하는 파일 중에서 라이브러리 파일들은 `CMAKE_BUILD_TYPE`에 따라 `debug/lib` 혹은 `lib`에 배치됩니다.
 Release 빌드일 때는 별도로 configuration 이름을 경로에 넣지 않은게 의아한 분들도 계실텐데, 특별한 이유는 없습니다.
 [GNU standard에서 libdir의 경로에는 configuration 이름을 넣지 않기 때문입니다](https://www.gnu.org/prep/standards/html_node/Directory-Variables.html).
-vcpkg.cmake에서는 [`find_*`명령을 사용할 때 Debug라면 `debug/lib`을 먼저, 그 이외의 경우는 `lib` 폴더 하위에서 요청받은 라이브러리를 찾도록 `CMAKE_FIND_ROOT_PATH`를 변경](https://github.com/microsoft/vcpkg/blob/5ddd7f02689b7c5aab78711d77f61db5d2e5e79c/scripts/buildsystems/vcpkg.cmake#L394-L408)합니다.
+vcpkg.cmake에서는 [`find_*`명령을 사용할 때 Debug라면 `debug/lib`을 먼저, 그 이외의 경우는 `lib` 폴더 하위에서 요청받은 라이브러리를 찾도록 `CMAKE_FIND_ROOT_PATH`를 변경](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/buildsystems/vcpkg.cmake#L394-L408)합니다.
 (다른 변수들도 변경해서 가능하면 installed 폴더를 먼저 찾도록 합니다.)
 
 이 동작을 확인하기에 좋은 패키지는 [Google Protocol Buffers](https://developers.google.com/protocol-buffers/)입니다.
@@ -1033,13 +1026,15 @@ vcpkg_extract_source_archive_ex(
 ```
 
 여기서 다운로드 받을떄 tar.gz를 사용한 것에 주의해야 합니다.
-Vcpkg의 `vcpkg_extract_source_archive_ex`, 현 시점에서 구현체인 [`vcpkg_extract_source_archive`](https://github.com/microsoft/vcpkg/blob/5ddd7f02689b7c5aab78711d77f61db5d2e5e79c/scripts/cmake/vcpkg_extract_source_archive.cmake#L205-L210)을 때문입니다.
+Vcpkg의 `vcpkg_extract_source_archive_ex`, 현 시점에서 구현체인 [`vcpkg_extract_source_archive`](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_extract_source_archive.cmake#L205-L210) 때문입니다.
 
 #### [Source from Git](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_from_git.cmake)
 
-Git에서는 patch를 적용할 수 있다는 점이 특히 편리합니다.
+Git을 사용해 patch를 적용할 수 있다는 점이 특히 편리합니다.
 Vcpkg에서 임의의 Port를 빌드할 떄, 이미 설치한 Package들을 사용하려면 빌드 시스템 파일들이 수정되어야 하는 경우가 많습니다.
-빌드 시스템 파일을 수정해야 한다는 것은, 그만큼 많이 알고 있어야 한다는 의미기도 합니다.
+빌드 시스템 파일을 수정해야 한다는 것은 그만큼 Makefile, CMake, Meson에 대한 경험을 요구한다는 의미도 됩니다.
+이 부분을 낯설게 느끼실수도 있습니다만, 걱정할 필요 없습니다.
+수많은 Port 폴더들이 가지고 있는 patch 예시들이 있으니까요.
 
 [Port libyuv](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/libyuv/portfile.cmake)가 이 방법을 사용하고 있습니다.
 URL을 조금 수정하면 다운로드 받기 위해 Username, Password를 전달하는 것도 가능하겠군요.
@@ -1077,16 +1072,22 @@ vcpkg_from_git(
 )
 ```
 
-이렇게 다운로드 받은 소스 폴더가 buildtrees 폴더 밑에 어떻게 만들어지는지 한번 확인해보길 권합니다.
+이렇게 다운로드 받은 소스 폴더가 buildtrees 폴더 밑에 어떤 경로를 부여받는지, portfile.cmake에 아래와 같은 내용을 넣어서 출력을 확인해보길 권합니다.
 
 ```cmake
+# vcpkg_from_git(...)
 message(STATUS "Using sources: ${SOURCE_PATH}")
 ```
 
+> 
+> 잠깐 스스로의 힘으로 이런 질문에 답을 해보셨으면 좋겠습니다.  
+> **"패키지 매니저에 맞추기 위해 프로젝트의 빌드시스템 파일을 수정해야 한다면, 과연 그 파일은 범용성있게 작성한 것인가?"**
+> 
+
 #### [Source from GitLab](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_from_gitlab.cmake)
 
-[Cairo 라이브러리](https://www.cairographics.org/)가 GitLab에서 소스파일을 제공하고 있는데,
-그러면 [Port cairo](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/cairo/portfile.cmake)를 살펴보면 사용법을 알 수 있겠군요.
+[Cairo 라이브러리](https://www.cairographics.org/)는 GitLab에서 소스파일을 제공하고 있는데,
+[Port cairo](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/cairo/portfile.cmake)를 살펴보면 GitLab에서 소스코드를 다운로드 받는 방법을 알 수 있겠군요.
 
 ```cmake
 vcpkg_from_gitlab(
@@ -1105,7 +1106,7 @@ GitLab instance에 대한 `GITLAB_URL`, Git 저장소(`REPO`)와 branch(`HEAD_RE
 
 #### [Source from GitHub](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_from_github.cmake)
 
-(오픈소스 프로젝트라면) GitHub의 사용법도 거의 같습니다.
+ GitHub의 사용법도 거의 같습니다.
 결국 `SOURCE_PATH`에 소스코드를 준비해주는 것이 핵심 역할이고,
 그 과정에서 저장소에서 지정된 Commit을 다운로드 받아 Hash 검사를 하고, Patch를 적용하는 것이죠.
 GitHub의 Mirror 저장소에서 소스코드를 받는 Port들이 많지만 대부분 유사한 패턴으로 작성되어있습니다.
@@ -1125,7 +1126,7 @@ vcpkg_from_github(
 )
 ```
 
-여기서는 `GITLAB_URL`에 해당하는 부분이 보이지 않는데, [`GITHUB_HOST`로 지정할 수 있습니다](https://github.com/microsoft/vcpkg/blob/5ddd7f02689b7c5aab78711d77f61db5d2e5e79c/scripts/cmake/vcpkg_from_github.cmake#L17-L19).
+여기서는 `GITLAB_URL`에 해당하는 부분이 보이지 않는데, [`GITHUB_HOST`로 지정할 수 있습니다](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_from_github.cmake#L17-L19).
 GitHub Enterprise에서 소스코드를 다운로드 받아야 한다면 이 필드와 함께 `AUTHORIZATION_TOKEN`이 필요합니다. 해당 저장소에 접근할 수 있는 권한이 필요하기 때문입니다.
 [GitHub Settings / Developer Settings / Personal Access Tokens](https://github.com/settings/tokens)에서 해당 저장소에 접근할 수 있는(Read) 권한을 가진 Token을 생성한 후, 그 값을 적어주면 됩니다.
 
@@ -1133,7 +1134,7 @@ GitHub Enterprise에서 소스코드를 다운로드 받아야 한다면 이 필
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ...
-    REF ${commit}
+    REF ${commit} # or Git Tag (ex. REF v1.2.3)
     SHA512 ${download_file_hash}
     GITHUB_HOST https://git-dev.hellworld.com
     AUTHORIZATION_TOKEN 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 # maintainer@hellworld.com
@@ -1141,10 +1142,62 @@ vcpkg_from_github(
 ```
 
 특수한 목적이 아니라면 Token들은 만료일이 정해져있을 것입니다.
-**여기서 만료된 토큰으로 다운로드를 받으면 어떤일이 발생할지 한번 상상해보셨으면 좋겠습니다.**
-사용자를 확인할 수 없으니 GitHub에서는 404 페이지를 보여줄 것입니다.
+**여기서 만료된 토큰으로 다운로드를 받으면 어떤일이 발생할지 한번 상상해보셨으면 좋겠습니다.**  
+먼저, 사용자를 확인할 수 없으니 GitHub에서는 404 페이지를 보여줄 것입니다.
 `vcpkg_from_github`은 `vcpkg_download_distfile`를 사용해 그 웹 페이지를 .tar.gz 파일로 다운로드 하게 되고, 그렇다면 SHA512 값이 잘못되었다고 오류 메세지가 출력될 것입니다.
+다운로드 받는 시각에 따라서 HTML 페이지 내용도 달라질테니, SHA512 값은 계속 잘못되었다고 표시될 것입니다.
 
+처음으로 port를 작성하고 있다면, SHA512값을 CLI로 계산하려 하실지도 모르겠습니다.
+정확한 SHA512값을 모른다면 0을 적고, `vcpkg install` 명령을 사용해서 계산된 값을 확인하면 됩니다.
+download폴더에 .tar.gz 파일이 정상적인 파일인지 확인한 뒤에, 그 값을 그대로 사용하면 됩니다.
+
+[Port zlib-ng](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/zlib-ng/portfile.cmake)의 SHA512 값을 0으로 바꾼 다음, 어떤 메세지가 출력되는지 보겠습니다.
+
+```cmake
+# port/zlib-ng/portfile.cmake
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO zlib-ng/zlib-ng
+    REF 2.0.5
+    SHA512 0
+    HEAD_REF master
+)
+```
+
+```console
+$ vcpkg install --triplet x64-windows zlib-ng
+Computing installation plan...
+The following packages will be built and installed:
+    zlib-ng[core]:x64-windows -> 2.0.5
+Detecting compiler hash for triplet x64-windows...
+Restored 0 packages from C:\vcpkg\archives in 164.1 us. Use --debug to see more details.
+Starting package 1/1: zlib-ng:x64-windows
+Building package zlib-ng[core]:x64-windows...
+CMake Error at scripts/cmake/vcpkg_download_distfile.cmake:74 (message):
+  
+
+  File does not have expected hash:
+
+          File path: [ C:/vcpkg/downloads/zlib-ng-zlib-ng-2.0.5.tar.gz ]
+      Expected hash: [ 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ]
+        Actual hash: [ a643089a8189bf8bd24d679b84f07ae14932b4d88b88e94c44cca23350d6a9bbdaa411822d3651c2b0bf79f30c9f99514cc252cf9e9ab0b3a840540206466654 ]
+
+  The cached file SHA512 doesn't match.  The file may have been corrupted.
+  To re-download this file please delete cached file at path
+  C:/vcpkg/downloads/zlib-ng-zlib-ng-2.0.5.tar.gz and retry.
+
+Call Stack (most recent call first):
+  scripts/cmake/vcpkg_download_distfile.cmake:231 (z_vcpkg_download_distfile_test_hash)
+  scripts/cmake/vcpkg_from_github.cmake:175 (vcpkg_download_distfile)
+  ports/zlib-ng/portfile.cmake:1 (vcpkg_from_github)
+  scripts/ports.cmake:145 (include)
+
+
+Error: Building package zlib-ng:x64-windows failed with: BUILD_FAILED
+```
+
+Actual hash 로 출력된 값이 0으로 바꾸기 전과 일치하는 것을 확인할 수 있습니다.
+새로운 Port를 작성하고 있다면 이 값을 그대로 적용하면 됩니다.
 
 ### 2. Managing Patch
 
@@ -1343,13 +1396,29 @@ Port vcpkg-cmake-config의 역할을 `vcpkg_cmake_config_fixup` 함수를 portfi
 이런 Config 파일들에는 `CMAKE_INSTALL_PREFIX`가 절대 경로로 포함되어 있는데, [이를 상대 경로로 바꾸어 vcpkg 폴더 전체의 경로가 바뀌어도 동작할 수 있도록 수정하는 작업도 함께 수행합니다](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/vcpkg-cmake-config/vcpkg_cmake_config_fixup.cmake#L34-L41).
 
 이와 관련해서, 설치한 패키지에서 경로 의존적인 문제가 발생하고, 이를 Fixup에서 해결할 수 없는 문제가 발생할수도 있습니다.
-이는 프로젝트의 CMakeLists.txt에서 적절하지 않은 방법(Trick)을 사용하고 있다는 신호입니다.
+이는 프로젝트의 CMakeLists.txt에서 적절하지 않은 방법(Workaround)을 사용하고 있다는 신호입니다.
 관련 내용을 수정하거나, 차라리 vcpkg에서의 `find_package` 지원을 포기해야 합니다.
 
 [vcpkg_fixup_pkgconfig](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_fixup_pkgconfig.cmake)는 `pkg-config` 프로그램에서 사용하는 .pc 파일들을 재배치합니다.
 [마찬가지로, 경로를 수정하는 작업을 포함하고 있습니다](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_fixup_pkgconfig.cmake#L149-L160).
 
-> TBA
+```cmake
+            string(REPLACE "${CURRENT_PACKAGES_DIR}" [[${prefix}]] contents "${contents}")
+            string(REPLACE "${CURRENT_INSTALLED_DIR}" [[${prefix}]] contents "${contents}")
+            string(REPLACE "${unix_packages_dir}" [[${prefix}]] contents "${contents}")
+            string(REPLACE "${unix_installed_dir}" [[${prefix}]] contents "${contents}")
+
+            string(REGEX REPLACE "(^|\n)prefix[\t ]*=[^\n]*" "" contents "${contents}")
+            if("${config}" STREQUAL "DEBUG")
+                # prefix points at the debug subfolder
+                string(REPLACE [[${prefix}/debug]] [[${prefix}]] contents "${contents}")
+                string(REPLACE [[${prefix}/include]] [[${prefix}/../include]] contents "${contents}")
+                string(REPLACE [[${prefix}/share]] [[${prefix}/../share]] contents "${contents}")
+            endif()
+```
+
+이런 내용이라면 prefix는 `installed/${triplet}` 폴더가 될 것이라 예상할 수 있습니다.
+Vcpkg 폴더를 다른 곳으로 옮기더라도 .pc 파일들을 수정해줄 필요가 없는 것이죠.
 
 ### 4. Packaging
 
@@ -1369,43 +1438,292 @@ file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
 ```
 
 이런 대략적인 작성을 마치고 추가적인 수정이 필요하다면 `vcpkg` 프로그램에서 경고 메세지를 보여줄 것입니다.
+보통 비어있는 폴더가 있으므로 REMOVE_RECURSE를 통해 지워야 한다거나,
+라이브러리 파일들이 Triplet에서 명시한것과 다른 CRT를 사용하고 있다거나 하는 내용들입니다.
+`/Wx` 또는 `-Werror`를 사용해 컴파일 경고를 없앨때처럼 하나씩 미리 지워두는게 좋습니다.
 
 ### 5. Build with [Meson](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_configure_meson.cmake)
 
-> TBA
+...
 
 ### 6. Build with [Makefile](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_build_make.cmake)
 
-> TBA
+...
 
 ## Vcpkg의 Triplet 작성방법
 
 Target 환경의 아키텍처, Library / CRT 링킹, System Library의 Root, 컴파일러  옵션 등
 여러 Port들을 설치할 때 일괄적으로 적용되어야 하는 것들은 Triplet에 작성합니다.
+현재 Vcpkg CI에서 검사하는 Triplet들은 `triplets/` 폴더에 위치해 있으며, 
+커뮤니티의 요구에 의해 추가된 Triplet들은 `triplets/community/`에 있습니다.
 
-> TBA
+보통 Triplet에서는 복잡한 작업을 수행하지 않습니다. 앞서 설명한 것처럼, portfile.cmake들이 사용할 변수들을 미리 준비해주기만 하면 됩니다.
+[현재 vcpkg에서는 여기서 설정한 변수들을 바탕으로 vcpkg_common_definitions.cmake에서 추가 변수들을 정의하고, portfile.cmake로 바로 전달하도록 구현하고 있습니다.](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/ports.cmake#L128-L142)
 
-## Vcpkg for Android
+```cmake
+# scripts/ports.cmake
+# ...
+    include("${CMAKE_TRIPLET_FILE}") # <-- 선택한 Triplet
 
-> TBA
+    # ...
 
-### 1. Android Gradle Plugin + CMake
+    set(HOST_TRIPLET "${_HOST_TRIPLET}")
+    set(CURRENT_HOST_INSTALLED_DIR "${_VCPKG_INSTALLED_DIR}/${HOST_TRIPLET}" CACHE PATH "Location to install final packages for the host")
 
-### 2. android.toolchain.cmake
+    set(TRIPLET_SYSTEM_ARCH "${VCPKG_TARGET_ARCHITECTURE}")
+    include("${SCRIPTS}/cmake/vcpkg_common_definitions.cmake")  # <-- VCPKG_ 변수 추가
 
-### 3. VCPKG_CHAINLOAD_TOOLCHAIN_FILE
+    include("${CURRENT_PORT_DIR}/portfile.cmake") # <-- 빌드 하려는 Port
+# ...
+```
 
-### 4. VCPKG_TARGET_TRIPLET
+이런 구조라면 다수의 Port를 관리할 때 전용 Triplet을 작성하고 싶은 마음이 들 것입니다.
+가령 chef.cmake(주방장?)라는 Triplet을 만들고, 여기서 `VCPKG_` 변수 뿐만 아니라 `BEEF_`(소고기?)변수를 추가로 정의하는 것이죠.
+이렇게 해두면 관리중인 Port들은 `BEEF_` 변수를 바탕으로 빌드설정을 조작할 수 있을 것입니다.
 
-## Vcpkg for iOS
+예를 들어 beef-common이라는 라이브러리를 만들어 Port를 작성했다면 아래와 같은 형태가 될 것입니다.
 
-> TBA
+```cmake
+# port/beef-common/portfile.cmake
+if(BEEF_INSTALL_FOR_MOBILE)
+    vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
+elseif(BEEF_INSTALL_FOR_DESKTOP)
+    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY ONLY_DYNAMIC_CRT)
+endif()
+```
 
-### 1. iOS Toolchain
+이런 식으로 설정해두면 Port와 Triplet이 서로 깊게 관여하게 됩니다.
+결합을 지양하는 개발자라면 꺼림칙할수도 있겠습니다만, 이것은 충분히 유효한 방법입니다.
+Vcpkg에서 확장의 여지를 남겨놓은 부분 중 하나이므로 적극적으로 활용하면서 경험을 쌓아보는것을 권합니다.
+
+**이때 중요한 것은 Port와 Triplet의 조합을 생각하는 것입니다**.
+
+Port들의 복잡도를 높이지 않고 싶다면 Triplet을 최대한 Vcpkg의 Triplet들과 유사하게 작성하면 됩니다.  
+하나의 Port가 모든 Triplet을 지원해야 하는 것은 아닙니다.
+Triplet은 빌드의 Target 환경에 대해 기술하는 것이므로, 소수의 Target 환경만 고려하면 된다면 필요한만큼의 Triplet만 지원하면 됩니다.
+
+이 저장소에는 [Android](../triplets/arm64-android.cmake), [iOS Simulator](../triplets/arm64-ios-simulator.cmake)를 대상으로 하는 Triplet이 몇개 있습니다.
+CMake 문법에 익숙하다면 아래의 내용을 읽고나서 의미를 해석해보는게 도움이 되리라 생각합니다.
+
+### [arm64-windows](https://github.com/microsoft/vcpkg/blob/2021.12.01/triplets/arm64-windows.cmake), [arm64-windows-static](https://github.com/microsoft/vcpkg/blob/2021.12.01/triplets/community/arm64-windows-static.cmake), [arm64-windows-static-md](https://github.com/microsoft/vcpkg/blob/2021.12.01/triplets/community/arm64-windows-static-md.cmake)
+
+Windows Triplet들의 이름에 `-static`이 덧붙는다면, 
+Library 빌드 옵션을 static으로 사용한다는 의미입니다. (반대로 `-dynamic`이 붙는 경우도 있습니다.)
+CRT 역시 static으로 맞춰주고 있는데, 사실 두 설정을 맞춰줄 필요는 없습니다.
+
+```cmake
+# arm64-windows.cmake
+set(VCPKG_TARGET_ARCHITECTURE arm64)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
+```
+
+```cmake
+# community/arm64-windows-static.cmake
+set(VCPKG_TARGET_ARCHITECTURE arm64)
+set(VCPKG_CRT_LINKAGE static)
+set(VCPKG_LIBRARY_LINKAGE static)
+```
+
+만약 `/MD` 컴파일 옵션을 사용해야 한다면, CRT를 dynamic으로 변경해주면 됩니다.
+명시적으로 이런 작업을 한 경우, Triplet 이름에 `-md`를 덧붙입니다.
+
+```cmake
+# community/arm64-windows-static-md.cmake
+set(VCPKG_TARGET_ARCHITECTURE arm64)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
+```
+
+### VCPKG_CMAKE_SYSTEM_NAME을 바꾸는 경우
+
+portfile.cmake에서는 `VCPKG_TARGET_IS_*`, `VCPKG_HOST_IS_*` 변수를 사용해 세부사항을 결정하는 경우를 많이 볼 수 있습니다. 
+Triplet에서 [이 변수를 어떻게 설정하느냐에 따라 관련 변수들의 값이 바뀝니다](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/cmake/vcpkg_common_definitions.cmake#L35-L57).
+동시에 [Cross compile 여부를 판단](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#cross-compiling)할때도 사용됩니다.
+
+일례로, [x64-freebsd.cmake](https://github.com/microsoft/vcpkg/blob/2021.12.01/triplets/community/x64-freebsd.cmake), [x64-openbsd.cmake](https://github.com/microsoft/vcpkg/blob/2021.12.01/triplets/community/x64-openbsd.cmake)는 VCPKG_CMAKE_SYSTEM_NAME를 각각의 이름에 맞게 설정하고 있습니다.
+
+```cmake
+# community/x64-freebsd.cmake
+set(VCPKG_TARGET_ARCHITECTURE x64)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
+
+set(VCPKG_CMAKE_SYSTEM_NAME FreeBSD)
+```
+```cmake
+# community/x64-openbsd.cmake
+set(VCPKG_TARGET_ARCHITECTURE x64)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
+
+set(VCPKG_CMAKE_SYSTEM_NAME OpenBSD)
+```
+
+### MinGW (Minimalist GNU for Windows)
+
+MinGW로 빌드 환경을 구축했다면 환경변수를 추가/변경해 여러 개발도구들이 선택되도록 조정한 상태일 것입니다.
+Vcpkg의 Windows 빌드는 환경변수들을 그대로 사용하지 않기 때문에, 이런 조정된 값들이 빌드를 진행하는 프로세스로 전달되도록 [`VCPKG_ENV_PASSTHROUGH`](https://github.com/microsoft/vcpkg/blob/2021.12.01/docs/users/config-environment.md#vcpkg_keep_env_vars) 변수를 지정해줘야 합니다.
+
+[x86-mingw-static.cmake](https://github.com/microsoft/vcpkg/blob/2021.12.01/triplets/community/x86-mingw-static.cmake)에서는 PATH 환경변수를 빌드 프로세스로 넘기고 있습니다.
+
+```cmake
+# community/x86-mingw-static.cmake
+set(VCPKG_TARGET_ARCHITECTURE x86)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
+set(VCPKG_ENV_PASSTHROUGH PATH)
+
+set(VCPKG_CMAKE_SYSTEM_NAME MinGW)
+```
+
+[x86-mingw-dynamic.cmake](https://github.com/microsoft/vcpkg/blob/2021.12.01/triplets/community/x86-mingw-dynamic.cmake)도 같습니다.
+
+```cmake
+# community/x86-mingw-dynamic.cmake
+set(VCPKG_TARGET_ARCHITECTURE x86)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE dynamic)
+set(VCPKG_ENV_PASSTHROUGH PATH)
+
+set(VCPKG_CMAKE_SYSTEM_NAME MinGW)
+set(VCPKG_POLICY_DLLS_WITHOUT_LIBS enabled)
+```
+
+이 CMake 변수는 List 변수이므로 아래와 같이 [`list`](https://cmake.org/cmake/help/latest/command/list.html#modification)를 사용하는 것도 괜찮은 방법입니다.
+
+```cmake
+list(APPEND VCPKG_ENV_PASSTHROUGH PATH VULKAN_SDK CUDA_HOME CUDA_PATH)
+message(STATUS "Passing Env: ${VCPKG_ENV_PASSTHROUGH})
+```
+
+### Apple Targets
+
+Apple 플랫폼을 Target으로 빌드할 때는 보통 `VCPKG_CMAKE_SYSTEM_VERSION`(`CMAKE_SYSTEM_VERSION`), `VCPKG_OSX_SYSROOT`([`CMAKE_OSX_SYSROOT`](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_SYSROOT.html)), `VCPKG_OSX_ARCHITECTURES`([`CMAKE_OSX_ARCHITECTURES`](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_ARCHITECTURES.html)) 변수를 설정하게 됩니다.
+각각 SDK의 버전, SDK의 위치, 적용할 Architecture를 의미합니다.
+실제로 각 변수들이 어떻게 사용되는지는 여러 CMake 스크립트 파일들을 함께 확인해야 알 수 있습니다.
+쉬운 부분부터 살펴보겠습니다.
+
+[Apple M1](https://en.wikipedia.org/wiki/Apple_M1) 장비들은 [64bit ARM](https://en.wikipedia.org/wiki/AArch64#ARMv8.4-A)를 사용하므로, `VCPKG_OSX_ARCHITECTURES` 값은 arm64가 됩니다.
+이를 위한 Triplet은 [arm64-osx](https://github.com/microsoft/vcpkg/blob/2021.12.01/triplets/community/arm64-osx.cmake)입니다. 여기서는 `VCPKG_CMAKE_SYSTEM_NAME`를 함께 설정해주고 있습니다.
+
+```cmake
+# community/arm64-osx.cmake
+set(VCPKG_TARGET_ARCHITECTURE arm64)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
+
+set(VCPKG_CMAKE_SYSTEM_NAME Darwin)
+set(VCPKG_OSX_ARCHITECTURES arm64)
+```
+
+> 
+> `VCPKG_OSX_ARCHITECTURES`라는 이름에서 볼 수 있는 것처럼, 여러 Arch를 동시에 빌드하도록 만들 수 있습니다.
+> 관심이 있다면 [관련 PR](https://github.com/microsoft/vcpkg/pull/18156)도 함께 보면 좋을 것 같습니다.
+>
+
+같은 아키텍처에 iOS를 Target으로 빌드할때는 어떨까요? [arm64-ios](https://github.com/microsoft/vcpkg/blob/2021.12.01/triplets/community/arm64-ios.cmake)를 보면 `VCPKG_CMAKE_SYSTEM_NAME`만 다르고 `VCPKG_OSX_ARCHITECTURES`는 설정하지 않고 있습니다.
+이것은 기본 Chainload Toolchain 파일인 [scripts/toolchains/ios.cmake](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/toolchains/ios.cmake)에서 `VCPKG_TARGET_ARCHITECTURE`를 사용해 [`VCPKG_OSX_ARCHITECTURES`를 추정하도록 구현](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/toolchains/ios.cmake#L7-L32)하고 있기 때문입니다.
+
+반대로 [scripts/toolchains/osx.cmake](https://github.com/microsoft/vcpkg/blob/2021.12.01/scripts/toolchains/osx.cmake)에서는 Host 시스템과 관련된 최소한의 내용만 설정하고 있기 때문에 Triplet 파일을 가급적 자세하게 작성해야 할수도 있습니다.
+
+```cmake
+# community/arm64-ios.cmake
+set(VCPKG_TARGET_ARCHITECTURE arm64) # --> set(_vcpkg_ios_target_architecture "arm64")
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
+set(VCPKG_CMAKE_SYSTEM_NAME iOS) # --> scripts/toolchains/ios.cmake
+```
+
+여기서 만약 iPhone SDK 버전을 12.0으로 설정하고 싶다면 `VCPKG_CMAKE_SYSTEM_VERSION`를 추가하면 됩니다. 다만 이 값이 제대로 적용되지 않는다면, Port에서 사용하고 있는 빌드시스템 파일로 CMAKE_SYSTEM_VERSION이 전달되지 않거나, 덮어쓰고 있을수도 있습니다.
+이런 경우는 `VCPKG_CXX_FLAGS`를 변경해 [`CMAKE_CXX_FLAGS`에서 컴파일 옵션으로 SDK 버전을 적용하도록 해야 합니다.](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#cross-compiling-for-ios-tvos-or-watchos)
+
+
+```cmake
+set(VCPKG_TARGET_ARCHITECTURE arm64)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
+
+set(VCPKG_CMAKE_SYSTEM_NAME iOS)
+set(VCPKG_CMAKE_SYSTEM_VERSION 12.0) # 또는 VCPKG_C_FLAGS, VCPKG_CXX_FLAGS
+```
+
+보통은 이정도에서 간단하게 해결할 수 있는데, 만약 iPhone SDK가 아니라 iPhoneSimulator SDK를 사용해야 하는 상황이라면 sysroot 관련 컴파일 옵션이 바뀌어야 합니다.
+이 때는 `VCPKG_OSX_SYSROOT`를 사용합니다.
+[CMake 에서 설명하는 것처럼, 이 변수에 사용할 경로는 `xcodebuild -showsdks` 명령으로 확인할 수 있습니다](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#cross-compiling-for-ios-tvos-or-watchos).
+
+아래는 CMake의 [`execute_process` 명령](https://cmake.org/cmake/help/latest/command/execute_process.html)을 사용해 xcodebuild 프로그램을 실행하고, CLI 출력을 `VCPKG_OSX_SYSROOT`에 저장한 것입니다.
+가장 마지막에 사용한 인자 Path를 지우면 어떻게 바뀌는지 확인해보면 다른 좋은 사용방법을 떠올릴 수 있을 것입니다.
+
+```cmake
+find_program(XCODEBUILD_EXE xcodebuild REQUIRED)
+execute_process(
+    COMMAND ${XCODEBUILD_EXE} -version -sdk iphonesimulator Path
+    OUTPUT_VARIABLE VCPKG_OSX_SYSROOT
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+message(STATUS "Detected SDK: ${VCPKG_OSX_SYSROOT}")
+```
+
+## Vcpkg Chainload
+
+`VCPKG_CHAINLOAD_TOOLCHAIN_FILE`은 Vcpkg로 CMake 프로젝트를 빌드할 때 그 확장성을 극대화할 수 있는 변수 중 하나입니다.
+이미 android.toolchain.cmake와 같이 이미 작성된 CMake 스크립트들을 사용할 때 필요한 기능입니다.
+하지만 이 변수를 언제나 설정해야 하는 것은 아닙니다.
+Vcpkg는 지원하는 Target 플랫폼들을 위해 기본적인 CMake 스크립트들을 내장하고 있습니다. 이들은 Port vcpkg-cmake에 있는 `vcpkg_cmake_configure` 함수를 통해, buildtrees/ 폴더에서 빌드시스템 파일을 생성할 때 사용됩니다.
+
+전체 목록은 [vcpkg_cmake_configure.cmake](https://github.com/microsoft/vcpkg/blob/2021.12.01/ports/vcpkg-cmake/vcpkg_cmake_configure.cmake#L280-L303)에서 확인할 수 있습니다.
+
+```cmake
+    if(NOT DEFINED VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
+        if(NOT DEFINED VCPKG_CMAKE_SYSTEM_NAME OR _TARGETTING_UWP)
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${SCRIPTS}/toolchains/windows.cmake")
+        elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Linux")
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${SCRIPTS}/toolchains/linux.cmake")
+        elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${SCRIPTS}/toolchains/android.cmake")
+        elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${SCRIPTS}/toolchains/osx.cmake")
+        elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "iOS")
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${SCRIPTS}/toolchains/ios.cmake")
+        elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${SCRIPTS}/toolchains/freebsd.cmake")
+        elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${SCRIPTS}/toolchains/openbsd.cmake")
+        elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "MinGW")
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${SCRIPTS}/toolchains/mingw.cmake")
+        endif()
+    endif()
+```
+
+vcpkg_cmake_configure 함수는 portfile.cmake에서 사용하기 때문에, `VCPKG_CHAINLOAD_TOOLCHAIN_FILE` 변수의 값을 변경하려면 Triplet 혹은 portfile.cmake 내에서 `set`해야 합니다.
+
+### iOS Toolchain
+
+[leetal/ios-cmake](https://github.com/leetal/ios-cmake)는 제가 2018년 이후 Apple 플랫폼 빌드와 관련해 해결책을 찾아야 할때 우선적으로 참고하는 프로젝트입니다.
+많은 경우 이 프로젝트에서 지원하는 ios.toolchain.cmake를 사용하는 것으로 번거로운 작업을 간소화할 수 있습니다.
+
+... (추가 필요함) ...
+
+
+### Android
+
+... (추가 필요함) ...
+
+#### 1. Android Gradle Plugin + CMake
+
+#### 2. android.toolchain.cmake
+
+#### 3. VCPKG_TARGET_TRIPLET
+
 
 ## Vcpkg Feature 사용하기
 
-> TBA
+앞서까지는 Vcpkg에서 지원하는 패키지들을 설치하기 위한 내용이었습니다.
+
+[docs/specification/](https://github.com/microsoft/vcpkg/tree/2021.12.01/docs/specifications) 폴더에 Vcpkg에서 지원하는 추가 기능들에 대해서 몇개의 문서들이 들어있습니다.
+
+... (추가 필요함) ...
 
 ### 1. Manifest
 
