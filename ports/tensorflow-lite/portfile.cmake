@@ -9,10 +9,11 @@ vcpkg_from_github(
     SHA512 f1e892583c7b3a73d4d39ec65dc135a5b02c789b357d57414ad2b6d05ad9fbfc8ef81918ba6410e314abd6928b76f764e6ef64c0b0c84b58b50796634be03f39
     PATCHES
         fix-cmakelists.patch
-        # fix-eigen3-import.patch
-        # fix-gpu-build.patch
-        # fix-gpu-sources.patch
+        fix-gpu-build.patch
 )
+file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
+file(CREATE_LINK "${CURRENT_INSTALLED_DIR}/include/eigen3" "${SOURCE_PATH}/third_party/eigen3" SYMBOLIC)
+
 if(VCPKG_TARGET_IS_OSX AND ("gpu" IN_LIST FEATURES))
     # .proto files for coreml_mlmodel_codegen
     vcpkg_from_github(

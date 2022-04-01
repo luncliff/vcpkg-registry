@@ -35,7 +35,10 @@
           "host": true
         },
         "fp16",
-        "opencl",
+        {
+          "name": "opencl",
+          "platform": "!osx"
+        },
         "opengl-registry",
         {
           "name": "protobuf",
