@@ -10,6 +10,7 @@ vcpkg_from_github(
     PATCHES
         fix-cmakelists.patch
         fix-gpu-build.patch
+        fix-gpu-source.patch
 )
 file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
 file(CREATE_LINK "${CURRENT_INSTALLED_DIR}/include/eigen3" "${SOURCE_PATH}/third_party/eigen3" SYMBOLIC)

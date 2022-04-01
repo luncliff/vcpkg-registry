@@ -1,0 +1,83 @@
+diff --git a/tensorflow/lite/delegates/gpu/gl/runtime.cc b/tensorflow/lite/delegates/gpu/gl/runtime.cc
+index ce029efa..213a4134 100644
+--- a/tensorflow/lite/delegates/gpu/gl/runtime.cc
++++ b/tensorflow/lite/delegates/gpu/gl/runtime.cc
+@@ -86,27 +86,22 @@ absl::Status MakeGlTexture(const Object& object, const ObjectData& data,
+       if (data.size() % 2 != 0) {
+         return absl::InvalidArgumentError("Texture size is not aligned");
+       }
+-      return absl::visit(
+-          TextureF16Maker{
+-              .data = absl::MakeConstSpan(
+-                  reinterpret_cast<const uint16_t*>(data.data()),
+-                  data.size() / 2),
+-              .gl_texture = gl_texture,
+-          },
+-          object.size);
++      TextureF16Maker maker{};
++      maker.data = absl::MakeConstSpan(
++          reinterpret_cast<const uint16_t*>(data.data()), data.size() / 2);
++      maker.gl_texture = gl_texture;
++      return absl::visit(maker, object.size);
+     }
+     case DataType::FLOAT32: {
+       if (data.size() % sizeof(float) != 0) {
+         return absl::InvalidArgumentError("Texture size is not aligned");
+       }
+-      return absl::visit(
+-          TextureF32Maker{
+-              .data = absl::MakeConstSpan(
+-                  reinterpret_cast<const float*>(data.data()),
+-                  data.size() / sizeof(float)),
+-              .gl_texture = gl_texture,
+-          },
+-          object.size);
++      TextureF32Maker maker{};
++      maker.data =
++          absl::MakeConstSpan(reinterpret_cast<const float*>(data.data()),
++                              data.size() / sizeof(float));
++      maker.gl_texture = gl_texture;
++      return absl::visit(maker, object.size);
+     }
+     default:
+       return absl::InvalidArgumentError("Unsupported textures data type.");
+diff --git a/tensorflow/lite/simple_memory_arena.cc b/tensorflow/lite/simple_memory_arena.cc
+index 1c7a0384..59a139ec 100644
+--- a/tensorflow/lite/simple_memory_arena.cc
++++ b/tensorflow/lite/simple_memory_arena.cc
+@@ -168,11 +168,17 @@ TfLiteStatus SimpleMemoryArena::ReleaseBuffer() {
+   return kTfLiteOk;
+ }
+ 
++#if defined(_DEBUG)
++void DumpArenaInfo(const std::string& name,
++                   const std::vector<int>& execution_plan, size_t arena_size,
++                   const std::vector<ArenaAllocWithUsageInterval>& allocs);
++#else
+ // Using weak symbols to create a pluggable debugging module.
+ TFLITE_ATTRIBUTE_WEAK void DumpArenaInfo(
+     const std::string& name, const std::vector<int>& execution_plan,
+     size_t arena_size, const std::vector<ArenaAllocWithUsageInterval>& allocs) {
+ }
++#endif
+ 
+ void SimpleMemoryArena::DumpDebugInfo(
+     const std::string& name, const std::vector<int>& execution_plan) const {
+diff --git a/tensorflow/lite/simple_memory_arena_debug_dump.cc b/tensorflow/lite/simple_memory_arena_debug_dump.cc
+index 256fa0b9..1ca26b0b 100644
+--- a/tensorflow/lite/simple_memory_arena_debug_dump.cc
++++ b/tensorflow/lite/simple_memory_arena_debug_dump.cc
+@@ -128,6 +128,7 @@ class TopKLayers {
+ };
+ }  // namespace
+ 
++#if defined(_DEBUG)
+ // Corresponding weak declaration found in lite/simple_memory_arena.cc
+ void DumpArenaInfo(const std::string& name,
+                    const std::vector<int>& execution_plan, size_t arena_size,
+@@ -193,4 +194,5 @@ void DumpArenaInfo(const std::string& name,
+   top_usage.Print();
+   printf("===End of %s ===\n\n", name.c_str());
+ }
++#endif
+ }  // namespace tflite
