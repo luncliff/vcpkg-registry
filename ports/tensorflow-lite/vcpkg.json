@@ -4,6 +4,7 @@
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://www.tensorflow.org/",
   "license": "Apache-2.0",
+  "supports": "!android",
   "dependencies": [
     "abseil",
     "eigen3",
@@ -35,10 +36,7 @@
           "host": true
         },
         "fp16",
-        {
-          "name": "opencl",
-          "platform": "!osx"
-        },
+        "opencl",
         "opengl-registry",
         {
           "name": "protobuf",
