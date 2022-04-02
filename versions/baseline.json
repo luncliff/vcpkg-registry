@@ -25,7 +25,7 @@
       "port-version": 0
     },
     "gemmlowp": {
-      "baseline": "2022-04-02",
+      "baseline": "2022-02-09",
       "port-version": 0
     },
     "libdispatch": {

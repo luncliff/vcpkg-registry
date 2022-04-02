@@ -4,7 +4,7 @@
 
 Targets...
 
-* [vcpkg](https://github.com/microsoft/vcpkg): `master` branch, [2021/11/06](https://github.com/microsoft/vcpkg/tree/1ab6c8c7fa1b6971d1e0dc14e2510801d515fde0) or later
+* [vcpkg](https://github.com/microsoft/vcpkg): `master` branch, [2021/12/01](https://github.com/microsoft/vcpkg/tree/2021.12.01) or later
 * [vcpkg-tool](https://github.com/microsoft/vcpkg-tool): [`2021-11-02`](https://github.com/microsoft/vcpkg-tool/releases/tag/2021-11-02) or later
 
 ### References
