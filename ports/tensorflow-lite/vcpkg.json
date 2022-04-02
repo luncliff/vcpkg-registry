@@ -1,10 +1,10 @@
 {
   "name": "tensorflow-lite",
-  "version-semver": "2.6.1",
-  "port-version": 1,
+  "version-semver": "2.7.0",
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://www.tensorflow.org/",
   "license": "Apache-2.0",
+  "supports": "!android",
   "dependencies": [
     "abseil",
     "eigen3",

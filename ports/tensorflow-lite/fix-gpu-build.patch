@@ -1,8 +1,8 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 8bb43fd9..b520e4ea 100644
+index de941adf..acad9780 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -212,13 +212,129 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
+@@ -216,13 +216,135 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
  populate_tflite_source_vars("c" TFLITE_C_SRCS)
  populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
  if(TFLITE_ENABLE_GPU)
@@ -13,6 +13,11 @@ index 8bb43fd9..b520e4ea 100644
 -  if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
 -    find_package(opengl_headers REQUIRED)
 -    find_package(egl_headers REQUIRED)
++  if(APPLE)
++    # Prevent using OpenCL.framework because we need version 2.0+
++    find_path(OpenCL_INCLUDE_DIR "CL/opencl.h" REQUIRED)
++    find_library(OpenCL_LIBRARY NAMES OpenCL REQUIRED NO_CMAKE_SYSTEM_PATH)
++  endif()
 +  find_package(OpenCL REQUIRED)
 +  find_program(FLATC_EXECUTABLE NAMES flatc REQUIRED)
 +  add_custom_target(gl_delegate_codegen
@@ -26,8 +31,7 @@ index 8bb43fd9..b520e4ea 100644
 +  if(Vulkan_FOUND)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES Vulkan::Headers)
 +  endif()
-+  if(WIN32 OR ANDROID)
-+    # OpenGL, EGL headers will be installed with vcpkg
++  if(WIN32 OR ANDROID) # OpenGL, EGL headers will be installed with vcpkg
 +    find_library(EGL_LIBPATH NAMES libEGL REQUIRED)
 +    find_library(GLES_LIBPATH NAMES libGLESv3${CMAKE_DEBUG_POSTFIX} libGLESv2${CMAKE_DEBUG_POSTFIX} REQUIRED)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES ${EGL_LIBPATH} ${GLES_LIBPATH})
@@ -123,13 +127,15 @@ index 8bb43fd9..b520e4ea 100644
 +      COMPILE_OPTIONS "-fobjc-arc"
 +    )
 +    list(APPEND TFLITE_DELEGATES_COREML_SRCS
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h        ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.h ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.h        ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.h
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.h
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
 +      ${TFLITE_SOURCE_DIR}/tools/delegates/coreml_delegate_provider.cc
-+      # ...
 +      ${TFLITE_SOURCE_DIR}/tools/tool_params.cc
-+      ${TFLITE_SOURCE_DIR}/tools/command_line_flags.cc 
++      ${TFLITE_SOURCE_DIR}/tools/command_line_flags.cc
 +    )
 +    set_source_files_properties(${TFLITE_OBJC_SRCS} ${TFLITE_DELEGATES_GPU_METAL_SRCS} ${TFLITE_DELEGATES_COREML_SRCS}
 +    PROPERTIES
@@ -139,10 +145,10 @@ index 8bb43fd9..b520e4ea 100644
    endif()
    populate_tflite_source_vars(
      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-@@ -289,11 +405,26 @@ if(TFLITE_ENABLE_GPU)
-     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SRCS}
-     ${TFLITE_DELEGATES_GPU_COMMON_TASKS_SPECIAL_SRCS}
+@@ -295,11 +417,26 @@ if(TFLITE_ENABLE_GPU)
      ${TFLITE_DELEGATES_GPU_COMMON_TRANSFORMATIONS_SRCS}
+     ${TFLITE_SOURCE_DIR}/tools/versioning/gpu_compatibility.cc
+     ${TFLITE_SOURCE_DIR}/tools/versioning/op_signature.cc
 +    ${TFLITE_DELEGATES_GPU_EGL_SRCS}
 +    ${TFLITE_DELEGATES_GPU_GL_SRCS}
 +    ${TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS}
@@ -163,11 +169,11 @@ index 8bb43fd9..b520e4ea 100644
    list(APPEND TFLITE_TARGET_DEPENDENCIES
      absl::any
      absl::flat_hash_map
-+    OpenCL::OpenCL
++    ${OpenCL_LIBRARY} # OpenCL::OpenCL
    )
  endif()
  if(_TFLITE_ENABLE_NNAPI)
-@@ -416,6 +547,7 @@ add_library(tensorflow-lite
+@@ -423,6 +560,7 @@ add_library(tensorflow-lite
  target_include_directories(tensorflow-lite
    PUBLIC
      $<BUILD_INTERFACE:${TFLITE_INCLUDE_DIRS}>

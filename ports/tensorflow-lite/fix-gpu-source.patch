@@ -41,3 +41,43 @@ index ce029efa..213a4134 100644
      }
      default:
        return absl::InvalidArgumentError("Unsupported textures data type.");
+diff --git a/tensorflow/lite/simple_memory_arena.cc b/tensorflow/lite/simple_memory_arena.cc
+index 1c7a0384..59a139ec 100644
+--- a/tensorflow/lite/simple_memory_arena.cc
++++ b/tensorflow/lite/simple_memory_arena.cc
+@@ -168,11 +168,17 @@ TfLiteStatus SimpleMemoryArena::ReleaseBuffer() {
+   return kTfLiteOk;
+ }
+ 
++#if defined(_DEBUG)
++void DumpArenaInfo(const std::string& name,
++                   const std::vector<int>& execution_plan, size_t arena_size,
++                   const std::vector<ArenaAllocWithUsageInterval>& allocs);
++#else
+ // Using weak symbols to create a pluggable debugging module.
+ TFLITE_ATTRIBUTE_WEAK void DumpArenaInfo(
+     const std::string& name, const std::vector<int>& execution_plan,
+     size_t arena_size, const std::vector<ArenaAllocWithUsageInterval>& allocs) {
+ }
++#endif
+ 
+ void SimpleMemoryArena::DumpDebugInfo(
+     const std::string& name, const std::vector<int>& execution_plan) const {
+diff --git a/tensorflow/lite/simple_memory_arena_debug_dump.cc b/tensorflow/lite/simple_memory_arena_debug_dump.cc
+index 256fa0b9..1ca26b0b 100644
+--- a/tensorflow/lite/simple_memory_arena_debug_dump.cc
++++ b/tensorflow/lite/simple_memory_arena_debug_dump.cc
+@@ -128,6 +128,7 @@ class TopKLayers {
+ };
+ }  // namespace
+ 
++#if defined(_DEBUG)
+ // Corresponding weak declaration found in lite/simple_memory_arena.cc
+ void DumpArenaInfo(const std::string& name,
+                    const std::vector<int>& execution_plan, size_t arena_size,
+@@ -193,4 +194,5 @@ void DumpArenaInfo(const std::string& name,
+   top_usage.Print();
+   printf("===End of %s ===\n\n", name.c_str());
+ }
++#endif
+ }  // namespace tflite

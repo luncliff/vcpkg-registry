@@ -5,14 +5,16 @@ vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.6.1
-    SHA512 34dcec08b73ef25cb6e5bcb0e083c2f43d8364bc9a465e59d63dc3f162a129d011e03faaecf7d563cbbe39f0c2bbf2d1795ccfb8b2ea3f108ed8db992cea9475
+    REF v2.7.0
+    SHA512 f1e892583c7b3a73d4d39ec65dc135a5b02c789b357d57414ad2b6d05ad9fbfc8ef81918ba6410e314abd6928b76f764e6ef64c0b0c84b58b50796634be03f39
     PATCHES
         fix-cmakelists.patch
-        fix-eigen3-import.patch
         fix-gpu-build.patch
-        fix-gpu-sources.patch
+        fix-gpu-source.patch
 )
+file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
+file(CREATE_LINK "${CURRENT_INSTALLED_DIR}/include/eigen3" "${SOURCE_PATH}/third_party/eigen3" SYMBOLIC)
+
 if(VCPKG_TARGET_IS_OSX AND ("gpu" IN_LIST FEATURES))
     # .proto files for coreml_mlmodel_codegen
     vcpkg_from_github(
@@ -45,6 +47,10 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_XNNPACK=ON
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
         -DCOREML_SOURCE_DIR=${COREML_SOURCE_PATH}
+    MAYBE_UNUSED_VARIABLES
+        COREML_SOURCE_DIR
+        FLATC_EXECUTABLE
+        PROTOC_EXECUTABLE
 )
 if("gpu" IN_LIST FEATURES)
     # run codegen for ".fbs" files

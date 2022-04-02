@@ -1,0 +1,14 @@
+diff --git a/contrib/CMakeLists.txt b/contrib/CMakeLists.txt
+index d6833e8..859a135 100644
+--- a/contrib/CMakeLists.txt
++++ b/contrib/CMakeLists.txt
+@@ -24,7 +24,8 @@ if(WIN32)
+     add_definitions(-DGEMMLOWP_ALLOW_INLINE_ASM)
+   endif()
+ else()
+-  set(EXTERNAL_LIBRARIES "pthread")
++  find_package(Threads REQUIRED)
++  list(APPEND EXTERNAL_LIBRARIES Threads::Threads)
+ endif()
+ 
+ # Glob header files
