@@ -26,7 +26,7 @@
     },
     "gemmlowp": {
       "baseline": "2022-02-09",
-      "port-version": 0
+      "port-version": 1
     },
     "libdispatch": {
       "baseline": "swift-5.5",
