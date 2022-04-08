@@ -70,7 +70,7 @@
     },
     "xnnpack": {
       "baseline": "2021-10-10",
-      "port-version": 1
+      "port-version": 2
     },
     "zenny-atomic": {
       "baseline": "2021-10-15",
