@@ -34,7 +34,7 @@
     },
     "libtorch": {
       "baseline": "1.10.0",
-      "port-version": 0
+      "port-version": 1
     },
     "metal-cpp": {
       "baseline": "2022-01-18",
