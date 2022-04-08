@@ -5,12 +5,10 @@ endif()
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO luncliff/cpuinfo
-    REF b23b0d3bbc441ac1172458827ef309e9f6c47fd4
-    SHA512 ea31b46a0375f67de00241aeec48678a476e8979f6ad0943bebee3c46c848f62ae8d282c9ac8625014f77af5a6dbbb9adf9e98d78111dad0cdc95b40f36520ce
+    REPO pytorch/cpuinfo
+    REF b40bae27785787b6dd70788986fd96434cf90ae2
+    SHA512 dbbe4f3e1d5ae74ffc8ba2cba0ab745a23f4993788f4947825ef5125dd1cbed3e13e0c98e020e6fcfa9879f54f06d7cba4de73ec29f77649b6a27b4ab82c8f1c
     HEAD_REF master
-    PATCHES
-        rename-unofficial.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -44,8 +42,11 @@ vcpkg_cmake_configure(
         -DCPUINFO_LOG_LEVEL=default
 )
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(PACKAGE_NAME "unofficial-cpuinfo" CONFIG_PATH "share/${PORT}")
+vcpkg_cmake_config_fixup()
+vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libcpuinfo)
+
+file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
 
 if("tools" IN_LIST FEATURES)
     vcpkg_copy_tools(
@@ -54,8 +55,4 @@ if("tools" IN_LIST FEATURES)
     )
 endif()
 
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
-
-file(INSTALL "${SOURCE_PATH}/LICENSE"
-     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright
-)
+file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
