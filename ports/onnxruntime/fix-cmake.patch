@@ -41,8 +41,8 @@ index 2534b99..377653e 100644
  
  # TODO  do we have to add target_include_directories to each project that uses this?
 -if(CPUINFO_SUPPORTED)
-+find_package(unofficial-cpuinfo CONFIG REQUIRED) # unofficial::cpuinfo::clog unofficial::cpuinfo::cpuinfo
-+add_library(cpuinfo ALIAS unofficial::cpuinfo::cpuinfo)
++find_package(cpuinfo CONFIG REQUIRED) # cpuinfo::clog cpuinfo::cpuinfo
++add_library(cpuinfo ALIAS cpuinfo::cpuinfo)
 +if(FALSE)
    set(PYTORCH_CPUINFO_DIR external/pytorch_cpuinfo)
    set(PYTORCH_CPUINFO_INCLUDE_DIR ${PYTORCH_CPUINFO_DIR}/include)
@@ -591,8 +591,8 @@ index 08cf656..e0e11bc 100644
      target_include_directories(onnxruntime_common PRIVATE ${PYTORCH_CPUINFO_INCLUDE_DIR})
 -    target_link_libraries(onnxruntime_common cpuinfo)
 -    list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo clog)
-+    target_link_libraries(onnxruntime_common unofficial::cpuinfo::cpuinfo)
-+    list(APPEND onnxruntime_EXTERNAL_LIBRARIES unofficial::cpuinfo::clog unofficial::cpuinfo::cpuinfo)
++    target_link_libraries(onnxruntime_common cpuinfo::cpuinfo)
++    list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo::clog cpuinfo::cpuinfo)
    endif()
  endif()
 diff --git a/cmake/onnxruntime_providers.cmake b/cmake/onnxruntime_providers.cmake
