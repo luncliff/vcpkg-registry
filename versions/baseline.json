@@ -17,7 +17,7 @@
       "port-version": 1
     },
     "fbgemm": {
-      "baseline": "2021-10-31",
+      "baseline": "2022-04-09",
       "port-version": 0
     },
     "fft2d": {
