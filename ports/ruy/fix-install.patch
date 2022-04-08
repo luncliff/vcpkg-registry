@@ -20,7 +20,7 @@ index 98d480d..2b31f49 100644
  include(cmake/ruy_cc_binary.cmake)
  include(cmake/ruy_cc_test.cmake)
  
-+find_package(unofficial-cpuinfo CONFIG REQUIRED)
++find_package(cpuinfo CONFIG REQUIRED)
 +
  # Skip cpuinfo if it was already generated, which can happen when ruy is
  # a subdirectory in a wider project that already uses cpuinfo.
@@ -90,7 +90,7 @@ index 502ad8a..3d3d0f5 100644
 -else()
 -  set(ruy_6_cpuinfo "cpuinfo")
 -endif()
-+list(APPEND ruy_6_cpuinfo unofficial::cpuinfo::clog unofficial::cpuinfo::cpuinfo)
++list(APPEND ruy_6_cpuinfo cpuinfo::clog cpuinfo::cpuinfo)
  
  ruy_cc_library(
    NAME

@@ -54,7 +54,7 @@
     },
     "ruy": {
       "baseline": "2021-10-10",
-      "port-version": 0
+      "port-version": 1
     },
     "tensorflow-lite": {
       "baseline": "2.7.0",
