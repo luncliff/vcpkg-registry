@@ -1,13 +1,11 @@
-vcpkg_fail_port_install(ON_ARCH "x86" ON_TARGET "uwp")
-
 # The project's CMakeLists.txt uses Python to select source files. Check if it is available in advance.
 vcpkg_find_acquire_program(PYTHON3)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/fbgemm
-    REF 2e15f569a80e081d94f2c1709a1b0972ff340b00
-    SHA512 9945ad692057d84c2b6796a1630a9d73b5e7d3cfad4181fbdce418a1103aba5952b56ab954d26219c65ec759f03939ec7fe5ea0660e4676731d8ba74700aa48b
+    REF 8ed5c4e3fc1a704e57d642f8d217facd9e96af30
+    SHA512 3213947606068ddf11c2be2e4230b8925c5fb3b4442b644ed46e3dc1df4a8642a006fa9a6a2d6e4d03787a35e7717ef0fdeae1e27ffbb99ea80be79f1fbe6ead
     PATCHES
         fix-cmakelists.patch
 )

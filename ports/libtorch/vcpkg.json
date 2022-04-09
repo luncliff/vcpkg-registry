@@ -1,6 +1,7 @@
 {
   "name": "libtorch",
   "version-semver": "1.10.0",
+  "port-version": 1,
   "description": "Tensors and Dynamic neural networks in Python with strong GPU acceleration",
   "homepage": "https://pytorch.org/",
   "supports": "x64 & (osx | linux)",

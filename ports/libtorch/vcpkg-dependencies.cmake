@@ -32,11 +32,11 @@ find_path(FXDIV_INCLUDE_DIRS "fxdiv.h")
 find_package(gemmlowp CONFIG REQUIRED) # gemmlowp::gemmlowp
 find_package(gflags CONFIG REQUIRED) # gflags::gflags
 find_package(glog CONFIG REQUIRED) # glog::glog
-find_package(unofficial-cpuinfo CONFIG REQUIRED) # cpuinfo::clog cpuinfo::cpuinfo
+find_package(cpuinfo CONFIG REQUIRED) # cpuinfo::clog cpuinfo::cpuinfo
 find_package(unofficial-pthreadpool CONFIG REQUIRED) # unofficial::pthreadpool
 list(APPEND Caffe2_DEPENDENCY_LIBS
   gemmlowp::gemmlowp gflags::gflags glog::glog
-  unofficial::cpuinfo::clog unofficial::cpuinfo::cpuinfo unofficial::pthreadpool
+  cpuinfo::clog cpuinfo::cpuinfo unofficial::pthreadpool
 )
 link_directories(
   $<$<CONFIG:Debug>:${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib>
