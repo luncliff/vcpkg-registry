@@ -1,7 +1,6 @@
 {
   "name": "xnnpack",
-  "version-date": "2021-10-10",
-  "port-version": 2,
+  "version-date": "2022-04-08",
   "description": "High-efficiency floating-point neural network inference operators for mobile, server, and Web",
   "homepage": "https://github.com/google/XNNPACK",
   "supports": "!(arm & windows) & !uwp",
@@ -12,10 +11,6 @@
     "pthreadpool",
     {
       "name": "vcpkg-cmake",
-      "host": true
-    },
-    {
-      "name": "vcpkg-cmake-config",
       "host": true
     }
   ]

@@ -5,12 +5,12 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/XNNPACK
-    REF 1851410d1bdd0189f4c1295d8893dcc9c2504bc8 # 2021-10-10
-    SHA512 6af2227fc4851f7247c2fb6fa508816b362cbd6c8c02c89320a8bb759428666d0d17ece3d9fdca0ac26f0b25461d37b8b8c883a93174b4e7a84e49c4266c48e7
+    REF 50c2d55a379b37ed815accaa565f9e687e2e3f00 # 2022-04-08
+    SHA512 b35c2afe4611d1b768f592fd5dec39f238b312ef6a73dfac611b83230e700d77144ac6d7c281f19b7365679525c34d295f39500513daeb25a06fb4a2389c823c
     HEAD_REF master
     PATCHES
-        use-packages.patch
         change-allowed-systems.patch
+        use-packages.patch
 )
 
 if(VCPKG_TARGET_IS_IOS)
@@ -31,12 +31,13 @@ vcpkg_cmake_configure(
         -DXNNPACK_ENABLE_SPARSE=ON
         -DXNNPACK_BUILD_TESTS=OFF
         -DXNNPACK_BUILD_BENCHMARKS=OFF
-       ${PLATFORM_OPTIONS}
+        ${PLATFORM_OPTIONS}
 )
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup()
 
-file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
+file(INSTALL ${SOURCE_PATH}/LICENSE
+     DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright
+)
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include
                     ${CURRENT_PACKAGES_DIR}/debug/bin
                     ${CURRENT_PACKAGES_DIR}/debug/share
