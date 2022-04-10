@@ -57,8 +57,8 @@
       "port-version": 1
     },
     "tensorflow-lite": {
-      "baseline": "2.7.0",
-      "port-version": 1
+      "baseline": "2.7.1",
+      "port-version": 0
     },
     "tensorpipe": {
       "baseline": "2021-11-13",

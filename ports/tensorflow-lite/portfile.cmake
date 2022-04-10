@@ -5,8 +5,8 @@ vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.7.0
-    SHA512 f1e892583c7b3a73d4d39ec65dc135a5b02c789b357d57414ad2b6d05ad9fbfc8ef81918ba6410e314abd6928b76f764e6ef64c0b0c84b58b50796634be03f39
+    REF v2.7.1
+    SHA512 d818f4c2640dd8240cf66c4c64d79fa90508b5c4af3c2e2905b0535fb0fe9c70d3495d8d1e74f7e92c6c6e986ad70855e31147516811a4800a412a927cb398ea
     PATCHES
         fix-cmakelists.patch
         fix-gpu-build.patch
