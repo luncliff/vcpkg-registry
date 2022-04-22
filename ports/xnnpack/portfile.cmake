@@ -11,7 +11,9 @@ vcpkg_from_github(
     PATCHES
         change-allowed-systems.patch
         use-packages.patch
+        support-package.patch
 )
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/xnnpack-config.cmake.in" DESTINATION "${SOURCE_PATH}/cmake")
 
 if(VCPKG_TARGET_IS_IOS)
     if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
@@ -34,6 +36,7 @@ vcpkg_cmake_configure(
         ${PLATFORM_OPTIONS}
 )
 vcpkg_cmake_install()
+vcpkg_cmake_config_fixup(CONFIG_PATH share)
 
 file(INSTALL ${SOURCE_PATH}/LICENSE
      DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright

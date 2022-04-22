@@ -1,0 +1,20 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 16eba0f..e4d7466 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -6891,6 +6891,15 @@ INSTALL(TARGETS XNNPACK
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+ 
++# support find_package(xnnpack CONFIG)
++INCLUDE(CMakePackageConfigHelpers)
++GET_FILENAME_COMPONENT(CONFIG_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/xnnpack-config.cmake ABSOLUTE)
++CONFIGURE_PACKAGE_CONFIG_FILE(
++  cmake/xnnpack-config.cmake.in ${CONFIG_FILE_PATH}
++  INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR})
++INSTALL(FILES ${CONFIG_FILE_PATH}
++  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}) # ${prefix}/share
++
+ # ---[ XNNPACK unit tests
+ IF(XNNPACK_BUILD_TESTS)
+   # ---[ Build google test
