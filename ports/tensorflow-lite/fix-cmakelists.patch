@@ -41,7 +41,7 @@ index 76dda361..f4f0548d 100644
    )
    list(APPEND TFLITE_TARGET_DEPENDENCIES
 -    XNNPACK
-+    unofficial::XNNPACK cpuinfo::clog cpuinfo::cpuinfo
++    xnnpack cpuinfo::clog cpuinfo::cpuinfo unofficial::pthreadpool
    )
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
  endif()
