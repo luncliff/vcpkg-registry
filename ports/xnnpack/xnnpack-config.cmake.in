@@ -1,0 +1,18 @@
+@PACKAGE_INIT@
+if(Z_XNNPACK_CONFIG_GUARD)
+    return()
+endif()
+set(Z_XNNPACK_CONFIG_GUARD ON CACHE INTERNAL "Guard variable for 'xnnpack-config.cmake'")
+
+find_path(XNNPACK_INCLUDE_DIR NAMES xnnpack.h REQUIRED)
+find_library(XNNPACK_LIBRARY NAMES XNNPACK REQUIRED)
+
+add_library(xnnpack STATIC IMPORTED)
+
+set_target_properties(xnnpack
+PROPERTIES
+  C_STANDARD 11
+  CXX_STANDARD 11
+  INTERFACE_INCLUDE_DIRECTORIES "${XNNPACK_INCLUDE_DIR}"
+  IMPORTED_LOCATION "${XNNPACK_LIBRARY}"
+)

@@ -58,7 +58,7 @@
     },
     "tensorflow-lite": {
       "baseline": "2.7.1",
-      "port-version": 0
+      "port-version": 1
     },
     "tensorpipe": {
       "baseline": "2021-11-13",
@@ -69,8 +69,8 @@
       "port-version": 0
     },
     "xnnpack": {
-      "baseline": "2021-10-10",
-      "port-version": 2
+      "baseline": "2022-04-23",
+      "port-version": 0
     },
     "zenny-atomic": {
       "baseline": "2021-10-15",
