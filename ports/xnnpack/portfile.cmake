@@ -2,6 +2,10 @@ if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 endif()
 
+if(VCPKG_TARGET_IS_ANDROID AND VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
+    list(APPEND PATCHES fix-arm-android.patch)
+endif()
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/XNNPACK
@@ -12,6 +16,7 @@ vcpkg_from_github(
         change-allowed-systems.patch
         use-packages.patch
         support-package.patch
+        ${PATCHES}
 )
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/xnnpack-config.cmake.in" DESTINATION "${SOURCE_PATH}/cmake")
 

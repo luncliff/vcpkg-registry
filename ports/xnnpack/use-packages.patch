@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1d93266..69210a2 100644
+index 1d93266..c6c6a37 100755
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -12,7 +12,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12 FATAL_ERROR)
@@ -125,7 +125,14 @@ index 1d93266..69210a2 100644
    IF(NOT XNNPACK_USE_SYSTEM_LIBS)
      SET(FP16_BUILD_TESTS OFF CACHE BOOL "")
      SET(FP16_BUILD_BENCHMARKS OFF CACHE BOOL "")
-@@ -6986,12 +6990,13 @@ TARGET_LINK_LIBRARIES(XNNPACK PRIVATE
+@@ -6979,19 +6983,19 @@ IF(NOT TARGET fp16)
+ ENDIF()
+ TARGET_LINK_LIBRARIES(XNNPACK PRIVATE
+   cache
+-  fp16
+   logging
+   mutex
+   normalization
    operators
    params_init
    subgraph)
