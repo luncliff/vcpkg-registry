@@ -12,6 +12,14 @@ if(VCPKG_TARGET_IS_WINDOWS)
     elseif(TARGET_TRIPLET MATCHES "arm64-windows")
         # ... not tested ...
     endif()
+elseif(VCPKG_TARGET_IS_ANDROID)
+    # check https://github.com/apple/swift-corelibs-libdispatch/pull/568 for the details...
+    vcpkg_download_distfile(NDK23_STDATOMIC_PATCH
+        URLS "https://patch-diff.githubusercontent.com/raw/apple/swift-corelibs-libdispatch/pull/568.diff"
+        FILENAME libdispatch-pr-568.patch
+        SHA512 af23d9530a1c9d10193ab977be632b6393b6966db367c5ee8463ad79fcc2388bed233dcd77439f035b4c4609d99329a17c58fef53cce1a1000a70a41d7406df4
+    )
+    list(APPEND PLATFORM_PATCHES "${NDK23_STDATOMIC_PATCH}")
 endif()
 
 vcpkg_from_github(
