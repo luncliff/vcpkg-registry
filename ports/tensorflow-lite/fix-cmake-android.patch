@@ -1,0 +1,15 @@
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index c5ee5772..26d85628 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -214,7 +214,9 @@ if(_TFLITE_ENABLE_MMAP)
+ else()
+   list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*mmap_allocation\\.cc$")
+ endif()
+-if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
++if(ANDROID)
++  list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*minimal_logging_default\\.cc$")
++else()
+   list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*minimal_logging_android\\.cc$")
+ endif()
+ if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "iOS")

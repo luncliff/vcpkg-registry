@@ -1,8 +1,8 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index de941adf..acad9780 100644
+index 3595f5a0..21e09974 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -216,13 +216,135 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
+@@ -225,13 +225,136 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
  populate_tflite_source_vars("c" TFLITE_C_SRCS)
  populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
  if(TFLITE_ENABLE_GPU)
@@ -13,6 +13,7 @@ index de941adf..acad9780 100644
 -  if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
 -    find_package(opengl_headers REQUIRED)
 -    find_package(egl_headers REQUIRED)
++  find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
 +  if(APPLE)
 +    # Prevent using OpenCL.framework because we need version 2.0+
 +    find_path(OpenCL_INCLUDE_DIR "CL/opencl.h" REQUIRED)
@@ -32,8 +33,8 @@ index de941adf..acad9780 100644
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES Vulkan::Headers)
 +  endif()
 +  if(WIN32 OR ANDROID) # OpenGL, EGL headers will be installed with vcpkg
-+    find_library(EGL_LIBPATH NAMES libEGL REQUIRED)
-+    find_library(GLES_LIBPATH NAMES libGLESv3${CMAKE_DEBUG_POSTFIX} libGLESv2${CMAKE_DEBUG_POSTFIX} REQUIRED)
++    find_library(EGL_LIBPATH NAMES libEGL EGL REQUIRED)
++    find_library(GLES_LIBPATH NAMES libGLESv3${CMAKE_DEBUG_POSTFIX} GLESv3 libGLESv2${CMAKE_DEBUG_POSTFIX} GLESv2 REQUIRED)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES ${EGL_LIBPATH} ${GLES_LIBPATH})
 +    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DEGL_EGLEXT_PROTOTYPES" "-DEGL_NO_X11")
 +  elseif(APPLE)
@@ -145,26 +146,10 @@ index de941adf..acad9780 100644
    endif()
    populate_tflite_source_vars(
      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-@@ -295,11 +417,26 @@ if(TFLITE_ENABLE_GPU)
-     ${TFLITE_DELEGATES_GPU_COMMON_TRANSFORMATIONS_SRCS}
-     ${TFLITE_SOURCE_DIR}/tools/versioning/gpu_compatibility.cc
-     ${TFLITE_SOURCE_DIR}/tools/versioning/op_signature.cc
-+    ${TFLITE_DELEGATES_GPU_EGL_SRCS}
-+    ${TFLITE_DELEGATES_GPU_GL_SRCS}
-+    ${TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS}
-+    ${TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS}
-+    ${TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS}
-+    ${TFLITE_DELEGATES_GPU_GL_RUNTIME_SRCS}
-+    ${TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS}
-+    ${TFLITE_DELEGATES_GPU_METAL_CXX_SRCS}
-+    ${TFLITE_DELEGATES_GPU_METAL_SRCS}
-+    ${TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS}
-+    ${TFLITE_DELEGATES_COREML_BUILDERS_SRCS}
-+    ${TFLITE_DELEGATES_COREML_SRCS}
-+    ${TFLITE_DELEGATES_COREML_PROVIDER_SRCS}
-+    ${COREML_MLMODEL_FORMAT_PROTO_SRCS}
-+    ${TFLITE_OBJC_SRCS}
-   )
+@@ -360,14 +483,14 @@ if(TFLITE_ENABLE_GPU)
+      target_link_libraries(${lib_name})
+    endforeach()
+ endif()
 -  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
    list(APPEND TFLITE_TARGET_DEPENDENCIES
      absl::any
@@ -173,7 +158,12 @@ index de941adf..acad9780 100644
    )
  endif()
  if(_TFLITE_ENABLE_NNAPI)
-@@ -423,6 +560,7 @@ add_library(tensorflow-lite
+-  find_package(fp16_headers REQUIRED)
++  find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
+   populate_tflite_source_vars("delegates/nnapi"
+     TFLITE_DELEGATES_NNAPI_SRCS
+     FILTER "(_test_list|_disabled)\\.(cc|h)$"
+@@ -488,6 +611,7 @@ add_library(tensorflow-lite
  target_include_directories(tensorflow-lite
    PUBLIC
      $<BUILD_INTERFACE:${TFLITE_INCLUDE_DIRS}>
