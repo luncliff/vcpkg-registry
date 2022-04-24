@@ -188,7 +188,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash ruy"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash ruy eigen3"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-android
@@ -203,7 +203,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash ruy"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash ruy eigen3"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-android
@@ -218,7 +218,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash ruy"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash ruy eigen3"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm-android
