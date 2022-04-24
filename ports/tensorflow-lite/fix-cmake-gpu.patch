@@ -1,8 +1,8 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 3595f5a0..21e09974 100644
+index 9e6d4722..eec76573 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -225,13 +225,136 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
+@@ -227,13 +227,140 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
  populate_tflite_source_vars("c" TFLITE_C_SRCS)
  populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
  if(TFLITE_ENABLE_GPU)
@@ -19,7 +19,11 @@ index 3595f5a0..21e09974 100644
 +    find_path(OpenCL_INCLUDE_DIR "CL/opencl.h" REQUIRED)
 +    find_library(OpenCL_LIBRARY NAMES OpenCL REQUIRED NO_CMAKE_SYSTEM_PATH)
 +  endif()
-+  find_package(OpenCL REQUIRED)
++  if(ANDROID)
++    find_path(OpenCL_INCLUDE_DIR "CL/opencl.h" REQUIRED)
++  else()
++    find_package(OpenCL REQUIRED)
++  endif()
 +  find_program(FLATC_EXECUTABLE NAMES flatc REQUIRED)
 +  add_custom_target(gl_delegate_codegen
 +    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums common.fbs # gl/common_generated.h
@@ -146,7 +150,7 @@ index 3595f5a0..21e09974 100644
    endif()
    populate_tflite_source_vars(
      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-@@ -360,14 +483,14 @@ if(TFLITE_ENABLE_GPU)
+@@ -362,14 +489,14 @@ if(TFLITE_ENABLE_GPU)
       target_link_libraries(${lib_name})
     endforeach()
  endif()
@@ -163,7 +167,7 @@ index 3595f5a0..21e09974 100644
    populate_tflite_source_vars("delegates/nnapi"
      TFLITE_DELEGATES_NNAPI_SRCS
      FILTER "(_test_list|_disabled)\\.(cc|h)$"
-@@ -488,6 +611,7 @@ add_library(tensorflow-lite
+@@ -490,6 +617,7 @@ add_library(tensorflow-lite
  target_include_directories(tensorflow-lite
    PUBLIC
      $<BUILD_INTERFACE:${TFLITE_INCLUDE_DIRS}>

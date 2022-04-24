@@ -8,7 +8,6 @@ vcpkg_from_github(
     PATCHES
         fix-cmake.patch
         fix-cmake-gpu.patch
-        fix-cmake-android.patch
         fix-source-gpu.patch
 )
 file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
