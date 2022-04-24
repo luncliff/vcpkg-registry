@@ -1,0 +1,13 @@
+diff --git a/tensorflow/lite/kernels/random_ops.cc b/tensorflow/lite/kernels/random_ops.cc
+index 8636ca20..93941c2f 100644
+--- a/tensorflow/lite/kernels/random_ops.cc
++++ b/tensorflow/lite/kernels/random_ops.cc
+@@ -16,7 +16,7 @@ limitations under the License.
+ #include <cmath>
+ #include <cstdint>
+ #include <random>
+-
++#include "tensorflow/lite/kernels/internal/constants.h"
+ #include "tensorflow/core/lib/random/philox_random.h"
+ #include "tensorflow/core/lib/random/random_distributions_utils.h"
+ #include "tensorflow/lite/c/builtin_op_data.h"

@@ -1,8 +1,8 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 76dda361..f4f0548d 100644
+index 200d1a7c..3595f5a0 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -124,14 +124,15 @@ macro(populate_tf_source_vars RELATIVE_DIR SOURCES_VAR)
+@@ -136,16 +136,16 @@ macro(populate_tf_source_vars RELATIVE_DIR SOURCES_VAR)
    )
  endmacro()
  # Find TensorFlow Lite dependencies.
@@ -13,6 +13,8 @@ index 76dda361..f4f0548d 100644
 -find_package(flatbuffers REQUIRED)
 -find_package(gemmlowp REQUIRED)
 -find_package(neon2sse REQUIRED)
+-find_package(clog REQUIRED)
+-find_package(cpuinfo REQUIRED)  #CPUINFO is used by XNNPACK and RUY library
 -find_package(ruy REQUIRED)
 +find_package(absl CONFIG REQUIRED)
 +find_package(Eigen3 3.4 CONFIG REQUIRED)
@@ -22,11 +24,12 @@ index 76dda361..f4f0548d 100644
 +find_package(Flatbuffers CONFIG REQUIRED)
 +find_package(gemmlowp CONFIG REQUIRED)
 +find_package(NEON_2_SSE CONFIG REQUIRED)
++find_package(cpuinfo CONFIG REQUIRED)
 +find_package(ruy CONFIG REQUIRED)
  # Generate TensorFlow Lite FlatBuffer code.
  # We used to have an actual compilation logic with flatc but decided to use
  # schema_generated.h since flatc doesn't work with cross compilation.
-@@ -357,14 +358,15 @@ else()
+@@ -387,14 +387,15 @@ else()
    )
  endif()
  if(TFLITE_ENABLE_XNNPACK)
@@ -45,7 +48,7 @@ index 76dda361..f4f0548d 100644
    )
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
  endif()
-@@ -455,23 +457,23 @@ add_library(tensorflow-lite
+@@ -486,23 +487,23 @@ add_library(tensorflow-lite
  )
  target_include_directories(tensorflow-lite
    PUBLIC
@@ -76,7 +79,7 @@ index 76dda361..f4f0548d 100644
      ${CMAKE_DL_LIBS}
      ${TFLITE_TARGET_DEPENDENCIES}
  )
-@@ -486,6 +488,51 @@ target_compile_options(tensorflow-lite
+@@ -517,6 +518,52 @@ target_compile_options(tensorflow-lite
  )
  add_library(tensorflow::tensorflowlite ALIAS tensorflow-lite)
  
@@ -123,8 +126,20 @@ index 76dda361..f4f0548d 100644
 +        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 +        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 +)
++
 +return() # Discard the other targets
 +
  # The kernel tests.
  if(TFLITE_KERNEL_TEST)
    enable_testing()
+@@ -214,7 +214,9 @@ if(_TFLITE_ENABLE_MMAP)
+ else()
+   list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*mmap_allocation\\.cc$")
+ endif()
+-if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
++if(ANDROID)
++  list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*minimal_logging_default\\.cc$")
++else()
+   list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*minimal_logging_android\\.cc$")
+ endif()
+ if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "iOS")
