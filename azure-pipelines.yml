@@ -184,33 +184,32 @@ stages:
         displayName: "Android"
         pool:
           vmImage: ubuntu-20.04
-        timeoutInMinutes: "300"
+        variables:
+          - name: vcpkg.overlay.triplets
+            value: $(Build.SourcesDirectory)/triplets
         steps:
-          - powershell: sudo apt-get install -y libnuma-dev libopenmpi-dev nasm
-            displayName: "Install APT packages"
-          - powershell: pip install typing-extensions pybind11 numpy pyyaml
-            displayName: "Install Python packages"
           - task: run-vcpkg@0
             displayName: "arm64-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash"       
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash tensorflow-lite[gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-android
           - task: run-vcpkg@0
             displayName: "x64-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash tensorflow-lite[gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-android
           - task: run-vcpkg@0
             displayName: "arm-android"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash tensorflow-lite[gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm-android
+        timeoutInMinutes: "300"
 
       - job: "port_osx"
         displayName: "Mac(10.15)"
