@@ -151,12 +151,12 @@ index a62f7aa4..9884b0da 100644
  # Build a list of source files to compile into the TF Lite library.
  populate_tflite_source_vars("." TFLITE_SRCS)
  
-+find_path(ACC_CONFIG_PATH NAMES configuration.fbs PATHS ${TFLITE_SOURCE_DIR}/experimental/acceleration/configuration REQUIRED)
++set(ACC_CONFIG_PATH ${TFLITE_SOURCE_DIR}/experimental/acceleration/configuration)
 +set(ACC_CONFIG_GENERATED_FILE ${ACC_CONFIG_PATH}/configuration_generated.h)
 +add_custom_command(
 +  OUTPUT ${ACC_CONFIG_GENERATED_FILE}
 +  COMMAND ${FLATC_EXECUTABLE} --proto configuration.proto
-+  COMMAND ${FLATC_EXECUTABLE} --cpp ${ACC_CONFIG_PATH}/configuration.fbs
++  COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums ${ACC_CONFIG_PATH}/configuration.fbs
 +  COMMAND ${PROTOC_EXECUTABLE} --cpp_out=. configuration.proto
 +  WORKING_DIRECTORY ${ACC_CONFIG_PATH}
 +)

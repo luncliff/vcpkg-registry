@@ -171,7 +171,7 @@ index 9e6d4722..eec76573 100644
  target_include_directories(tensorflow-lite
    PUBLIC
      $<BUILD_INTERFACE:${TFLITE_INCLUDE_DIRS}>
-+    $<BUILD_INTERFACE:${COREML_SOURCE_DIR}>
++    $<BUILD_INTERFACE:${COREML_SOURCE_DIR}> $<BUILD_INTERFACE:${DELEGATE_GPU_COMMON_TASK_PATH}>
  )
  target_link_libraries(tensorflow-lite
    PUBLIC
@@ -184,3 +184,36 @@ index 9e6d4722..eec76573 100644
      ${TFLITE_DELEGATES_GPU_CL_SRCS}
      ${TFLITE_DELEGATES_GPU_CL_DEFAULT_SRCS}
      ${TFLITE_DELEGATES_GPU_CL_KERNELS_SRCS}
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 2a7e2106..0184ff8d 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -220,8 +220,27 @@ add_custom_command(
+   WORKING_DIRECTORY ${SCHEMA_PATH}
+ )
+ 
++set(DELEGATE_GPU_COMMON_TASK_PATH ${TFLITE_SOURCE_DIR}/delegates/gpu/common/task)
++add_custom_command(
++  OUTPUT ${DELEGATE_GPU_COMMON_TASK_PATH}/serialization_base_generated.h
++  COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums serialization_base.fbs
++  WORKING_DIRECTORY ${DELEGATE_GPU_COMMON_TASK_PATH}
++)
++set(DELEGATE_GPU_CL_PATH ${TFLITE_SOURCE_DIR}/delegates/gpu/cl)
++add_custom_command(
++  OUTPUT ${DELEGATE_GPU_CL_PATH}/compiled_program_cache_generated.h
++         ${DELEGATE_GPU_CL_PATH}/serialization_generated.h
++  COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums compiled_program_cache.fbs
++  COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums -I ${TENSORFLOW_SOURCE_DIR} serialization.fbs
++  WORKING_DIRECTORY ${DELEGATE_GPU_CL_PATH}
++)
++
+ # Using the output file will make those custom commands to be executed first
+-list(APPEND TFLITE_SRCS ${SCHEMA_GENERATED_FILE} ${ACC_CONFIG_GENERATED_FILE})
++list(APPEND TFLITE_SRCS ${SCHEMA_GENERATED_FILE} ${ACC_CONFIG_GENERATED_FILE}
++  ${DELEGATE_GPU_COMMON_TASK_PATH}/serialization_base_generated.h
++  ${DELEGATE_GPU_CL_PATH}/compiled_program_cache_generated.h
++  ${DELEGATE_GPU_CL_PATH}/serialization_generated.h
++)
+ 
+ # This particular file is excluded because the more explicit approach to enable
+ # XNNPACK delegate is preferred to the weak-symbol one.
