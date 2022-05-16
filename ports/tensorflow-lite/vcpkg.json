@@ -11,8 +11,16 @@
     "farmhash",
     "fft2d",
     "flatbuffers",
+    {
+      "name": "flatbuffers",
+      "host": true
+    },
     "gemmlowp",
     "neon2sse",
+    {
+      "name": "protobuf",
+      "host": true
+    },
     "ruy",
     {
       "name": "vcpkg-cmake",
@@ -31,17 +39,9 @@
       "description": "Enable GPU delegates (Windows only)",
       "dependencies": [
         "egl-registry",
-        {
-          "name": "flatbuffers",
-          "host": true
-        },
         "fp16",
         "opencl",
         "opengl-registry",
-        {
-          "name": "protobuf",
-          "host": true
-        },
         {
           "name": "protobuf",
           "platform": "osx"

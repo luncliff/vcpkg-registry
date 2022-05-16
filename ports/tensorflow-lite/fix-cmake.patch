@@ -21,7 +21,7 @@ index 200d1a7c..3595f5a0 100644
 +find_library(FARMHASH_LIBPATH farmhash REQUIRED)
 +find_library(FFT2D_SG2D_LIBPATH fft2d_fftsg2d REQUIRED)
 +find_library(FFT2D_SG_LIBPATH fft2d_fftsg REQUIRED)
-+find_package(Flatbuffers CONFIG REQUIRED)
++find_package(Flatbuffers 2.0 CONFIG REQUIRED)
 +find_package(gemmlowp CONFIG REQUIRED)
 +find_package(NEON_2_SSE CONFIG REQUIRED)
 +find_package(cpuinfo CONFIG REQUIRED)
@@ -143,3 +143,35 @@ index 200d1a7c..3595f5a0 100644
    list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*minimal_logging_android\\.cc$")
  endif()
  if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "iOS")
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index a62f7aa4..9884b0da 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -202,6 +202,27 @@ endif()
+ # Build a list of source files to compile into the TF Lite library.
+ populate_tflite_source_vars("." TFLITE_SRCS)
+ 
++find_path(ACC_CONFIG_PATH NAMES configuration.fbs PATHS ${TFLITE_SOURCE_DIR}/experimental/acceleration/configuration REQUIRED)
++set(ACC_CONFIG_GENERATED_FILE ${ACC_CONFIG_PATH}/configuration_generated.h)
++add_custom_command(
++  OUTPUT ${ACC_CONFIG_GENERATED_FILE}
++  COMMAND ${FLATC_EXECUTABLE} --proto configuration.proto
++  COMMAND ${FLATC_EXECUTABLE} --cpp ${ACC_CONFIG_PATH}/configuration.fbs
++  COMMAND ${PROTOC_EXECUTABLE} --cpp_out=. configuration.proto
++  WORKING_DIRECTORY ${ACC_CONFIG_PATH}
++)
++
++find_path(SCHEMA_PATH NAMES schema.fbs PATHS ${TFLITE_SOURCE_DIR}/schema REQUIRED)
++set(SCHEMA_GENERATED_FILE ${TFLITE_SOURCE_DIR}/schema/tensorflow/lite/schema/mutable/schema_generated.h)
++add_custom_command(
++  OUTPUT ${SCHEMA_GENERATED_FILE}
++  COMMAND ${FLATC_EXECUTABLE} -c --gen-object-api --gen-mutable ${SCHEMA_PATH}/schema.fbs
++  WORKING_DIRECTORY ${SCHEMA_PATH}
++)
++
++# Using the output file will make those custom commands to be executed first
++list(APPEND TFLITE_SRCS ${SCHEMA_GENERATED_FILE} ${ACC_CONFIG_GENERATED_FILE})
++
+ # This particular file is excluded because the more explicit approach to enable
+ # XNNPACK delegate is preferred to the weak-symbol one.
+ list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*tflite_with_xnnpack\\.cc$")
