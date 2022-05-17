@@ -72,6 +72,10 @@
       "baseline": "2022-04-23",
       "port-version": 0
     },
+    "xnvctrl": {
+      "baseline": "515.43.04",
+      "port-version": 0
+    },
     "zenny-atomic": {
       "baseline": "2021-10-15",
       "port-version": 0
