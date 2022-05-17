@@ -161,8 +161,8 @@ index a62f7aa4..9884b0da 100644
 +  WORKING_DIRECTORY ${ACC_CONFIG_PATH}
 +)
 +
-+find_path(SCHEMA_PATH NAMES schema.fbs PATHS ${TFLITE_SOURCE_DIR}/schema REQUIRED)
-+set(SCHEMA_GENERATED_FILE ${TFLITE_SOURCE_DIR}/schema/tensorflow/lite/schema/mutable/schema_generated.h)
++set(SCHEMA_PATH ${TFLITE_SOURCE_DIR}/schema)
++set(SCHEMA_GENERATED_FILE ${SCHEMA_PATH}/schema_generated.h)
 +add_custom_command(
 +  OUTPUT ${SCHEMA_GENERATED_FILE}
 +  COMMAND ${FLATC_EXECUTABLE} -c --gen-object-api --gen-mutable ${SCHEMA_PATH}/schema.fbs
