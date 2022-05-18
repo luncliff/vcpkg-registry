@@ -1,0 +1,14 @@
+{
+  "name": "xnvctrl",
+  "version-string": "515.43.04",
+  "description": "NV-CONTROL X Extension",
+  "homepage": "https://github.com/NVIDIA/nvidia-settings",
+  "license": "GPL-2.0",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}
