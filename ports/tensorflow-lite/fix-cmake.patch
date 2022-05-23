@@ -84,16 +84,17 @@ index 200d1a7c..3595f5a0 100644
  add_library(tensorflow::tensorflowlite ALIAS tensorflow-lite)
  
 +include(GNUInstallDirs)
-+
 +# C API
 +install(DIRECTORY   ${TFLITE_SOURCE_DIR}/c
 +        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
 +        FILES_MATCHING PATTERN "*.h"
 +)
++install(FILES ${TFLITE_SOURCE_DIR}/builtin_ops.h
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
++)
 +install(FILES ${TF_SOURCE_DIR}/core/public/version.h
 +        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/core/public
 +)
-+
 +# Delegate
 +install(FILES  ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.h
 +               ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/gpu_api_delegate.h
@@ -128,7 +129,6 @@ index 200d1a7c..3595f5a0 100644
 +)
 +
 +return() # Discard the other targets
-+
  # The kernel tests.
  if(TFLITE_KERNEL_TEST)
    enable_testing()
