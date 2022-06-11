@@ -39,6 +39,75 @@ if("gpu" IN_LIST FEATURES)
     endif()
 endif()
 
+# Run codegen with existing .fbs, .proto files
+set(TENSORFLOW_SOURCE_DIR "${SOURCE_PATH}")
+set(TFLITE_SOURCE_DIR "${SOURCE_PATH}/tensorflow/lite")
+
+set(EXPERIMANTAL_ACC_CONFIG_PATH "${TFLITE_SOURCE_DIR}/experimental/acceleration/configuration")
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} --proto configuration.proto
+    LOGNAME codegen-flatc-configuration
+    WORKING_DIRECTORY "${EXPERIMANTAL_ACC_CONFIG_PATH}"
+)
+vcpkg_execute_required_process(
+    COMMAND ${PROTOC_EXECUTABLE} --cpp_out=. configuration.proto
+    LOGNAME codegen-protoc-configuration
+    WORKING_DIRECTORY "${EXPERIMANTAL_ACC_CONFIG_PATH}"
+)
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums configuration.fbs
+    LOGNAME codegen-flatc-cpp-configuration
+    WORKING_DIRECTORY "${EXPERIMANTAL_ACC_CONFIG_PATH}"
+)
+
+set(SCHEMA_PATH "${TFLITE_SOURCE_DIR}/schema")
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} -c --gen-object-api --gen-mutable schema.fbs
+    LOGNAME codegen-flatc-c-schema
+    WORKING_DIRECTORY "${SCHEMA_PATH}"
+)
+
+set(DELEGATES_GPU_GL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/gl")
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums common.fbs
+    LOGNAME codegen-flatc-cpp-gl-common
+    WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
+)
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums metadata.fbs
+    LOGNAME codegen-flatc-cpp-gl-metadata
+    WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
+)
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums workgroups.fbs
+    LOGNAME codegen-flatc-cpp-gl-workgroups
+    WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
+)
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums compiled_model.fbs
+    LOGNAME codegen-flatc-cpp-gl-compiled_model
+    WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
+)
+
+set(DELEGATES_GPU_COMMON_TASK_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/common/task")
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums serialization_base.fbs
+    LOGNAME codegen-flatc-cpp-gl-task-serialization_base
+    WORKING_DIRECTORY "${DELEGATES_GPU_COMMON_TASK_PATH}"
+)
+
+set(DELEGATES_GPU_CL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/cl")
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums compiled_program_cache.fbs
+    LOGNAME codegen-flatc-cpp-cl-compiled_program_cache
+    WORKING_DIRECTORY "${DELEGATES_GPU_CL_PATH}"
+)
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums -I ${TENSORFLOW_SOURCE_DIR} serialization.fbs
+    LOGNAME codegen-flatc-cpp-cl-serialization
+    WORKING_DIRECTORY "${DELEGATES_GPU_CL_PATH}"
+)
+
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gpu      TFLITE_ENABLE_GPU
@@ -61,10 +130,6 @@ vcpkg_cmake_configure(
         FLATC_EXECUTABLE
         PROTOC_EXECUTABLE
 )
-if("gpu" IN_LIST FEATURES)
-    # run codegen for ".fbs" files
-    vcpkg_cmake_build(TARGET gl_delegate_codegen)
-endif()
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 
