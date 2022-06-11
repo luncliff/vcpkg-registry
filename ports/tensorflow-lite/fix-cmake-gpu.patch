@@ -2,7 +2,7 @@ diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
 index 9e6d4722..eec76573 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -227,13 +227,140 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
+@@ -227,13 +227,133 @@ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
  populate_tflite_source_vars("c" TFLITE_C_SRCS)
  populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
  if(TFLITE_ENABLE_GPU)
@@ -25,18 +25,11 @@ index 9e6d4722..eec76573 100644
 +    find_package(OpenCL REQUIRED)
 +  endif()
 +  find_program(FLATC_EXECUTABLE NAMES flatc REQUIRED)
-+  add_custom_target(gl_delegate_codegen
-+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums common.fbs # gl/common_generated.h
-+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums metadata.fbs # gl/metadata_generated.h
-+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums workgroups.fbs # gl/workgroups_generated.h
-+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums compiled_model.fbs # gl/compiled_model_generated.h
-+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/delegates/gpu/gl
-+  )
 +  find_package(Vulkan)
 +  if(Vulkan_FOUND)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES Vulkan::Headers)
 +  endif()
-+  if(WIN32 OR ANDROID) # OpenGL, EGL headers will be installed with vcpkg
++  if(WIN32 OR ANDROID OR (CMAKE_SYSTEM_NAME STREQUAL Linux)) # OpenGL, EGL headers will be installed with vcpkg
 +    find_library(EGL_LIBPATH NAMES libEGL EGL REQUIRED)
 +    find_library(GLES_LIBPATH NAMES libGLESv3${CMAKE_DEBUG_POSTFIX} GLESv3 libGLESv2${CMAKE_DEBUG_POSTFIX} GLESv2 REQUIRED)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES ${EGL_LIBPATH} ${GLES_LIBPATH})
@@ -50,7 +43,7 @@ index 9e6d4722..eec76573 100644
 +    # note: compile option "-fobjc-arc" is required for Objective C/C++ sources.
 +  endif()
 +
-+  if(WIN32 OR ANDROID)
++  if(WIN32 OR ANDROID OR (CMAKE_SYSTEM_NAME STREQUAL Linux))
 +    populate_tflite_source_vars(
 +      "delegates/gpu/gl" TFLITE_DELEGATES_GPU_GL_SRCS
 +      FILTER "(_test)\\.(cc|h)$"
@@ -171,7 +164,7 @@ index 9e6d4722..eec76573 100644
  target_include_directories(tensorflow-lite
    PUBLIC
      $<BUILD_INTERFACE:${TFLITE_INCLUDE_DIRS}>
-+    $<BUILD_INTERFACE:${COREML_SOURCE_DIR}>
++    $<BUILD_INTERFACE:${COREML_SOURCE_DIR}> $<BUILD_INTERFACE:${TFLITE_SOURCE_DIR}/delegates/gpu/common/task>
  )
  target_link_libraries(tensorflow-lite
    PUBLIC

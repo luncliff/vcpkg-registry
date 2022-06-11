@@ -192,54 +192,29 @@ stages:
         displayName: "Android"
         pool:
           vmImage: ubuntu-20.04
+        strategy:
+          matrix:
+            arm64:
+              vcpkg.default.triplet: "arm64-android"
+            arm32:
+              vcpkg.default.triplet: "arm-android"
+            x64:
+              vcpkg.default.triplet: "x64-android"
         variables:
           - name: ANDROID_NDK_HOME
             value: "/usr/local/lib/android/sdk/ndk/23.1.7779620" # see ANDROID_NDK_LATEST_HOME of the image
         steps:
           - task: run-vcpkg@0
-            displayName: "arm64-android"
+            displayName: "Default Triplet"
             inputs:
               vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash ruy eigen3"
               vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_DEFAULT_TRIPLET: arm64-android
           - task: run-vcpkg@0
-            displayName: "arm64-android(custom triplet)"
+            displayName: "Custom Triplet"
             inputs:
               vcpkgArguments: "tensorflow-lite[gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
-              VCPKG_DEFAULT_TRIPLET: arm64-android
-              VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
-          - task: run-vcpkg@0
-            displayName: "x64-android"
-            inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash ruy eigen3"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_DEFAULT_TRIPLET: x64-android
-          - task: run-vcpkg@0
-            displayName: "x64-android(custom triplet)"
-            inputs:
-              vcpkgArguments: "tensorflow-lite[gpu]"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_DEFAULT_TRIPLET: x64-android
-              VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
-          - task: run-vcpkg@0
-            displayName: "arm-android"
-            inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash ruy eigen3"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_DEFAULT_TRIPLET: arm-android
-          - task: run-vcpkg@0
-            displayName: "arm-android(custom triplet)"
-            inputs:
-              vcpkgArguments: "tensorflow-lite[gpu]"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_DEFAULT_TRIPLET: arm-android
               VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
         timeoutInMinutes: "300"
 

@@ -21,7 +21,7 @@ index 200d1a7c..3595f5a0 100644
 +find_library(FARMHASH_LIBPATH farmhash REQUIRED)
 +find_library(FFT2D_SG2D_LIBPATH fft2d_fftsg2d REQUIRED)
 +find_library(FFT2D_SG_LIBPATH fft2d_fftsg REQUIRED)
-+find_package(Flatbuffers CONFIG REQUIRED)
++find_package(Flatbuffers 2.0 CONFIG REQUIRED)
 +find_package(gemmlowp CONFIG REQUIRED)
 +find_package(NEON_2_SSE CONFIG REQUIRED)
 +find_package(cpuinfo CONFIG REQUIRED)
@@ -84,16 +84,17 @@ index 200d1a7c..3595f5a0 100644
  add_library(tensorflow::tensorflowlite ALIAS tensorflow-lite)
  
 +include(GNUInstallDirs)
-+
 +# C API
 +install(DIRECTORY   ${TFLITE_SOURCE_DIR}/c
 +        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
 +        FILES_MATCHING PATTERN "*.h"
 +)
++install(FILES ${TFLITE_SOURCE_DIR}/builtin_ops.h
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
++)
 +install(FILES ${TF_SOURCE_DIR}/core/public/version.h
 +        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/core/public
 +)
-+
 +# Delegate
 +install(FILES  ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.h
 +               ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/gpu_api_delegate.h
@@ -128,7 +129,6 @@ index 200d1a7c..3595f5a0 100644
 +)
 +
 +return() # Discard the other targets
-+
  # The kernel tests.
  if(TFLITE_KERNEL_TEST)
    enable_testing()
