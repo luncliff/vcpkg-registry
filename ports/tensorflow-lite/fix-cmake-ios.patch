@@ -21,10 +21,10 @@ index 758dea9d..7dc15e14 100644
 +  #   TFLITE_PROFILER_SRCS
 +  #   FILTER ".*(_test|_tester)\\.(cc|h)"
 +  # )
-+  list(APPEND TFLITE_PROFILER_SRCS
-+    ${TFLITE_SOURCE_DIR}/profiling/signpost_profiler.h
-+    ${TFLITE_SOURCE_DIR}/profiling/signpost_profiler.mm
-+  )
++  list(APPEND TFLITE_PROFILER_SRCS ${TFLITE_SOURCE_DIR}/profiling/signpost_profiler.h ${TFLITE_SOURCE_DIR}/profiling/signpost_profiler.mm)
++  add_compile_definitions(TFLITE_ENABLE_DEFAULT_PROFILER)
++  find_library(FOUNDATION_LIBPATH Foundation REQUIRED)
++  link_libraries("-framework Foundation")
  endif()
  
  # Common include directories
