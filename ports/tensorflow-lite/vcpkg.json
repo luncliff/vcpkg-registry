@@ -1,11 +1,10 @@
 {
   "name": "tensorflow-lite",
   "version-semver": "2.8.0",
-  "port-version": 1,
+  "port-version": 2,
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://www.tensorflow.org/",
   "license": "Apache-2.0",
-  "supports": "!ios",
   "dependencies": [
     "abseil",
     "eigen3",
@@ -45,7 +44,7 @@
         "opengl-registry",
         {
           "name": "protobuf",
-          "platform": "osx"
+          "platform": "osx | ios"
         },
         "vulkan-headers"
       ]

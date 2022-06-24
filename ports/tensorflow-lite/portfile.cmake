@@ -8,6 +8,7 @@ vcpkg_from_github(
     PATCHES
         fix-cmake.patch
         fix-cmake-gpu.patch
+        fix-cmake-ios.patch
         fix-source.patch
         fix-source-gpu.patch
 )
@@ -27,7 +28,7 @@ find_program(PROTOC_EXECUTABLE NAMES protoc
 message(STATUS "Using protoc: ${PROTOC_EXECUTABLE}")
 
 if("gpu" IN_LIST FEATURES)
-    if(VCPKG_TARGET_IS_OSX) # .proto files for coreml_mlmodel_codegen
+    if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS) # .proto files for coreml_mlmodel_codegen
         vcpkg_from_github(
             OUT_SOURCE_PATH COREML_SOURCE_PATH
             REPO apple/coremltools
@@ -146,10 +147,10 @@ if("gpu" IN_LIST FEATURES)
     )
 else()
     # remove unsupported delegated for each target platform
-    if(NOT DEFINED VCPKG_TARGET_IS_OSX OR NOT VCPKG_TARGET_IS_OSX)
+    if((NOT VCPKG_TARGET_IS_IOS) AND (NOT VCPKG_TARGET_IS_OSX))
         file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/coreml")
     endif()
-    if(NOT DEFINED VCPKG_TARGET_IS_ANDROID OR NOT VCPKG_TARGET_IS_ANDROID)
+    if(NOT VCPKG_TARGET_IS_ANDROID)
         file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/nnapi"
                             "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/nnapi"
         )

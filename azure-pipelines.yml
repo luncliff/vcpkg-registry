@@ -263,6 +263,14 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-osx
+          - task: run-vcpkg@0
+            displayName: "arm64-ios-simulator"
+            inputs:
+              vcpkgArguments: "tensorflow-lite[gpu] --debug"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
+              VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
 
   - stage: "Scripts" # todo: Use of this registry
     jobs:
