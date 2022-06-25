@@ -209,21 +209,6 @@ stages:
             inputs:
               vcpkgArguments: "eigen3 --debug"
               vcpkgGitCommitId: $(vcpkg.commit)
-          - task: CopyFiles@2
-            inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/eigen3"
-              Contents: |
-                ?(*.log|*.txt)
-                *.cmake
-              TargetFolder: "$(Build.ArtifactStagingDirectory)"
-              OverWrite: true
-            condition: always()
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish Staged Logs"
-            inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
-              ArtifactName: "$(Agent.JobName)"
-            condition: always()
           - task: run-vcpkg@0
             displayName: "Default Triplet"
             inputs:
