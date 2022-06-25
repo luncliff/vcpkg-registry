@@ -202,7 +202,7 @@ stages:
               vcpkg.default.triplet: "x64-android"
         variables:
           - name: ANDROID_NDK_HOME
-            value: "/usr/local/lib/android/sdk/ndk/23.1.7779620" # see ANDROID_NDK_LATEST_HOME of the image
+            value: "/usr/local/lib/android/sdk/ndk/24.0.8215888" # see ANDROID_NDK_LATEST_HOME of the image
         steps:
           - task: run-vcpkg@0
             displayName: "Default Triplet"
