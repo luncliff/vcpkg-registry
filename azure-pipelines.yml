@@ -194,16 +194,36 @@ stages:
           vmImage: ubuntu-22.04
         strategy:
           matrix:
-            arm64:
-              vcpkg.default.triplet: "arm64-android"
             arm64_ndk24:
               vcpkg.default.triplet: "arm64-android"
               android.ndk.home: "/usr/local/lib/android/sdk/ndk/24.0.8215888"
-            arm32:
+            arm32_ndk21:
               vcpkg.default.triplet: "arm-android"
-            x64:
+              android.ndk.home: "/usr/local/lib/android/sdk/ndk/21.4.7075529"
+            x64_ndk24:
               vcpkg.default.triplet: "x64-android"
+              android.ndk.home: "/usr/local/lib/android/sdk/ndk/24.0.8215888"
         steps:
+          - task: run-vcpkg@0
+            displayName: "Detect Compiler"
+            inputs:
+              vcpkgArguments: "eigen3 --debug"
+              vcpkgGitCommitId: $(vcpkg.commit)
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/eigen3"
+              Contents: |
+                ?(*.log|*.txt)
+                *.cmake
+              TargetFolder: "$(Build.ArtifactStagingDirectory)"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Staged Logs"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
           - task: run-vcpkg@0
             displayName: "Default Triplet"
             inputs:
