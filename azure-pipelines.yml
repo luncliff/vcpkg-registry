@@ -38,7 +38,7 @@ stages:
       - job: "triplet_android"
         displayName: "Android"
         pool:
-          vmImage: ubuntu-20.04
+          vmImage: ubuntu-22.04
         variables:
           - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
             value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
@@ -165,7 +165,7 @@ stages:
       - job: "port_linux"
         displayName: "Linux"
         pool:
-          vmImage: ubuntu-20.04
+          vmImage: ubuntu-22.04
         timeoutInMinutes: "300"
         steps:
           - powershell: sudo apt-get install -y libnuma-dev libopenmpi-dev nasm libx11-dev libx11-xcb-dev
@@ -191,18 +191,18 @@ stages:
       - job: "port_android"
         displayName: "Android"
         pool:
-          vmImage: ubuntu-20.04
+          vmImage: ubuntu-22.04
         strategy:
           matrix:
             arm64:
               vcpkg.default.triplet: "arm64-android"
+            arm64_ndk24:
+              vcpkg.default.triplet: "arm64-android"
+              android.ndk.home: "/usr/local/lib/android/sdk/ndk/24.0.8215888"
             arm32:
               vcpkg.default.triplet: "arm-android"
             x64:
               vcpkg.default.triplet: "x64-android"
-        variables:
-          - name: ANDROID_NDK_HOME
-            value: "/usr/local/lib/android/sdk/ndk/24.0.8215888" # see ANDROID_NDK_LATEST_HOME of the image
         steps:
           - task: run-vcpkg@0
             displayName: "Default Triplet"
