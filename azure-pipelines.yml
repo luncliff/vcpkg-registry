@@ -90,77 +90,77 @@ stages:
 
   - stage: "Ports" # Check build status of the ports
     jobs:
-      # - job: "port_windows"
-      #   displayName: "Windows"
-      #   pool:
-      #     vmImage: windows-2019
-      #   timeoutInMinutes: "300"
-      #   steps:
-      #     - task: UsePythonVersion@0
-      #       displayName: "Setup: Python 3.9"
-      #       inputs:
-      #         versionSpec: "3.9"
-      #         addToPath: true
-      #         architecture: "x64"
-      #     - powershell: pip install typing-extensions pybind11 numpy pyyaml
-      #       displayName: "Install Python packages"
-      #     - task: run-vcpkg@0
-      #       displayName: "x64-windows"
-      #       inputs:
-      #         vcpkgArguments: "cpuinfo gemmlowp farmhash openssl3 onnxruntime tensorflow-lite[google-angle,gpu] libdispatch zlib-ng directml fft2d"
-      #         vcpkgGitCommitId: $(vcpkg.commit)
-      #       env:
-      #         VCPKG_DEFAULT_TRIPLET: x64-windows
-      #     - task: run-vcpkg@0
-      #       displayName: "x86-windows"
-      #       inputs:
-      #         vcpkgArguments: "cpuinfo gemmlowp farmhash openssl3 tensorflow-lite libdispatch zlib-ng directml fft2d"
-      #         vcpkgGitCommitId: $(vcpkg.commit)
-      #       env:
-      #         VCPKG_DEFAULT_TRIPLET: x86-windows
-      #     - task: run-vcpkg@0
-      #       displayName: "arm64-windows"
-      #       inputs:
-      #         vcpkgArguments: "zlib-ng openssl3 directml fft2d"
-      #         vcpkgGitCommitId: $(vcpkg.commit)
-      #       env:
-      #         VCPKG_DEFAULT_TRIPLET: arm64-windows
-      #     - task: run-vcpkg@0
-      #       displayName: "arm-windows"
-      #       inputs:
-      #         vcpkgArguments: "directml fft2d"
-      #         vcpkgGitCommitId: $(vcpkg.commit)
-      #       env:
-      #         VCPKG_DEFAULT_TRIPLET: arm-windows
+      - job: "port_windows"
+        displayName: "Windows"
+        pool:
+          vmImage: windows-2019
+        timeoutInMinutes: "300"
+        steps:
+          - task: UsePythonVersion@0
+            displayName: "Setup: Python 3.9"
+            inputs:
+              versionSpec: "3.9"
+              addToPath: true
+              architecture: "x64"
+          - powershell: pip install typing-extensions pybind11 numpy pyyaml
+            displayName: "Install Python packages"
+          - task: run-vcpkg@0
+            displayName: "x64-windows"
+            inputs:
+              vcpkgArguments: "cpuinfo gemmlowp farmhash openssl3 onnxruntime tensorflow-lite[google-angle,gpu] libdispatch zlib-ng directml fft2d"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: x64-windows
+          - task: run-vcpkg@0
+            displayName: "x86-windows"
+            inputs:
+              vcpkgArguments: "cpuinfo gemmlowp farmhash openssl3 tensorflow-lite libdispatch zlib-ng directml fft2d"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: x86-windows
+          - task: run-vcpkg@0
+            displayName: "arm64-windows"
+            inputs:
+              vcpkgArguments: "zlib-ng openssl3 directml fft2d"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-windows
+          - task: run-vcpkg@0
+            displayName: "arm-windows"
+            inputs:
+              vcpkgArguments: "directml fft2d"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm-windows
 
-      # - job: "port_uwp"
-      #   displayName: "Windows(UWP)"
-      #   pool:
-      #     vmImage: windows-2019
-      #   timeoutInMinutes: "300"
-      #   steps:
-      #     - task: UsePythonVersion@0
-      #       displayName: "Setup: Python 3.9"
-      #       inputs:
-      #         versionSpec: "3.9"
-      #         addToPath: true
-      #         architecture: "x64"
-      #     - powershell: pip install typing-extensions pybind11 numpy pyyaml
-      #       displayName: "Install Python packages"
-      #     - task: run-vcpkg@0
-      #       displayName: "x64-uwp"
-      #       inputs:
-      #         vcpkgArguments: "gemmlowp farmhash openssl3 zlib-ng fft2d"
-      #         vcpkgGitCommitId: $(vcpkg.commit)
-      #       env:
-      #         VCPKG_DEFAULT_TRIPLET: x64-uwp
-      #     - task: run-vcpkg@0
-      #       displayName: "arm64-uwp"
-      #       inputs:
-      #         vcpkgArguments: "openssl3 zlib-ng fft2d"
-      #         vcpkgGitCommitId: $(vcpkg.commit)
-      #       env:
-      #         VCPKG_DEFAULT_TRIPLET: arm64-uwp
+      - job: "port_uwp"
+        displayName: "Windows(UWP)"
+        pool:
+          vmImage: windows-2019
+        timeoutInMinutes: "300"
+        steps:
+          - task: UsePythonVersion@0
+            displayName: "Setup: Python 3.9"
+            inputs:
+              versionSpec: "3.9"
+              addToPath: true
+              architecture: "x64"
+          - powershell: pip install typing-extensions pybind11 numpy pyyaml
+            displayName: "Install Python packages"
+          - task: run-vcpkg@0
+            displayName: "x64-uwp"
+            inputs:
+              vcpkgArguments: "gemmlowp farmhash openssl3 zlib-ng fft2d"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: x64-uwp
+          - task: run-vcpkg@0
+            displayName: "arm64-uwp"
+            inputs:
+              vcpkgArguments: "openssl3 zlib-ng fft2d"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-uwp
 
       - job: "port_linux"
         displayName: "Linux"
@@ -238,59 +238,59 @@ stages:
               VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
         timeoutInMinutes: "300"
 
-      # - job: "port_osx"
-      #   displayName: "Mac(10.15)"
-      #   pool:
-      #     vmImage: macOS-10.15
-      #   timeoutInMinutes: "300"
-      #   steps:
-      #     - powershell: brew install autoconf automake libtool
-      #       displayName: "Install HomeBrew packages"
-      #     - task: UsePythonVersion@0
-      #       displayName: "Setup: Python 3.9"
-      #       inputs:
-      #         versionSpec: "3.9"
-      #         addToPath: true
-      #         architecture: "x64"
-      #     - powershell: pip install typing-extensions pybind11 numpy pyyaml
-      #       displayName: "Install Python packages"
-      #     - task: run-vcpkg@0
-      #       displayName: "x64-osx"
-      #       inputs:
-      #         vcpkgArguments: "gemmlowp cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite[gpu] xnnpack zlib-ng metal-cpp fft2d"
-      #         vcpkgGitCommitId: $(vcpkg.commit)
-      #       env:
-      #         VCPKG_DEFAULT_TRIPLET: x64-osx
+      - job: "port_osx"
+        displayName: "Mac(10.15)"
+        pool:
+          vmImage: macOS-10.15
+        timeoutInMinutes: "300"
+        steps:
+          - powershell: brew install autoconf automake libtool
+            displayName: "Install HomeBrew packages"
+          - task: UsePythonVersion@0
+            displayName: "Setup: Python 3.9"
+            inputs:
+              versionSpec: "3.9"
+              addToPath: true
+              architecture: "x64"
+          - powershell: pip install typing-extensions pybind11 numpy pyyaml
+            displayName: "Install Python packages"
+          - task: run-vcpkg@0
+            displayName: "x64-osx"
+            inputs:
+              vcpkgArguments: "gemmlowp cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite[gpu] xnnpack zlib-ng metal-cpp fft2d"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: x64-osx
 
-      # - job: "port_ios"
-      #   displayName: "iOS(11)"
-      #   pool:
-      #     vmImage: macOS-11
-      #   timeoutInMinutes: "300"
-      #   steps:
-      #     - powershell: brew install autoconf automake libtool
-      #     - task: run-vcpkg@0
-      #       displayName: "arm64-ios"
-      #       inputs:
-      #         vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp fft2d farmhash"
-      #         vcpkgGitCommitId: $(vcpkg.commit)
-      #       env:
-      #         VCPKG_DEFAULT_TRIPLET: arm64-ios
-      #     - task: run-vcpkg@0
-      #       displayName: "arm64-osx"
-      #       inputs:
-      #         vcpkgArguments: "gemmlowp cpuinfo openssl3 zlib-ng metal-cpp fft2d farmhash tensorflow-lite[gpu]"
-      #         vcpkgGitCommitId: $(vcpkg.commit)
-      #       env:
-      #         VCPKG_DEFAULT_TRIPLET: arm64-osx
-      #     - task: run-vcpkg@0
-      #       displayName: "arm64-ios-simulator"
-      #       inputs:
-      #         vcpkgArguments: "tensorflow-lite[gpu] --debug"
-      #         vcpkgGitCommitId: $(vcpkg.commit)
-      #       env:
-      #         VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
-      #         VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
+      - job: "port_ios"
+        displayName: "iOS(11)"
+        pool:
+          vmImage: macOS-11
+        timeoutInMinutes: "300"
+        steps:
+          - powershell: brew install autoconf automake libtool
+          - task: run-vcpkg@0
+            displayName: "arm64-ios"
+            inputs:
+              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp fft2d farmhash"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-ios
+          - task: run-vcpkg@0
+            displayName: "arm64-osx"
+            inputs:
+              vcpkgArguments: "gemmlowp cpuinfo openssl3 zlib-ng metal-cpp fft2d farmhash tensorflow-lite[gpu]"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-osx
+          - task: run-vcpkg@0
+            displayName: "arm64-ios-simulator"
+            inputs:
+              vcpkgArguments: "tensorflow-lite[gpu] --debug"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
+              VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
 
   - stage: "Scripts" # todo: Use of this registry
     jobs:
