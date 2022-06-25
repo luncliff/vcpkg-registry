@@ -38,7 +38,7 @@ stages:
       - job: "triplet_android"
         displayName: "Android"
         pool:
-          vmImage: ubuntu-20.04
+          vmImage: ubuntu-22.04
         variables:
           - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
             value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
@@ -165,10 +165,10 @@ stages:
       - job: "port_linux"
         displayName: "Linux"
         pool:
-          vmImage: ubuntu-20.04
+          vmImage: ubuntu-22.04
         timeoutInMinutes: "300"
         steps:
-          - powershell: sudo apt-get install -y libnuma-dev libopenmpi-dev nasm libx11-dev libx11-xcb-dev
+          - powershell: sudo apt-get install -y libnuma-dev libopenmpi-dev nasm libx11-dev libx11-xcb-dev nuget
             displayName: "Install APT packages"
           - powershell: pip install typing-extensions pybind11 numpy pyyaml
             displayName: "Install Python packages"
@@ -191,7 +191,7 @@ stages:
       - job: "port_android"
         displayName: "Android"
         pool:
-          vmImage: ubuntu-20.04
+          vmImage: ubuntu-22.04
         strategy:
           matrix:
             arm64:
