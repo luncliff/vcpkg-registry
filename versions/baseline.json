@@ -10,7 +10,7 @@
     },
     "eigen3": {
       "baseline": "3.4.0",
-      "port-version": 0
+      "port-version": 2
     },
     "farmhash": {
       "baseline": "2021-10-28",
