@@ -1,7 +1,7 @@
 {
   "name": "tensorflow-lite",
   "version-semver": "2.8.0",
-  "port-version": 2,
+  "port-version": 3,
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://www.tensorflow.org/",
   "license": "Apache-2.0",
@@ -17,6 +17,7 @@
     },
     "gemmlowp",
     "neon2sse",
+    "nsync",
     {
       "name": "protobuf",
       "host": true

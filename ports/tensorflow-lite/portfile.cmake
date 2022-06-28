@@ -9,6 +9,7 @@ vcpkg_from_github(
         fix-cmake.patch
         fix-cmake-gpu.patch
         fix-cmake-ios.patch
+        fix-cmake-android.patch
         fix-source.patch
         fix-source-gpu.patch
 )
