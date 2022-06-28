@@ -226,7 +226,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "Default Triplet"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash ruy eigen3"
+              vcpkgArguments: "cpuinfo openssl3 onnx xnnpack zlib-ng libdispatch fft2d farmhash ruy eigen3"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "Custom Triplet"
@@ -270,21 +270,21 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 zlib-ng metal-cpp fft2d farmhash"
+              vcpkgArguments: "cpuinfo openssl3 onnx zlib-ng metal-cpp fft2d farmhash"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
           - task: run-vcpkg@0
             displayName: "arm64-osx"
             inputs:
-              vcpkgArguments: "gemmlowp cpuinfo openssl3 zlib-ng metal-cpp fft2d farmhash tensorflow-lite[gpu]"
+              vcpkgArguments: "gemmlowp cpuinfo onnx openssl3 zlib-ng metal-cpp fft2d farmhash tensorflow-lite[gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-osx
           - task: run-vcpkg@0
             displayName: "arm64-ios-simulator"
             inputs:
-              vcpkgArguments: "tensorflow-lite[gpu] --debug"
+              vcpkgArguments: "onnx tensorflow-lite[gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator

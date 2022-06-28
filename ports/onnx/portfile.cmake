@@ -1,12 +1,11 @@
 # uwp: LOAD_LIBRARY_SEARCH_DEFAULT_DIRS undefined identifier
-vcpkg_fail_port_install(ON_TARGET "uwp")
 vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO onnx/onnx
-    REF v1.10.2
-    SHA512 7519d326cd2b2b13a269ec0d01af07c32115d183dae6e1eaae55f5b23b6c92b2aadbb2b1e555557f4201bbcf921fa563d09d45d7f1d3bd2399c1a94a6ef63303
+    REF v1.12.0
+    SHA512 ab0c4f92358e904c2f28d98b35eab2d6eac22dd0a270e4f45ee590aa1ad22d09e92b32225efd7e98edb1531743f150526d26e0cbdc537757784bef2bc93efa8e
     PATCHES
         fix-cmakelists.patch
 )
@@ -22,24 +21,27 @@ else()
     set(USE_PROTOBUF_SHARED OFF)
 endif()
 
+find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED)
+message(STATUS "Using protoc: ${PROTOC}")
+
+vcpkg_find_acquire_program(PYTHON3)
+get_filename_component(PYTHON_DIR "${PYTHON3}" PATH)
+vcpkg_add_to_path(PREPEND "${PYTHON_DIR}") # PATH for .bat scripts
+message(STATUS "Using python3: ${PYTHON3}")
+
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         pybind11      BUILD_ONNX_PYTHON
         protobuf-lite ONNX_USE_LITE_PROTO
+        onnxifi       ONNXIFI_ENABLE_EXT
 )
-
-# Like protoc, python is required for codegen.
-vcpkg_find_acquire_program(PYTHON3)
-
-# PATH for .bat scripts so it can find 'python'
-get_filename_component(PYTHON_DIR ${PYTHON3} PATH)
-vcpkg_add_to_path(PREPEND ${PYTHON_DIR})
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
         -DPython3_EXECUTABLE=${PYTHON3}
+        -DProtobuf_PROTOC_EXECUTABLE=${PROTOC}
         -DONNX_ML=ON
         -DONNX_GEN_PB_TYPE_STUBS=ON
         -DONNX_USE_PROTOBUF_SHARED_LIBS=${USE_PROTOBUF_SHARED}
