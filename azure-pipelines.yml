@@ -23,17 +23,16 @@ schedules:
 
 variables:
   - name: vcpkg.commit
-    value: "af2287382b1991dbdcb7e5112d236f3323b9dd7a" # mainstream 2022.03.10
+    value: "e809a42f87565e803b2178a0c11263f462d1800a" # mainstream 2022.04.12
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
-  - name: VCPKG_DISABLE_METRICS
+  - name: vcpkg.disable.metrics
     value: "true"
-  - name: VCPKG_FEATURE_FLAGS
+  - name: vcpkg.feature.flags
     value: "binarycaching,manifest"
 
 stages:
   - stage: "Triplets"
-    # condition: startsWith(variables['build.sourceBranch'], 'refs/heads/triplet/')
     jobs:
       - job: "triplet_android"
         displayName: "Android"
@@ -94,7 +93,6 @@ stages:
         displayName: "Windows"
         pool:
           vmImage: windows-2019
-        timeoutInMinutes: "300"
         steps:
           - task: UsePythonVersion@0
             displayName: "Setup: Python 3.9"
@@ -112,6 +110,28 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: x64-windows
           - task: run-vcpkg@0
+            displayName: "arm64-windows"
+            inputs:
+              vcpkgArguments: "zlib-ng openssl3 directml fft2d"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-windows
+        timeoutInMinutes: "300"
+
+      - job: "port_windows_32"
+        displayName: "Windows(32bit)"
+        pool:
+          vmImage: windows-2019
+        steps:
+          - task: UsePythonVersion@0
+            displayName: "Setup: Python 3.9"
+            inputs:
+              versionSpec: "3.9"
+              addToPath: true
+              architecture: "x64"
+          - powershell: pip install typing-extensions pybind11 numpy pyyaml
+            displayName: "Install Python packages"
+          - task: run-vcpkg@0
             displayName: "x86-windows"
             inputs:
               vcpkgArguments: "cpuinfo gemmlowp farmhash openssl3 tensorflow-lite libdispatch zlib-ng directml fft2d"
@@ -119,25 +139,18 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: x86-windows
           - task: run-vcpkg@0
-            displayName: "arm64-windows"
-            inputs:
-              vcpkgArguments: "zlib-ng openssl3 directml fft2d"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_DEFAULT_TRIPLET: arm64-windows
-          - task: run-vcpkg@0
             displayName: "arm-windows"
             inputs:
               vcpkgArguments: "directml fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm-windows
+        timeoutInMinutes: "300"
 
       - job: "port_uwp"
         displayName: "Windows(UWP)"
         pool:
           vmImage: windows-2019
-        timeoutInMinutes: "300"
         steps:
           - task: UsePythonVersion@0
             displayName: "Setup: Python 3.9"
@@ -161,12 +174,12 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-uwp
+        timeoutInMinutes: "300"
 
       - job: "port_linux"
         displayName: "Linux"
         pool:
           vmImage: ubuntu-22.04
-        timeoutInMinutes: "300"
         steps:
           - powershell: sudo apt-get install -y libnuma-dev libopenmpi-dev nasm libx11-dev libx11-xcb-dev nuget
             displayName: "Install APT packages"
@@ -187,6 +200,7 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: x64-linux
             continueOnError: true
+        timeoutInMinutes: "300"
 
       - job: "port_android"
         displayName: "Android"
@@ -227,7 +241,6 @@ stages:
         displayName: "Mac(10.15)"
         pool:
           vmImage: macOS-10.15
-        timeoutInMinutes: "300"
         steps:
           - powershell: brew install autoconf automake libtool
             displayName: "Install HomeBrew packages"
@@ -246,12 +259,12 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-osx
+        timeoutInMinutes: "300"
 
       - job: "port_ios"
         displayName: "iOS(11)"
         pool:
           vmImage: macOS-11
-        timeoutInMinutes: "300"
         steps:
           - powershell: brew install autoconf automake libtool
           - task: run-vcpkg@0
@@ -276,32 +289,7 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
               VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
-
-  - stage: "Scripts" # todo: Use of this registry
-    jobs:
-      - job: "CMake"
-        pool:
-          vmImage: windows-2019
-        steps:
-          - task: CondaEnvironment@0
-            inputs:
-              environmentName: "develop"
-              packageSpecs: "python=3.9 pyqt=5.9.2"
-              cleanEnvironment: true
-          - task: CMake@1
-            displayName: "CMake modules/scripts"
-            inputs:
-              cmakeArgs: "-S $(Build.SourcesDirectory)/tests"
-              runInsideShell: true
-            env:
-              Qt5_DIR: "$(CONDA)/envs/develop/Library/lib/cmake/Qt5"
-          - powershell: |
-              conda env list
-              Get-ChildItem "$(CONDA)\\envs\\develop"
-              Get-ChildItem "$(CONDA)\\envs\\develop\\Library"
-              Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\pkgconfig"
-              Get-ChildItem "$(CONDA)\\envs\\develop\\Library\\lib\\cmake"
-            condition: failed()
+        timeoutInMinutes: "300"
 
   # todo: Deploy stage
   #   Status notification + GitHub release
