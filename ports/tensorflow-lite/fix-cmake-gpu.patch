@@ -38,7 +38,7 @@ index 9e6d4722..eec76573 100644
 +    enable_language(OBJC)
 +    enable_language(OBJCXX)
 +    set(CMAKE_OBJC_STANDARD 11)
-+    set(CMAKE_OBJCXX_STANDARD 14)
++    set(CMAKE_OBJCXX_STANDARD 17)
 +    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL")
 +    # note: compile option "-fobjc-arc" is required for Objective C/C++ sources.
 +  endif()
@@ -125,13 +125,13 @@ index 9e6d4722..eec76573 100644
 +      COMPILE_OPTIONS "-fobjc-arc"
 +    )
 +    list(APPEND TFLITE_DELEGATES_COREML_SRCS
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.h
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.h ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.h ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
 +      ${TFLITE_SOURCE_DIR}/tools/delegates/coreml_delegate_provider.cc
++      ${TFLITE_SOURCE_DIR}/tools/delegates/delegate_provider.cc
++      ${TFLITE_SOURCE_DIR}/tools/delegates/default_execution_provider.cc
++      ${TFLITE_SOURCE_DIR}/tools/delegates/external_delegate_provider.cc
 +      ${TFLITE_SOURCE_DIR}/tools/tool_params.cc
 +      ${TFLITE_SOURCE_DIR}/tools/command_line_flags.cc
 +    )
@@ -164,7 +164,7 @@ index 9e6d4722..eec76573 100644
  target_include_directories(tensorflow-lite
    PUBLIC
      $<BUILD_INTERFACE:${TFLITE_INCLUDE_DIRS}>
-+    $<BUILD_INTERFACE:${COREML_SOURCE_DIR}> $<BUILD_INTERFACE:${TFLITE_SOURCE_DIR}/delegates/gpu/common/task>
++    $<BUILD_INTERFACE:${COREML_SOURCE_DIR}> $<BUILD_INTERFACE:${TFLITE_SOURCE_DIR}/delegates/gpu/common> $<BUILD_INTERFACE:${TFLITE_SOURCE_DIR}/delegates/gpu/common/task>
  )
  target_link_libraries(tensorflow-lite
    PUBLIC

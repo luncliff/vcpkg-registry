@@ -143,3 +143,16 @@ index 200d1a7c..3595f5a0 100644
    list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*minimal_logging_android\\.cc$")
  endif()
  if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "iOS")
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 2d0d2622..45c45e79 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -79,7 +79,7 @@ if(TFLITE_KERNEL_TEST AND ${CMAKE_CROSSCOMPILING})
+   endif()
+ endif()
+ 
+-set(CMAKE_CXX_STANDARD 14)  # Some components require C++14.
++set(CMAKE_CXX_STANDARD 17)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(_TFLITE_ENABLE_RUY "${TFLITE_ENABLE_RUY}")
+ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
