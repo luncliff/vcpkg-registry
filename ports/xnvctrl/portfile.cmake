@@ -1,0 +1,17 @@
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO NVIDIA/nvidia-settings
+    REF 515.43.04 # 7471c5b584c4d8df8d81c336c01b29b8e4b15b1d
+    SHA512 fe4e5013ea90b55a772d504056586b9315d82236a87b77d54b72c540fa10b040553bea2db98017bfdd7c38ef8ba5f8f84e46101b593efd35bad5ace9fa134bb3
+)
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt
+     DESTINATION ${SOURCE_PATH}/src/libXNVCtrl
+)
+
+vcpkg_cmake_configure(SOURCE_PATH ${SOURCE_PATH}/src/libXNVCtrl)
+vcpkg_cmake_install()
+
+file(INSTALL ${SOURCE_PATH}/COPYING DESTINATION     ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
+file(INSTALL ${SOURCE_PATH}/doc/NV-CONTROL-API.txt  DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT})
+
+file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)

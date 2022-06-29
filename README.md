@@ -4,8 +4,8 @@
 
 Targets...
 
-* [vcpkg](https://github.com/microsoft/vcpkg): `master` branch, [2021/12/01](https://github.com/microsoft/vcpkg/tree/2021.12.01) or later
-* [vcpkg-tool](https://github.com/microsoft/vcpkg-tool): [`2021-11-02`](https://github.com/microsoft/vcpkg-tool/releases/tag/2021-11-02) or later
+* [vcpkg](https://github.com/microsoft/vcpkg): [2022.04.12](https://github.com/microsoft/vcpkg/tree/2022.04.12) or later
+* [vcpkg-tool](https://github.com/microsoft/vcpkg-tool) follows the vcpkg
 
 ### References
 
@@ -37,28 +37,21 @@ user@host:~/vcpkg$ tree -L 2 ./registry/
 ./registry/
 ├── LICENSE
 ├── README.md
-├── azure
-│   ├── ...
-│   └── jobs-windows.yml
 ├── azure-pipelines.yml
+├── versions
+│   ├── ...
+│   └── baseline.json
 ├── ports
 │   ├── ...
+│   ├── directml
 │   ├── libdispatch
-│   ├── libtorch
 │   ├── openssl3
-│   ├── tensorflow-lite
-│   ├── vcpkg-host-python3
-│   └── zlib-ng
-├── scripts
-│   ├── ...
-│   └── FindQtANGLE.cmake
-├── tests
-│   └── CMakeLists.txt
+│   └── tensorflow-lite
 └── triplets
-    ├── arm-android.cmake
     ├── arm64-android.cmake
-    ├── arm64-ios-simulator.cmake
     ├── x64-android.cmake
+    ├── arm-android.cmake
+    ├── arm64-ios-simulator.cmake
     └── x64-ios-simulator.cmake
 ```
 

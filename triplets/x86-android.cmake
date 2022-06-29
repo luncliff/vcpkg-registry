@@ -1,7 +1,7 @@
 #[===[.md:
-# arm64-android.cmake
+# x86-android.cmake
 
-Customized triplet to build NDK(arm64-v8a)
+Customized triplet to build NDK(x86)
 
 ### Requires
 
@@ -27,7 +27,7 @@ Some varialbe to help [FindVulkan.cmake](https://cmake.org/cmake/help/latest/mod
 #]===]
 cmake_minimum_required(VERSION 3.13)
 
-set(VCPKG_TARGET_ARCHITECTURE arm64)
+set(VCPKG_TARGET_ARCHITECTURE x86)
 set(VCPKG_CRT_LINKAGE dynamic)
 set(VCPKG_LIBRARY_LINKAGE dynamic)
 set(VCPKG_CMAKE_SYSTEM_NAME Android)
@@ -84,15 +84,15 @@ set(ENV{VULKAN_SDK} $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/${NDK_HOST_T
 message(STATUS "Using ENV{VULKAN_SDK}: $ENV{VULKAN_SDK}")
 if(NDK_VERSION_OVER_21)
     # If your API level is 30, libvulkan.so is at 
-    #  $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/30
+    #  $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/30
     find_file(NDK_VULKAN_LIB_PATH NAME libvulkan.so
-        PATHS $ENV{VULKAN_SDK}/lib/aarch64-linux-android/${NDK_API_LEVEL}
+        PATHS $ENV{VULKAN_SDK}/lib/i686-linux-android/${NDK_API_LEVEL}
     )
 else()
     # If your API level is 30, libvulkan.so is at 
-    #  $ENV{ANDROID_NDK_HOME}/platforms/android-30/arch-arm64/usr/lib
+    #  $ENV{ANDROID_NDK_HOME}/platforms/android-30/arch-x86/usr/lib
     find_file(NDK_VULKAN_LIB_PATH NAME libvulkan.so
-        PATHS $ENV{ANDROID_NDK_HOME}/platforms/android-${NDK_API_LEVEL}/arch-${VCPKG_TARGET_ARCHITECTURE}/usr/lib/
+        PATHS $ENV{ANDROID_NDK_HOME}/platforms/android-${NDK_API_LEVEL}/arch-x86/usr/lib/
     )
 endif()
 if(NDK_VULKAN_LIB_PATH)
