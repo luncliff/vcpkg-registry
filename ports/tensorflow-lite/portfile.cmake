@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.8.0
-    SHA512 9cddb78c0392b7810e71917c3731f895e31c250822031ac7f498bf20435408c640b2fba4de439fa4a47c70dbff38b86e50fed2971df1f1916f23f9490241cfed
+    REF v2.9.1
+    SHA512 95ffbee1e50e396065c6f1802fd9668344c45c000e22da859bcd08ec217bcc0a8ff0e84661fdf511f210e8b09d7ae6d26c3fc1ddcf28b8aedf87c0fb1b8b60e4
     PATCHES
         fix-cmake.patch
         fix-cmake-gpu.patch
@@ -69,34 +69,50 @@ vcpkg_execute_required_process(
     WORKING_DIRECTORY "${SCHEMA_PATH}"
 )
 
-set(DELEGATES_GPU_GL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/gl")
-vcpkg_execute_required_process(
-    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums common.fbs
-    LOGNAME codegen-flatc-cpp-gl-common
-    WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
-)
-vcpkg_execute_required_process(
-    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums metadata.fbs
-    LOGNAME codegen-flatc-cpp-gl-metadata
-    WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
-)
-vcpkg_execute_required_process(
-    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums workgroups.fbs
-    LOGNAME codegen-flatc-cpp-gl-workgroups
-    WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
-)
-vcpkg_execute_required_process(
-    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums compiled_model.fbs
-    LOGNAME codegen-flatc-cpp-gl-compiled_model
-    WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
-)
-
 set(DELEGATES_GPU_COMMON_TASK_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/common/task")
 vcpkg_execute_required_process(
     COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums serialization_base.fbs
     LOGNAME codegen-flatc-cpp-gl-task-serialization_base
     WORKING_DIRECTORY "${DELEGATES_GPU_COMMON_TASK_PATH}"
 )
+
+set(DELEGATES_GPU_COMMON_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/common")
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums -I ${TENSORFLOW_SOURCE_DIR} gpu_model.fbs
+    LOGNAME codegen-flatc-cpp-gl-task-gpu_model
+    WORKING_DIRECTORY "${DELEGATES_GPU_COMMON_PATH}"
+)
+
+if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+    set(DELEGATES_GPU_METAL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/metal")
+    vcpkg_execute_required_process(
+        COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums -I ${TENSORFLOW_SOURCE_DIR} inference_context.fbs
+        LOGNAME codegen-flatc-cpp-metal-common
+        WORKING_DIRECTORY "${DELEGATES_GPU_METAL_PATH}"
+    )
+else()
+    set(DELEGATES_GPU_GL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/gl")
+    vcpkg_execute_required_process(
+        COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums common.fbs
+        LOGNAME codegen-flatc-cpp-gl-common
+        WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
+    )
+    vcpkg_execute_required_process(
+        COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums metadata.fbs
+        LOGNAME codegen-flatc-cpp-gl-metadata
+        WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
+    )
+    vcpkg_execute_required_process(
+        COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums workgroups.fbs
+        LOGNAME codegen-flatc-cpp-gl-workgroups
+        WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
+    )
+    vcpkg_execute_required_process(
+        COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums compiled_model.fbs
+        LOGNAME codegen-flatc-cpp-gl-compiled_model
+        WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
+    )
+endif()
 
 set(DELEGATES_GPU_CL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/cl")
 vcpkg_execute_required_process(
