@@ -83,7 +83,7 @@ vcpkg_execute_required_process(
     WORKING_DIRECTORY "${DELEGATES_GPU_COMMON_PATH}"
 )
 
-if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_OS_IOS)
+if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(DELEGATES_GPU_METAL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/metal")
     vcpkg_execute_required_process(
         COMMAND ${FLATC_EXECUTABLE} --cpp --scoped-enums -I ${TENSORFLOW_SOURCE_DIR} inference_context.fbs
