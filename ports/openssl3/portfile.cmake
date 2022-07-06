@@ -5,8 +5,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO openssl/openssl
-    REF openssl-3.0.4
-    SHA512 c58b439addbfc0901cb8d99036494bac60d24a4311815b9b7a559f5daaa027d4b83e49e2eb526f0552ec53f09be89081a08c20b8b6f20a2463081cdb071d6faf
+    REF openssl-3.0.5
+    SHA512 e426f2d48dcd87ad938b246cea69988710198c3ed2f5bb9065aa9e74492161b056336f5b1f29be64e70dfd86a77808fe727ebb46eae10331c76f1ff08e341133
 )
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
@@ -38,7 +38,10 @@ elseif(VCPKG_TARGET_IS_IOS)
 endif()
 
 # Option: platform/architecture
-include(${CMAKE_CURRENT_LIST_DIR}/detect_platform.cmake)
+#   allow custom definition (somewhere like triplet scripts)
+if(NOT DEFINED OPENSSL_PLATFORM)
+    include(${CMAKE_CURRENT_LIST_DIR}/detect_platform.cmake)
+endif()
 
 # Clean & copy source files for working directories
 file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg
@@ -101,7 +104,7 @@ endif()
 message(STATUS "Configuring ${TARGET_TRIPLET}-dbg")
 vcpkg_execute_required_process(
     COMMAND ${PERL} Configure ${OPENSSL_SHARED} ${CONFIGURE_OPTIONS}
-        ${PLATFORM}
+        ${OPENSSL_PLATFORM}
         "--prefix=${CURRENT_PACKAGES_DIR}/debug"
     WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg
     LOGNAME configure-perl-${TARGET_TRIPLET}-dbg
@@ -109,7 +112,7 @@ vcpkg_execute_required_process(
 message(STATUS "Configuring ${TARGET_TRIPLET}-rel")
 vcpkg_execute_required_process(
     COMMAND ${PERL} Configure ${OPENSSL_SHARED} ${CONFIGURE_OPTIONS}
-        ${PLATFORM}
+        ${OPENSSL_PLATFORM}
         "--prefix=${CURRENT_PACKAGES_DIR}"
     WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
     LOGNAME configure-perl-${TARGET_TRIPLET}-rel
