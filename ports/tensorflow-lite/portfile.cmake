@@ -133,6 +133,10 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         private  TFLITE_INSTALL_PRIVATE_HEADERS
 )
 
+if(VCPKG_TARGET_IS_WINDOWS AND ("private" IN_LIST FEATURES))
+    list(APPEND FEATURE_OPTIONS -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON)
+endif()
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/tensorflow/lite"
     OPTIONS
