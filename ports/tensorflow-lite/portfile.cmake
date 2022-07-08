@@ -12,6 +12,7 @@ vcpkg_from_github(
         fix-cmake-android.patch
         fix-source.patch
         fix-source-gpu.patch
+        support-private-headers.patch
 )
 file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
 file(CREATE_LINK "${CURRENT_INSTALLED_DIR}/include/eigen3" "${SOURCE_PATH}/third_party/eigen3" SYMBOLIC)
@@ -129,6 +130,7 @@ vcpkg_execute_required_process(
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gpu      TFLITE_ENABLE_GPU
+        private  TFLITE_INSTALL_PRIVATE_HEADERS
 )
 
 vcpkg_cmake_configure(
