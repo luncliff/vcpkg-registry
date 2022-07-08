@@ -2,7 +2,7 @@ diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
 index 09a3ce29..3611d7da 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -670,6 +670,35 @@ target_compile_options(tensorflow-lite
+@@ -670,6 +670,39 @@ target_compile_options(tensorflow-lite
  add_library(tensorflow::tensorflowlite ALIAS tensorflow-lite)
  
  include(GNUInstallDirs)
@@ -27,6 +27,10 @@ index 09a3ce29..3611d7da 100644
 +    )
 +    install(DIRECTORY   ${TFLITE_SOURCE_DIR}/experimental/resource
 +            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/experimental
++            FILES_MATCHING PATTERN "*.h"
++    )
++    install(DIRECTORY   ${TFLITE_SOURCE_DIR}/delegates/gpu
++            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates
 +            FILES_MATCHING PATTERN "*.h"
 +    )
 +    file(GLOB TFLITE_HEADERS "${TFLITE_SOURCE_DIR}/*.h")
