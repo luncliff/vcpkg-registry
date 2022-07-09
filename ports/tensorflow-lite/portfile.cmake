@@ -15,6 +15,7 @@ vcpkg_from_github(
         fix-source.patch
         fix-source-gpu.patch
         support-private-headers.patch
+        support-mediapipe.patch
 )
 file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
 file(CREATE_LINK "${CURRENT_INSTALLED_DIR}/include/eigen3" "${SOURCE_PATH}/third_party/eigen3" SYMBOLIC)
@@ -177,9 +178,18 @@ if("gpu" IN_LIST FEATURES)
                         "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/hexagon"
     )
 else()
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/gpu/cl/testing"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/gpu/java"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/common/default"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/common/selectors/default"
+                        "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/common/selectors/mediapipe"
+    )
+
     # remove unsupported delegated for each target platform
     if((NOT VCPKG_TARGET_IS_IOS) AND (NOT VCPKG_TARGET_IS_OSX))
-        file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/coreml")
+        file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/coreml"
+                            "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/delegates/gpu/metal/benchmarking"
+        )
     endif()
     if(NOT VCPKG_TARGET_IS_ANDROID)
         file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/tensorflow/lite/nnapi"
