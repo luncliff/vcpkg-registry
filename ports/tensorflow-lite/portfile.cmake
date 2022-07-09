@@ -10,6 +10,8 @@ vcpkg_from_github(
         fix-cmake-gpu.patch
         fix-cmake-ios.patch
         fix-cmake-android.patch
+        org_tensorflow_custom_ops.diff
+        org_tensorflow_compatibility_fixes.diff
         fix-source.patch
         fix-source-gpu.patch
         support-private-headers.patch
@@ -156,6 +158,12 @@ vcpkg_cmake_configure(
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
+
+file(GLOB_RECURSE headers "${CURRENT_PACKAGES_DIR}/include" *.h)
+foreach(file ${headers})
+    vcpkg_replace_string("${file}" "\"third_party/" "\"")
+    vcpkg_replace_string("${file}" "\"third_party/eigen3/" "\"")
+endforeach()
 
 file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
 
