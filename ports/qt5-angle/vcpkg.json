@@ -1,0 +1,11 @@
+{
+  "name": "qt5-angle",
+  "version-date": "2022-07-10",
+  "description": "...",
+  "homepage": "https://github.com/luncliff/vcpkg-registry",
+  "supports": "windows",
+  "dependencies": [
+    "egl-registry",
+    "opengl-registry"
+  ]
+}

@@ -95,17 +95,24 @@ stages:
           vmImage: windows-2019
         steps:
           - task: UsePythonVersion@0
-            displayName: "Setup: Python 3.9"
+            displayName: "Setup: Python 3.10"
             inputs:
-              versionSpec: "3.9"
+              versionSpec: "3.10"
               addToPath: true
               architecture: "x64"
-          - powershell: pip install typing-extensions pybind11 numpy pyyaml
+          - powershell: pip install typing-extensions pybind11 numpy pyyaml pyqt5
             displayName: "Install Python packages"
           - task: run-vcpkg@0
             displayName: "x64-windows"
             inputs:
               vcpkgArguments: "cpuinfo gemmlowp farmhash openssl3 onnxruntime tensorflow-lite[google-angle,gpu] libdispatch zlib-ng directml fft2d"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_DEFAULT_TRIPLET: x64-windows
+          - task: run-vcpkg@0
+            displayName: "x64-windows"
+            inputs:
+              vcpkgArguments: "tensorflow-lite[qt5-angle,gpu,private] --recurse"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-windows

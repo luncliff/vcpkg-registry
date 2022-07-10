@@ -30,6 +30,12 @@
     "xnnpack"
   ],
   "features": {
+    "qt5-angle": {
+      "description": "Link EGL, OpenGL ES from Qt5's ANGLE",
+      "dependencies": [
+        "qt5-angle"
+      ]
+    },
     "google-angle": {
       "description": "Link EGL, OpenGL ES code with Google/ANGLE",
       "dependencies": [
@@ -37,7 +43,7 @@
       ]
     },
     "private": {
-      "description" : "Install private headers"
+      "description": "Install private headers"
     },
     "gpu": {
       "description": "Enable GPU delegates (Windows only)",
