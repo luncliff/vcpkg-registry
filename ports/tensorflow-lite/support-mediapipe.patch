@@ -19,3 +19,14 @@ index 2ea3e953..3197b3d2 100644
      ${TFLITE_DELEGATES_GPU_CL_SRCS}
      ${TFLITE_DELEGATES_GPU_CL_DEFAULT_SRCS}
      ${TFLITE_DELEGATES_GPU_CL_KERNELS_SRCS}
+@@ -376,10 +376,6 @@ if(TFLITE_ENABLE_GPU)
+     "delegates/gpu/cl/kernels" TFLITE_DELEGATES_GPU_CL_KERNELS_SRCS
+     FILTER "(_test)\\.(cc|h)$"
+   )
+-  populate_tflite_source_vars(
+-    "delegates/gpu/common/default" TFLITE_DELEGATES_GPU_COMMON_DEFAULT_SRCS
+-    FILTER "(_test)\\.(cc|h)$"
+-  )
+   populate_tflite_source_vars(
+     "delegates/gpu/common/memory_management"
+     TFLITE_DELEGATES_GPU_COMMON_MEMORY_MANAGEMENT_SRCS
