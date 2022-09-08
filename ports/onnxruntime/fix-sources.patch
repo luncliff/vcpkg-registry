@@ -1,18 +1,5 @@
-diff --git a/objectivec/src/ort_value.mm b/objectivec/src/ort_value.mm
-index f55659d..b48e7f1 100644
---- a/objectivec/src/ort_value.mm
-+++ b/objectivec/src/ort_value.mm
-@@ -5,7 +5,7 @@
- 
- #include <optional>
- 
--#include "safeint/SafeInt.hpp"
-+#include <SafeInt.hpp>
- 
- #include "onnxruntime_cxx_api.h"
- 
 diff --git a/onnxruntime/core/common/safeint.h b/onnxruntime/core/common/safeint.h
-index 263e936..82bbe83 100644
+index 263e936..3ee70f3 100644
 --- a/onnxruntime/core/common/safeint.h
 +++ b/onnxruntime/core/common/safeint.h
 @@ -32,7 +32,7 @@ class SafeIntExceptionHandler<onnxruntime::OnnxRuntimeException> {
@@ -20,7 +7,7 @@ index 263e936..82bbe83 100644
  #endif
  #endif
 -#include "safeint/SafeInt.hpp"
-+#include <SafeInt.hpp>
++#include "SafeInt.hpp"
  #if defined(__GNUC__)
  #pragma GCC diagnostic pop
  #endif
