@@ -1,4 +1,4 @@
-if(VCPKG_TARGET_IS_WINDOWS)
+if(NOT VCPKG_TARGET_IS_IOS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
 
@@ -22,6 +22,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         tensorrt onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         directml onnxruntime_USE_DML
         winml    onnxruntime_USE_WINML
+        coreml   onnxruntime_USE_COREML
         mimalloc onnxruntime_USE_MIMALLOC
         valgrind onnxruntime_USE_VALGRIND
         xnnpack  onnxruntime_USE_XNNPACK
@@ -55,6 +56,7 @@ vcpkg_cmake_configure(
         # -DProtobuf_USE_STATIC_LIBS=OFF
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
+        -Donnxruntime_BUILD_APPLE_FRAMEWORK=${VCPKG_TARGET_IS_IOS}
         -Donnxruntime_BUILD_UNIT_TESTS=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
         -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=${VCPKG_TARGET_IS_WINDOWS}
@@ -72,9 +74,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_CUDA_PROFILING=ON
         -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=ON
 )
-if(VCPKG_TARGET_IS_WINDOWS)
-    vcpkg_cmake_build(TARGET onnxruntime)
-endif()
+vcpkg_cmake_build(TARGET onnxruntime)
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)

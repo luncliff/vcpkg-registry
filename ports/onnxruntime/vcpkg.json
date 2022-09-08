@@ -13,7 +13,6 @@
     "eigen3",
     "flatbuffers",
     "nlohmann-json",
-    "nsync",
     {
       "name": "nsync",
       "platform": "linux | osx"
@@ -36,6 +35,9 @@
   "features": {
     "cuda": {
       "description": "Build with CUDA/NCCL support"
+    },
+    "coreml":{
+      "description" : "Build with CoreML support"
     },
     "directml": {
       "description": "Build with DirectML support",
