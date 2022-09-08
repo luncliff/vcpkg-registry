@@ -33,10 +33,16 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 
 if(VCPKG_TARGET_IS_WINDOWS)
     # target platform should be informed to activate SIMD properly
-    if(TARGET_TRIPLET MATCHES [Xx]64)
+    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
         list(APPEND PLATFORM_OPTIONS -DCMAKE_GENERATOR_PLATFORM="x64")
-    elseif(TARGET_TRIPLET MATCHES [Xx]86)
+    elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
         list(APPEND PLATFORM_OPTIONS -DCMAKE_GENERATOR_PLATFORM="Win32")
+    elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+        list(APPEND PLATFORM_OPTIONS -DCMAKE_GENERATOR_PLATFORM="ARM64")
+    elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
+        list(APPEND PLATFORM_OPTIONS -DCMAKE_GENERATOR_PLATFORM="ARM")
+    else()
+        message(FATAL_ERROR "Unexpected architecture: ${VCPKG_TARGET_ARCHITECTURE}")
     endif()
 endif()
 
@@ -52,19 +58,19 @@ vcpkg_cmake_configure(
     OPTIONS
         ${FEATURE_OPTIONS}
         ${PLATFORM_OPTIONS}
-        -DPython_EXECUTABLE="${PYTHON3}"
+        -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
         # -DProtobuf_USE_STATIC_LIBS=OFF
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
         -Donnxruntime_BUILD_APPLE_FRAMEWORK=${VCPKG_TARGET_IS_IOS}
         -Donnxruntime_BUILD_UNIT_TESTS=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
-        -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=${VCPKG_TARGET_IS_WINDOWS}
         -Donnxruntime_PREFER_SYSTEM_LIB=ON
         -Donnxruntime_USE_FULL_PROTOBUF=ON
         -Donnxruntime_USE_PREINSTALLED_EIGEN=ON -Deigen_SOURCE_PATH="${CURRENT_INSTALLED_DIR}/include"
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_MPI=${VCPKG_TARGET_IS_LINUX}
+        -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=${VCPKG_TARGET_IS_WINDOWS}
         -Donnxruntime_ENABLE_BITCODE=${VCPKG_TARGET_IS_IOS}
         -Donnxruntime_ENABLE_PYTHON=OFF
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
@@ -79,8 +85,22 @@ vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
 
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+if(VCPKG_TARGET_IS_IOS)
+    set(FRAMEWORK_NAME "onnxruntime.framework")
+    file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/${FRAMEWORK_NAME}"
+                "${CURRENT_PACKAGES_DIR}/debug/lib/${FRAMEWORK_NAME}"
+    )
+    file(RENAME "${CURRENT_PACKAGES_DIR}/bin/${FRAMEWORK_NAME}"
+                "${CURRENT_PACKAGES_DIR}/lib/${FRAMEWORK_NAME}"
+    )
+endif()
 
-file(INSTALL "${SOURCE_PATH}/LICENSE"
-     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright
-)
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    file(REMOVE_RECURSE
+        "${CURRENT_PACKAGES_DIR}/debug/bin"
+        "${CURRENT_PACKAGES_DIR}/bin"
+    )
+endif()
+
+file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)

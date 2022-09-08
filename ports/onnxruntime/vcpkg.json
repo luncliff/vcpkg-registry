@@ -3,7 +3,6 @@
   "version-semver": "1.12.1",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "www.onnxruntime.ai",
-  "supports": "windows | linux | osx",
   "dependencies": [
     "boost-config",
     "boost-mp11",
@@ -15,7 +14,7 @@
     "nlohmann-json",
     {
       "name": "nsync",
-      "platform": "linux | osx"
+      "platform": "!windows"
     },
     "onnx",
     "optional-lite",
@@ -33,11 +32,11 @@
     "zlib"
   ],
   "features": {
+    "coreml": {
+      "description": "Build with CoreML support"
+    },
     "cuda": {
       "description": "Build with CUDA/NCCL support"
-    },
-    "coreml":{
-      "description" : "Build with CoreML support"
     },
     "directml": {
       "description": "Build with DirectML support",
