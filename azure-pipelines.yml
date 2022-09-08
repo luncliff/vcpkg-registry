@@ -127,7 +127,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x86-windows"
             inputs:
-              vcpkgArguments: "cpuinfo gemmlowp farmhash openssl3 tensorflow-lite libdispatch zlib-ng directml fft2d"
+              vcpkgArguments: "cpuinfo gemmlowp farmhash openssl3 onnxruntime[xnnpack,directml] tensorflow-lite libdispatch zlib-ng directml fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x86-windows
@@ -181,7 +181,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-linux"
             inputs:
-              vcpkgArguments: "gemmlowp cpuinfo farmhash openssl3 tensorpipe tensorflow-lite zlib-ng directml fft2d"
+              vcpkgArguments: "gemmlowp cpuinfo farmhash openssl3 onnxruntime[xnnpack] tensorpipe tensorflow-lite zlib-ng directml fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-linux
@@ -222,7 +222,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "Default Triplet"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack zlib-ng libdispatch fft2d farmhash ruy eigen3"
+              vcpkgArguments: "cpuinfo openssl3 xnnpack onnxruntime[xnnpack] zlib-ng libdispatch fft2d farmhash ruy eigen3"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "Custom Triplet"
@@ -251,7 +251,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-osx"
             inputs:
-              vcpkgArguments: "gemmlowp cpuinfo farmhash openssl3 tensorpipe tensorflow-lite[gpu] xnnpack zlib-ng metal-cpp fft2d"
+              vcpkgArguments: "gemmlowp cpuinfo farmhash openssl3 onnxruntime[xnnpack,coreml] tensorpipe tensorflow-lite[gpu] xnnpack zlib-ng metal-cpp fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-osx
@@ -273,7 +273,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-osx"
             inputs:
-              vcpkgArguments: "gemmlowp cpuinfo openssl3 zlib-ng metal-cpp fft2d farmhash tensorflow-lite[gpu]"
+              vcpkgArguments: "gemmlowp cpuinfo openssl3 onnxruntime[xnnpack,coreml] zlib-ng metal-cpp fft2d farmhash tensorflow-lite[gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-osx
