@@ -16,7 +16,6 @@ if(VCPKG_TARGET_IS_WINDOWS)
     )
     list(APPEND PLATFORM_PATCHES
         "${TSD_DTOR_PATCH}" "${X86_BUILD_PATCH}"
-        fix-cmake-windows.patch
     )
 elseif(VCPKG_TARGET_IS_ANDROID)
     # check https://github.com/apple/swift-corelibs-libdispatch/pull/568 for the details...
@@ -36,7 +35,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         ${PLATFORM_PATCHES}
-        fix-cmake-out-of-tree.patch
+        fix-cmake.patch
         fix-sources-windows.patch
 )
 
