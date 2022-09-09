@@ -24,6 +24,7 @@ endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH ${SOURCE_PATH}
+    GENERATOR Ninja
     OPTIONS
         -DXNNPACK_USE_SYSTEM_LIBS=ON
         -DXNNPACK_ENABLE_ASSEMBLY=ON

@@ -61,7 +61,7 @@ index 9d40384..4a4b302 100644
 -TARGET_LINK_LIBRARIES(operators PRIVATE pthreadpool)
 -TARGET_LINK_LIBRARIES(mutex PRIVATE pthreadpool)
 -TARGET_LINK_LIBRARIES(post-operation PUBLIC pthreadpool allocator)
-+target_link_libraries(XNNPACK PUBLIC unofficial::pthreadpool allocator)
++target_link_libraries(XNNPACK PRIVATE unofficial::pthreadpool allocator post-operation)
 +target_link_libraries(allocator PRIVATE unofficial::pthreadpool)
 +target_link_libraries(all_microkernels PRIVATE unofficial::pthreadpool)
 +target_link_libraries(cache PRIVATE unofficial::pthreadpool)
