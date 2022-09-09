@@ -2,7 +2,7 @@ vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY ONLY_DYNAMIC_CRT)
 vcpkg_find_acquire_program(NUGET)
 
 set(PACKAGE_NAME    "Microsoft.AI.DirectML")
-set(PACKAGE_VERSION "1.8.2")
+set(PACKAGE_VERSION "1.9.0")
 
 file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${PACKAGE_NAME})
 vcpkg_execute_required_process(
