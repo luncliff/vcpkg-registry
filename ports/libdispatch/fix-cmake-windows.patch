@@ -1,0 +1,91 @@
+﻿diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 29a97fd..5373dd2 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -13,7 +13,7 @@ project(dispatch
+   VERSION 1.3
+   LANGUAGES C CXX)
+ 
+-if("${CMAKE_C_SIMULATE_ID}" STREQUAL "MSVC")
++if(WIN32)
+   include(ClangClCompileRules)
+ endif()
+ 
+@@ -193,6 +193,14 @@ check_include_files("sys/stat.h" HAVE_SYS_STAT_H)
+ check_include_files("sys/types.h" HAVE_SYS_TYPES_H)
+ check_include_files("objc/objc-internal.h" HAVE_OBJC)
+ 
++check_include_files("stdatomic.h" HAVE_STDATOMIC_H)
++if(NOT HAVE_STDATOMIC_H)
++  message(WARNING "<stdatomic.h> is required")
++  find_library(ATOMIC_LIBPATH NAMES zenny_atomic REQUIRED) # see port 'zenny-atomic'
++  link_libraries(${ATOMIC_LIBPATH})
++  include_directories(${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include) # todo: use find_file
++endif()
++
+ if(HAVE_MACH)
+   set(USE_MACH_SEM 1)
+ else()
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index adc989d..3b37f8e 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -116,8 +116,7 @@ if(DISPATCH_ENABLE_ASSERTS)
+     DISPATCH_DEBUG=1)
+ endif()
+ 
+-if("${CMAKE_C_SIMULATE_ID}" STREQUAL "MSVC")
+-  target_compile_options(dispatch PRIVATE /EHs-c-)
++if(MSVC)
+   target_compile_options(dispatch PRIVATE /W3)
+ else()
+   target_compile_options(dispatch PRIVATE -fno-exceptions)
+@@ -125,7 +124,9 @@ else()
+ endif()
+ 
+ # FIXME(compnerd) add check for -fblocks?
+-target_compile_options(dispatch PRIVATE -fblocks)
++if(CMAKE_C_COMPILER_ID MATCHES Clang)
++  target_compile_options(dispatch PRIVATE -fblocks)
++endif()
+ 
+ check_c_compiler_flag("-momit-leaf-frame-pointer -Werror -Wall -O3" C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
+ if (C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
+
+diff --git a/cmake/modules/DispatchCompilerWarnings.cmake b/cmake/modules/DispatchCompilerWarnings.cmake
+index 35b80f3..15e1eb3 100644
+--- a/cmake/modules/DispatchCompilerWarnings.cmake
++++ b/cmake/modules/DispatchCompilerWarnings.cmake
+@@ -1,8 +1,8 @@
+ 
+-if("${CMAKE_C_SIMULATE_ID}" STREQUAL "MSVC")
++if(MSVC)
+-  # TODO: someone needs to provide the msvc equivalent warning flags
++  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
+ else()
+-  add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Werror>)
++  # add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Werror>)
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wall>)
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wextra>)
+ 
+diff --git a/cmake/modules/DispatchWindowsSupport.cmake b/cmake/modules/DispatchWindowsSupport.cmake
+index 87675a7..ee9949a 100644
+--- a/cmake/modules/DispatchWindowsSupport.cmake
++++ b/cmake/modules/DispatchWindowsSupport.cmake
+@@ -1,12 +1,12 @@
+ 
+ function(dispatch_windows_arch_spelling arch var)
+-  if(${arch} STREQUAL i686)
++  if((${arch} STREQUAL i686) OR (${arch} STREQUAL x86))
+     set(${var} x86 PARENT_SCOPE)
+-  elseif(${arch} STREQUAL x86_64 OR ${arch} STREQUAL AMD64)
++  elseif((${arch} STREQUAL x86_64) OR (${arch} STREQUAL AMD64))
+     set(${var} x64 PARENT_SCOPE)
+-  elseif(${arch} STREQUAL armv7)
++  elseif((${arch} STREQUAL armv7) OR (${arch} STREQUAL ARM))
+     set(${var} arm PARENT_SCOPE)
+-  elseif(${arch} STREQUAL aarch64)
++  elseif((${arch} STREQUAL aarch64) OR (${arch} STREQUAL ARM64))
+     set(${var} arm64 PARENT_SCOPE)
+   else()
+     message(FATAL_ERROR "do not know MSVC spelling for ARCH: `${arch}`")

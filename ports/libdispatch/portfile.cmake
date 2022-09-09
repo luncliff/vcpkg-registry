@@ -2,16 +2,22 @@ if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
     set(VCPKG_POLICY_SKIP_ARCHITECTURE_CHECK enabled)
     set(VCPKG_POLICY_SKIP_DUMPBIN_CHECKS disabled)
-    if(VCPKG_CROSSCOMPILING)
-        message(WARNING "Cross compiling is not tested enough!")
-    endif()
-
-    list(APPEND PLATFORM_PATCHES fix-windows.patch)
-    if(TARGET_TRIPLET MATCHES "x86-windows")
-        list(APPEND PLATFORM_PATCHES fix-x86-windows.patch)
-    elseif(TARGET_TRIPLET MATCHES "arm64-windows")
-        # ... not tested ...
-    endif()
+    # see https://github.com/apple/swift-corelibs-libdispatch/pull/569
+    vcpkg_download_distfile(TSD_DTOR_PATCH
+        URLS "https://patch-diff.githubusercontent.com/raw/apple/swift-corelibs-libdispatch/pull/569.diff"
+        FILENAME libdispatch-pr-569.patch
+        SHA512 61676555b23796e61923f6dc284f5713386de5704daa4ced0bc1824a18203d30c4e9c151278be5e19532f73e2ece2664ef92b5b3fca00c0390fefaddb9c4154d
+    )
+    # see https://github.com/apple/swift-corelibs-libdispatch/pull/598
+    vcpkg_download_distfile(X86_BUILD_PATCH
+        URLS "https://patch-diff.githubusercontent.com/raw/apple/swift-corelibs-libdispatch/pull/598.diff"
+        FILENAME libdispatch-pr-598.patch
+        SHA512 b0a8b3375b2c809173c6dd3df836f102efe004fac535338ec4864b05b8e184a737f1d624cfbb670ddbce480f3ed6d883cf3a7ac2c829cf0ee1b7beea623411ae
+    )
+    list(APPEND PLATFORM_PATCHES
+        "${TSD_DTOR_PATCH}" "${X86_BUILD_PATCH}"
+        fix-cmake-windows.patch
+    )
 elseif(VCPKG_TARGET_IS_ANDROID)
     # check https://github.com/apple/swift-corelibs-libdispatch/pull/568 for the details...
     vcpkg_download_distfile(NDK23_STDATOMIC_PATCH
@@ -29,18 +35,17 @@ vcpkg_from_github(
     SHA512 58ad7122d2fac7b117f4e81eec2b5c1dfdf5256865337110d660790744e83c3fea5e82fbe521b6e56fd0e2f09684e5e1475cf2cac67989a8f78dd0a284fb0d21
     HEAD_REF master
     PATCHES
-        fix-out-of-tree.patch
-        fix-warnings.patch
         ${PLATFORM_PATCHES}
+        fix-cmake-out-of-tree.patch
+        fix-sources-windows.patch
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)
-    # better guess for host architecture?
-    string(REGEX MATCH "^(x64|x86|arm64)" HOST_ARCH "${HOST_TRIPLET}")
-    if(NOT HOST_ARCH)
-        message(FATAL_ERROR "Failed to detect the host architecture")
+    if(DEFINED VCPKG_CMAKE_SYSTEM_NAME) # ex) WindowsStore
+        list(APPEND PLATFORM_OPTIONS -DCMAKE_SYSTEM_NAME=${VCPKG_CMAKE_SYSTEM_NAME})
+    else()
+        list(APPEND PLATFORM_OPTIONS -DCMAKE_SYSTEM_NAME=Windows)
     endif()
-    message(STATUS "Detected ${HOST_ARCH} from ${HOST_TRIPLET}")
 
     # MSVC is unsupported compiler. We will use Clang
     vcpkg_find_acquire_program(CLANG)
@@ -55,13 +60,13 @@ if(VCPKG_TARGET_IS_WINDOWS)
     # vcpkg_add_to_path(PREPEND ${CLANG_CL_PATH})
     # message(STATUS "Prepend PATH: ${CLANG_CL_PATH}")
 
-    list(APPEND COMPILE_OPTIONS "-fms-compatibility")
+    list(APPEND COMPILE_FLAGS "-fms-compatibility")
     if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
-        list(APPEND COMPILE_OPTIONS -m64)
+        list(APPEND COMPILE_FLAGS -m64)
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
-        list(APPEND COMPILE_OPTIONS -m32)
+        list(APPEND COMPILE_FLAGS -m32)
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-        list(APPEND COMPILE_OPTIONS -m64 --target=arm-none-win32)
+        list(APPEND COMPILE_FLAGS -m64 --target=arm-none-win32)
     else()
         message(FATAL_ERROR "not supported")
     endif()
@@ -69,9 +74,9 @@ if(VCPKG_TARGET_IS_WINDOWS)
     # CMAKE_C_COMPILER_ID=Clang can be deduced by Ninja
     list(APPEND PLATFORM_OPTIONS
         -DCMAKE_C_COMPILER:PATH=${CLANG_CL_EXE}
-        -DCMAKE_C_FLAGS="${COMPILE_OPTIONS}"
+        -DCMAKE_C_FLAGS="${COMPILE_FLAGS}"
         -DCMAKE_CXX_COMPILER:PATH=${CLANG_CL_EXE}
-        -DCMAKE_CXX_FLAGS="${COMPILE_OPTIONS}"
+        -DCMAKE_CXX_FLAGS="${COMPILE_FLAGS}"
     )
 endif()
 
@@ -89,13 +94,13 @@ vcpkg_cmake_configure(
     OPTIONS_DEBUG
         -DDISPATCH_ENABLE_ASSERTS=ON
 )
-if(VCPKG_TARGET_IS_WINDOWS AND VCPKG_CROSSCOMPILING)
-    # The build.ninja uses LIBPATH for current host architecture. We have to fix that.
-    get_filename_component(BUILD_FILE_DBG ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/build.ninja ABSOLUTE)
-    vcpkg_replace_string(${BUILD_FILE_DBG} "${HOST_ARCH}" "${VCPKG_TARGET_ARCHITECTURE}")
-    get_filename_component(BUILD_FILE_REL ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/build.ninja ABSOLUTE)
-    vcpkg_replace_string(${BUILD_FILE_REL} "${HOST_ARCH}" "${VCPKG_TARGET_ARCHITECTURE}")
-endif()
+# if(VCPKG_TARGET_IS_WINDOWS AND VCPKG_CROSSCOMPILING)
+#     # The build.ninja uses LIBPATH for current host architecture. We have to fix that.
+#     get_filename_component(BUILD_FILE_DBG ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/build.ninja ABSOLUTE)
+#     vcpkg_replace_string(${BUILD_FILE_DBG} "${HOST_ARCH}" "${VCPKG_TARGET_ARCHITECTURE}")
+#     get_filename_component(BUILD_FILE_REL ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/build.ninja ABSOLUTE)
+#     vcpkg_replace_string(${BUILD_FILE_REL} "${HOST_ARCH}" "${VCPKG_TARGET_ARCHITECTURE}")
+# endif()
 
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
