@@ -23,7 +23,7 @@ schedules:
 
 variables:
   - name: vcpkg.commit
-    value: "e809a42f87565e803b2178a0c11263f462d1800a" # mainstream 2022.04.12
+    value: "cef0b3ec767df6e83806899fe9525f6cf8d7bc91" # mainstream 2022.06.16.1
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
   - name: vcpkg.disable.metrics
@@ -98,7 +98,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-windows"
             inputs:
-              vcpkgArguments: "cpuinfo gemmlowp farmhash openssl3 onnxruntime tensorflow-lite[google-angle,gpu] libdispatch zlib-ng directml fft2d"
+              vcpkgArguments: "cpuinfo gemmlowp farmhash openssl3 tensorflow-lite[google-angle,gpu] libdispatch zlib-ng directml fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-windows
@@ -181,7 +181,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-linux"
             inputs:
-              vcpkgArguments: "gemmlowp cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite zlib-ng directml fft2d"
+              vcpkgArguments: "gemmlowp cpuinfo farmhash openssl3 tensorpipe tensorflow-lite zlib-ng directml fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-linux
@@ -201,14 +201,17 @@ stages:
           vmImage: ubuntu-22.04
         strategy:
           matrix:
+            arm64_ndk25:
+              vcpkg.default.triplet: "arm64-android"
+              android.ndk.home: "/usr/local/lib/android/sdk/ndk/25.1.8937393"
+            x64_ndk25:
+              vcpkg.default.triplet: "x64-android"
+              android.ndk.home: "/usr/local/lib/android/sdk/ndk/25.1.8937393"
             arm64_ndk24:
               vcpkg.default.triplet: "arm64-android"
               android.ndk.home: "/usr/local/lib/android/sdk/ndk/24.0.8215888"
-            arm32_ndk21:
-              vcpkg.default.triplet: "arm-android"
-              android.ndk.home: "/usr/local/lib/android/sdk/ndk/21.4.7075529"
-            x64_ndk24:
-              vcpkg.default.triplet: "x64-android"
+            arm_neon_ndk24:
+              vcpkg.default.triplet: "arm-neon-android"
               android.ndk.home: "/usr/local/lib/android/sdk/ndk/24.0.8215888"
         steps:
           - task: run-vcpkg@0
@@ -231,9 +234,9 @@ stages:
         timeoutInMinutes: "300"
 
       - job: "port_osx"
-        displayName: "Mac(11)"
+        displayName: "Mac(12)"
         pool:
-          vmImage: macOS-11
+          vmImage: macOS-12
         steps:
           - powershell: brew install autoconf automake libtool
             displayName: "Install HomeBrew packages"
@@ -248,16 +251,16 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-osx"
             inputs:
-              vcpkgArguments: "gemmlowp cpuinfo farmhash openssl3 onnxruntime tensorpipe tensorflow-lite[gpu] xnnpack zlib-ng metal-cpp fft2d"
+              vcpkgArguments: "gemmlowp cpuinfo farmhash openssl3 tensorpipe tensorflow-lite[gpu] xnnpack zlib-ng metal-cpp fft2d"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-osx
         timeoutInMinutes: "300"
 
       - job: "port_ios"
-        displayName: "iOS(11)"
+        displayName: "iOS(12)"
         pool:
-          vmImage: macOS-11
+          vmImage: macOS-12
         steps:
           - powershell: brew install autoconf automake libtool
           - task: run-vcpkg@0
