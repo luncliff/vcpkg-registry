@@ -44,6 +44,9 @@ if(VCPKG_TARGET_IS_WINDOWS)
     else()
         message(FATAL_ERROR "Unexpected architecture: ${VCPKG_TARGET_ARCHITECTURE}")
     endif()
+    list(APPEND GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+else()
+    list(APPEND GENERATOR_OPTIONS GENERATOR Ninja)
 endif()
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
@@ -53,8 +56,7 @@ message(STATUS "Using Python3: ${PYTHON3}")
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
-    WINDOWS_USE_MSBUILD
-    GENERATOR Ninja
+    ${GENERATOR_OPTIONS}
     OPTIONS
         ${FEATURE_OPTIONS}
         ${PLATFORM_OPTIONS}
