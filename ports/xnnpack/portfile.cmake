@@ -2,21 +2,14 @@ if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 endif()
 
-if(VCPKG_TARGET_IS_ANDROID AND VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
-    list(APPEND PATCHES fix-arm-android.patch)
-endif()
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/XNNPACK
-    REF f334417944c6c8e17c209816cdf8f58228ae4263 # 2022-04-23
-    SHA512 1340f88e6106ac5dc87f4327cbf796ed5124446ad2e58cecb509d19a1a34db25c9de969caec9044840a370bd87fc655b7e231de0538e4de264b83a26c4afa685
+    REF dd04658ad7889be816b04995247e6f1101c9aab1 # 2022-09-09
+    SHA512 8efe5b5217cb1f3ef60974dbf671298e51a064cdd52213a51b006b89f1a4a6042c571d39289722d32bf6469870172ff481dd8bc1c73e708274fbc0cde8d8216a
     HEAD_REF master
     PATCHES
-        change-allowed-systems.patch
-        use-packages.patch
-        support-package.patch
-        ${PATCHES}
+        fix-cmake.patch
 )
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/xnnpack-config.cmake.in" DESTINATION "${SOURCE_PATH}/cmake")
 
@@ -31,6 +24,7 @@ endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH ${SOURCE_PATH}
+    GENERATOR Ninja
     OPTIONS
         -DXNNPACK_USE_SYSTEM_LIBS=ON
         -DXNNPACK_ENABLE_ASSEMBLY=ON

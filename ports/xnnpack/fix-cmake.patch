@@ -1,17 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1d93266..c6c6a37 100755
+index 9d40384..4a4b302 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -12,7 +12,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12 FATAL_ERROR)
- # ---[ Project and semantic versioning.
- PROJECT(XNNPACK C CXX ASM)
- 
--SET(CMAKE_C_STANDARD 99)
-+set(CMAKE_C_STANDARD 11)
- SET(CMAKE_C_EXTENSIONS NO)
- SET(CMAKE_CXX_STANDARD 11)
- SET(CMAKE_CXX_STANDARD_REQUIRED YES)
-@@ -6831,7 +6831,7 @@ ELSE()
+@@ -7246,7 +7246,7 @@ ELSE()
    SET_PROPERTY(SOURCE ${COLD_SRCS} APPEND_STRING PROPERTY COMPILE_FLAGS "$<$<NOT:$<CONFIG:Debug>>: -Os >")
  ENDIF()
  
@@ -19,50 +10,32 @@ index 1d93266..c6c6a37 100755
 +TARGET_INCLUDE_DIRECTORIES(XNNPACK PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
  TARGET_INCLUDE_DIRECTORIES(XNNPACK PRIVATE src)
  TARGET_INCLUDE_DIRECTORIES(allocator PRIVATE include src)
- TARGET_INCLUDE_DIRECTORIES(all_microkernels PRIVATE include src)
-@@ -6860,7 +6860,8 @@ IF(LIBM)
+ TARGET_INCLUDE_DIRECTORIES(all_microkernels PRIVATE src)
+@@ -7277,7 +7277,7 @@ IF(LIBM)
  ENDIF()
  
  # ---[ Configure clog
 -IF(NOT TARGET clog)
-+find_package(cpuinfo CONFIG REQUIRED)
 +IF(false)
    IF(NOT XNNPACK_USE_SYSTEM_LIBS)
      SET(CLOG_BUILD_TESTS OFF CACHE BOOL "")
      SET(CLOG_RUNTIME_TYPE "${CPUINFO_RUNTIME_TYPE}" CACHE STRING "")
-@@ -6878,17 +6879,17 @@ IF(NOT TARGET clog)
-     SET_PROPERTY(TARGET clog PROPERTY IMPORTED_LOCATION "${CLOG_LIBRARY}")
-   ENDIF()
+@@ -7297,7 +7297,8 @@ IF(NOT TARGET clog)
  ENDIF()
--TARGET_LINK_LIBRARIES(XNNPACK PRIVATE clog)
--TARGET_LINK_LIBRARIES(allocator PRIVATE clog)
--TARGET_LINK_LIBRARIES(jit PRIVATE clog)
--TARGET_LINK_LIBRARIES(logging PRIVATE clog)
--TARGET_LINK_LIBRARIES(cache PRIVATE clog)
--TARGET_LINK_LIBRARIES(subgraph PRIVATE clog)
--TARGET_LINK_LIBRARIES(operators PRIVATE clog)
--TARGET_LINK_LIBRARIES(mutex PRIVATE clog)
-+target_link_libraries(XNNPACK PRIVATE cpuinfo::clog)
-+target_link_libraries(allocator PRIVATE cpuinfo::clog)
-+target_link_libraries(jit PRIVATE cpuinfo::clog)
-+target_link_libraries(logging PRIVATE cpuinfo::clog)
-+target_link_libraries(cache PRIVATE cpuinfo::clog)
-+target_link_libraries(subgraph PRIVATE cpuinfo::clog)
-+target_link_libraries(operators PRIVATE cpuinfo::clog)
-+target_link_libraries(mutex PRIVATE cpuinfo::clog)
  
  # ---[ Configure cpuinfo
 -IF(NOT TARGET cpuinfo)
++find_package(cpuinfo CONFIG REQUIRED)
 +IF(false)
    IF(NOT XNNPACK_USE_SYSTEM_LIBS)
      SET(CPUINFO_BUILD_TOOLS OFF CACHE BOOL "")
      SET(CPUINFO_BUILD_UNIT_TESTS OFF CACHE BOOL "")
-@@ -6906,10 +6907,11 @@ IF(NOT TARGET cpuinfo)
+@@ -7315,10 +7316,11 @@ IF(NOT TARGET cpuinfo)
      SET_PROPERTY(TARGET cpuinfo PROPERTY IMPORTED_LOCATION "${CPUINFO_LIBRARY}")
    ENDIF()
  ENDIF()
 -TARGET_LINK_LIBRARIES(XNNPACK PRIVATE cpuinfo)
-+target_link_libraries(XNNPACK PRIVATE cpuinfo::cpuinfo)
++target_link_libraries(XNNPACK PRIVATE cpuinfo::cpuinfo cpuinfo::clog)
  
  # ---[ Configure pthreadpool
 -IF(NOT TARGET pthreadpool)
@@ -71,7 +44,7 @@ index 1d93266..c6c6a37 100755
    IF(NOT XNNPACK_USE_SYSTEM_LIBS)
      SET(PTHREADPOOL_BUILD_TESTS OFF CACHE BOOL "")
      SET(PTHREADPOOL_BUILD_BENCHMARKS OFF CACHE BOOL "")
-@@ -6926,21 +6928,22 @@ IF(NOT TARGET pthreadpool)
+@@ -7335,22 +7337,23 @@ IF(NOT TARGET pthreadpool)
      SET_PROPERTY(TARGET pthreadpool PROPERTY IMPORTED_LOCATION "${PTHREADPOOL_LIBRARY}")
    ENDIF()
  ENDIF()
@@ -83,11 +56,12 @@ index 1d93266..c6c6a37 100755
 -TARGET_LINK_LIBRARIES(jit PRIVATE pthreadpool)
 -TARGET_LINK_LIBRARIES(logging PRIVATE pthreadpool)
 -TARGET_LINK_LIBRARIES(packing PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(params_init PRIVATE pthreadpool)
+-TARGET_LINK_LIBRARIES(microparams_init PRIVATE pthreadpool)
 -TARGET_LINK_LIBRARIES(subgraph PRIVATE pthreadpool)
 -TARGET_LINK_LIBRARIES(operators PRIVATE pthreadpool)
 -TARGET_LINK_LIBRARIES(mutex PRIVATE pthreadpool)
-+target_link_libraries(XNNPACK PUBLIC unofficial::pthreadpool allocator)
+-TARGET_LINK_LIBRARIES(post-operation PUBLIC pthreadpool allocator)
++target_link_libraries(XNNPACK PRIVATE unofficial::pthreadpool allocator post-operation)
 +target_link_libraries(allocator PRIVATE unofficial::pthreadpool)
 +target_link_libraries(all_microkernels PRIVATE unofficial::pthreadpool)
 +target_link_libraries(cache PRIVATE unofficial::pthreadpool)
@@ -95,10 +69,11 @@ index 1d93266..c6c6a37 100755
 +target_link_libraries(jit PRIVATE unofficial::pthreadpool)
 +target_link_libraries(logging PRIVATE unofficial::pthreadpool)
 +target_link_libraries(packing PRIVATE unofficial::pthreadpool)
-+target_link_libraries(params_init PRIVATE unofficial::pthreadpool)
++target_link_libraries(microparams_init PRIVATE unofficial::pthreadpool)
 +target_link_libraries(subgraph PRIVATE unofficial::pthreadpool)
 +target_link_libraries(operators PRIVATE unofficial::pthreadpool)
 +target_link_libraries(mutex PRIVATE unofficial::pthreadpool)
++target_link_libraries(post-operation PUBLIC unofficial::pthreadpool allocator)
  
  # ---[ Configure FXdiv
 -IF(NOT TARGET fxdiv)
@@ -107,7 +82,7 @@ index 1d93266..c6c6a37 100755
    IF(NOT XNNPACK_USE_SYSTEM_LIBS)
      SET(FXDIV_BUILD_TESTS OFF CACHE BOOL "")
      SET(FXDIV_BUILD_BENCHMARKS OFF CACHE BOOL "")
-@@ -6956,12 +6959,13 @@ IF(NOT TARGET fxdiv)
+@@ -7366,12 +7369,13 @@ IF(NOT TARGET fxdiv)
      SET_PROPERTY(TARGET fxdiv PROPERTY LINKER_LANGUAGE C)
    ENDIF()
  ENDIF()
@@ -125,30 +100,64 @@ index 1d93266..c6c6a37 100755
    IF(NOT XNNPACK_USE_SYSTEM_LIBS)
      SET(FP16_BUILD_TESTS OFF CACHE BOOL "")
      SET(FP16_BUILD_BENCHMARKS OFF CACHE BOOL "")
-@@ -6979,19 +6983,19 @@ IF(NOT TARGET fp16)
- ENDIF()
- TARGET_LINK_LIBRARIES(XNNPACK PRIVATE
-   cache
--  fp16
-   logging
-   mutex
-   normalization
+@@ -7396,12 +7400,13 @@ TARGET_LINK_LIBRARIES(XNNPACK PRIVATE
    operators
-   params_init
+   microparams_init
    subgraph)
 -TARGET_LINK_LIBRARIES(all_microkernels PRIVATE fp16)
 -TARGET_LINK_LIBRARIES(packing PRIVATE fp16)
--TARGET_LINK_LIBRARIES(params_init PRIVATE fp16)
+-TARGET_LINK_LIBRARIES(microparams_init PRIVATE fp16)
 -TARGET_LINK_LIBRARIES(indirection PRIVATE fp16)
 -TARGET_LINK_LIBRARIES(subgraph PRIVATE fp16)
 -TARGET_LINK_LIBRARIES(operators PRIVATE fp16)
 +target_include_directories(XNNPACK PRIVATE ${FP16_INCLUDE_DIRS})
 +target_include_directories(all_microkernels PRIVATE ${FP16_INCLUDE_DIRS})
 +target_include_directories(packing PRIVATE ${FP16_INCLUDE_DIRS})
-+target_include_directories(params_init PRIVATE ${FP16_INCLUDE_DIRS})
++target_include_directories(microparams_init PRIVATE ${FP16_INCLUDE_DIRS})
 +target_include_directories(indirection PRIVATE ${FP16_INCLUDE_DIRS})
 +target_include_directories(subgraph PRIVATE ${FP16_INCLUDE_DIRS})
 +target_include_directories(operators PRIVATE ${FP16_INCLUDE_DIRS})   
  
  INSTALL(TARGETS XNNPACK
      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 195d001..740b5d3 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -70,7 +70,7 @@ IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+ ENDIF()
+ 
+ # ---[ Build flags
+-IF(NOT CMAKE_SYSTEM_PROCESSOR)
++IF((NOT CMAKE_SYSTEM_PROCESSOR) OR (CMAKE_SYSTEM_NAME STREQUAL iOS))
+   IF(IOS)
+     LIST(LENGTH IOS_ARCH IOS_ARCH_COUNT)
+     IF(IOS_ARCH_COUNT GREATER 1)
+@@ -89,7 +89,7 @@ ENDIF()
+ 
+ IF(NOT CMAKE_SYSTEM_NAME)
+   MESSAGE(FATAL_ERROR "CMAKE_SYSTEM_NAME not defined")
+-ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Darwin|Linux|Android|Windows|CYGWIN|MSYS)$")
++ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Darwin|iOS|Linux|Android|Windows|CYGWIN|MSYS)$")
+   MESSAGE(FATAL_ERROR "Unrecognized CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
+ ENDIF()
+ 
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4a4b302..195d001 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -7413,6 +7413,14 @@ INSTALL(TARGETS XNNPACK
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+ 
++# support find_package(xnnpack CONFIG)
++include(CMakePackageConfigHelpers)
++get_filename_component(CONFIG_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/xnnpack-config.cmake ABSOLUTE)
++configure_package_config_file(
++  cmake/xnnpack-config.cmake.in ${CONFIG_FILE_PATH}
++  INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR})
++install(FILES ${CONFIG_FILE_PATH} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}) # ${prefix}/share
++
+ # ---[ XNNPACK unit tests
+ IF(XNNPACK_BUILD_TESTS)
+   # ---[ Build google test
