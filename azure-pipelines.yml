@@ -156,7 +156,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-uwp"
             inputs:
-              vcpkgArguments: "gemmlowp farmhash openssl3 zlib-ng fft2d"
+              vcpkgArguments: "gemmlowp farmhash openssl3 zlib-ng fft2d xnnpack"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-uwp

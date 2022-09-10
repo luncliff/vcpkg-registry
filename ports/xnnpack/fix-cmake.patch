@@ -161,3 +161,28 @@ index 4a4b302..195d001 100644
  # ---[ XNNPACK unit tests
  IF(XNNPACK_BUILD_TESTS)
    # ---[ Build google test
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 831031f..6fbd7cd 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -7393,7 +7393,6 @@ IF(false)
+ ENDIF()
+ TARGET_LINK_LIBRARIES(XNNPACK PRIVATE
+   cache
+-  fp16
+   logging
+   mutex
+   normalization
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8f0ba9a..9c13cc5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -89,7 +89,7 @@ ENDIF()
+ 
+ IF(NOT CMAKE_SYSTEM_NAME)
+   MESSAGE(FATAL_ERROR "CMAKE_SYSTEM_NAME not defined")
+-ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Darwin|iOS|Linux|Android|Windows|CYGWIN|MSYS)$")
++ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Darwin|iOS|Linux|Android|Windows|WindowsStore|CYGWIN|MSYS)$")
+   MESSAGE(FATAL_ERROR "Unrecognized CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
+ ENDIF()
+ 
