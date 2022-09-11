@@ -222,12 +222,12 @@ stages:
           - task: run-vcpkg@0
             displayName: "Default Triplet"
             inputs:
-              vcpkgArguments: "cpuinfo openssl3 xnnpack onnxruntime[xnnpack] zlib-ng libdispatch fft2d farmhash ruy eigen3"
+              vcpkgArguments: "openssl3 zlib-ng libdispatch fft2d farmhash ruy eigen3"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "Custom Triplet"
             inputs:
-              vcpkgArguments: "tensorflow-lite[gpu]"
+              vcpkgArguments: "onnxruntime[xnnpack] tensorflow-lite[gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
