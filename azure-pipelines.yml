@@ -85,7 +85,7 @@ stages:
       - job: "port_windows"
         displayName: "Windows"
         pool:
-          vmImage: windows-2019
+          vmImage: windows-2022
         steps:
           - task: UsePythonVersion@0
             displayName: "Setup: Python 3.10"
@@ -109,12 +109,27 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-windows
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              Contents: |
+                ?(*.log|*.txt)
+                *.cmake
+              TargetFolder: "$(Build.ArtifactStagingDirectory)"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Staged Logs"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
         timeoutInMinutes: "300"
 
       - job: "port_windows_32"
         displayName: "Windows(32bit)"
         pool:
-          vmImage: windows-2019
+          vmImage: windows-2022
         steps:
           - task: UsePythonVersion@0
             displayName: "Setup: Python 3.10"
@@ -138,12 +153,27 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm-windows
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              Contents: |
+                ?(*.log|*.txt)
+                *.cmake
+              TargetFolder: "$(Build.ArtifactStagingDirectory)"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Staged Logs"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
         timeoutInMinutes: "300"
 
       - job: "port_uwp"
         displayName: "Windows(UWP)"
         pool:
-          vmImage: windows-2019
+          vmImage: windows-2022
         steps:
           - task: UsePythonVersion@0
             displayName: "Setup: Python 3.10"
@@ -193,6 +223,21 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: x64-linux
             continueOnError: true
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              Contents: |
+                ?(*.log|*.txt)
+                *.cmake
+              TargetFolder: "$(Build.ArtifactStagingDirectory)"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Staged Logs"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
         timeoutInMinutes: "300"
 
       - job: "port_android"
@@ -285,6 +330,21 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
               VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              Contents: |
+                ?(*.log|*.txt)
+                *.cmake
+              TargetFolder: "$(Build.ArtifactStagingDirectory)"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Staged Logs"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
         timeoutInMinutes: "300"
 
   # todo: Deploy stage
