@@ -9,6 +9,8 @@ vcpkg_from_github(
     REF 8ec7bd91ad0470e61cf38f618cc1f270dede599c
     SHA512 b3342ce0a1f842084ff53efdfd15c44586ac7cd36249211e2925d84aa1f33ee8d6f76cd62ea20e91d8b908c3c8afda5a47516008b69749504024b9813a623ee2
     HEAD_REF master
+    PATCHES
+        support-uwp.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
