@@ -12,22 +12,39 @@ vcpkg_from_github(
         fix-sources.patch
 )
 
+find_program(FLATC_EXECUTABLE NAMES flatc
+    PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers"
+    REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
+)
+message(STATUS "Using flatc: ${FLATC_EXECUTABLE}")
+
+vcpkg_execute_required_process(
+    COMMAND ${FLATC_EXECUTABLE} --cpp ort.fbs
+    LOGNAME codegen-flatc-cpp
+    WORKING_DIRECTORY "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema/"
+)
+file(RENAME "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema/ort_generated.h"
+            "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema/ort.fbs.h"
+)
+
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        training onnxruntime_ENABLE_TRAINING
-        training onnxruntime_ENABLE_TRAINING_OPS
-        cuda     onnxruntime_USE_CUDA
-        cuda     onnxruntime_USE_NCCL
-        tensorrt onnxruntime_USE_TENSORRT
-        tensorrt onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
-        directml onnxruntime_USE_DML
-        winml    onnxruntime_USE_WINML
-        coreml   onnxruntime_USE_COREML
-        mimalloc onnxruntime_USE_MIMALLOC
-        valgrind onnxruntime_USE_VALGRIND
-        xnnpack  onnxruntime_USE_XNNPACK
+        training  onnxruntime_ENABLE_TRAINING
+        training  onnxruntime_ENABLE_TRAINING_OPS
+        cuda      onnxruntime_USE_CUDA
+        cuda      onnxruntime_USE_NCCL
+        tensorrt  onnxruntime_USE_TENSORRT
+        tensorrt  onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
+        directml  onnxruntime_USE_DML
+        winml     onnxruntime_USE_WINML
+        coreml    onnxruntime_USE_COREML
+        mimalloc  onnxruntime_USE_MIMALLOC
+        valgrind  onnxruntime_USE_VALGRIND
+        xnnpack   onnxruntime_USE_XNNPACK
+        test      onnxruntime_BUILD_UNIT_TESTS
+        framework onnxruntime_BUILD_APPLE_FRAMEWORK
     INVERTED_FEATURES
-        abseil onnxruntime_DISABLE_ABSEIL
+        abseil   onnxruntime_DISABLE_ABSEIL
 
 )
 
@@ -64,8 +81,11 @@ vcpkg_cmake_configure(
         # -DProtobuf_USE_STATIC_LIBS=OFF
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
-        -Donnxruntime_BUILD_APPLE_FRAMEWORK=${VCPKG_TARGET_IS_IOS}
-        -Donnxruntime_BUILD_UNIT_TESTS=OFF
+        -Donnxruntime_BUILD_OBJC=${VCPKG_TARGET_IS_IOS}
+        -Donnxruntime_BUILD_NODEJS=OFF
+        -Donnxruntime_BUILD_JAVA=OFF
+        -Donnxruntime_BUILD_CSHARP=OFF
+        -Donnxruntime_BUILD_WEBASSEMBLY=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
         -Donnxruntime_PREFER_SYSTEM_LIB=ON
         -Donnxruntime_USE_FULL_PROTOBUF=ON

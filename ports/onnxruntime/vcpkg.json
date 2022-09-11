@@ -11,6 +11,10 @@
     "date",
     "eigen3",
     "flatbuffers",
+    {
+      "name": "flatbuffers",
+      "host": true
+    },
     "nlohmann-json",
     {
       "name": "nsync",
