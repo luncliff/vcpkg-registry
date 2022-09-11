@@ -168,3 +168,63 @@ index 77eac4b..b2b94a8 100644
    else()
      message(FATAL_ERROR "onnxruntime_providers_rocm unknown platform, need to specify shared library exports for it")
    endif()
+diff --git a/cmake/external/xnnpack.cmake b/cmake/external/xnnpack.cmake
+index 25e63ea..dc09bb8 100644
+--- a/cmake/external/xnnpack.cmake
++++ b/cmake/external/xnnpack.cmake
+@@ -1,27 +1,11 @@
+-set(XNNPACK_DIR external/XNNPACK)
+-set(XNNPACK_INCLUDE_DIR ${XNNPACK_DIR}/include)
+-set(XNNPACK_USE_SYSTEM_LIBS ON CACHE INTERNAL "")
+-set(XNNPACK_BUILD_TESTS OFF CACHE INTERNAL "")
+-set(XNNPACK_BUILD_BENCHMARKS OFF CACHE INTERNAL "")
+-set(FP16_BUILD_TESTS OFF CACHE INTERNAL "")
+-set(FP16_BUILD_BENCHMARKS OFF CACHE INTERNAL "")
+-set(CLOG_SOURCE_DIR "${PYTORCH_CPUINFO_DIR}/deps/clog")
+-set(CPUINFO_SOURCE_DIR ${PYTORCH_CPUINFO_DIR})
+-
+ if (onnxruntime_BUILD_WEBASSEMBLY)
+   execute_process(COMMAND  git apply --ignore-space-change --ignore-whitespace ${PROJECT_SOURCE_DIR}/patches/xnnpack/AddEmscriptenSupport.patch WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/${XNNPACK_DIR})
+ endif()
+ 
+-add_subdirectory(external/FP16)
+-add_subdirectory(external/pthreadpool)
+-add_subdirectory(external/XNNPACK)
+-
+-set_target_properties(fp16 PROPERTIES FOLDER "External/Xnnpack")
+-set_target_properties(pthreadpool PROPERTIES FOLDER "External/Xnnpack")
+-set_target_properties(XNNPACK PROPERTIES FOLDER "External/Xnnpack")
++find_package(unofficial-pthreadpool CONFIG REQUIRED) # unofficial::pthreadpool
++find_package(xnnpack CONFIG REQUIRED) # xnnpack
+ 
+-set(onnxruntime_EXTERNAL_LIBRARIES_XNNPACK XNNPACK pthreadpool)
+-list(APPEND onnxruntime_EXTERNAL_LIBRARIES ${onnxruntime_EXTERNAL_LIBRARIES_XNNPACK})
++list(APPEND onnxruntime_EXTERNAL_LIBRARIES_XNNPACK xnnpack unofficial::pthreadpool)
+ 
+ # the XNNPACK CMake setup doesn't include the WASM kernels so we have to manually set those up
+ if (onnxruntime_BUILD_WEBASSEMBLY)
+diff --git a/cmake/onnxruntime_providers.cmake b/cmake/onnxruntime_providers.cmake
+index b2b94a8..99885a6 100644
+--- a/cmake/onnxruntime_providers.cmake
++++ b/cmake/onnxruntime_providers.cmake
+@@ -1521,7 +1521,7 @@ if (onnxruntime_USE_XNNPACK)
+   source_group(TREE ${REPO_ROOT} FILES ${onnxruntime_providers_xnnpack_cc_srcs})
+   onnxruntime_add_static_library(onnxruntime_providers_xnnpack ${onnxruntime_providers_xnnpack_cc_srcs})
+   onnxruntime_add_include_to_target(onnxruntime_providers_xnnpack
+-    onnxruntime_common onnxruntime_framework onnx onnx_proto ${PROTOBUF_LIB} XNNPACK pthreadpool
++    onnxruntime_common onnxruntime_framework onnx onnx_proto ${PROTOBUF_LIB} xnnpack unofficial::pthreadpool
+   )
+ 
+   add_dependencies(onnxruntime_providers_xnnpack onnx ${onnxruntime_EXTERNAL_DEPENDENCIES})
+diff --git a/cmake/onnxruntime_providers.cmake b/cmake/onnxruntime_providers.cmake
+index 99885a6..6fe1263 100644
+--- a/cmake/onnxruntime_providers.cmake
++++ b/cmake/onnxruntime_providers.cmake
+@@ -1523,6 +1523,7 @@ if (onnxruntime_USE_XNNPACK)
+   onnxruntime_add_include_to_target(onnxruntime_providers_xnnpack
+     onnxruntime_common onnxruntime_framework onnx onnx_proto ${PROTOBUF_LIB} xnnpack unofficial::pthreadpool
+   )
++  target_link_libraries(onnxruntime_providers_xnnpack PUBLIC xnnpack unofficial::pthreadpool cpuinfo::cpuinfo)
+ 
+   add_dependencies(onnxruntime_providers_xnnpack onnx ${onnxruntime_EXTERNAL_DEPENDENCIES})
+   set_target_properties(onnxruntime_providers_xnnpack PROPERTIES FOLDER "ONNXRuntime")

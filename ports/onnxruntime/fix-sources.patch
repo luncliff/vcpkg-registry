@@ -151,3 +151,37 @@ index d89bae6..225ef33 100644
      auto fbs_str_data = fbs_tensor.string_data();
      ORT_RETURN_IF(nullptr == fbs_str_data, "Missing string data for initializer. Invalid ORT format model.");
      auto mutable_str_data = initializer.mutable_string_data();
+diff --git a/onnxruntime/core/framework/session_options.h b/onnxruntime/core/framework/session_options.h
+index c301229..50e5e63 100644
+--- a/onnxruntime/core/framework/session_options.h
++++ b/onnxruntime/core/framework/session_options.h
+@@ -11,6 +11,7 @@
+ #include "core/optimizer/graph_transformer_level.h"
+ #include "core/util/thread_utils.h"
+ #include "core/framework/config_options.h"
++#include "core/framework/ort_value.h"
+ 
+ namespace onnxruntime {
+ 
+diff --git a/onnxruntime/core/providers/xnnpack/nn/conv.cc b/onnxruntime/core/providers/xnnpack/nn/conv.cc
+index d9f6134..8003d10 100644
+--- a/onnxruntime/core/providers/xnnpack/nn/conv.cc
++++ b/onnxruntime/core/providers/xnnpack/nn/conv.cc
+@@ -60,7 +60,7 @@ Status CreateXnnpackKernel(const ConvAttributes& conv_attrs,
+         gsl::narrow<uint32_t>(conv_attrs.group), 1, group_output_channels,
+         C, M,  // input channel stride, output channel stride
+         W_data, B_data,
+-        output_min, output_max, flags, &p);
++        output_min, output_max, flags, xnn_caches_t{}, &p);
+ 
+   } else {
+     status = xnn_create_convolution2d_nhwc_f32(
+@@ -71,7 +71,7 @@ Status CreateXnnpackKernel(const ConvAttributes& conv_attrs,
+         gsl::narrow<uint32_t>(conv_attrs.group), C, M,  // groups, group_input_channels, group_output_channels
+         C, M,                                           // input channel stride, output channel stride
+         W_data, B_data,
+-        output_min, output_max, flags, &p);
++        output_min, output_max, flags, xnn_caches_t{}, &p);
+   }
+ 
+   if (status != xnn_status_success) {

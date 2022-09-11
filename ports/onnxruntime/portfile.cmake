@@ -27,6 +27,12 @@ file(RENAME "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema/ort_generated.h"
             "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema/ort.fbs.h"
 )
 
+if("xnnpack" IN_LIST FEATURES)
+    # see https://github.com/microsoft/onnxruntime/pull/11798
+    file(MAKE_DIRECTORY "${SOURCE_PATH}/include/onnxruntime/core/providers/xnnpack")
+    file(WRITE "${SOURCE_PATH}/include/onnxruntime/core/providers/xnnpack/xnnpack_provider_factory.h" "#pragma once")
+endif()
+
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         training  onnxruntime_ENABLE_TRAINING
@@ -91,7 +97,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_FULL_PROTOBUF=ON
         -Donnxruntime_USE_PREINSTALLED_EIGEN=ON -Deigen_SOURCE_PATH="${CURRENT_INSTALLED_DIR}/include"
         -Donnxruntime_USE_EXTENSIONS=OFF
-        -Donnxruntime_USE_MPI=${VCPKG_TARGET_IS_LINUX}
+        -Donnxruntime_USE_MPI=OFF # ${VCPKG_TARGET_IS_LINUX}
         -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=${VCPKG_TARGET_IS_WINDOWS}
         -Donnxruntime_ENABLE_BITCODE=${VCPKG_TARGET_IS_IOS}
         -Donnxruntime_ENABLE_PYTHON=OFF
