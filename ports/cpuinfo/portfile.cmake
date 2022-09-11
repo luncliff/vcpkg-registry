@@ -1,6 +1,8 @@
 # On Windows, we can get a cpuinfo.dll, but it exports no symbols.
 if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
+elseif(VCPKG_TARGET_IS_LINUX)
+    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
 
 vcpkg_from_github(
