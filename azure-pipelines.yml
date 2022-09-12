@@ -155,7 +155,7 @@ stages:
               VCPKG_DEFAULT_TRIPLET: arm-windows
           - task: CopyFiles@2
             inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/onnxruntime"
               Contents: |
                 ?(*.log|*.txt)
                 *.cmake
@@ -225,7 +225,7 @@ stages:
             continueOnError: true
           - task: CopyFiles@2
             inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/onnxruntime"
               Contents: |
                 ?(*.log|*.txt)
                 *.cmake
