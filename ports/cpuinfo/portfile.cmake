@@ -3,6 +3,14 @@ if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 endif()
 
+# Support UWP build: https://github.com/pytorch/cpuinfo/pull/116
+vcpkg_download_distfile(PR_116_PATCH_PATH
+    URLS "https://github.com/pytorch/cpuinfo/compare/8ec7bd9..8e2f169.diff"
+    FILENAME cpuinfo-pr-116.patch
+    HEADERS "Accept: application/vnd.github.v3.raw" # "Authorization: token $ENV{GITHUB_ACCESS_TOKEN}"
+    SHA512 7577aebe8a00296c08f1b4cef448c570c438117bd0f97a377f171440febbb7df36580bb107109e4c44d9181dc4c89b44786d68028f5bcd578b8a74bf3e9a7f72
+)
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/cpuinfo
@@ -10,7 +18,7 @@ vcpkg_from_github(
     SHA512 b3342ce0a1f842084ff53efdfd15c44586ac7cd36249211e2925d84aa1f33ee8d6f76cd62ea20e91d8b908c3c8afda5a47516008b69749504024b9813a623ee2
     HEAD_REF master
     PATCHES
-        support-uwp.patch
+        ${PR_116_PATCH_PATH}
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
