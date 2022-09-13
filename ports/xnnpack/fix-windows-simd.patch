@@ -1,0 +1,217 @@
+diff --git a/src/jit/aarch32-assembler.cc b/src/jit/aarch32-assembler.cc
+index 0fc786b..d9c406b 100644
+--- a/src/jit/aarch32-assembler.cc
++++ b/src/jit/aarch32-assembler.cc
+@@ -254,11 +254,11 @@ void Assembler::tst(CoreRegister rn, uint8_t imm) {
+   emit32(kAL | 0x31 << 20 | rn.code << 16 | imm);
+ }
+ 
+-void Assembler::vabs_f32(QRegister qd, QRegister qm) {
++void Assembler::vabs_f32_(QRegister qd, QRegister qm) {
+   emit32(0xF3B90740 | encode(qd, 22, 12) | encode(qm, 5, 0));
+ }
+ 
+-void Assembler::vadd_f32(QRegister qd, QRegister qn, QRegister qm) {
++void Assembler::vadd_f32_(QRegister qd, QRegister qn, QRegister qm) {
+   emit32(0xF2000D40 | encode(qd, 22, 12) | encode(qn, 7, 16) | encode(qm, 5, 0));
+ }
+ 
+@@ -266,15 +266,15 @@ void Assembler::vcmpe_f32(SRegister sd, SRegister sm) {
+   emit32(kAL | 0x0EB40AC0 | encode(sd, 22, 12) | encode(sm, 5, 0));
+ }
+ 
+-void Assembler::vcvt_f32_s32(QRegister qd, QRegister qm) {
++void Assembler::vcvt_f32_s32_(QRegister qd, QRegister qm) {
+   emit32(0xF3BB0640 | encode(qd, 22, 12) | encode(qm, 5, 0));
+ }
+ 
+-void Assembler::vcvt_s32_f32(QRegister qd, QRegister qm) {
++void Assembler::vcvt_s32_f32_(QRegister qd, QRegister qm) {
+   emit32(0xF3BB0740 | encode(qd, 22, 12) | encode(qm, 5, 0));
+ }
+ 
+-void Assembler::vcvtn_s32_f32(QRegister qd, QRegister qm) {
++void Assembler::vcvtn_s32_f32_(QRegister qd, QRegister qm) {
+   emit32(0xF3BB0140 | encode(qd, 22, 12) | encode(qm, 5, 0));
+ }
+ 
+@@ -419,27 +419,27 @@ void Assembler::vldr(DRegister dd, MemOperand op) {
+   emit32(kAL | 0x0D100B00 | op.u() << 23 | encode(dd, 22, 12) | op.base().code << 16 | offset >> 2);
+ }
+ 
+-void Assembler::vmax_f32(QRegister qd, QRegister qn, QRegister qm) {
++void Assembler::vmax_f32_(QRegister qd, QRegister qn, QRegister qm) {
+   emit32(0xF2000F40 | encode(qd, 22, 12) | encode(qn, 7, 16) | encode(qm, 5, 0));
+ }
+ 
+-void Assembler::vmax_s8(QRegister qd, QRegister qn, QRegister qm) {
++void Assembler::vmax_s8_(QRegister qd, QRegister qn, QRegister qm) {
+  emit32(0xF2000640 | encode(qd, 22, 12) | encode(qn, 7, 16) | encode(qm, 5, 0));
+ }
+ 
+-void Assembler::vmin_f32(QRegister qd, QRegister qn, QRegister qm) {
++void Assembler::vmin_f32_(QRegister qd, QRegister qn, QRegister qm) {
+   emit32(0xF2200F40 | encode(qd, 22, 12) | encode(qn, 7, 16) | encode(qm, 5, 0));
+ }
+ 
+-void Assembler::vmin_s8(QRegister qd, QRegister qn, QRegister qm) {
++void Assembler::vmin_s8_(QRegister qd, QRegister qn, QRegister qm) {
+  emit32(0xF2000650 | encode(qd, 22, 12) | encode(qn, 7, 16) | encode(qm, 5, 0));
+ }
+ 
+-void Assembler::vmla_f32(SRegister sd, SRegister sn, SRegister sm) {
++void Assembler::vmla_f32_(SRegister sd, SRegister sn, SRegister sm) {
+   emit32(kAL | 0x0E000A00 | encode(sd, 22, 12) | encode (sn, 7, 16) | encode(sm, 5, 0));
+ }
+ 
+-void Assembler::vmla_f32(QRegister qd, QRegister qn, DRegisterLane dm) {
++void Assembler::vmla_f32_(QRegister qd, QRegister qn, DRegisterLane dm) {
+   if (dm.lane > 1) {
+     error_ = Error::kInvalidLaneIndex;
+     return;
+@@ -447,7 +447,7 @@ void Assembler::vmla_f32(QRegister qd, QRegister qn, DRegisterLane dm) {
+   emit32(0xF3A00140 | encode(qd, 22, 12) | encode(qn, 7, 16) | dm.lane << 5 | dm.code);
+ }
+ 
+-void Assembler::vmlal_s16(QRegister qd, DRegister dn, DRegisterLane dm) {
++void Assembler::vmlal_s16_(QRegister qd, DRegister dn, DRegisterLane dm) {
+   if (dm.lane > 3) {
+     error_ = Error::kInvalidLaneIndex;
+     return;
+@@ -495,7 +495,7 @@ void Assembler::vmov_f64(DRegister dd, DRegister dm) {
+   emit32(kAL | 0x0EB00B40 | encode(dd, 22, 12) | encode(dm, 5, 0));
+ }
+ 
+-void Assembler::vmovl_s8(QRegister qd, DRegister dm) {
++void Assembler::vmovl_s8_(QRegister qd, DRegister dm) {
+   emit32(0xF2880A10 | encode(qd, 22, 12) | encode(dm, 5, 0));
+ }
+ 
+@@ -503,11 +503,11 @@ void Assembler::vmrs(CoreRegister rt, SpecialFPRegister spec_reg) {
+   emit32(kAL | 0x0EF00A10 | static_cast<uint32_t>(spec_reg) << 16 | rt.code << 12);
+ }
+ 
+-void Assembler::vmul_f32(QRegister qd, QRegister qn, QRegister qm) {
++void Assembler::vmul_f32_(QRegister qd, QRegister qn, QRegister qm) {
+   emit32(0xF3000D50 | encode(qd, 22, 12) | encode(qn, 7, 16) | encode(qm, 5, 0));
+ }
+ 
+-void Assembler::vneg_f32(QRegister qd, QRegister qm) {
++void Assembler::vneg_f32_(QRegister qd, QRegister qm) {
+   emit32(0xF3B907C0 | encode(qd, 22, 12) | encode(qm, 5, 0));
+ }
+ 
+@@ -535,11 +535,11 @@ void Assembler::vpush(SRegisterList regs) {
+   emit32(kAL | encode(regs, 22, 12) | 0xD2D << 16 | 0xA << 8);
+ }
+ 
+-void Assembler::vqadd_s16(QRegister qd, QRegister qn, QRegister qm) {
++void Assembler::vqadd_s16_(QRegister qd, QRegister qn, QRegister qm) {
+   emit32(0xF2100050 | encode(qd, 22, 12) | encode(qn, 7, 16) | encode(qm, 5, 0));
+ }
+ 
+-void Assembler::vqdmulh_s32(QRegister qd, QRegister qn, DRegisterLane dm) {
++void Assembler::vqdmulh_s32_(QRegister qd, QRegister qn, DRegisterLane dm) {
+   if (dm.code > 15) {
+     error_ = Error::kInvalidOperand;
+     return;
+@@ -551,19 +551,20 @@ void Assembler::vqdmulh_s32(QRegister qd, QRegister qn, DRegisterLane dm) {
+   emit32(0xF3A00C40 | encode(qd, 22, 12) | encode(qn, 7, 16) | dm.lane << 5 | dm.code);
+ }
+ 
+-void Assembler::vqmovn_s16(DRegister dd, QRegister qm) {
++void Assembler::vqmovn_s16_(DRegister dd, QRegister qm) {
+   emit32(0xF3B20280 | encode(dd, 22, 12) | encode(qm, 5, 0));
+ }
+ 
+-void Assembler::vqmovn_s32(DRegister dd, QRegister qm) {
++void Assembler::vqmovn_s32_(DRegister dd, QRegister qm) {
+   emit32(0xF3B60280 | encode(dd, 22, 12) | encode(qm, 5, 0));
+ }
+ 
+-void Assembler::vqshl_s32(QRegister qd, QRegister qm, QRegister qn) {
++void Assembler::vqshl_s32_(QRegister qd, QRegister qm, QRegister qn) {
+   emit32(0xF2200450 | encode(qd, 22, 12) | encode(qm, 5, 0) | encode(qn, 7, 16));
+ }
+ 
+-void Assembler::vrshl_s32(QRegister qd, QRegister qm, QRegister qn) {
++void Assembler::vrshl_s32_(QRegister qd, QRegister qm, QRegister qn)
++{
+   emit32(0xF2200540 | encode(qd, 22, 12) | encode(qm, 5, 0) | encode(qn, 7, 16));
+ }
+ 
+diff --git a/src/xnnpack/aarch32-assembler.h b/src/xnnpack/aarch32-assembler.h
+index fe8d72b..d3a1812 100644
+--- a/src/xnnpack/aarch32-assembler.h
++++ b/src/xnnpack/aarch32-assembler.h
+@@ -405,12 +405,12 @@ class Assembler : public AssemblerBase {
+   void tst(CoreRegister rn, uint8_t imm);
+ 
+   // SIMD instructions.
+-  void vabs_f32(QRegister qd, QRegister qm);
+-  void vadd_f32(QRegister qd, QRegister qn, QRegister qm);
++  void vabs_f32_(QRegister qd, QRegister qm);
++  void vadd_f32_(QRegister qd, QRegister qn, QRegister qm);
+   void vcmpe_f32(SRegister sd, SRegister sm);
+-  void vcvt_f32_s32(QRegister qd, QRegister qm);
+-  void vcvt_s32_f32(QRegister qd, QRegister qm);
+-  void vcvtn_s32_f32(QRegister qd, QRegister qm);
++  void vcvt_f32_s32_(QRegister qd, QRegister qm);
++  void vcvt_s32_f32_(QRegister qd, QRegister qm);
++  void vcvtn_s32_f32_(QRegister qd, QRegister qm);
+   void vdup_8(QRegister qd, DRegisterLane dm) { vdup(k8, qd, dm); }
+   void vdup_16(QRegister qd, DRegisterLane dm) { vdup(k16, qd, dm); }
+   void vdup_32(QRegister qd, DRegisterLane dm) { vdup(k32, qd, dm); }
+@@ -434,16 +434,16 @@ class Assembler : public AssemblerBase {
+   void vldm(MemOperand rn, DRegisterList regs);
+   void vldr(SRegister sd, MemOperand op);
+   void vldr(DRegister dd, MemOperand op);
+-  void vmax_f32(QRegister qd, QRegister qn, QRegister qm);
+-  void vmax_s8(QRegister qd, QRegister qn, QRegister qm);
+-  void vmin_f32(QRegister qd, QRegister qn, QRegister qm);
+-  void vmin_s8(QRegister qd, QRegister qn, QRegister qm);
++  void vmax_f32_(QRegister qd, QRegister qn, QRegister qm);
++  void vmax_s8_(QRegister qd, QRegister qn, QRegister qm);
++  void vmin_f32_(QRegister qd, QRegister qn, QRegister qm);
++  void vmin_s8_(QRegister qd, QRegister qn, QRegister qm);
+   // VMLA.F32 <Sd>, <Sn>, <Sm>
+-  void vmla_f32(SRegister sd, SRegister sn, SRegister sm);
++  void vmla_f32_(SRegister sd, SRegister sn, SRegister sm);
+   // VMLA.F32 <Qd>, <Qn>, <Dm[x]>
+-  void vmla_f32(QRegister qd, QRegister qn, DRegisterLane dm);
++  void vmla_f32_(QRegister qd, QRegister qn, DRegisterLane dm);
+   // VMLAL.S16 <Qd>, <Dn>, <Dm[x]>
+-  void vmlal_s16(QRegister qd, DRegister dn, DRegisterLane dm);
++  void vmlal_s16_(QRegister qd, DRegister dn, DRegisterLane dm);
+   // VMOV.F32 <Qd>, #<imm>; encoding A1
+   void vmov(QRegister qd, uint8_t imm);
+   // VMOV.F32 <Sd>, <Sm>; encoding A2.
+@@ -461,19 +461,19 @@ class Assembler : public AssemblerBase {
+   // VMOV_F64 <Dd>, <Dm>
+   void vmov_f64(DRegister dd, DRegister dm);
+   // VMOVL.S8 <Qd>, <Dm>
+-  void vmovl_s8(QRegister qd, DRegister dm);
++  void vmovl_s8_(QRegister qd, DRegister dm);
+   void vmrs(CoreRegister rt, SpecialFPRegister spec_reg);
+-  void vmul_f32(QRegister qd, QRegister qn, QRegister qm);
+-  void vneg_f32(QRegister qd, QRegister qm);
++  void vmul_f32_(QRegister qd, QRegister qn, QRegister qm);
++  void vneg_f32_(QRegister qd, QRegister qm);
+   void vpop(DRegisterList regs);
+   void vpush(DRegisterList regs);
+   void vpush(SRegisterList regs);
+-  void vqadd_s16(QRegister qd, QRegister qn, QRegister qm);
+-  void vqdmulh_s32(QRegister qd, QRegister qn, DRegisterLane dm);
+-  void vqmovn_s16(DRegister dd, QRegister qm);
+-  void vqmovn_s32(DRegister dd, QRegister qm);
+-  void vqshl_s32(QRegister qd, QRegister qm, QRegister qn);
+-  void vrshl_s32(QRegister qd, QRegister qm, QRegister qn);
++  void vqadd_s16_(QRegister qd, QRegister qn, QRegister qm);
++  void vqdmulh_s32_(QRegister qd, QRegister qn, DRegisterLane dm);
++  void vqmovn_s16_(DRegister dd, QRegister qm);
++  void vqmovn_s32_(DRegister dd, QRegister qm);
++  void vqshl_s32_(QRegister qd, QRegister qm, QRegister qn);
++  void vrshl_s32_(QRegister qd, QRegister qm, QRegister qn);
+   void vsdot_s8(QRegister qd, QRegister qn, DRegisterLane dm);
+   // VST1.8 <list>, [<Rn>]{!} (multiple single elements).
+   void vst1_8(DRegisterList regs, MemOperand op) { vst1(k8, regs, op); }
