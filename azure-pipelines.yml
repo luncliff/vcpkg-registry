@@ -28,8 +28,6 @@ variables:
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
   - name: vcpkg.disable.metrics
     value: "true"
-  - name: vcpkg.feature.flags
-    value: "binarycaching,manifest"
 
 stages:
   - stage: "Triplets"
@@ -126,36 +124,35 @@ stages:
           - task: run-vcpkg@0
             displayName: "tensorflow-lite"
             inputs:
-              vcpkgArguments: "tensorflow-lite[google-angle,gpu] --recurse"
+              vcpkgArguments: "tensorflow-lite[google-angle,gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             condition: ne(variables['vcpkg.default.triplet'], 'x64-uwp')
           - task: run-vcpkg@0
-            displayName: "onnxruntime"
+            displayName: "onnx"
             inputs:
-              vcpkgArguments: "onnxruntime[xnnpack]"
+              vcpkgArguments: "onnx"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
-            displayName: "onnxruntime"
+            displayName: "onnxruntime(dry)" # usisng features requires over 10 GB space ...
             inputs:
-              vcpkgArguments: "onnxruntime[directml,xnnpack] --recurse" #
+              vcpkgArguments: "onnxruntime[xnnpack] --dry-run"
               vcpkgGitCommitId: $(vcpkg.commit)
-            condition: ne(variables['vcpkg.default.triplet'], 'x64-uwp')
           - task: CopyFiles@2
+            displayName: "Copy logs in buildtrees"
             inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/onnxruntime"
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
               Contents: |
-                ?(*.log|*.txt)
-                *.cmake
-              TargetFolder: "$(Build.ArtifactStagingDirectory)"
+                **/?(*.log|*.txt|*.cmake)
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
               OverWrite: true
             condition: always()
           - task: PublishBuildArtifacts@1
-            displayName: "Publish Staged Logs"
+            displayName: "Publish logs"
             inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
               ArtifactName: "$(Agent.JobName)"
             condition: always()
-        timeoutInMinutes: "400"
+        timeoutInMinutes: "500"
 
       - job: "port_windows_arm"
         displayName: "Windows(ARM)"
@@ -193,7 +190,22 @@ stages:
             inputs:
               vcpkgArguments: "tensorflow-lite"
               vcpkgGitCommitId: $(vcpkg.commit)
-        timeoutInMinutes: "400"
+          - task: CopyFiles@2
+            displayName: "Copy logs in buildtrees"
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              Contents: |
+                **/?(*.log|*.txt|*.cmake)
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish logs"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
+        timeoutInMinutes: "500"
 
       - job: "port_linux"
         displayName: "Linux"
@@ -240,21 +252,21 @@ stages:
               vcpkgArguments: "onnxruntime[xnnpack]"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: CopyFiles@2
+            displayName: "Copy logs in buildtrees"
             inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/onnxruntime"
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
               Contents: |
-                ?(*.log|*.txt)
-                *.cmake
-              TargetFolder: "$(Build.ArtifactStagingDirectory)"
+                **/?(*.log|*.txt|*.cmake)
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
               OverWrite: true
             condition: always()
           - task: PublishBuildArtifacts@1
-            displayName: "Publish Staged Logs"
+            displayName: "Publish logs"
             inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
               ArtifactName: "$(Agent.JobName)"
             condition: always()
-        timeoutInMinutes: "300"
+        timeoutInMinutes: "500"
 
       - job: "port_android"
         displayName: "Android"
@@ -292,7 +304,22 @@ stages:
             inputs:
               vcpkgArguments: "openssl3 zlib-ng libdispatch fft2d farmhash ruy eigen3"
               vcpkgGitCommitId: $(vcpkg.commit)
-        timeoutInMinutes: "300"
+          - task: CopyFiles@2
+            displayName: "Copy logs in buildtrees"
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              Contents: |
+                **/?(*.log|*.txt|*.cmake)
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish logs"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
+        timeoutInMinutes: "500"
 
       - job: "port_osx"
         displayName: "Mac"
@@ -339,7 +366,22 @@ stages:
             inputs:
               vcpkgArguments: "onnxruntime[xnnpack,coreml]"
               vcpkgGitCommitId: $(vcpkg.commit)
-        timeoutInMinutes: "300"
+          - task: CopyFiles@2
+            displayName: "Copy logs in buildtrees"
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              Contents: |
+                **/?(*.log|*.txt|*.cmake)
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish logs"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
+        timeoutInMinutes: "500"
 
       - job: "port_ios"
         displayName: "iOS"
@@ -375,7 +417,22 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
-        timeoutInMinutes: "300"
+          - task: CopyFiles@2
+            displayName: "Copy logs in buildtrees"
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              Contents: |
+                **/?(*.log|*.txt|*.cmake)
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish logs"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
+        timeoutInMinutes: "500"
 
   # todo: Deploy stage
   #   Status notification + GitHub release
