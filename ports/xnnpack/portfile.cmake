@@ -1,8 +1,8 @@
 if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
-    # note: `Assember` class member functions' name collides with MSVC intrinsics...
-    # postfix '_' for those names
-    list(APPEND PATCHES fix-windows-simd.patch)
+    # note: `Assember` class member functions' name collides with MSVC intrinsics. Postfix '_' for those names
+    # note: Use C sources instead of ASM sources
+    list(APPEND PATCHES fix-windows-arm.patch)
 endif()
 
 vcpkg_from_github(
@@ -30,10 +30,11 @@ if(VCPKG_TARGET_IS_WINDOWS)
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
         list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR=i386)
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR=arm64)
+        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR=arm64) # -DCMAKE_ASM_COMPILER=armasm64?
     else() # ex) armv8
         list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR=${VCPKG_TARGET_ARCHITECTURE})
     endif()
+    # see also: https://docs.microsoft.com/en-us/cpp/intrinsics/arm64-intrinsics?view=msvc-170
     if(VCPKG_TARGET_ARCHITECTURE MATCHES "arm")
         list(APPEND PLATFORM_OPTIONS
             -DXNNPACK_ENABLE_ARM_FP16=OFF # `__fp16` type is missing
