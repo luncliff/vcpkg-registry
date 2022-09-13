@@ -12,25 +12,26 @@ vcpkg_from_github(
         fix-sources.patch
 )
 
-find_program(FLATC_EXECUTABLE NAMES flatc
+find_program(FLATC NAMES flatc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers"
     REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
 )
-message(STATUS "Using flatc: ${FLATC_EXECUTABLE}")
+message(STATUS "Using flatc: ${FLATC}")
 
+set(SCHEMA_DIR "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema")
 vcpkg_execute_required_process(
-    COMMAND ${FLATC_EXECUTABLE} --cpp ort.fbs
+    COMMAND ${FLATC} --cpp ort.fbs
     LOGNAME codegen-flatc-cpp
-    WORKING_DIRECTORY "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema/"
+    WORKING_DIRECTORY "${SCHEMA_DIR}"
 )
-file(RENAME "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema/ort_generated.h"
-            "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema/ort.fbs.h"
-)
+file(REMOVE "${SCHEMA_DIR}/ort.fbs.h")
+file(RENAME "${SCHEMA_DIR}/ort_generated.h" "${SCHEMA_DIR}/ort.fbs.h")
 
 if("xnnpack" IN_LIST FEATURES)
     # see https://github.com/microsoft/onnxruntime/pull/11798
-    file(MAKE_DIRECTORY "${SOURCE_PATH}/include/onnxruntime/core/providers/xnnpack")
-    file(WRITE "${SOURCE_PATH}/include/onnxruntime/core/providers/xnnpack/xnnpack_provider_factory.h" "#pragma once")
+    set(PROVIDERS_DIR "${SOURCE_PATH}/include/onnxruntime/core/providers")
+    file(MAKE_DIRECTORY "${PROVIDERS_DIR}/xnnpack")
+    file(WRITE "${PROVIDERS_DIR}/xnnpack/xnnpack_provider_factory.h" "#pragma once")
 endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -57,19 +58,17 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 if(VCPKG_TARGET_IS_WINDOWS)
     # target platform should be informed to activate SIMD properly
     if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
-        list(APPEND PLATFORM_OPTIONS -DCMAKE_GENERATOR_PLATFORM="x64")
+        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="x64")
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
-        list(APPEND PLATFORM_OPTIONS -DCMAKE_GENERATOR_PLATFORM="Win32")
+        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="Win32")
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-        list(APPEND PLATFORM_OPTIONS -DCMAKE_GENERATOR_PLATFORM="ARM64")
+        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="ARM64")
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
-        list(APPEND PLATFORM_OPTIONS -DCMAKE_GENERATOR_PLATFORM="ARM")
+        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="ARM")
     else()
-        message(FATAL_ERROR "Unexpected architecture: ${VCPKG_TARGET_ARCHITECTURE}")
+        message(WARNING "Unexpected architecture: ${VCPKG_TARGET_ARCHITECTURE}")
+        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="${VCPKG_TARGET_ARCHITECTURE}")
     endif()
-    list(APPEND GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
-else()
-    list(APPEND GENERATOR_OPTIONS GENERATOR Ninja)
 endif()
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
@@ -79,10 +78,9 @@ message(STATUS "Using Python3: ${PYTHON3}")
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
-    ${GENERATOR_OPTIONS}
     OPTIONS
+        ${GENERATOR_OPTIONS}
         ${FEATURE_OPTIONS}
-        ${PLATFORM_OPTIONS}
         -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
         # -DProtobuf_USE_STATIC_LIBS=OFF
         -DBUILD_PKGCONFIG_FILES=ON
@@ -98,6 +96,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_PREINSTALLED_EIGEN=ON -Deigen_SOURCE_PATH="${CURRENT_INSTALLED_DIR}/include"
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_MPI=OFF # ${VCPKG_TARGET_IS_LINUX}
+        -Donnxruntime_ENABLE_CPUINFO=ON
         -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=${VCPKG_TARGET_IS_WINDOWS}
         -Donnxruntime_ENABLE_BITCODE=${VCPKG_TARGET_IS_IOS}
         -Donnxruntime_ENABLE_PYTHON=OFF

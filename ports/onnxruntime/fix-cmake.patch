@@ -1,5 +1,5 @@
 diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
-index fb4899d..58809a6 100644
+index fb4899d..4b86657 100644
 --- a/cmake/CMakeLists.txt
 +++ b/cmake/CMakeLists.txt
 @@ -20,6 +20,7 @@ project(onnxruntime C CXX ASM)
@@ -32,7 +32,16 @@ index fb4899d..58809a6 100644
    if (TARGET Boost::boost AND NOT TARGET Boost::mp11)
      add_library(Boost::mp11 ALIAS Boost::boost)
    endif()
-@@ -1559,19 +1559,30 @@ else()
+@@ -942,6 +942,8 @@ if (onnxruntime_ENABLE_CPUINFO)
+       )
+       set(CPUINFO_SUPPORTED FALSE)
+     endif()
++    # patched in https://github.com/luncliff/vcpkg-registry
++    set(CPUINFO_SUPPORTED TRUE)
+   endif()
+ else()
+   set(CPUINFO_SUPPORTED FALSE)
+@@ -1559,19 +1561,30 @@ else()
    set(ONNX_USE_LITE_PROTO OFF CACHE BOOL "" FORCE)
  endif()
  
@@ -74,7 +83,7 @@ index fb4899d..58809a6 100644
  
  # fix a warning in onnx code we can't do anything about
  if (MSVC)
-@@ -1999,7 +2010,7 @@ if (onnxruntime_ENABLE_EAGER_MODE)
+@@ -1999,7 +2012,7 @@ if (onnxruntime_ENABLE_EAGER_MODE)
    list(APPEND ONNXRUNTIME_TARGETS onnxruntime_eager)
  endif()
  foreach(target_name ${ONNXRUNTIME_TARGETS})
@@ -83,7 +92,7 @@ index fb4899d..58809a6 100644
  endforeach()
  
  if (CMAKE_SYSTEM_NAME STREQUAL "Android")
-@@ -2010,7 +2021,7 @@ if (WIN32)
+@@ -2010,7 +2023,7 @@ if (WIN32)
    list(APPEND onnxruntime_EXTERNAL_LIBRARIES ${SYS_PATH_LIB})
    list(APPEND onnxruntime_EXTERNAL_LIBRARIES debug Dbghelp)
  else()
@@ -93,7 +102,7 @@ index fb4899d..58809a6 100644
  endif()
  
 diff --git a/cmake/external/xnnpack.cmake b/cmake/external/xnnpack.cmake
-index 25e63ea..443b1a5 100644
+index 25e63ea..98a7c08 100644
 --- a/cmake/external/xnnpack.cmake
 +++ b/cmake/external/xnnpack.cmake
 @@ -1,27 +1,11 @@
@@ -127,18 +136,20 @@ index 25e63ea..443b1a5 100644
  
  # the XNNPACK CMake setup doesn't include the WASM kernels so we have to manually set those up
  if (onnxruntime_BUILD_WEBASSEMBLY)
-@@ -57,4 +41,4 @@ if (onnxruntime_BUILD_WEBASSEMBLY)
- 
-     target_sources(XNNPACK PRIVATE ${XNNPACK_WASMSIMD_MICROKERNEL_SRCS})
-   endif()
--endif()
-\ No newline at end of file
-+endif()
 diff --git a/cmake/onnxruntime_common.cmake b/cmake/onnxruntime_common.cmake
-index a8ca9c9..1dfbf77 100644
+index a8ca9c9..0f083c9 100644
 --- a/cmake/onnxruntime_common.cmake
 +++ b/cmake/onnxruntime_common.cmake
-@@ -217,8 +217,8 @@ if (ARM64 OR ARM OR X86 OR X64 OR X86_64)
+@@ -211,14 +211,17 @@ if (ARM64 OR ARM OR X86 OR X64 OR X86_64)
+   if((WIN32 AND NOT CMAKE_CXX_STANDARD_LIBRARIES MATCHES kernel32.lib) OR ((ARM64 OR ARM) AND MSVC))
+     # msvc compiler report syntax error with cpuinfo arm source files
+     # and cpuinfo does not have code for getting arm uarch info under windows
++    # patched in https://github.com/luncliff/vcpkg-registry
++    target_link_libraries(onnxruntime_common cpuinfo::cpuinfo)
++    list(APPEND onnxruntime_EXTERNAL_LIBRARIES kernel32 cpuinfo::cpuinfo cpuinfo::clog)
+   else()
+     # Link cpuinfo if supported
+     # Using it mainly in ARM with Android.
      # Its functionality in detecting x86 cpu features are lacking, so is support for Windows.
  
      if (CPUINFO_SUPPORTED)
