@@ -1,29 +1,3 @@
-diff --git a/tensorflow/lite/kernels/random_ops.cc b/tensorflow/lite/kernels/random_ops.cc
-index 8636ca20..93941c2f 100644
---- a/tensorflow/lite/kernels/random_ops.cc
-+++ b/tensorflow/lite/kernels/random_ops.cc
-@@ -16,7 +16,7 @@ limitations under the License.
- #include <cmath>
- #include <cstdint>
- #include <random>
--
-+#include "tensorflow/lite/kernels/internal/constants.h"
- #include "tensorflow/core/lib/random/philox_random.h"
- #include "tensorflow/core/lib/random/random_distributions_utils.h"
- #include "tensorflow/lite/c/builtin_op_data.h"
-diff --git a/tensorflow/lite/delegates/telemetry.h b/tensorflow/lite/delegates/telemetry.h
-index d7e92be5..c5675c1c 100644
---- a/tensorflow/lite/delegates/telemetry.h
-+++ b/tensorflow/lite/delegates/telemetry.h
-@@ -21,6 +21,8 @@ limitations under the License.
- #include "tensorflow/lite/c/common.h"
- #include "tensorflow/lite/experimental/acceleration/configuration/configuration_generated.h"
- 
-+using tflite::proto::TFLiteSettings;
-+
- // This file implements utilities for delegate telemetry. These enable
- // representation and reporting of hardware-specific configurations, status
- // codes, etc.
 diff --git a/tensorflow/lite/delegates/external/external_delegate.cc b/tensorflow/lite/delegates/external/external_delegate.cc
 index 7fe5c532..8fef8920 100644
 --- a/tensorflow/lite/delegates/external/external_delegate.cc
@@ -49,3 +23,112 @@ index 7fe5c532..8fef8920 100644
        if (external_delegate_->CopyFromBufferHandle) {
          wrapper_delegate_.CopyFromBufferHandle = DelegateCopyFromBufferHandle;
        }
+diff --git a/tensorflow/lite/delegates/gpu/gl/runtime.cc b/tensorflow/lite/delegates/gpu/gl/runtime.cc
+index ce029efa..213a4134 100644
+--- a/tensorflow/lite/delegates/gpu/gl/runtime.cc
++++ b/tensorflow/lite/delegates/gpu/gl/runtime.cc
+@@ -86,27 +86,22 @@ absl::Status MakeGlTexture(const Object& object, const ObjectData& data,
+       if (data.size() % 2 != 0) {
+         return absl::InvalidArgumentError("Texture size is not aligned");
+       }
+-      return absl::visit(
+-          TextureF16Maker{
+-              .data = absl::MakeConstSpan(
+-                  reinterpret_cast<const uint16_t*>(data.data()),
+-                  data.size() / 2),
+-              .gl_texture = gl_texture,
+-          },
+-          object.size);
++      TextureF16Maker maker{};
++      maker.data = absl::MakeConstSpan(
++          reinterpret_cast<const uint16_t*>(data.data()), data.size() / 2);
++      maker.gl_texture = gl_texture;
++      return absl::visit(maker, object.size);
+     }
+     case DataType::FLOAT32: {
+       if (data.size() % sizeof(float) != 0) {
+         return absl::InvalidArgumentError("Texture size is not aligned");
+       }
+-      return absl::visit(
+-          TextureF32Maker{
+-              .data = absl::MakeConstSpan(
+-                  reinterpret_cast<const float*>(data.data()),
+-                  data.size() / sizeof(float)),
+-              .gl_texture = gl_texture,
+-          },
+-          object.size);
++      TextureF32Maker maker{};
++      maker.data =
++          absl::MakeConstSpan(reinterpret_cast<const float*>(data.data()),
++                              data.size() / sizeof(float));
++      maker.gl_texture = gl_texture;
++      return absl::visit(maker, object.size);
+     }
+     default:
+       return absl::InvalidArgumentError("Unsupported textures data type.");
+diff --git a/tensorflow/lite/delegates/telemetry.h b/tensorflow/lite/delegates/telemetry.h
+index d7e92be5..c5675c1c 100644
+--- a/tensorflow/lite/delegates/telemetry.h
++++ b/tensorflow/lite/delegates/telemetry.h
+@@ -21,6 +21,8 @@ limitations under the License.
+ #include "tensorflow/lite/c/common.h"
+ #include "tensorflow/lite/experimental/acceleration/configuration/configuration_generated.h"
+ 
++using tflite::proto::TFLiteSettings;
++
+ // This file implements utilities for delegate telemetry. These enable
+ // representation and reporting of hardware-specific configurations, status
+ // codes, etc.
+diff --git a/tensorflow/lite/kernels/random_ops.cc b/tensorflow/lite/kernels/random_ops.cc
+index 8636ca20..93941c2f 100644
+--- a/tensorflow/lite/kernels/random_ops.cc
++++ b/tensorflow/lite/kernels/random_ops.cc
+@@ -16,7 +16,7 @@ limitations under the License.
+ #include <cmath>
+ #include <cstdint>
+ #include <random>
+-
++#include "tensorflow/lite/kernels/internal/constants.h"
+ #include "tensorflow/core/lib/random/philox_random.h"
+ #include "tensorflow/core/lib/random/random_distributions_utils.h"
+ #include "tensorflow/lite/c/builtin_op_data.h"
+diff --git a/tensorflow/lite/simple_memory_arena.cc b/tensorflow/lite/simple_memory_arena.cc
+index 1c7a0384..59a139ec 100644
+--- a/tensorflow/lite/simple_memory_arena.cc
++++ b/tensorflow/lite/simple_memory_arena.cc
+@@ -168,11 +168,17 @@ TfLiteStatus SimpleMemoryArena::ReleaseBuffer() {
+   return kTfLiteOk;
+ }
+ 
++#if defined(_DEBUG)
++void DumpArenaInfo(const std::string& name,
++                   const std::vector<int>& execution_plan, size_t arena_size,
++                   const std::vector<ArenaAllocWithUsageInterval>& allocs);
++#else
+ // Using weak symbols to create a pluggable debugging module.
+ TFLITE_ATTRIBUTE_WEAK void DumpArenaInfo(
+     const std::string& name, const std::vector<int>& execution_plan,
+     size_t arena_size, const std::vector<ArenaAllocWithUsageInterval>& allocs) {
+ }
++#endif
+ 
+ void SimpleMemoryArena::DumpDebugInfo(
+     const std::string& name, const std::vector<int>& execution_plan) const {
+diff --git a/tensorflow/lite/simple_memory_arena_debug_dump.cc b/tensorflow/lite/simple_memory_arena_debug_dump.cc
+index 0cf80051..26547a0c 100644
+--- a/tensorflow/lite/simple_memory_arena_debug_dump.cc
++++ b/tensorflow/lite/simple_memory_arena_debug_dump.cc
+@@ -129,6 +129,7 @@ class TopKLayers {
+ };
+ }  // namespace
+ 
++#if defined(_DEBUG)
+ // Corresponding weak declaration found in lite/simple_memory_arena.cc
+ void DumpArenaInfo(const std::string& name,
+                    const std::vector<int>& execution_plan, size_t arena_size,
+@@ -194,4 +195,5 @@ void DumpArenaInfo(const std::string& name,
+   top_usage.Print();
+   printf("===End of %s ===\n\n", name.c_str());
+ }
++#endif
+ }  // namespace tflite
