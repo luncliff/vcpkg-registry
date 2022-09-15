@@ -8,27 +8,39 @@ orbs:
 workflows:
   windows_workflow:
     jobs:
-      - windows_ports
+      - windows_ports:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+                - docs
 
 jobs:
   windows_ports:
     executor:
       name: win/default
     environment:
-      VCPKG_DEFAULT_TRIPLET: x64-windows
       VCPKG_DOWNLOADS: C:/Users/circleci/vcpkg-download-cache
       VCPKG_ROOT: C:/Users/circleci/project/vcpkg
       VCPKG_OVERLAY_PORTS: C:/Users/circleci/project/ports
+      # VCPKG_OVERLAY_TRIPLETS: C:/Users/circleci/project/triplets
+      # VCPKG_DEFAULT_TRIPLET: x64-windows
     steps:
       - checkout
       - run:
+          name: "Install Chocolatey packages"
+          command: |
+            choco install --yes --no-progress rsync
+            choco install --yes --no-progress jq
+      - run:
           name: "Print baseline.json"
-          command: Get-Content versions/baseline.json | jq
+          command: |
+            Get-Content versions/baseline.json | jq
       - run:
           name: "Setup: microsoft/vcpkg(2022.08.15)"
           command: |
-            git clone --branch=2022.08.15 --depth=1 https://github.com/microsoft/vcpkg
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
+            git clone --branch=2022.08.15 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
@@ -40,17 +52,32 @@ jobs:
             - v1-vcpkg-download-cache-{{ .Branch }}
       - run:
           name: "Port: vcpkg-cmake"
-          command: |
-            ./vcpkg install vcpkg-cmake vcpkg-cmake-config
-          working_directory: C:/Users/circleci/project/vcpkg
-          # environment:
-          #   VCPKG_OVERLAY_TRIPLETS: C:/Users/circleci/project/triplets
+          command: ./vcpkg.exe install vcpkg-cmake vcpkg-cmake-config
+          working_directory: vcpkg
+      - run:
+          name: "Port: cpuinfo"
+          command: ./vcpkg.exe install --clean-buildtrees-after-build cpuinfo
+          working_directory: vcpkg
+      - run:
+          name: "Port: xnnpack"
+          command: ./vcpkg.exe install --clean-buildtrees-after-build xnnpack
+          working_directory: vcpkg
       - save_cache:
           key: v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/Users/circleci/vcpkg-download-cache
+          when: always
       - save_cache:
           key: v1-vcpkg-download-cache-{{ .Branch }}
           paths:
             - C:/Users/circleci/vcpkg-download-cache
-          
+          when: always
+      - run:
+          name: "Stage buildtrees logs"
+          command: rsync -r vcpkg/buildtrees/ buildtrees-log
+          when: always
+      - store_artifacts:
+          name: "Upload buildtrees log"
+          path: buildtrees-log
+          destination: "buildtrees"
+          when: always
