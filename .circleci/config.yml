@@ -35,7 +35,7 @@ jobs:
       - restore_cache:
           keys:
             - v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
-            - v1-vcpkg-download-cache
+            - v1-vcpkg-download-cache-{{ .Branch }}
       - run:
           name: "Port: vcpkg-cmake"
           command: |
@@ -47,3 +47,8 @@ jobs:
           key: v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/Users/circleci/vcpkg-download-cache
+      - save_cache:
+          key: v1-vcpkg-download-cache-{{ .Branch }}
+          paths:
+            - C:/Users/circleci/vcpkg-download-cache
+          
