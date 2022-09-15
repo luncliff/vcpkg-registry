@@ -19,4 +19,15 @@ jobs:
       - run:
           name: "Show baseline.json"
           command: cat versions/baseline.json | jq
-
+      - run:
+          name: "Show environments"
+          command: |
+            Write-Output $env:VCPKG_DEFAULT_TRIPLET
+            Write-Output $env:CIRCLE_WORKING_DIRECTORY
+            $env:VCPKG_OVERLAY_PORTS="${env:CIRCLE_WORKING_DIRECTORY}/ports"
+            Write-Output $env:VCPKG_OVERLAY_PORTS
+          environment:
+            VCPKG_DEFAULT_TRIPLET: x64-uwp
+      - run:
+          name: "Clone microsoft/vcpkg"
+          command: git clone --branch=2022.04.12 --depth=1 https://github.com/microsoft/vcpkg
