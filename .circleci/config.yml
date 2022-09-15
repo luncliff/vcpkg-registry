@@ -14,20 +14,36 @@ jobs:
   windows_ports:
     executor:
       name: win/default
+    environment:
+      VCPKG_DEFAULT_TRIPLET: x64-windows
+      VCPKG_DOWNLOADS: C:/Users/circleci/vcpkg-download-cache
     steps:
       - checkout
       - run:
-          name: "Show baseline.json"
-          command: cat versions/baseline.json | jq
+          name: "Print baseline.json"
+          command: Get-Content versions/baseline.json | jq
       - run:
-          name: "Show environments"
+          name: "Setup: microsoft/vcpkg"
           command: |
-            Write-Output $env:VCPKG_DEFAULT_TRIPLET
-            Write-Output $env:CIRCLE_WORKING_DIRECTORY
-            $env:VCPKG_OVERLAY_PORTS="${env:CIRCLE_WORKING_DIRECTORY}/ports"
-            Write-Output $env:VCPKG_OVERLAY_PORTS
-          environment:
-            VCPKG_DEFAULT_TRIPLET: x64-uwp
+            git clone --branch=2022.04.12 --depth=1 https://github.com/microsoft/vcpkg
+            New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
+            Push-Location vcpkg
+              ./bootstrap-vcpkg.bat
+              ./vcpkg.exe --version
+              ./vcpkg.exe fetch nuget
+            Pop-Location
+      - restore_cache:
+          keys:
+            - v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
+            - v1-vcpkg-download-cache
       - run:
-          name: "Clone microsoft/vcpkg"
-          command: git clone --branch=2022.04.12 --depth=1 https://github.com/microsoft/vcpkg
+          name: "Port: vcpkg-cmake"
+          command: |
+            $env:VCPKG_OVERLAY_PORTS="${env:CIRCLE_WORKING_DIRECTORY}\ports"
+            Push-Location vcpkg
+              ./vcpkg install vcpkg-cmake
+            Pop-Location
+      - save_cache:
+          key: v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - C:/Users/circleci/vcpkg-download-cache
