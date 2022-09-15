@@ -17,6 +17,7 @@ jobs:
     environment:
       VCPKG_DEFAULT_TRIPLET: x64-windows
       VCPKG_DOWNLOADS: C:/Users/circleci/vcpkg-download-cache
+      VCPKG_ROOT: C:/Users/circleci/project/vcpkg
     steps:
       - checkout
       - run:
@@ -42,6 +43,20 @@ jobs:
             $env:VCPKG_OVERLAY_PORTS="${env:CIRCLE_WORKING_DIRECTORY}\ports"
             Push-Location vcpkg
               ./vcpkg install vcpkg-cmake
+            Pop-Location
+      - run:
+          name: "Port: xnnpack"
+          command: |
+            $env:VCPKG_OVERLAY_PORTS="${env:CIRCLE_WORKING_DIRECTORY}\ports"
+            Push-Location vcpkg
+              ./vcpkg install xnnpack
+            Pop-Location
+      - run:
+          name: "Port: onnxruntime[xnnpack]"
+          command: |
+            $env:VCPKG_OVERLAY_PORTS="${env:CIRCLE_WORKING_DIRECTORY}\ports"
+            Push-Location vcpkg
+              ./vcpkg install onnxruntime[xnnpack]
             Pop-Location
       - save_cache:
           key: v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
