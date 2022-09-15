@@ -1,0 +1,22 @@
+# https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+orbs:
+  win: circleci/windows@4.1.1
+  jq: circleci/jq@2.2.0
+
+workflows:
+  windows_workflow:
+    jobs:
+      - windows_ports
+
+jobs:
+  windows_ports:
+    executor:
+      name: win/default
+    steps:
+      - checkout
+      - run:
+          name: "Show baseline.json"
+          command: cat versions/baseline.json | jq
+
