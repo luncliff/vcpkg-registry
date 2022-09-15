@@ -24,9 +24,9 @@ jobs:
           name: "Print baseline.json"
           command: Get-Content versions/baseline.json | jq
       - run:
-          name: "Setup: microsoft/vcpkg"
+          name: "Setup: microsoft/vcpkg(2022.08.15)"
           command: |
-            git clone --branch=2022.04.12 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2022.08.15 --depth=1 https://github.com/microsoft/vcpkg
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             Push-Location vcpkg
               ./bootstrap-vcpkg.bat
@@ -42,7 +42,7 @@ jobs:
           command: |
             $env:VCPKG_OVERLAY_PORTS="${env:CIRCLE_WORKING_DIRECTORY}\ports"
             Push-Location vcpkg
-              ./vcpkg install vcpkg-cmake
+              ./vcpkg install vcpkg-cmake vcpkg-cmake-config
             Pop-Location
       - run:
           name: "Port: xnnpack"
