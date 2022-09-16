@@ -20,8 +20,6 @@ jobs:
       name: win/server-2022 # from the Orbs
     environment:
       VCPKG_DOWNLOADS: C:/Users/circleci/vcpkg-download-cache
-      VCPKG_OVERLAY_PORTS: C:/Users/circleci/project/ports
-      VCPKG_OVERLAY_TRIPLETS: C:/Users/circleci/project/triplets
       # VCPKG_DEFAULT_TRIPLET: x64-windows
       OPT_CLEAN: "--clean-buildtrees-after-build"
     steps:
@@ -52,15 +50,21 @@ jobs:
             - v1-vcpkg-download-cache-{{ .Branch }}
       - run:
           name: "Port: vcpkg-cmake"
-          command: ./vcpkg.exe install $env:OPT_CLEAN vcpkg-cmake vcpkg-cmake-config
-          working_directory: vcpkg # todo: shorten this
+          command: |
+            ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
+              vcpkg-cmake vcpkg-cmake-config
+          working_directory: vcpkg
       - run:
           name: "Port: cpuinfo"
-          command: ./vcpkg.exe install $env:OPT_CLEAN cpuinfo
+          command: |
+            ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
+              cpuinfo
           working_directory: vcpkg
       - run:
           name: "Port: xnnpack"
-          command: ./vcpkg.exe install $env:OPT_CLEAN xnnpack
+          command: |
+            ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
+              xnnpack
           working_directory: vcpkg
       - save_cache:
           key: v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
