@@ -1,0 +1,3 @@
+xnnpack:x86-windows
+xnnpack:x64-windows
+xnnpack:arm64-windows

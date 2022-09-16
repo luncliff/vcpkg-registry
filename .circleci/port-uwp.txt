@@ -1,0 +1,3 @@
+xnnpack:x64-uwp
+xnnpack:arm64-uwp
+onnxruntime[xnnpack]:x64-uwp

@@ -13,8 +13,27 @@ workflows:
               ignore:
                 - gh-pages
                 - docs
+      - deploy:
+          requires:
+            - windows_2022
+          filters:
+            branches:
+              only: main
 
 jobs:
+  deploy:
+    executor:
+      name: win/server-2022 # from the Orbs
+    steps:
+      - checkout
+      - run:
+          name: "Install Chocolatey packages"
+          command: |
+            choco install --yes --no-progress jq
+      - run:
+          name: "Print baseline.json"
+          command: Get-Content versions/baseline.json | jq
+
   windows_2022:
     executor:
       name: win/server-2022 # from the Orbs
@@ -28,7 +47,7 @@ jobs:
           name: "Install Chocolatey packages"
           command: |
             choco install --yes --no-progress `
-              rsync ninja jq
+              rsync ninja jq nuget.commandline
       - run:
           name: "Print baseline.json"
           command: |
@@ -51,14 +70,8 @@ jobs:
       - run:
           name: "Port: vcpkg-cmake"
           command: |
-            ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
+            ./vcpkg.exe install --debug $env:OPT_CLEAN `
               vcpkg-cmake vcpkg-cmake-config
-          working_directory: vcpkg
-      - run:
-          name: "Port: cpuinfo"
-          command: |
-            ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
-              cpuinfo
           working_directory: vcpkg
       - run:
           name: "Port: xnnpack"
@@ -66,6 +79,20 @@ jobs:
             ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
               xnnpack
           working_directory: vcpkg
+      - run:
+          name: "Port: from port-windows.text"
+          command: |
+            ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
+              $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-windows.txt")
+          working_directory: vcpkg
+          no_output_timeout: 2h
+      - run:
+          name: "Port: from port-uwp.text"
+          command: |
+            ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
+              $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-uwp.txt")
+          working_directory: vcpkg
+          no_output_timeout: 2h
       - save_cache:
           key: v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
           paths:
@@ -76,12 +103,12 @@ jobs:
           paths:
             - C:/Users/circleci/vcpkg-download-cache
           when: always
-      - run:
-          name: "Stage buildtrees logs"
-          command: rsync -r vcpkg/buildtrees/ buildtrees-log
-          when: always
+      # - run:
+      #     name: "Stage buildtrees logs"
+      #     command: rsync -r vcpkg/buildtrees/ buildtrees-log
+      #     when: always
       - store_artifacts:
           name: "Upload buildtrees log"
-          path: buildtrees-log
-          destination: "buildtrees"
+          path: vcpkg/buildtrees/ # buildtrees-log
+          destination: "build-logs"
           when: always
