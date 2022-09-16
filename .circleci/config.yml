@@ -23,7 +23,10 @@ workflows:
 jobs:
   deploy:
     executor:
-      name: win/server-2022 # from the Orbs
+      name: win/server-2022
+    environment:
+      VCPKG_DOWNLOADS: C:/vcpkg-downloads
+      VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
     steps:
       - checkout
       - run:
@@ -33,12 +36,25 @@ jobs:
       - run:
           name: "Print baseline.json"
           command: Get-Content versions/baseline.json | jq
+      - run:
+          name: "Create cache folders"
+          command: |
+            New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
+            New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
+      - restore_cache:
+          keys:
+            - v1-downloads-{{ checksum ".circleci/config.yml" }}
+      - restore_cache:
+          keys:
+            - v1-bins-{{ .Branch }}
 
   windows_2022:
     executor:
       name: win/server-2022 # from the Orbs
+      size: large
     environment:
-      VCPKG_DOWNLOADS: C:/Users/circleci/vcpkg-download-cache
+      VCPKG_DOWNLOADS: C:/vcpkg-downloads
+      VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
       # VCPKG_DEFAULT_TRIPLET: x64-windows
       OPT_CLEAN: "--clean-buildtrees-after-build"
     steps:
@@ -49,13 +65,15 @@ jobs:
             choco install --yes --no-progress `
               rsync ninja jq nuget.commandline
       - run:
-          name: "Print baseline.json"
+          name: "Print with jq"
           command: |
-            Get-Content versions/baseline.json | jq
+            Get-Content .circleci/port-windows.txt | jq -Rn '[inputs]'
+            Get-Content .circleci/port-uwp.txt | jq -Rn '[inputs]'
       - run:
           name: "Setup: microsoft/vcpkg(2022.08.15)"
           command: |
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
+            New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
             git clone --branch=2022.08.15 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
               Get-Location
@@ -65,8 +83,8 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
-            - v1-vcpkg-download-cache-{{ .Branch }}
+            - v1-downloads-{{ checksum ".circleci/config.yml" }}
+            - v1-downloads-{{ .Branch }}
       - run:
           name: "Port: vcpkg-cmake"
           command: |
@@ -74,10 +92,10 @@ jobs:
               vcpkg-cmake vcpkg-cmake-config
           working_directory: vcpkg
       - run:
-          name: "Port: xnnpack"
+          name: "Port: onnxruntime"
           command: |
             ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
-              xnnpack
+              onnxruntime[directml]:x64-windows onnxruntime[xnnpack]:x64-uwp
           working_directory: vcpkg
       - run:
           name: "Port: from port-windows.text"
@@ -93,15 +111,23 @@ jobs:
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-uwp.txt")
           working_directory: vcpkg
           no_output_timeout: 2h
+      - when:
+          condition:
+            equal: [ main, << pipeline.git.branch >> ]
+          steps:
+           - save_cache:
+              key: v1-bins-{{ .Branch }}
+              paths:
+                - C:/vcpkg-bins
       - save_cache:
-          key: v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
+          key: v1-downloads-{{ checksum ".circleci/config.yml" }}
           paths:
-            - C:/Users/circleci/vcpkg-download-cache
+            - C:/vcpkg-downloads
           when: always
       - save_cache:
-          key: v1-vcpkg-download-cache-{{ .Branch }}
+          key: v1-downloads-{{ .Branch }}
           paths:
-            - C:/Users/circleci/vcpkg-download-cache
+            - C:/vcpkg-downloads
           when: always
       # - run:
       #     name: "Stage buildtrees logs"
@@ -111,4 +137,3 @@ jobs:
           name: "Upload buildtrees log"
           path: vcpkg/buildtrees/ # buildtrees-log
           destination: "build-logs"
-          when: always
