@@ -21,10 +21,9 @@ jobs:
     environment:
       VCPKG_DOWNLOADS: C:/Users/circleci/vcpkg-download-cache
       VCPKG_OVERLAY_PORTS: C:/Users/circleci/project/ports
-      # VCPKG_ROOT: C:/Users/circleci/project/vcpkg
-      # VCPKG_OVERLAY_TRIPLETS: C:/Users/circleci/project/triplets
+      VCPKG_OVERLAY_TRIPLETS: C:/Users/circleci/project/triplets
       # VCPKG_DEFAULT_TRIPLET: x64-windows
-      OPTS: "--clean-buildtrees-after-build "
+      OPT_CLEAN: "--clean-buildtrees-after-build"
     steps:
       - checkout
       - run:
@@ -42,6 +41,7 @@ jobs:
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             git clone --branch=2022.08.15 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
+              Get-Location
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
               ./vcpkg.exe fetch nuget
@@ -52,15 +52,15 @@ jobs:
             - v1-vcpkg-download-cache-{{ .Branch }}
       - run:
           name: "Port: vcpkg-cmake"
-          command: ./vcpkg.exe install $env:OPTS vcpkg-cmake vcpkg-cmake-config
-          working_directory: vcpkg
+          command: ./vcpkg.exe install $env:OPT_CLEAN vcpkg-cmake vcpkg-cmake-config
+          working_directory: vcpkg # todo: shorten this
       - run:
           name: "Port: cpuinfo"
-          command: ./vcpkg.exe install $env:OPTS cpuinfo
+          command: ./vcpkg.exe install $env:OPT_CLEAN cpuinfo
           working_directory: vcpkg
       - run:
           name: "Port: xnnpack"
-          command: ./vcpkg.exe install $env:OPTS xnnpack
+          command: ./vcpkg.exe install $env:OPT_CLEAN xnnpack
           working_directory: vcpkg
       - save_cache:
           key: v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
