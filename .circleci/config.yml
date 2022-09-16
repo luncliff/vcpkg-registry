@@ -2,13 +2,12 @@
 version: 2.1
 
 orbs:
-  win: circleci/windows@4.1.1
-  jq: circleci/jq@2.2.0
+  win: circleci/windows@5.0
 
 workflows:
-  windows_workflow:
+  windows_ports:
     jobs:
-      - windows_ports:
+      - windows_2022:
           filters:
             branches:
               ignore:
@@ -16,22 +15,23 @@ workflows:
                 - docs
 
 jobs:
-  windows_ports:
+  windows_2022:
     executor:
-      name: win/default
+      name: win/server-2022 # from the Orbs
     environment:
       VCPKG_DOWNLOADS: C:/Users/circleci/vcpkg-download-cache
-      VCPKG_ROOT: C:/Users/circleci/project/vcpkg
       VCPKG_OVERLAY_PORTS: C:/Users/circleci/project/ports
+      # VCPKG_ROOT: C:/Users/circleci/project/vcpkg
       # VCPKG_OVERLAY_TRIPLETS: C:/Users/circleci/project/triplets
       # VCPKG_DEFAULT_TRIPLET: x64-windows
+      OPTS: "--clean-buildtrees-after-build "
     steps:
       - checkout
       - run:
           name: "Install Chocolatey packages"
           command: |
-            choco install --yes --no-progress rsync
-            choco install --yes --no-progress jq
+            choco install --yes --no-progress `
+              rsync ninja jq
       - run:
           name: "Print baseline.json"
           command: |
@@ -52,15 +52,15 @@ jobs:
             - v1-vcpkg-download-cache-{{ .Branch }}
       - run:
           name: "Port: vcpkg-cmake"
-          command: ./vcpkg.exe install vcpkg-cmake vcpkg-cmake-config
+          command: ./vcpkg.exe install $env:OPTS vcpkg-cmake vcpkg-cmake-config
           working_directory: vcpkg
       - run:
           name: "Port: cpuinfo"
-          command: ./vcpkg.exe install --clean-buildtrees-after-build cpuinfo
+          command: ./vcpkg.exe install $env:OPTS cpuinfo
           working_directory: vcpkg
       - run:
           name: "Port: xnnpack"
-          command: ./vcpkg.exe install --clean-buildtrees-after-build xnnpack
+          command: ./vcpkg.exe install $env:OPTS xnnpack
           working_directory: vcpkg
       - save_cache:
           key: v1-vcpkg-download-cache-{{ checksum ".circleci/config.yml" }}
