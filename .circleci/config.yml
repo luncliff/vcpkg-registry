@@ -92,12 +92,6 @@ jobs:
               vcpkg-cmake vcpkg-cmake-config
           working_directory: vcpkg
       - run:
-          name: "Port: onnxruntime"
-          command: |
-            ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
-              onnxruntime[directml]:x64-windows onnxruntime[xnnpack]:x64-uwp
-          working_directory: vcpkg
-      - run:
           name: "Port: from port-windows.text"
           command: |
             ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
