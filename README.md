@@ -1,6 +1,7 @@
 # vcpkg-registry
 
 [![Build Status](https://dev.azure.com/luncliff/personal/_apis/build/status/luncliff.vcpkg-registry?branchName=main)](https://dev.azure.com/luncliff/personal/_build/latest?definitionId=52&branchName=main)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/luncliff/vcpkg-registry/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/luncliff/vcpkg-registry/tree/main)
 
 Targets...
 
