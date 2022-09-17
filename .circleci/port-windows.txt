@@ -1,0 +1,1 @@
+onnxruntime[directml,xnnpack]:x64-windows
