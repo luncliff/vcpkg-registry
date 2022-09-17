@@ -10,6 +10,8 @@ vcpkg_from_github(
     PATCHES
         fix-cmake.patch
         fix-sources.patch
+        # https://learn.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt
+        # support-windows10.patch
 )
 
 find_program(FLATC NAMES flatc
@@ -55,6 +57,12 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 
 )
 
+if(VCPKG_TARGET_IS_UWP)
+    set(CONFIG_OPTIONS WINDOWS_USE_MSBUILD)
+else()
+    set(CONFIG_OPTIONS GENERATOR Ninja)
+endif()
+
 if(VCPKG_TARGET_IS_WINDOWS)
     # target platform should be informed to activate SIMD properly
     if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
@@ -78,6 +86,7 @@ message(STATUS "Using Python3: ${PYTHON3}")
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
+    ${CONFIG_OPTIONS}
     OPTIONS
         ${GENERATOR_OPTIONS}
         ${FEATURE_OPTIONS}
