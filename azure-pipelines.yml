@@ -79,6 +79,22 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
 
+  - stage: "Hosts"
+    jobs:
+      - job: "host_qt"
+        displayName: "Mac"
+        pool:
+          vmImage: macOS-12
+        strategy:
+          matrix:
+            qt5:
+              homebrew.packages: "qt@5"
+            qt6:
+              homebrew.packages: "qt@6"
+        steps:
+          - powershell: brew install $(homebrew.packages)
+            displayName: "Install HomeBrew packages"
+
   - stage: "Ports" # Check build status of the ports
     jobs:
       - job: "port_windows"
