@@ -1,7 +1,12 @@
 if(NOT TARGET_TRIPLET STREQUAL _HOST_TRIPLET)
     message(WARNING "system-qt5 is a host-only port; please mark it as a host port in your dependencies.")
 endif()
-if(NOT DEFINED Qt5_DIR)
+
+if(DEFINED ENV{QTDIR})
+    set(Qt5_DIR "$ENV{QTDIR}")
+elseif(DEFINED ENV{Qt5_DIR})
+    set(Qt5_DIR "$ENV{Qt5_DIR}")
+elseif(NOT DEFINED Qt5_DIR)
     message(WARNING
         "Requires Qt5_DIR. "
         " set(\"C:/Qt/5.15.2/msvc2019_64/lib/cmake/Qt5\") or"

@@ -1,7 +1,12 @@
 if(NOT TARGET_TRIPLET STREQUAL _HOST_TRIPLET)
     message(WARNING "system-qt6 is a host-only port; please mark it as a host port in your dependencies.")
 endif()
-if(NOT DEFINED Qt6_DIR)
+
+if(DEFINED ENV{QTDIR})
+    set(Qt6_DIR "$ENV{QTDIR}")
+elseif(DEFINED ENV{Qt6_DIR})
+    set(Qt6_DIR "$ENV{Qt6_DIR}")
+elseif(NOT DEFINED Qt6_DIR)
     message(WARNING
         "Requires Qt6_DIR. "
         " set(\"C:/Qt/6.3.1/msvc2019_64/lib/cmake/Qt6\") or"
