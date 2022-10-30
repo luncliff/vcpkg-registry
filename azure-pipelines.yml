@@ -79,9 +79,10 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
 
-  - stage: "Hosts"
+  - stage: "HostPorts"
+    dependsOn: "Triplets"
     jobs:
-      - job: "host_qt"
+      - job: "osx_host_qt"
         displayName: "Mac"
         pool:
           vmImage: macOS-12
@@ -95,7 +96,8 @@ stages:
           - powershell: brew install $(homebrew.packages)
             displayName: "Install HomeBrew packages"
 
-  - stage: "Ports" # Check build status of the ports
+  - stage: "Ports"
+    dependsOn: "Triplets"
     jobs:
       - job: "port_windows"
         displayName: "Windows"
