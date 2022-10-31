@@ -92,12 +92,12 @@ stages:
               homebrew.packages: "qt@5"
               portname: "system-qt5"
               qt.root: "/usr/local/Cellar/qt@5/5.15.6"
-              qt5.dir: "/usr/local/Cellar/qt@5/5.15.6/lib/cmake/Qt5" # Qt5_DIR
+              QTDIR: "/usr/local/Cellar/qt@5/5.15.6/lib/cmake/Qt5" # Qt5_DIR
             qt6:
               homebrew.packages: "qt@6"
               portname: "system-qt6"
               qt.root: "/usr/local/Cellar/qt/6.3.2/"
-              qt6.dir: "/usr/local/Cellar/qt/6.3.2/lib/cmake/Qt6" # Qt6_DIR
+              QTDIR: "/usr/local/Cellar/qt/6.3.2/lib/cmake/Qt6" # Qt6_DIR
         steps:
           - powershell: brew install $(homebrew.packages) tree
             displayName: "Install HomeBrew packages"
