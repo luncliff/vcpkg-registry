@@ -79,7 +79,38 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
 
-  - stage: "Ports" # Check build status of the ports
+  - stage: "HostPorts"
+    dependsOn: "Triplets"
+    jobs:
+      - job: "osx_host_qt"
+        displayName: "Mac"
+        pool:
+          vmImage: macOS-12
+        strategy:
+          matrix:
+            qt5:
+              homebrew.packages: "qt@5"
+              portname: "system-qt5"
+              qt.root: "/usr/local/Cellar/qt@5/5.15.6"
+              QTDIR: "/usr/local/Cellar/qt@5/5.15.6/lib/cmake/Qt5" # Qt5_DIR
+            qt6:
+              homebrew.packages: "qt@6"
+              portname: "system-qt6"
+              qt.root: "/usr/local/Cellar/qt/6.3.2/"
+              QTDIR: "/usr/local/Cellar/qt/6.3.2/lib/cmake/Qt6" # Qt6_DIR
+        steps:
+          - powershell: brew install $(homebrew.packages) tree
+            displayName: "Install HomeBrew packages"
+          - powershell: tree -L 2 $(qt.root)
+            displayName: "Show Qt install location"
+          - task: run-vcpkg@0
+            displayName: "system-qt"
+            inputs:
+              vcpkgArguments: $(portname)
+              vcpkgGitCommitId: $(vcpkg.commit)
+
+  - stage: "Ports"
+    dependsOn: "Triplets"
     jobs:
       - job: "port_windows"
         displayName: "Windows"

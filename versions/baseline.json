@@ -56,6 +56,14 @@
       "baseline": "2022-09-12",
       "port-version": 0
     },
+    "system-qt5": {
+      "baseline": "2022-10-25",
+      "port-version": 0
+    },
+    "system-qt6": {
+      "baseline": "2022-10-25",
+      "port-version": 0
+    },
     "tensorflow-lite": {
       "baseline": "2.9.2",
       "port-version": 0
