@@ -50,7 +50,7 @@
         "directml"
       ]
     },
-    "tensrorrt": {
+    "tensorrt": {
       "description": "Build with NVIDIA TensorRT support"
     },
     "training": {
