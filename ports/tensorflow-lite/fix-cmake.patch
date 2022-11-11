@@ -408,3 +408,16 @@ index e1d506e7..2324c18b 100644
      absl::flags
      absl::hash
      absl::status
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index efa0798d..3780312b 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -417,7 +417,7 @@ if(TFLITE_ENABLE_GPU)
+     ${TFLITE_SOURCE_DIR}/tools/versioning/gpu_compatibility.cc
+     ${TFLITE_SOURCE_DIR}/tools/versioning/op_signature.cc
+   )
+-  if(TFLITE_ENABLE_METAL AND "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
++  if(TFLITE_ENABLE_METAL AND APPLE)
+     #
+     # libmetal_delegate library
+     #
