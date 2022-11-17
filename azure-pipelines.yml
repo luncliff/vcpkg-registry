@@ -436,6 +436,11 @@ stages:
               vcpkgArguments: "openssl3 metal-cpp xnnpack"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
+            displayName: "arm64-ios"
+            inputs:
+              vcpkgArguments: "tensorflow-lite"
+              vcpkgGitCommitId: $(vcpkg.commit)
+          - task: run-vcpkg@0
             displayName: "arm64-ios-simulator"
             inputs:
               vcpkgArguments: "openssl3 xnnpack"
