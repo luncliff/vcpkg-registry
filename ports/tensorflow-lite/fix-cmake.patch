@@ -55,7 +55,7 @@ index 40f9485b..bedcc8ef 100644
 +  find_library(ANDROID_LOG_LIB log REQUIRED)
 +  find_library(NSYNC_LIB NAMES nsync_cpp nsync REQUIRED)
 +  list(APPEND TFLITE_TARGET_DEPENDENCIES ${ANDROID_LOG_LIB} ${NSYNC_LIB})
-+elseif(CMAKE_SYSTEM_NAME MATCHES "iOS")
++else()
 +  find_library(NSYNC_LIB NAMES nsync_cpp nsync REQUIRED)
 +  list(APPEND TFLITE_TARGET_DEPENDENCIES ${NSYNC_LIB})
  endif()
