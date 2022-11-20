@@ -241,3 +241,15 @@ index df8fb48..fb3bb78 100644
  )
  
  option(OVERWRITE_PB_SOURCE
+diff --git a/mlmodel/CMakeLists.txt b/mlmodel/CMakeLists.txt
+index 6962924..68e7b35 100644
+--- a/mlmodel/CMakeLists.txt
++++ b/mlmodel/CMakeLists.txt
+@@ -162,6 +162,7 @@ add_library(mlmodel
+     src/Validation/WordEmbeddingValidator.cpp
+     src/Validation/WordTaggerValidator.cpp
+ )
++install(TARGETS mlmodel DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ 
+ set_property(TARGET mlmodel
+     PROPERTY POSITION_INDEPENDENT_CODE ON

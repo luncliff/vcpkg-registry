@@ -18,14 +18,14 @@ find_program(PROTOC NAMES protoc
 message(STATUS "Using protoc: ${PROTOC}")
 
 file(GLOB MLMODEL_PROTO_FILES "${SOURCE_PATH}/mlmodel/format/*.proto")
-vcpkg_execute_required_process(
-    COMMAND ${PROTOC}
-        --cpp_out "${SOURCE_PATH}/mlmodel/build/format"
-        --proto_path "${SOURCE_PATH}/mlmodel/format"
-        ${MLMODEL_PROTO_FILES}
-    LOGNAME codegen-protoc
-    WORKING_DIRECTORY "${SOURCE_PATH}/mlmodel/format"
-)
+# vcpkg_execute_required_process(
+#     COMMAND ${PROTOC}
+#         --cpp_out "${SOURCE_PATH}/mlmodel/build/format"
+#         --proto_path "${SOURCE_PATH}/mlmodel/format"
+#         ${MLMODEL_PROTO_FILES}
+#     LOGNAME codegen-protoc
+#     WORKING_DIRECTORY "${SOURCE_PATH}/mlmodel/format"
+# )
 
 # see ${SOURCE_PATH}/setup.py
 x_vcpkg_get_python_packages(
@@ -45,13 +45,12 @@ vcpkg_cmake_configure(
         -DProtobuf_PROTOC_EXECUTABLE:FILE_PATH="${PROTOC}" # use host executable
         -DPYTHON_EXECUTABLE:FILEPATH="${PYTHON3}"
         -Dpybind11_DIR:PATH="${SITE_PACKAGES_DIR}/pybind11/share/cmake/pybind11"
+        -DOVERWRITE_PB_SOURCE=ON
 )
-list(APPEND executables enumgen mlmodel_test_runner)
-foreach(target_name ${executables})
-    vcpkg_cmake_build(TARGET ${target_name} LOGFILE_BASE build-${target_name})
-endforeach()
+vcpkg_cmake_build(TARGET protosrc   LOGFILE_BASE build-protosrc)
+vcpkg_cmake_build(TARGET enumgen    LOGFILE_BASE build-enumgen)
 vcpkg_cmake_install()
-vcpkg_copy_tools(TOOL_NAMES ${executables} AUTO_CLEAN)
+vcpkg_copy_tools(TOOL_NAMES enumgen mlmodel_test_runner AUTO_CLEAN)
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 

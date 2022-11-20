@@ -89,7 +89,7 @@ stages:
     dependsOn: "Triplets"
     jobs:
       - job: "osx_host_tools"
-        displayName: "Mac"
+        displayName: "MacHost"
         pool:
           vmImage: macOS-12
         steps:
