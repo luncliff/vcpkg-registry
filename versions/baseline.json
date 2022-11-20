@@ -48,6 +48,10 @@
       "baseline": "1.12.1",
       "port-version": 2
     },
+    "openssl1": {
+      "baseline": "1.1.1s",
+      "port-version": 0
+    },
     "openssl3": {
       "baseline": "3.0.7",
       "port-version": 0
