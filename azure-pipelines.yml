@@ -422,7 +422,7 @@ stages:
         strategy:
           matrix:
             arm64_ios:
-              vcpkg.default.triplet: "arm64-ios"
+              # vcpkg.default.triplet: "arm64-ios"
               vcpkg.overlay.triplets: "$(Build.SourcesDirectory)/triplets"
         steps:
           - powershell: brew install autoconf automake libtool
@@ -431,6 +431,8 @@ stages:
             inputs:
               vcpkgArguments: "tensorflow-lite openssl3 metal-cpp xnnpack zlib-ng"
               vcpkgGitCommitId: 81d08b03fadf7a8bf7a56b3f3b916e3d205a7b30
+            env:
+              VCPKG_DEFAULT_TRIPLET: arm64-ios
           - task: run-vcpkg@0
             displayName: "arm64-ios-simulator"
             inputs:
