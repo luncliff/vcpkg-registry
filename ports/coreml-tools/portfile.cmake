@@ -46,8 +46,12 @@ vcpkg_cmake_configure(
         -DPYTHON_EXECUTABLE:FILEPATH="${PYTHON3}"
         -Dpybind11_DIR:PATH="${SITE_PACKAGES_DIR}/pybind11/share/cmake/pybind11"
 )
+list(APPEND executables enumgen mlmodel_test_runner)
+foreach(target_name ${executables})
+    vcpkg_cmake_build(TARGET ${target_name} LOGFILE_BASE build-${target_name})
+endforeach()
 vcpkg_cmake_install()
-vcpkg_copy_tools(TOOL_NAMES mlmodel_test_runner enumgen AUTO_CLEAN)
+vcpkg_copy_tools(TOOL_NAMES ${executables} AUTO_CLEAN)
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 

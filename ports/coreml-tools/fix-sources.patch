@@ -66,3 +66,13 @@ index 6e8092b..883c880 100644
  
      if (doubleParameter.has_range()) {
          const Specification::DoubleRange& range = doubleParameter.range();
+diff --git a/mlmodel/tools/enumgen.cpp b/mlmodel/tools/enumgen.cpp
+index f6feb4b..5c07c55 100644
+--- a/mlmodel/tools/enumgen.cpp
++++ b/mlmodel/tools/enumgen.cpp
+@@ -1,4 +1,4 @@
+-#include "../../deps/protobuf/src/google/protobuf/compiler/plugin.pb.h"
++#include <google/protobuf/compiler/plugin.pb.h>
+ 
+ #include <iostream>
+ #include <sstream>

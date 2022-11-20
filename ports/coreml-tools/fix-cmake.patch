@@ -220,7 +220,7 @@ index df8fb48..fb3bb78 100644
  
  target_link_libraries(mlmodel
 -  libprotobuf-lite
-+  protobuf::libprotobuf
++  protobuf::libprotobuf-lite
  )
  
  add_executable(enumgen
@@ -237,7 +237,7 @@ index df8fb48..fb3bb78 100644
  
  target_link_libraries(enumgen
 -    libprotobuf
-+    protobuf::libprotobuf
++    protobuf::libprotobuf protobuf::libprotoc
  )
  
  option(OVERWRITE_PB_SOURCE
