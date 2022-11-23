@@ -1,7 +1,7 @@
 {
   "name": "xnnpack",
   "version-date": "2022-09-09",
-  "port-version": 2,
+  "port-version": 3,
   "description": "High-efficiency floating-point neural network inference operators for mobile, server, and Web",
   "homepage": "https://github.com/google/XNNPACK",
   "dependencies": [

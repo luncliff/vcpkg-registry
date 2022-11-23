@@ -9,6 +9,7 @@ vcpkg_from_github(
         fix-cmake.patch
         fix-source.patch
 )
+
 file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
 file(CREATE_LINK "${CURRENT_INSTALLED_DIR}/include/eigen3" "${SOURCE_PATH}/third_party/eigen3" SYMBOLIC)
 
