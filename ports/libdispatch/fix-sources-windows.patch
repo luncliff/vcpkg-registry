@@ -101,3 +101,21 @@ index c002e72..e44f3f5 100644
  #error libdispatch requires C11 with <stdatomic.h>
  #endif
  
+diff --git a/src/block.cpp b/src/block.cpp
+index 55f83c2..19d6d30 100644
+--- a/src/block.cpp
++++ b/src/block.cpp
+@@ -28,6 +28,13 @@
+ #error Must build without C++ exceptions
+ #endif
+ 
++#if defined(_MSC_VER) && defined(__STDC_HOSTED__) // include the toolchain(VC++, LLVM) <stdatomic.h>
++#  if __STDC_HOSTED__ 
++#    undef __STDC_HOSTED__
++#    define __STDC_HOSTED__ 0
++#  endif
++#endif
++
+ #include "internal.h"
+ 
+ // NOTE: this file must not contain any atomic operations

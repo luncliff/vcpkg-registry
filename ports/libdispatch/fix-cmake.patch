@@ -20,9 +20,9 @@ index 29a97fd..5373dd2 100644
 +  message(WARNING "<stdatomic.h> is required")
 +  find_library(ATOMIC_LIBPATH NAMES zenny_atomic REQUIRED) # see port 'zenny-atomic'
 +  link_libraries(${ATOMIC_LIBPATH})
-+  include_directories(${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include) # todo: use find_file
++  find_path(ATOMIC_INCLUDE_DIR NAMES "stdatomic.h" REQUIRED)
++  include_directories(${ATOMIC_INCLUDE_DIR})
 +endif()
-+
  if(HAVE_MACH)
    set(USE_MACH_SEM 1)
  else()
