@@ -11,15 +11,16 @@ index 29a97fd..5373dd2 100644
    include(ClangClCompileRules)
  endif()
  
-@@ -193,6 +193,14 @@ check_include_files("sys/stat.h" HAVE_SYS_STAT_H)
+@@ -193,6 +193,15 @@ check_include_files("sys/stat.h" HAVE_SYS_STAT_H)
  check_include_files("sys/types.h" HAVE_SYS_TYPES_H)
  check_include_files("objc/objc-internal.h" HAVE_OBJC)
  
 +check_include_files("stdatomic.h" HAVE_STDATOMIC_H)
 +if(NOT HAVE_STDATOMIC_H)
-+  message(WARNING "<stdatomic.h> is required")
-+  find_library(ATOMIC_LIBPATH NAMES zenny_atomic REQUIRED) # see port 'zenny-atomic'
-+  link_libraries(${ATOMIC_LIBPATH})
++  find_library(ATOMIC_LIBPATH NAMES zenny_atomic) # see port 'zenny-atomic'
++  if(ATOMIC_LIBPATH)
++    link_libraries(${ATOMIC_LIBPATH})
++  endif()
 +  find_path(ATOMIC_INCLUDE_DIR NAMES "stdatomic.h" REQUIRED)
 +  include_directories(${ATOMIC_INCLUDE_DIR})
 +endif()
