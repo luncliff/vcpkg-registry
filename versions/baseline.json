@@ -30,7 +30,7 @@
     },
     "libdispatch": {
       "baseline": "swift-5.5",
-      "port-version": 3
+      "port-version": 4
     },
     "libtorch": {
       "baseline": "1.10.0",

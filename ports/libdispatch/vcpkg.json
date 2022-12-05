@@ -1,19 +1,23 @@
 {
   "name": "libdispatch",
   "version-string": "swift-5.5",
-  "port-version": 3,
+  "port-version": 4,
   "description": "The libdispatch Project, (a.k.a. Grand Central Dispatch), for concurrency on multicore hardware",
   "homepage": "https://github.com/apple/swift-corelibs-libdispatch",
   "license": "Apache-2.0",
-  "supports": "(windows & !static) | android",
+  "supports": "windows | android",
   "dependencies": [
     {
       "name": "vcpkg-cmake",
       "host": true
-    },
-    {
-      "name": "zenny-atomic",
-      "platform": "windows"
     }
-  ]
+  ],
+  "features": {
+    "zenny-atomic": {
+      "description": "Use zenny-atomic for platforms which doesn't support <stdatomic.h>",
+      "dependencies": [
+        "zenny-atomic"
+      ]
+    }
+  }
 }
