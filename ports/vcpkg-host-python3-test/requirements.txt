@@ -1,2 +1,0 @@
-# file to test `vcpkg_pip_install_requirement`
-typing-extensions

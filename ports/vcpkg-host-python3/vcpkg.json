@@ -1,6 +1,0 @@
-{
-  "name": "vcpkg-host-python3",
-  "version-date": "2021-10-01",
-  "description": "Port scripts based on CMake FindPython3 module",
-  "homepage": "https://github.com/luncliff/vcpkg-registry"
-}

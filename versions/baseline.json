@@ -72,10 +72,6 @@
       "baseline": "2021-11-13",
       "port-version": 0
     },
-    "vcpkg-host-python3": {
-      "baseline": "2021-10-01",
-      "port-version": 0
-    },
     "xnnpack": {
       "baseline": "2022-09-09",
       "port-version": 3
