@@ -79,35 +79,35 @@ stages:
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
 
-  - stage: "HostPorts"
-    dependsOn: "Triplets"
-    jobs:
-      - job: "osx_host_qt"
-        displayName: "Mac"
-        pool:
-          vmImage: macOS-12
-        strategy:
-          matrix:
-            qt5:
-              homebrew.packages: "qt@5"
-              portname: "system-qt5"
-              qt.root: "/usr/local/Cellar/qt@5/5.15.7"
-              QTDIR: "/usr/local/Cellar/qt@5/5.15.7/lib/cmake/Qt5" # Qt5_DIR
-            qt6:
-              homebrew.packages: "qt@6"
-              portname: "system-qt6"
-              qt.root: "/usr/local/Cellar/qt/6.4.0/"
-              QTDIR: "/usr/local/Cellar/qt/6.4.0/lib/cmake/Qt6" # Qt6_DIR
-        steps:
-          - powershell: brew install $(homebrew.packages) tree
-            displayName: "Install HomeBrew packages"
-          - powershell: tree -L 2 $(qt.root)
-            displayName: "Show Qt install location"
-          - task: run-vcpkg@0
-            displayName: "system-qt"
-            inputs:
-              vcpkgArguments: $(portname)
-              vcpkgGitCommitId: $(vcpkg.commit)
+  # - stage: "HostPorts"
+  #   dependsOn: "Triplets"
+  #   jobs:
+  #     - job: "osx_host_qt"
+  #       displayName: "Mac"
+  #       pool:
+  #         vmImage: macOS-12
+  #       strategy:
+  #         matrix:
+  #           qt5:
+  #             homebrew.packages: "qt@5"
+  #             portname: "system-qt5"
+  #             qt.root: "/usr/local/Cellar/qt@5/5.15.7"
+  #             QTDIR: "/usr/local/Cellar/qt@5/5.15.7/lib/cmake/Qt5" # Qt5_DIR
+  #           qt6:
+  #             homebrew.packages: "qt@6"
+  #             portname: "system-qt6"
+  #             qt.root: "/usr/local/Cellar/qt/6.4.0/"
+  #             QTDIR: "/usr/local/Cellar/qt/6.4.0/lib/cmake/Qt6" # Qt6_DIR
+  #       steps:
+  #         - powershell: brew install $(homebrew.packages) tree
+  #           displayName: "Install HomeBrew packages"
+  #         - powershell: tree -L 2 $(qt.root)
+  #           displayName: "Show Qt install location"
+  #         - task: run-vcpkg@0
+  #           displayName: "system-qt"
+  #           inputs:
+  #             vcpkgArguments: $(portname)
+  #             vcpkgGitCommitId: $(vcpkg.commit)
 
   - stage: "Ports"
     dependsOn: "Triplets"
