@@ -1,0 +1,7 @@
+{
+  "name": "openssl1",
+  "version-string": "1.1.1s",
+  "description": "TLS/SSL and crypto library",
+  "homepage": "https://www.openssl.org/",
+  "license": "Apache-2.0"
+}
