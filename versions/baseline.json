@@ -32,10 +32,6 @@
       "baseline": "swift-5.5",
       "port-version": 4
     },
-    "libtorch": {
-      "baseline": "1.10.0",
-      "port-version": 1
-    },
     "metal-cpp": {
       "baseline": "2022-01-18",
       "port-version": 0
