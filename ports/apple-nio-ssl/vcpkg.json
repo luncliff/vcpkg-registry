@@ -1,0 +1,8 @@
+{
+  "name": "apple-nio-ssl",
+  "version": "2.23.0",
+  "description": "TLS Support for SwiftNIO, based on BoringSSL",
+  "homepage": "https://github.com/apple/swift-nio-ssl",
+  "license": "Apache-2.0",
+  "supports": "osx | ios"
+}
