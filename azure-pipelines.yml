@@ -310,10 +310,10 @@ stages:
           matrix:
             arm64_ndk25:
               vcpkg.default.triplet: "arm64-android"
-              android.ndk.home: "/usr/local/lib/android/sdk/ndk/25.1.8937393"
+              android.ndk.home: "/usr/local/lib/android/sdk/ndk/25.2.9519653"
             x64_ndk25:
               vcpkg.default.triplet: "x64-android"
-              android.ndk.home: "/usr/local/lib/android/sdk/ndk/25.1.8937393"
+              android.ndk.home: "/usr/local/lib/android/sdk/ndk/25.2.9519653"
             arm64_ndk24:
               vcpkg.default.triplet: "arm64-android"
               android.ndk.home: "/usr/local/lib/android/sdk/ndk/24.0.8215888"
