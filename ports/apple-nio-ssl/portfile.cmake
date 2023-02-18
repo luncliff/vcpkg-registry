@@ -48,7 +48,14 @@ message(STATUS "Generating Xcode project from Package.swift")
 vcpkg_execute_required_process(
     COMMAND ${SWIFT} package generate-xcodeproj
     WORKING_DIRECTORY ${SOURCE_PATH}
-    LOGNAME "swift-generate-${TARGET_TRIPLET}"
+    LOGNAME "generate-${TARGET_TRIPLET}"
+)
+
+message(STATUS "Recording project info")
+vcpkg_execute_required_process(
+    COMMAND ${XCODEBUILD} -project swift-nio-ssl.xcodeproj -list
+    WORKING_DIRECTORY ${SOURCE_PATH}
+    LOGNAME "info-${TARGET_TRIPLET}"
 )
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
@@ -80,16 +87,16 @@ endif()
 message(STATUS "Building ${TARGET_TRIPLET}-dbg")
 vcpkg_execute_required_process(
     COMMAND ${XCODEBUILD} -project swift-nio-ssl.xcodeproj -target CNIOBoringSSL -jobs ${VCPKG_CONCURRENCY}
-                -configuration Debug -sdk ${SDK} -arch ${ARCH}
+                -sdk ${SDK} -arch ${ARCH} -configuration Debug
     WORKING_DIRECTORY ${SOURCE_PATH}
-    LOGNAME "xcodebuild-build-${TARGET_TRIPLET}-dbg"
+    LOGNAME "build-${TARGET_TRIPLET}-dbg"
 )
 message(STATUS "Building ${TARGET_TRIPLET}-rel")
 vcpkg_execute_required_process(
     COMMAND ${XCODEBUILD} -project swift-nio-ssl.xcodeproj -target CNIOBoringSSL -jobs ${VCPKG_CONCURRENCY}
-                -configuration Release -sdk ${SDK} -arch ${ARCH}
+                -sdk ${SDK} -arch ${ARCH} -configuration Release
     WORKING_DIRECTORY ${SOURCE_PATH}
-    LOGNAME "xcodebuild-build-${TARGET_TRIPLET}-rel"
+    LOGNAME "build-${TARGET_TRIPLET}-rel"
 )
 
 set(OUT_FWK "CNIOBoringSSL.framework")
