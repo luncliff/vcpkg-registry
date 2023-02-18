@@ -1,7 +1,10 @@
 
-# MACH_O_TYPE = staticlib;
+# see https://developer.apple.com/library/archive/documentation/DeveloperTools/Reference/XcodeBuildSettingRef/1-Build_Setting_Reference/build_setting_ref.html
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
+    # By default, the project generates dynamic framework.
+    # These patches have NO effect. But may help debugging in the SOURCE_PATH ...
     list(APPEND SWIFTPM_PATCHES swiftpm-product-dynamic.patch)
+    # list(APPEND XCODEBUILD_PARAMS "MACH_O_TYPE=mh_dylib")
 elseif(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
     list(APPEND SWIFTPM_PATCHES swiftpm-product-static.patch)
     list(APPEND XCODEBUILD_PARAMS "MACH_O_TYPE=staticlib")
@@ -26,7 +29,6 @@ vcpkg_from_github(
     HEAD_REF main
 )
 
-# use source folder so `--editable` can take effect always
 # see vcpkg_extract_source_archive
 if(NOT _VCPKG_EDITABLE)
     file(REMOVE_RECURSE "${SOURCE_PATH}/.build" "${SOURCE_PATH}/build")
@@ -36,7 +38,6 @@ endif()
 get_filename_component(CUSTOM_BUILDTREES_DIR "${SOURCE_PATH}" PATH)
 file(CREATE_LINK "${NIO_SOURCE_PATH}" "${CUSTOM_BUILDTREES_DIR}/swift-nio" SYMBOLIC)
 
-# todo: add some comments
 function(swiftpm_generatate_xcodeproj)
     cmake_parse_arguments(PARSE_ARGV 0 swiftpm "" "LOGNAME" "PARAMS")
     if(DEFINED xc_UNPARSED_ARGUMENTS)
@@ -58,7 +59,6 @@ function(swiftpm_generatate_xcodeproj)
     )
 endfunction()
 
-# todo: add some comments
 function(xcodebuild_build_framework)
     cmake_parse_arguments(PARSE_ARGV 0 xc "COPY_AFTER_BUILD" "PROJECT;FRAMEWORK;OUTPUT_DIR;LOGNAME" "PARAMS")
     if(DEFINED xc_UNPARSED_ARGUMENTS)
