@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.9.3
-    SHA512 31cc11e166454e4ec8c27355990081d4a763fb83a1d6da6e44dc47a2c27cc7be8188b2af2e8ecd9789da0bf28500e57e178a100c74dfce670a7dc7fd3f5e2da3
+    REF v2.10.1
+    SHA512 83c02b808ec0df313bd7c89bd50b7a9bb3691a7b476e72fdd8ba95c26d7fcb3fb268201830e4885010a36860c2dc369c4621f9d1d7c2cc1c4999b416412fd392
     PATCHES
         fix-cmake.patch
         fix-source.patch
