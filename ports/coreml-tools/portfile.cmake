@@ -26,6 +26,7 @@ file(GLOB MLMODEL_PROTO_FILES "${SOURCE_PATH}/mlmodel/format/*.proto")
 #     LOGNAME codegen-protoc
 #     WORKING_DIRECTORY "${SOURCE_PATH}/mlmodel/format"
 # )
+file(INSTALL ${MLMODEL_PROTO_FILES} DESTINATION "${CURRENT_PACKAGES_DIR}/include/mlmodel/format")
 
 # see ${SOURCE_PATH}/setup.py
 x_vcpkg_get_python_packages(
@@ -33,17 +34,21 @@ x_vcpkg_get_python_packages(
     PACKAGES numpy pybind11 sympy tqdm
     OUT_PYTHON_VAR PYTHON3
 )
-message(STATUS "Using Python3: ${PYTHON3}")
+message(STATUS "Using python3: ${PYTHON3}")
 
 get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
-get_filename_component(SITE_PACKAGES_DIR "${PYTHON_PATH}/../lib/python3.10/site-packages" ABSOLUTE)
-message(STATUS "Using site-packages: ${SITE_PACKAGES_DIR}")
+get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
+
+# ${PYTHON3} -m site --user-site
+get_filename_component(SITE_PACKAGES_DIR "${PYTHON_ROOT}/lib/python3.9/site-packages" ABSOLUTE)
+message(STATUS "  site-packages: ${SITE_PACKAGES_DIR}")
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
-        -DProtobuf_PROTOC_EXECUTABLE:FILE_PATH="${PROTOC}" # use host executable
-        -DPYTHON_EXECUTABLE:FILEPATH="${PYTHON3}"
+        -DProtobuf_PROTOC_EXECUTABLE:FILE_PATH="${PROTOC}"
+        -DPython3_ROOT_DIR:PATH="${PYTHON_ROOT}"
+        -DPython3_EXECUTABLE:FILEPATH="${PYTHON3}"
         -Dpybind11_DIR:PATH="${SITE_PACKAGES_DIR}/pybind11/share/cmake/pybind11"
         -DOVERWRITE_PB_SOURCE=ON
 )
@@ -54,6 +59,9 @@ vcpkg_copy_tools(TOOL_NAMES enumgen mlmodel_test_runner AUTO_CLEAN)
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 
-file(INSTALL ${MLMODEL_PROTO_FILES} DESTINATION "${CURRENT_PACKAGES_DIR}/include/mlmodel/format")
+file(GLOB MLMODEL_GENERATED_HEADERS
+    "${SOURCE_PATH}/mlmodel/build/format/*.h" # *.pb.h
+)
+file(INSTALL ${MLMODEL_GENERATED_HEADERS} DESTINATION "${CURRENT_PACKAGES_DIR}/include/mlmodel/format")
 
 file(INSTALL "${SOURCE_PATH}/LICENSE.txt" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)

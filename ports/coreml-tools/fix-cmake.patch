@@ -23,7 +23,7 @@ index b657197..ac60dd2 100644
  
 -add_subdirectory(deps)
 +find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
-+find_package(pybind11 REQUIRED)
++find_package(pybind11 CONFIG REQUIRED)
 +find_package(nlohmann_json CONFIG REQUIRED) # nlohmann_json::nlohmann_json
 +find_package(protobuf CONFIG REQUIRED) # protobuf::libprotobuf
  add_subdirectory(mlmodel)
@@ -34,7 +34,7 @@ index b657197..ac60dd2 100644
 -message("Found python at ${PYTHON_EXECUTABLE}")
 -message("Found python version ${PYTHON_VERSION_STRING}")
 -message("Found python includes ${PYTHON_INCLUDE_DIRS}")
-+message(STATUS "Found python at ${PYTHON_EXECUTABLE}")
++message(STATUS "Found python at ${Python3_EXECUTABLE}")
 +message(STATUS "Found python version ${Python3_VERSION}")
 +message(STATUS "Found python includes ${Python3_INCLUDE_DIRS}")
  
@@ -253,3 +253,29 @@ index 6962924..68e7b35 100644
  
  set_property(TARGET mlmodel
      PROPERTY POSITION_INDEPENDENT_CODE ON
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9c74125..31941c2 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -135,21 +135,6 @@ find_library(CORE_ML CoreML)
+ find_library(FOUNDATION Foundation)
+ 
+ if (APPLE AND CORE_VIDEO AND CORE_ML AND FOUNDATION)
+-  execute_process(
+-      COMMAND ${PYTHON_EXECUTABLE} -c "import numpy; print(numpy.get_include())"
+-      RESULT_VARIABLE NUMPY_INCLUDE_STATUS
+-      OUTPUT_VARIABLE NUMPY_INCLUDE
+-  )
+-
+-  if("${NUMPY_INCLUDE}" STREQUAL "" OR NOT NUMPY_INCLUDE_STATUS EQUAL 0)
+-      message(FATAL_ERROR "Could not find numpy include path. Exit code: ${NUMPY_INCLUDE_STATUS}")
+-  endif()
+-  message("Found numpy include path at ${NUMPY_INCLUDE}")
+-
+-  include_directories(
+-    ${NUMPY_INCLUDE}
+-  )
+-
+   add_library(coremlpython
+     SHARED
+     coremlpython/CoreMLPython.mm
