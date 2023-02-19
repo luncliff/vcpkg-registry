@@ -2,11 +2,20 @@ if(EXISTS ${CURRENT_INSTALLED_DIR}/include/openssl/ssl.h)
     message(FATAL_ERROR "Can't build '${PORT}' if another SSL library is installed. Please remove existing one and try install '${PORT}' again if you need it.")
 endif()
 
+# 3.0.8 - LNK2019 `_umul128` in function `_mul_limb`
+vcpkg_download_distfile(MSVC_INTRINSIC_PATCH_PATH
+    URLS "https://github.com/openssl/openssl/commit/075652f224479dad2e64b92e791b296177af8705.diff"
+    FILENAME msvc-intrinsic.patch
+    SHA512 6b1910408e3727dcdd59727f12c3d4237ef7c77d3e8aed336795e0e4aeb6ca643961670c46c15437dbc033bc23d28101935a69b3ad6caf786014d774de2342e2
+)
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO openssl/openssl
-    REF openssl-3.0.7
-    SHA512 27dd3ef0c1827a74ec880d20232acb818c7d05e004ad7389c355e200a01e899f1b1ba5c34dcce44ecf7c8767c5e1bfbb2c795e3fa5461346087e7e3b95c8a51f
+    REF openssl-3.0.8
+    SHA512 5a821aaaaa89027ce08a347e5fc216757c2971e29f7d24792609378c54f657839b3775bf639e7330b28b4f96ef0d32869f0a96afcb25c8a2e1c2fe51a6eb4aa3
+    PATCHES
+        ${MSVC_INTRINSIC_PATCH_PATH}
 )
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
