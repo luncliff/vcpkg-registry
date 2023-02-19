@@ -6,7 +6,7 @@
     },
     "apple-nio-ssl": {
       "baseline": "2.23.0",
-      "port-version": 0
+      "port-version": 1
     },
     "cpuinfo": {
       "baseline": "2022-09-08",
