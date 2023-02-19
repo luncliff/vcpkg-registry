@@ -139,6 +139,12 @@ stages:
               architecture: "x64"
           - powershell: pip install typing-extensions pybind11 numpy pyyaml
             displayName: "Install Python packages"
+          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
+          - task: run-vcpkg@0
+            displayName: "Setup Vcpkg"
+            inputs:
+              vcpkgArguments: "vcpkg-cmake --debug"
+              vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
               key: '"vcpkg-downloads" | "windows"'
@@ -148,9 +154,9 @@ stages:
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"vcpkg-archives" | "windows" | $(vcpkg.default.triplet)'
+              key: '"vcpkg-archives" | "windows" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "vcpkg-archives" | "windows" | $(vcpkg.default.triplet)
+                "vcpkg-archives" | "windows" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -220,9 +226,9 @@ stages:
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"vcpkg-archives" | "uwp" | $(vcpkg.default.triplet)'
+              key: '"vcpkg-archives" | "uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "vcpkg-archives" | "uwp" | $(vcpkg.default.triplet)
+                "vcpkg-archives" | "uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -290,9 +296,9 @@ stages:
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"vcpkg-archives" | "ubuntu" | $(vcpkg.default.triplet) | $(cc)'
+              key: '"vcpkg-archives" | "ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
-                "vcpkg-archives" | "ubuntu" | $(vcpkg.default.triplet) | $(cc)
+                "vcpkg-archives" | "ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "x64-linux(failure)"
@@ -364,9 +370,9 @@ stages:
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"vcpkg-archives" | "android" | $(vcpkg.default.triplet)'
+              key: '"vcpkg-archives" | "android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "vcpkg-archives" | "android" | $(vcpkg.default.triplet)
+                "vcpkg-archives" | "android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "Custom Triplet"
@@ -433,9 +439,9 @@ stages:
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"vcpkg-archives" | "apple" | $(vcpkg.default.triplet)'
+              key: '"vcpkg-archives" | "osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "vcpkg-archives" | "apple" | $(vcpkg.default.triplet)
+                "vcpkg-archives" | "osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -494,22 +500,10 @@ stages:
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"vcpkg-archives" | "apple" | $(vcpkg.default.triplet)'
+              key: '"vcpkg-archives" | "ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "vcpkg-archives" | "apple" | $(vcpkg.default.triplet)
+                "vcpkg-archives" | "ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
-          - task: run-vcpkg@0
-            displayName: "Setup Vcpkg"
-            inputs:
-              vcpkgArguments: "vcpkg-cmake --debug"
-              vcpkgGitCommitId: $(vcpkg.commit)
-          - task: Cache@2
-            inputs:
-              key: '"vcpkg-downloads" | "ios"'
-              restoreKeys: |
-                "vcpkg-downloads" | "ios"
-                "vcpkg-downloads"
-              path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
