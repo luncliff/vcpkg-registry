@@ -1,6 +1,6 @@
 {
   "name": "directml",
-  "version-semver": "1.10.0",
+  "version-semver": "1.10.1",
   "description": [
     "DirectML is a high-performance, hardware-accelerated DirectX 12 library for machine learning.",
     "DirectML provides GPU acceleration for common machine learning tasks across a broad range of supported hardware and drivers, ",

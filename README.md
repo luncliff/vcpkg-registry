@@ -5,7 +5,7 @@
 
 Targets...
 
-* [vcpkg](https://github.com/microsoft/vcpkg): [2022.04.12](https://github.com/microsoft/vcpkg/tree/2022.04.12) or later
+* [vcpkg](https://github.com/microsoft/vcpkg): [2022.10.19](https://github.com/microsoft/vcpkg/tree/2022.10.19) or later
 * [vcpkg-tool](https://github.com/microsoft/vcpkg-tool) follows the vcpkg
 
 ### References

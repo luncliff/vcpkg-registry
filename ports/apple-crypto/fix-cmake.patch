@@ -1,0 +1,94 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9831cee..a98a16c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -20,6 +20,7 @@ project(SwiftCrypto
+ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+ 
+ include(SwiftSupport)
++include(GNUInstallDirs)
+ 
+ if(CMAKE_VERSION VERSION_LESS 3.16 AND CMAKE_SYSTEM_NAME STREQUAL Windows)
+   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+diff --git a/Sources/CCryptoBoringSSL/CMakeLists.txt b/Sources/CCryptoBoringSSL/CMakeLists.txt
+index 3ff897a..b24db63 100644
+--- a/Sources/CCryptoBoringSSL/CMakeLists.txt
++++ b/Sources/CCryptoBoringSSL/CMakeLists.txt
+@@ -392,10 +392,17 @@ endif()
+ 
+ target_include_directories(CCryptoBoringSSL PUBLIC
+   include)
++file(GLOB headers ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
+ 
+ target_compile_definitions(CCryptoBoringSSL PRIVATE
+   $<$<PLATFORM_ID:Windows>:WIN32_LEAN_AND_MEAN>)
+ set_target_properties(CCryptoBoringSSL PROPERTIES
++  PUBLIC_HEADER "${headers}"
+   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include;${CMAKE_Swift_MODULE_DIRECTORY}")
+ 
+ set_property(GLOBAL APPEND PROPERTY SWIFT_CRYPTO_EXPORTS CCryptoBoringSSL)
++
++install(TARGETS CCryptoBoringSSL
++  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
+\ No newline at end of file
+diff --git a/Sources/CCryptoBoringSSLShims/CMakeLists.txt b/Sources/CCryptoBoringSSLShims/CMakeLists.txt
+index 5550b15..6cd29af 100644
+--- a/Sources/CCryptoBoringSSLShims/CMakeLists.txt
++++ b/Sources/CCryptoBoringSSLShims/CMakeLists.txt
+@@ -18,11 +18,18 @@ add_library(CCryptoBoringSSLShims STATIC
+ target_include_directories(CCryptoBoringSSLShims PUBLIC
+   include
+   $<TARGET_PROPERTY:CCryptoBoringSSL,INCLUDE_DIRECTORIES>)
++file(GLOB headers ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
+ 
+ target_link_libraries(CCryptoBoringSSLShims PUBLIC
+   CCryptoBoringSSL)
+ 
+ set_target_properties(CCryptoBoringSSLShims PROPERTIES
++  PUBLIC_HEADER "${headers}"
+   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
+ 
+ set_property(GLOBAL APPEND PROPERTY SWIFT_CRYPTO_EXPORTS CCryptoBoringSSLShims)
++
++install(TARGETS CCryptoBoringSSLShims
++  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
+\ No newline at end of file
+diff --git a/cmake/modules/SwiftSupport.cmake b/cmake/modules/SwiftSupport.cmake
+index 889edcd..f9d01d2 100644
+--- a/cmake/modules/SwiftSupport.cmake
++++ b/cmake/modules/SwiftSupport.cmake
+@@ -79,9 +79,9 @@ function(_install_target module)
+   endif()
+ 
+   install(TARGETS ${module}
+-    ARCHIVE DESTINATION lib/${swift}/${swift_os}
+-    LIBRARY DESTINATION lib/${swift}/${swift_os}
+-    RUNTIME DESTINATION bin)
++    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+   if(type STREQUAL EXECUTABLE)
+     return()
+   endif()
+@@ -95,14 +95,14 @@ function(_install_target module)
+   if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
+     install(FILES $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module_name}.swiftdoc
+       DESTINATION lib/${swift}/${swift_os}/${module_name}.swiftmodule
+-      RENAME ${swift_arch}.swiftdoc)
++      RENAME ${swift_arch}.swiftdoc OPTIONAL)
+     install(FILES $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module_name}.swiftmodule
+       DESTINATION lib/${swift}/${swift_os}/${module_name}.swiftmodule
+-      RENAME ${swift_arch}.swiftmodule)
++      RENAME ${swift_arch}.swiftmodule OPTIONAL)
+   else()
+     install(FILES
+       $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module_name}.swiftdoc
+       $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module_name}.swiftmodule
+-      DESTINATION lib/${swift}/${swift_os}/${swift_arch})
++      DESTINATION lib/${swift}/${swift_os}/${swift_arch} OPTIONAL)
+   endif()
+ endfunction()

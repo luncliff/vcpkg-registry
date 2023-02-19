@@ -1,0 +1,13 @@
+diff --git a/Package.swift b/Package.swift
+index fe72932..8f696fd 100644
+--- a/Package.swift
++++ b/Package.swift
+@@ -34,7 +34,7 @@ import class Foundation.ProcessInfo
+ /// of the Swift toolchain, and so need to use local checkouts of our
+ /// dependencies.
+ func generateDependencies() -> [Package.Dependency] {
+-    if ProcessInfo.processInfo.environment["SWIFTCI_USE_LOCAL_DEPS"] == nil {
++    if false {
+         return [
+             .package(url: "https://github.com/apple/swift-nio.git", from: "2.42.0"),
+             .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
