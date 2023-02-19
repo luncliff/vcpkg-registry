@@ -29,6 +29,8 @@ variables:
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
   - name: vcpkg.disable.metrics
     value: "true"
+  - name: vcpkg.default.binary.cache
+    value: $(Build.ArtifactStagingDirectory)/vcpkg-archives
 
 stages:
   - stage: "Triplets"
@@ -41,6 +43,7 @@ stages:
           - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
             value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
         steps:
+          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: run-vcpkg@0
             displayName: "arm64-android: vulkan-android-test"
             inputs:
@@ -66,6 +69,7 @@ stages:
         steps:
           - powershell: brew install autoconf automake libtool pkg-config
             displayName: "Install HomeBrew packages"
+          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: run-vcpkg@0
             displayName: "arm64-ios-simulator: zlib-ng"
             inputs:
@@ -128,9 +132,9 @@ stages:
               vcpkg.default.triplet: "x64-uwp"
         steps:
           - task: UsePythonVersion@0
-            displayName: "Setup: Python 3.10"
+            displayName: "Setup: Python 3.11"
             inputs:
-              versionSpec: "3.10"
+              versionSpec: "3.11"
               addToPath: true
               architecture: "x64"
           - powershell: pip install typing-extensions pybind11 numpy pyyaml
@@ -142,9 +146,15 @@ stages:
                 "vcpkg-downloads" | "windows"
                 "vcpkg-downloads"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
+          - task: Cache@2
+            inputs:
+              key: '"vcpkg-archives" | "windows" | $(vcpkg.default.triplet)'
+              restoreKeys: |
+                "vcpkg-archives" | "windows" | $(vcpkg.default.triplet)
+              path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
-              vcpkgArguments: "zlib-ng"
+              vcpkgArguments: "zlib-ng openssl3 onnx"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "libdispatch"
@@ -152,11 +162,6 @@ stages:
               vcpkgArguments: "libdispatch"
               vcpkgGitCommitId: $(vcpkg.commit)
             condition: ne(variables['vcpkg.default.triplet'], 'x64-uwp')
-          - task: run-vcpkg@0
-            displayName: "openssl3"
-            inputs:
-              vcpkgArguments: "openssl3"
-              vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "tensorflow-lite"
             inputs:
@@ -168,16 +173,11 @@ stages:
               vcpkgArguments: "tensorflow-lite[google-angle,gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             condition: ne(variables['vcpkg.default.triplet'], 'x64-uwp')
-          - task: run-vcpkg@0
-            displayName: "onnx"
-            inputs:
-              vcpkgArguments: "onnx"
-              vcpkgGitCommitId: $(vcpkg.commit)
-          - task: run-vcpkg@0
-            displayName: "onnxruntime(dry)" # usisng features requires over 10 GB space ...
-            inputs:
-              vcpkgArguments: "onnxruntime[xnnpack] --dry-run"
-              vcpkgGitCommitId: $(vcpkg.commit)
+          # - task: run-vcpkg@0
+          #   displayName: "onnxruntime(dry)" # usisng features requires over 10 GB space ...
+          #   inputs:
+          #     vcpkgArguments: "onnxruntime[xnnpack] --dry-run"
+          #     vcpkgGitCommitId: $(vcpkg.commit)
           - task: CopyFiles@2
             displayName: "Copy logs in buildtrees"
             inputs:
@@ -206,6 +206,7 @@ stages:
             arm64_uwp:
               vcpkg.default.triplet: "arm64-uwp"
         steps:
+          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: run-vcpkg@0
             displayName: "Setup Vcpkg"
             inputs:
@@ -216,12 +217,16 @@ stages:
               key: '"vcpkg-downloads" | "uwp"'
               restoreKeys: |
                 "vcpkg-downloads" | "uwp"
-                "vcpkg-downloads" | "windows"
-                "vcpkg-downloads"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
+          - task: Cache@2
+            inputs:
+              key: '"vcpkg-archives" | "uwp" | $(vcpkg.default.triplet)'
+              restoreKeys: |
+                "vcpkg-archives" | "uwp" | $(vcpkg.default.triplet)
+              path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
-              vcpkgArguments: "zlib-ng"
+              vcpkgArguments: "zlib-ng openssl3"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "libdispatch"
@@ -229,16 +234,6 @@ stages:
               vcpkgArguments: "libdispatch"
               vcpkgGitCommitId: $(vcpkg.commit)
             condition: ne(variables['vcpkg.default.triplet'], 'arm64-uwp')
-          - task: run-vcpkg@0
-            displayName: "openssl3"
-            inputs:
-              vcpkgArguments: "openssl3"
-              vcpkgGitCommitId: $(vcpkg.commit)
-          - task: run-vcpkg@0
-            displayName: "xnnpack"
-            inputs:
-              vcpkgArguments: "xnnpack"
-              vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "tensorflow-lite"
             inputs:
@@ -280,6 +275,7 @@ stages:
             displayName: "Install APT packages"
           - powershell: pip install typing-extensions pybind11 numpy pyyaml
             displayName: "Install Python packages"
+          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: run-vcpkg@0
             displayName: "Setup Vcpkg"
             inputs:
@@ -292,10 +288,12 @@ stages:
                 "vcpkg-downloads" | "ubuntu"
                 "vcpkg-downloads"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
-          - task: run-vcpkg@0
+          - task: Cache@2
             inputs:
-              vcpkgArguments: "zlib-ng"
-              vcpkgGitCommitId: $(vcpkg.commit)
+              key: '"vcpkg-archives" | "ubuntu" | $(vcpkg.default.triplet) | $(cc)'
+              restoreKeys: |
+                "vcpkg-archives" | "ubuntu" | $(vcpkg.default.triplet) | $(cc)
+              path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "x64-linux(failure)"
             inputs:
@@ -303,9 +301,8 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
             continueOnError: true
           - task: run-vcpkg@0
-            displayName: "openssl3"
             inputs:
-              vcpkgArguments: "openssl3"
+              vcpkgArguments: "zlib-ng openssl3"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "tensorflow-lite"
@@ -353,6 +350,7 @@ stages:
               vcpkg.default.triplet: "arm-neon-android"
               android.ndk.home: "/usr/local/lib/android/sdk/ndk/24.0.8215888"
         steps:
+          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: run-vcpkg@0
             displayName: "Setup Vcpkg"
             inputs:
@@ -363,8 +361,13 @@ stages:
               key: '"vcpkg-downloads" | "android"'
               restoreKeys: |
                 "vcpkg-downloads" | "android"
-                "vcpkg-downloads"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
+          - task: Cache@2
+            inputs:
+              key: '"vcpkg-archives" | "android" | $(vcpkg.default.triplet)'
+              restoreKeys: |
+                "vcpkg-archives" | "android" | $(vcpkg.default.triplet)
+              path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "Custom Triplet"
             inputs:
@@ -408,13 +411,14 @@ stages:
           - powershell: brew install autoconf automake libtool pkg-config
             displayName: "Install HomeBrew packages"
           - task: UsePythonVersion@0
-            displayName: "Setup: Python 3.10"
+            displayName: "Setup: Python 3.11"
             inputs:
-              versionSpec: "3.10"
+              versionSpec: "3.11"
               addToPath: true
               architecture: "x64"
           - powershell: pip install typing-extensions pybind11 numpy pyyaml
             displayName: "Install Python packages"
+          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: run-vcpkg@0
             displayName: "Setup Vcpkg"
             inputs:
@@ -422,24 +426,20 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"vcpkg-downloads" | "macos"'
+              key: '"vcpkg-downloads" | "apple"'
               restoreKeys: |
-                "vcpkg-downloads" | "macos"
+                "vcpkg-downloads" | "apple"
                 "vcpkg-downloads"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
+          - task: Cache@2
+            inputs:
+              key: '"vcpkg-archives" | "apple" | $(vcpkg.default.triplet)'
+              restoreKeys: |
+                "vcpkg-archives" | "apple" | $(vcpkg.default.triplet)
+              path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
-              vcpkgArguments: "zlib-ng"
-              vcpkgGitCommitId: $(vcpkg.commit)
-          - task: run-vcpkg@0
-            displayName: "openssl3"
-            inputs:
-              vcpkgArguments: "openssl3"
-              vcpkgGitCommitId: $(vcpkg.commit)
-          - task: run-vcpkg@0
-            displayName: "metal-cpp"
-            inputs:
-              vcpkgArguments: "metal-cpp"
+              vcpkgArguments: "zlib-ng openssl3 metal-cpp"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "tensorflow-lite"
@@ -479,6 +479,25 @@ stages:
               vcpkg.overlay.triplets: "$(Build.SourcesDirectory)/triplets"
         steps:
           - powershell: brew install autoconf automake libtool pkg-config
+          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
+          - task: run-vcpkg@0
+            displayName: "Setup Vcpkg"
+            inputs:
+              vcpkgArguments: "vcpkg-cmake --debug"
+              vcpkgGitCommitId: $(vcpkg.commit)
+          - task: Cache@2
+            inputs:
+              key: '"vcpkg-downloads" | "apple"'
+              restoreKeys: |
+                "vcpkg-downloads" | "apple"
+                "vcpkg-downloads"
+              path: $(Build.BinariesDirectory)/vcpkg/downloads
+          - task: Cache@2
+            inputs:
+              key: '"vcpkg-archives" | "apple" | $(vcpkg.default.triplet)'
+              restoreKeys: |
+                "vcpkg-archives" | "apple" | $(vcpkg.default.triplet)
+              path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "Setup Vcpkg"
             inputs:
