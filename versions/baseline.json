@@ -36,6 +36,10 @@
       "baseline": "2022-02-09",
       "port-version": 1
     },
+    "google-jni-bind": {
+      "baseline": "2023-02-24",
+      "port-version": 0
+    },
     "libdispatch": {
       "baseline": "swift-5.5",
       "port-version": 4
