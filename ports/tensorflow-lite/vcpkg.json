@@ -1,7 +1,6 @@
 {
   "name": "tensorflow-lite",
-  "version-semver": "2.9.2",
-  "port-version": 2,
+  "version-semver": "2.9.3",
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://www.tensorflow.org/",
   "license": "Apache-2.0",

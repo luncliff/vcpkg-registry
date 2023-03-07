@@ -1,0 +1,12 @@
+{
+    "registries": [
+        {
+            "kind": "git",
+            "repository": "https://github.com/luncliff/vcpkg-registry",
+            "packages": [
+                "noname"
+            ],
+            "baseline": "0000000000000000000000000000000000000000"
+        }
+    ]
+}
