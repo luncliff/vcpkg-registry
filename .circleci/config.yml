@@ -34,7 +34,7 @@ jobs:
     executor:
       name: win/server-2022
     environment:
-      VCPKG_DOWNLOADS: C:/vcpkg-downloads
+      VCPKG_DOWNLOADS: C:/vcpkg-downs
       VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
     steps:
       - checkout
@@ -52,7 +52,7 @@ jobs:
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
       - restore_cache:
           keys:
-            - v1-downloads-{{ checksum ".circleci/config.yml" }}
+            - v1-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
             - v1-bins-{{ .Branch }}
@@ -62,10 +62,9 @@ jobs:
       name: win/server-2022 # from the Orbs
       size: large
     environment:
-      VCPKG_DOWNLOADS: C:/vcpkg-downloads
+      VCPKG_DOWNLOADS: C:/vcpkg-downs
       VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
       # VCPKG_DEFAULT_TRIPLET: x64-windows
-      OPT_CLEAN: "--clean-buildtrees-after-build"
     steps:
       - checkout
       - run:
@@ -79,31 +78,32 @@ jobs:
             Get-Content .circleci/port-windows.txt | jq -Rn '[inputs]'
             Get-Content .circleci/port-uwp.txt | jq -Rn '[inputs]'
       - run:
-          name: "Setup: microsoft/vcpkg(2022.08.15)"
+          name: "Setup: microsoft/vcpkg(2022.10.19)"
           command: |
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2022.08.15 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2022.10.19 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
-              Get-Location
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
               ./vcpkg.exe fetch nuget
             Pop-Location
       - restore_cache:
           keys:
-            - v1-downloads-{{ checksum ".circleci/config.yml" }}
-            - v1-downloads-{{ .Branch }}
+            - v1-downs-{{ checksum ".circleci/config.yml" }}
+      - restore_cache:
+          keys:
+            - v1-bins-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Port: vcpkg-cmake"
           command: |
-            ./vcpkg.exe install --debug $env:OPT_CLEAN `
-              vcpkg-cmake vcpkg-cmake-config
+            ./vcpkg.exe install --debug `
+              vcpkg-cmake vcpkg-cmake-config vcpkg-cmake-get-vars
           working_directory: vcpkg
       - run:
           name: "Port: from port-windows.text"
           command: |
-            ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
+            ./vcpkg.exe install --clean-buildtrees-after-build --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-windows.txt")
           working_directory: vcpkg
           no_output_timeout: 1h
@@ -116,14 +116,14 @@ jobs:
               paths:
                 - C:/vcpkg-bins
       - save_cache:
-          key: v1-downloads-{{ checksum ".circleci/config.yml" }}
+          key: v1-downs-{{ checksum ".circleci/config.yml" }}
           paths:
-            - C:/vcpkg-downloads
+            - C:/vcpkg-downs
           when: always
       - save_cache:
-          key: v1-downloads-{{ .Branch }}
+          key: v1-bins-{{ checksum ".circleci/config.yml" }}
           paths:
-            - C:/vcpkg-downloads
+            - C:/vcpkg-bins
           when: always
       # - run:
       #     name: "Stage buildtrees logs"
@@ -139,10 +139,9 @@ jobs:
       name: win/server-2022
       size: large
     environment:
-      VCPKG_DOWNLOADS: C:/vcpkg-downloads
+      VCPKG_DOWNLOADS: C:/vcpkg-downs
       VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
       # VCPKG_DEFAULT_TRIPLET: x64-uwp
-      OPT_CLEAN: "--clean-buildtrees-after-build"
     steps:
       - checkout
       - run:
@@ -151,31 +150,32 @@ jobs:
             choco install --yes --no-progress `
               rsync ninja jq nuget.commandline
       - run:
-          name: "Setup: microsoft/vcpkg(2022.08.15)"
+          name: "Setup: microsoft/vcpkg(2022.10.19)"
           command: |
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2022.08.15 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2022.10.19 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
-              Get-Location
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
               ./vcpkg.exe fetch nuget
             Pop-Location
       - restore_cache:
           keys:
-            - v1-downloads-{{ checksum ".circleci/config.yml" }}
-            - v1-downloads-{{ .Branch }}
+            - v1-downs-{{ checksum ".circleci/config.yml" }}
+      - restore_cache:
+          keys:
+            - v1-bins-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Port: vcpkg-cmake"
           command: |
-            ./vcpkg.exe install --debug $env:OPT_CLEAN `
-              vcpkg-cmake vcpkg-cmake-config
+            ./vcpkg.exe install --debug `
+              vcpkg-cmake vcpkg-cmake-config vcpkg-cmake-get-vars
           working_directory: vcpkg
       - run:
           name: "Port: from port-uwp.text"
           command: |
-            ./vcpkg.exe install $env:OPT_CLEAN --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
+            ./vcpkg.exe install --clean-buildtrees-after-build --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-uwp.txt")
           working_directory: vcpkg
           no_output_timeout: 1h
