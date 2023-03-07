@@ -1,0 +1,78 @@
+diff --git a/modelpackage/src/utils/JsonMap.cpp b/modelpackage/src/utils/JsonMap.cpp
+index 400dcf2..c28e61c 100644
+--- a/modelpackage/src/utils/JsonMap.cpp
++++ b/modelpackage/src/utils/JsonMap.cpp
+@@ -11,7 +11,7 @@
+ #include <sstream>
+ 
+ #include "JsonMap.hpp"
+-#include "json.hpp"
++#include <nlohmann/json.hpp>
+ 
+ using namespace nlohmann;
+ 
+diff --git a/mlmodel/src/Utils.hpp b/mlmodel/src/Utils.hpp
+index 0a992b4..4b784e8 100644
+--- a/mlmodel/src/Utils.hpp
++++ b/mlmodel/src/Utils.hpp
+@@ -62,7 +62,7 @@ namespace CoreML {
+         google::protobuf::io::CodedInputStream codedInput(&rawInput);
+ 
+         // Support models up to 2GB
+-        codedInput.SetTotalBytesLimit(std::numeric_limits<int>::max(), -1);
++        codedInput.SetTotalBytesLimit(std::numeric_limits<int>::max());
+ 
+         if (!formatObj.ParseFromCodedStream(&codedInput)) {
+             return Result(ResultType::FAILED_TO_DESERIALIZE,
+diff --git a/mlmodel/src/Validation/KNearestNeighborsClassifierValidator.cpp b/mlmodel/src/Validation/KNearestNeighborsClassifierValidator.cpp
+index dbbc90f..5a0067a 100644
+--- a/mlmodel/src/Validation/KNearestNeighborsClassifierValidator.cpp
++++ b/mlmodel/src/Validation/KNearestNeighborsClassifierValidator.cpp
+@@ -99,7 +99,7 @@ namespace CoreML {
+         int intLabelCount = knnClassifier.has_int64classlabels() ? knnClassifier.int64classlabels().vector_size() : 0;
+         int stringLabelCount = knnClassifier.has_stringclasslabels() ? knnClassifier.stringclasslabels().vector_size() : 0;
+         
+-        int labelCount = MAX(intLabelCount, stringLabelCount);
++        int labelCount = std::max<int>(intLabelCount, stringLabelCount);
+         
+         auto classLabelCase = knnClassifier.ClassLabels_case();
+         auto defaultClassLabelIsInt64 = false;
+diff --git a/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp b/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp
+index a483f0a..178fc82 100644
+--- a/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp
++++ b/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp
+@@ -2851,9 +2851,8 @@ Result NeuralNetworkSpecValidator::validateLayerNormalizationLayer(const Specifi
+         return Result(ResultType::INVALID_MODEL_PARAMETERS, err);
+     }
+     // shape of gamma and beta should match normalized shape
+-    const int totalShape = std::accumulate(params.normalizedshape().begin(),
+-                                           params.normalizedshape().end(),
+-                                           1, std::multiplies<int>());
++    int totalShape = 1;
++    std::for_each(params.normalizedshape().begin(), params.normalizedshape().end(), [&totalShape](int64_t value){ totalShape *= value; });
+     if (params.gamma().floatvalue_size() != totalShape) {
+         err = "Shape of gamma should match normalized_shape for '" + layer.name() + "' layer.";
+         return Result(ResultType::INVALID_MODEL_PARAMETERS, err);
+diff --git a/mlmodel/src/Validation/ParameterValidator.cpp b/mlmodel/src/Validation/ParameterValidator.cpp
+index 6e8092b..883c880 100644
+--- a/mlmodel/src/Validation/ParameterValidator.cpp
++++ b/mlmodel/src/Validation/ParameterValidator.cpp
+@@ -66,7 +66,7 @@ Result CoreML::validateInt64Parameter(const std::string& parameterName, const Sp
+ 
+ Result CoreML::validateDoubleParameter(const std::string& parameterName, const Specification::DoubleParameter& doubleParameter) {
+ 
+-    const ::google::protobuf::double_t defaultValue = doubleParameter.defaultvalue();
++    const double defaultValue = doubleParameter.defaultvalue();
+ 
+     if (doubleParameter.has_range()) {
+         const Specification::DoubleRange& range = doubleParameter.range();
+diff --git a/mlmodel/tools/enumgen.cpp b/mlmodel/tools/enumgen.cpp
+index f6feb4b..5c07c55 100644
+--- a/mlmodel/tools/enumgen.cpp
++++ b/mlmodel/tools/enumgen.cpp
+@@ -1,4 +1,4 @@
+-#include "../../deps/protobuf/src/google/protobuf/compiler/plugin.pb.h"
++#include <google/protobuf/compiler/plugin.pb.h>
+ 
+ #include <iostream>
+ #include <sstream>

@@ -1,0 +1,281 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b657197..ac60dd2 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.10.2)
++cmake_minimum_required(VERSION 3.14)
+ 
+ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+ 
+@@ -14,7 +14,7 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+     See: https://gitlab.kitware.com/cmake/community/wikis/FAQ#i-run-an-out-of-source-build-but-cmake-generates-in-source-anyway-why
+   ")
+ endif()
+-
++include(GNUInstallDirs)
+ set(CMAKE_CXX_STANDARD 17)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(CMAKE_CXX_EXTENSIONS OFF)
+@@ -31,24 +31,24 @@ if(HAS_CCACHE)
+   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+ endif()
+ 
+-add_subdirectory(deps)
++find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
++find_package(pybind11 CONFIG REQUIRED)
++find_package(nlohmann_json CONFIG REQUIRED) # nlohmann_json::nlohmann_json
++find_package(protobuf CONFIG REQUIRED) # protobuf::libprotobuf
+ add_subdirectory(mlmodel)
+ 
+-find_package(PythonInterp)
+-find_package(PythonLibs)
+-
+-message("Found python at ${PYTHON_EXECUTABLE}")
+-message("Found python version ${PYTHON_VERSION_STRING}")
+-message("Found python includes ${PYTHON_INCLUDE_DIRS}")
++message(STATUS "Found python at ${Python3_EXECUTABLE}")
++message(STATUS "Found python version ${Python3_VERSION}")
++message(STATUS "Found python includes ${Python3_INCLUDE_DIRS}")
+ 
+ include_directories(
+   .
+-  deps/protobuf/src
+-  deps/pybind11/include
+-  deps/nlohmann
+   mlmodel/src
+-  ${PYTHON_INCLUDE_DIRS}
++  ${pybind11_INCLUDE_DIRS}
+   )
++link_libraries(
++  Python3::Python Python3::NumPy ${pybind11_LIBRARIES} nlohmann_json::nlohmann_json)
++add_compile_definitions(${pybind11_DEFINITIONS})
+ 
+ if(APPLE)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fobjc-arc")
+@@ -59,6 +59,7 @@ add_library(milstoragepython
+   milstoragepython/MilStorage.cpp
+   milstoragepython/MilStoragePython.cpp
+   )
++install(TARGETS milstoragepython DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ 
+ target_link_libraries(milstoragepython
+   mlmodel
+@@ -70,7 +71,8 @@ add_library(modelpackage
+   modelpackage/src/utils/JsonMap.cpp
+   modelpackage/src/ModelPackagePython.cpp
+   )
+-  
++  install(TARGETS modelpackage DESTINATION ${CMAKE_INSTALL_LIBDIR})
++
+ target_compile_definitions(modelpackage
+   PRIVATE
+   CPU_ONLY=1
+@@ -78,7 +80,7 @@ target_compile_definitions(modelpackage
+ 
+ target_link_libraries(modelpackage
+   mlmodel
+-  libprotobuf
++  protobuf::libprotobuf
+   )
+ 
+ if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1)
+@@ -157,6 +159,8 @@ if (APPLE AND CORE_VIDEO AND CORE_ML AND FOUNDATION)
+     coremlpython/CoreMLPythonUtils.mm
+     coremlpython/CoreMLPythonUtils.h
+   )
++  install(TARGETS coremlpython DESTINATION ${CMAKE_INSTALL_LIBDIR})
++
+   target_link_libraries(coremlpython
+     mlmodel
+     ${CORE_VIDEO}
+diff --git a/cmake/coreml-utils.cmake b/cmake/coreml-utils.cmake
+index a87a3bf..39c3957 100644
+--- a/cmake/coreml-utils.cmake
++++ b/cmake/coreml-utils.cmake
+@@ -25,40 +25,38 @@ function(coreml_add_build_proto proto_fn target_suffix)
+             ${CMAKE_CURRENT_BINARY_DIR}/format/${proto_fn}.pb.cc
+             ${CMAKE_CURRENT_BINARY_DIR}/format/${proto_fn}.pb.h
+         COMMENT "Generating c++ sources from ${proto_fn}.proto into ${CMAKE_CURRENT_BINARY_DIR}/format/"
+-        COMMAND ${CMAKE_BINARY_DIR}/deps/protobuf/cmake/protoc
++        COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+             --cpp_out=${CMAKE_CURRENT_BINARY_DIR}/format/
+             -I${CMAKE_CURRENT_SOURCE_DIR}/format
+             ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
+-        DEPENDS protoc
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+     )
+     add_custom_command(
+         OUTPUT
+             ${CMAKE_CURRENT_BINARY_DIR}/format/${proto_fn}_enum.h
+         COMMENT "Generating c++ enums from ${proto_fn}.proto into ${CMAKE_CURRENT_BINARY_DIR}/format/"
+-        COMMAND ${CMAKE_BINARY_DIR}/deps/protobuf/cmake/protoc
++        COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+             --plugin=protoc-gen-enum=mlmodel${target_suffix}/enumgen
+             --enum_out=${CMAKE_CURRENT_BINARY_DIR}/format/
+             -I${CMAKE_CURRENT_SOURCE_DIR}/format/
+             ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
+-        DEPENDS enumgen protoc
++        DEPENDS enumgen
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+     )
+     add_custom_command(
+         OUTPUT
+             ${CMAKE_BINARY_DIR}/coremltools${target_suffix}/proto/${proto_fn}_pb2.py
+         COMMENT "Generating Python sources from ${proto_fn}.proto into ${CMAKE_BINARY_DIR}/coremltools${target_suffix}/proto/"
+-        COMMAND ${CMAKE_BINARY_DIR}/deps/protobuf/cmake/protoc
++        COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+             --python_out=${CMAKE_BINARY_DIR}/coremltools${target_suffix}/proto
+             -I${CMAKE_CURRENT_SOURCE_DIR}/format/
+             ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
+-        COMMAND python
++        COMMAND ${Python3_EXECUTABLE}
+             -m lib2to3
+             -wn
+             --no-diff
+             -f import
+             ${CMAKE_BINARY_DIR}/coremltools${target_suffix}/${proto_fn}_pb2.py
+-        DEPENDS protoc
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+     )
+     # For the CoreML framework we read the source file locations for these, and
+@@ -67,36 +65,34 @@ function(coreml_add_build_proto proto_fn target_suffix)
+     if(OVERWRITE_PB_SOURCE)
+         add_custom_target(tgt_${proto_fn}_source ALL
+             COMMENT "Generating c++ sources from ${proto_fn}.proto into ${CMAKE_CURRENT_SOURCE_DIR}/build/format/"
+-            COMMAND ${CMAKE_BINARY_DIR}/deps/protobuf/cmake/protoc
++            COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+                 --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/build/format/
+                 -I${CMAKE_CURRENT_SOURCE_DIR}/format
+                 ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
+-            DEPENDS protoc
+             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+         )
+         add_custom_target(tgt_${proto_fn}_enums ALL
+             COMMENT "Generating c++ enums from ${proto_fn}.proto into ${CMAKE_CURRENT_SOURCE_DIR}/build/format/"
+-            COMMAND ${CMAKE_BINARY_DIR}/deps/protobuf/cmake/protoc
++            COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+                 --plugin=protoc-gen-enum=mlmodel${target_suffix}/enumgen
+                 --enum_out=${CMAKE_CURRENT_SOURCE_DIR}/build/format/
+                 -I${CMAKE_CURRENT_SOURCE_DIR}/format/
+                 ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
+-            DEPENDS enumgen protoc
++            DEPENDS enumgen
+             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+         )
+         add_custom_target(tgt_${proto_fn}_python ALL
+             COMMENT "Generating Python sources from ${proto_fn}.proto into ${CMAKE_SOURCE_DIR}/coremltools${target_suffix}/proto/"
+-            COMMAND ${CMAKE_BINARY_DIR}/deps/protobuf/cmake/protoc
++            COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+                 --python_out=${CMAKE_SOURCE_DIR}/coremltools${target_suffix}/proto
+                 -I${CMAKE_CURRENT_SOURCE_DIR}/format/
+                 ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
+-            COMMAND python
++            COMMAND ${Python3_EXECUTABLE}
+                 -m lib2to3
+                 -wn
+                 --no-diff
+                 -f import
+                 ${CMAKE_SOURCE_DIR}/coremltools${target_suffix}/proto/${proto_fn}_pb2.py
+-            DEPENDS protoc
+             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+         )
+         # Record dependencies for 'protosrc' target.
+diff --git a/mlmodel/CMakeLists.txt b/mlmodel/CMakeLists.txt
+index df8fb48..fb3bb78 100644
+--- a/mlmodel/CMakeLists.txt
++++ b/mlmodel/CMakeLists.txt
+@@ -2,11 +2,10 @@ include("${CMAKE_SOURCE_DIR}/cmake/coreml-utils.cmake")
+ 
+ include_directories(
+   ..
+-  ../deps/protobuf/src
+   src
+ )
+ 
+-add_definitions(-DGOOGLE_PROTOBUF_NO_STATIC_INITIALIZER)
++add_compile_definitions(GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER)
+ 
+ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+   set(CMAKE_CXX_FLAGS " \
+@@ -63,6 +62,7 @@ target_link_libraries(mlmodel_test
+ add_executable(mlmodel_test_runner
+     test_runner.cpp
+ )
++install(TARGETS mlmodel_test_runner DESTINATION ${CMAKE_INSTALL_BINDIR})
+ 
+ target_link_libraries(mlmodel_test_runner
+     mlmodel_test
+@@ -71,8 +71,6 @@ target_link_libraries(mlmodel_test_runner
+ add_library(mlmodel
+     STATIC
+ 
+-    ../deps/protobuf/src/google/protobuf/io/zero_copy_stream_impl.cc
+-
+     ${CMAKE_CURRENT_BINARY_DIR}/format/ArrayFeatureExtractor.pb.cc
+     ${CMAKE_CURRENT_BINARY_DIR}/format/AudioFeaturePrint.pb.cc
+     ${CMAKE_CURRENT_BINARY_DIR}/format/BayesianProbitRegressor.pb.cc
+@@ -170,14 +168,14 @@ set_property(TARGET mlmodel
+ )
+ 
+ target_link_libraries(mlmodel
+-  libprotobuf-lite
++  protobuf::libprotobuf-lite
+ )
+ 
+ add_executable(enumgen
+     EXCLUDE_FROM_ALL
+     tools/enumgen.cpp
+-    ../deps/protobuf/src/google/protobuf/compiler/plugin.pb.cc
+ )
++install(TARGETS enumgen DESTINATION ${CMAKE_INSTALL_BINDIR})
+ 
+ set(proto_files
+     ArrayFeatureExtractor
+@@ -215,7 +213,7 @@ set(proto_files
+ )
+ 
+ target_link_libraries(enumgen
+-    libprotobuf
++    protobuf::libprotobuf protobuf::libprotoc
+ )
+ 
+ option(OVERWRITE_PB_SOURCE
+diff --git a/mlmodel/CMakeLists.txt b/mlmodel/CMakeLists.txt
+index 6962924..68e7b35 100644
+--- a/mlmodel/CMakeLists.txt
++++ b/mlmodel/CMakeLists.txt
+@@ -162,6 +162,7 @@ add_library(mlmodel
+     src/Validation/WordEmbeddingValidator.cpp
+     src/Validation/WordTaggerValidator.cpp
+ )
++install(TARGETS mlmodel DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ 
+ set_property(TARGET mlmodel
+     PROPERTY POSITION_INDEPENDENT_CODE ON
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9c74125..31941c2 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -135,21 +135,6 @@ find_library(CORE_ML CoreML)
+ find_library(FOUNDATION Foundation)
+ 
+ if (APPLE AND CORE_VIDEO AND CORE_ML AND FOUNDATION)
+-  execute_process(
+-      COMMAND ${PYTHON_EXECUTABLE} -c "import numpy; print(numpy.get_include())"
+-      RESULT_VARIABLE NUMPY_INCLUDE_STATUS
+-      OUTPUT_VARIABLE NUMPY_INCLUDE
+-  )
+-
+-  if("${NUMPY_INCLUDE}" STREQUAL "" OR NOT NUMPY_INCLUDE_STATUS EQUAL 0)
+-      message(FATAL_ERROR "Could not find numpy include path. Exit code: ${NUMPY_INCLUDE_STATUS}")
+-  endif()
+-  message("Found numpy include path at ${NUMPY_INCLUDE}")
+-
+-  include_directories(
+-    ${NUMPY_INCLUDE}
+-  )
+-
+   add_library(coremlpython
+     SHARED
+     coremlpython/CoreMLPython.mm
