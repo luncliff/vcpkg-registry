@@ -40,7 +40,13 @@ get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
 get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
 
 # ${PYTHON3} -m site --user-site
-get_filename_component(SITE_PACKAGES_DIR "${PYTHON_ROOT}/lib/python3.9/site-packages" ABSOLUTE)
+find_path(SITE_PACKAGES_DIR
+    NAMES "isympy.py"
+    PATHS "${PYTHON_ROOT}/lib/python3.9/site-packages"
+          "${PYTHON_ROOT}/lib/python3.10/site-packages"
+          "${PYTHON_ROOT}/lib/python3.11/site-packages"
+    REQUIRED
+)
 message(STATUS "  site-packages: ${SITE_PACKAGES_DIR}")
 
 vcpkg_cmake_configure(
