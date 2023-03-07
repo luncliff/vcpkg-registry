@@ -419,7 +419,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "Default Triplet"
             inputs:
-              vcpkgArguments: "openssl3 zlib-ng libdispatch fft2d farmhash ruy eigen3"
+              vcpkgArguments: "openssl3 zlib-ng libdispatch fft2d farmhash ruy eigen3 google-jni-bind"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: CopyFiles@2
             displayName: "Copy logs in buildtrees"
