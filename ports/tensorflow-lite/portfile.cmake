@@ -11,7 +11,7 @@ vcpkg_from_github(
 )
 
 file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
-file(CREATE_LINK "${CURRENT_INSTALLED_DIR}/include/eigen3" "${SOURCE_PATH}/third_party/eigen3" SYMBOLIC)
+file(COPY "${CURRENT_INSTALLED_DIR}/include/eigen3" DESTINATION "${SOURCE_PATH}/third_party")
 
 find_program(FLATC NAMES flatc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers"
