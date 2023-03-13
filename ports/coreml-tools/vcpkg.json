@@ -1,11 +1,16 @@
 {
   "name": "coreml-tools",
   "version": "6.1",
+  "port-version": 1,
   "description": "CPU INFOrmation library (x86/x86-64/ARM/ARM64, Linux/Windows/Android/macOS/iOS)",
   "homepage": "https://github.com/apple/coremltools",
   "license": "BSD-3-Clause",
-  "supports": "osx",
+  "supports": "osx | ios",
   "dependencies": [
+    {
+      "name": "coreml-tools",
+      "host": true
+    },
     "nlohmann-json",
     "protobuf",
     {

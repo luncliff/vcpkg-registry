@@ -279,3 +279,156 @@ index 9c74125..31941c2 100644
    add_library(coremlpython
      SHARED
      coremlpython/CoreMLPython.mm
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 31941c2..fa77c10 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -31,12 +31,22 @@ if(HAS_CCACHE)
+   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+ endif()
+ 
+-find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
+-find_package(pybind11 CONFIG REQUIRED)
++find_package(Python3 COMPONENTS Interpreter REQUIRED)
++if(NOT CMAKE_CROSSCOMPILING)
++  find_package(Python3 COMPONENTS Development NumPy REQUIRED)
++  link_libraries(Python3::Python Python3::NumPy)
++endif()
+ find_package(nlohmann_json CONFIG REQUIRED) # nlohmann_json::nlohmann_json
+ find_package(protobuf CONFIG REQUIRED) # protobuf::libprotobuf
+ add_subdirectory(mlmodel)
+ 
++find_package(pybind11 CONFIG)
++if(pybind11_FOUND)
++  include_directories(${pybind11_INCLUDE_DIRS})
++  link_libraries(${pybind11_LIBRARIES})
++  add_compile_definitions(${pybind11_DEFINITIONS})
++endif()
++
+ message(STATUS "Found python at ${Python3_EXECUTABLE}")
+ message(STATUS "Found python version ${Python3_VERSION}")
+ message(STATUS "Found python includes ${Python3_INCLUDE_DIRS}")
+@@ -44,14 +54,16 @@ message(STATUS "Found python includes ${Python3_INCLUDE_DIRS}")
+ include_directories(
+   .
+   mlmodel/src
+-  ${pybind11_INCLUDE_DIRS}
+   )
+ link_libraries(
+-  Python3::Python Python3::NumPy ${pybind11_LIBRARIES} nlohmann_json::nlohmann_json)
+-add_compile_definitions(${pybind11_DEFINITIONS})
++  nlohmann_json::nlohmann_json
++  )
+ 
+ if(APPLE)
+-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fobjc-arc")
++  add_compile_options(-fobjc-arc)
++endif()
++if(CMAKE_CROSSCOMPILING)
++  return() # just libraries. no executables
+ endif()
+ 
+ add_library(milstoragepython
+@@ -71,7 +83,7 @@ add_library(modelpackage
+   modelpackage/src/utils/JsonMap.cpp
+   modelpackage/src/ModelPackagePython.cpp
+   )
+-  install(TARGETS modelpackage DESTINATION ${CMAKE_INSTALL_LIBDIR})
++install(TARGETS modelpackage DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ 
+ target_compile_definitions(modelpackage
+   PRIVATE
+diff --git a/cmake/coreml-utils.cmake b/cmake/coreml-utils.cmake
+index 39c3957..9adcb95 100644
+--- a/cmake/coreml-utils.cmake
++++ b/cmake/coreml-utils.cmake
+@@ -20,6 +20,12 @@
+ #    to the list proto_depends in PARENT_SCOPE.
+ #
+ function(coreml_add_build_proto proto_fn target_suffix)
++    # some commands need mlmodel/enumgen host executable
++    if(CMAKE_CROSSCOMPILING)
++        find_program(ENUMGEN NAMES enumgen mlmodel/enumgen REQUIRED)
++    else()
++        set(ENUMGEN mlmodel${target_suffix}/enumgen)
++    endif()
+     add_custom_command(
+         OUTPUT
+             ${CMAKE_CURRENT_BINARY_DIR}/format/${proto_fn}.pb.cc
+@@ -31,18 +37,30 @@ function(coreml_add_build_proto proto_fn target_suffix)
+             ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+     )
+-    add_custom_command(
+-        OUTPUT
+-            ${CMAKE_CURRENT_BINARY_DIR}/format/${proto_fn}_enum.h
+-        COMMENT "Generating c++ enums from ${proto_fn}.proto into ${CMAKE_CURRENT_BINARY_DIR}/format/"
+-        COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+-            --plugin=protoc-gen-enum=mlmodel${target_suffix}/enumgen
+-            --enum_out=${CMAKE_CURRENT_BINARY_DIR}/format/
+-            -I${CMAKE_CURRENT_SOURCE_DIR}/format/
+-            ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
+-        DEPENDS enumgen
+-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+-    )
++    if(NOT CMAKE_CROSSCOMPILING)
++        add_custom_command(
++            OUTPUT
++                ${CMAKE_CURRENT_BINARY_DIR}/format/${proto_fn}_enum.h
++            COMMENT "Generating c++ enums from ${proto_fn}.proto into ${CMAKE_CURRENT_BINARY_DIR}/format/"
++            COMMAND ${Protobuf_PROTOC_EXECUTABLE}
++                --plugin=protoc-gen-enum=mlmodel${target_suffix}/enumgen
++                --enum_out=${CMAKE_CURRENT_BINARY_DIR}/format/
++                -I${CMAKE_CURRENT_SOURCE_DIR}/format/
++                ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
++            DEPENDS enumgen
++            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
++        )
++    else()
++        add_custom_command(
++            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/format/${proto_fn}_enum.h
++            COMMAND ${Protobuf_PROTOC_EXECUTABLE}
++                --plugin=protoc-gen-enum=${ENUMGEN}
++                --enum_out=${CMAKE_CURRENT_BINARY_DIR}/format/
++                -I${CMAKE_CURRENT_SOURCE_DIR}/format/
++                ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
++            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
++        )
++    endif()
+     add_custom_command(
+         OUTPUT
+             ${CMAKE_BINARY_DIR}/coremltools${target_suffix}/proto/${proto_fn}_pb2.py
+@@ -71,16 +89,27 @@ function(coreml_add_build_proto proto_fn target_suffix)
+                 ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
+             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+         )
+-        add_custom_target(tgt_${proto_fn}_enums ALL
+-            COMMENT "Generating c++ enums from ${proto_fn}.proto into ${CMAKE_CURRENT_SOURCE_DIR}/build/format/"
++        if(NOT CMAKE_CROSSCOMPILING)
++            add_custom_target(tgt_${proto_fn}_enums ALL
++                COMMENT "Generating c++ enums from ${proto_fn}.proto into ${CMAKE_CURRENT_SOURCE_DIR}/build/format/"
++                COMMAND ${Protobuf_PROTOC_EXECUTABLE}
++                    --plugin=protoc-gen-enum=mlmodel${target_suffix}/enumgen
++                    --enum_out=${CMAKE_CURRENT_SOURCE_DIR}/build/format/
++                    -I${CMAKE_CURRENT_SOURCE_DIR}/format/
++                    ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
++                DEPENDS enumgen
++                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
++            )
++        else()
++            add_custom_target(tgt_${proto_fn}_enums ALL
+             COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+-                --plugin=protoc-gen-enum=mlmodel${target_suffix}/enumgen
++                --plugin=protoc-gen-enum=${ENUMGEN}
+                 --enum_out=${CMAKE_CURRENT_SOURCE_DIR}/build/format/
+                 -I${CMAKE_CURRENT_SOURCE_DIR}/format/
+                 ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
+-            DEPENDS enumgen
+-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+-        )
++                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
++            )
++        endif()
+         add_custom_target(tgt_${proto_fn}_python ALL
+             COMMENT "Generating Python sources from ${proto_fn}.proto into ${CMAKE_SOURCE_DIR}/coremltools${target_suffix}/proto/"
+             COMMAND ${Protobuf_PROTOC_EXECUTABLE}
