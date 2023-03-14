@@ -410,3 +410,131 @@ index 97bc4d9a..416c26f4 100644
    populate_tflite_source_vars(
      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
      FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 96928be5..9e8cd45b 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -230,9 +230,7 @@ if(TFLITE_ENABLE_GPU)
+   find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
+ 
+   if(APPLE)
+-    # Prevent using OpenCL.framework because we need version 2.0+
+-    find_path(OpenCL_INCLUDE_DIR "CL/opencl.h" REQUIRED)
+-    find_library(OpenCL_LIBRARY NAMES OpenCL REQUIRED NO_CMAKE_SYSTEM_PATH)
++    find_package(OpenCL 2.0)
+   elseif(ANDROID)
+     find_path(OpenCL_INCLUDE_DIR "CL/opencl.h" REQUIRED)
+   else()
+@@ -264,23 +262,32 @@ if(TFLITE_ENABLE_GPU)
+     find_package(Protobuf REQUIRED)
+ 
+     # CoreML .proto files from https://github.com/apple/coremltools
+-    file(GLOB COREML_MLMODEL_FORMAT_PROTO_FILES "${COREML_SOURCE_DIR}/mlmodel/format/*.proto")
+-    protobuf_generate(
+-        LANGUAGE cpp
+-        IMPORT_DIRS ${COREML_SOURCE_DIR}/mlmodel/format
+-        PROTOC_OUT_DIR ${COREML_SOURCE_DIR}/mlmodel/format
+-        PROTOS ${COREML_MLMODEL_FORMAT_PROTO_FILES}
+-        OUT_VAR COREML_MLMODEL_FORMAT_PROTO_SRCS
+-    )
++    # note: moved protoc generated code to coreml-tools port
++    find_library(MLMODEL_LIBRARY NAMES mlmodel REQUIRED)
++
+     populate_tflite_source_vars("delegates/gpu/metal" TFLITE_DELEGATES_GPU_METAL_CXX_SRCS FILTER "(_test)\\.(m|mm|cc|h)$")
++    set_source_files_properties(${TFLITE_DELEGATES_GPU_METAL_CXX_SRCS}
++    PROPERTIES
++      LANGUAGE OBJCXX
++      COMPILE_OPTIONS "-fobjc-arc"
++    )
++
++    list(APPEND TFLITE_OBJCXX_SRCS
++      ${TFLITE_SOURCE_DIR}/objc/sources/TFLCommonUtil.mm
++      ${TFLITE_SOURCE_DIR}/objc/sources/TFLInterpreter.mm
++      ${TFLITE_SOURCE_DIR}/objc/sources/TFLSignatureRunner.mm
++    )
++    set_source_files_properties(${TFLITE_OBJCXX_SRCS}
++    PROPERTIES
++      LANGUAGE OBJCXX
++      COMPILE_OPTIONS "-fobjc-arc"
++    )
+ 
+     list(APPEND TFLITE_OBJC_SRCS
+-      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/buffer_convert.mm
+       ${TFLITE_SOURCE_DIR}/objc/sources/TFLCoreMLDelegate.m
+       ${TFLITE_SOURCE_DIR}/objc/sources/TFLInterpreter+Internal.h
+       ${TFLITE_SOURCE_DIR}/objc/sources/TFLQuantizationParameters+Internal.h
+       ${TFLITE_SOURCE_DIR}/objc/sources/TFLDelegate.m
+-      ${TFLITE_SOURCE_DIR}/objc/sources/TFLInterpreter.mm
+       ${TFLITE_SOURCE_DIR}/objc/sources/TFLQuantizationParameters.m
+       ${TFLITE_SOURCE_DIR}/objc/sources/TFLErrorUtil.h
+       ${TFLITE_SOURCE_DIR}/objc/sources/TFLInterpreterOptions.m
+@@ -289,18 +296,28 @@ if(TFLITE_ENABLE_GPU)
+       ${TFLITE_SOURCE_DIR}/objc/sources/TFLMetalDelegate.m
+       ${TFLITE_SOURCE_DIR}/objc/sources/TFLTensor.m
+     )
++    set_source_files_properties(${TFLITE_OBJC_SRCS}
++    PROPERTIES
++      LANGUAGE OBJC
++      COMPILE_OPTIONS "-fobjc-arc"
++    )
++
+     list(APPEND TFLITE_DELEGATES_GPU_METAL_SRCS
+       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/common.h
+       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/common.mm
+       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate_internal.h
+       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate.mm
++      ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/buffer_convert.mm
+     )
+     populate_tflite_source_vars("delegates/coreml/builders" TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS FILTER "(_test)\\.(m|mm|cc|h)$")
+ 
+     list(APPEND TFLITE_DELEGATES_COREML_SRCS
+-      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
+-      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.h ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
+-      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.h ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.h
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.h
++      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
+       ${TFLITE_SOURCE_DIR}/tools/delegates/coreml_delegate_provider.cc
+       ${TFLITE_SOURCE_DIR}/tools/delegates/delegate_provider.cc
+       ${TFLITE_SOURCE_DIR}/tools/delegates/default_execution_provider.cc
+@@ -308,9 +325,9 @@ if(TFLITE_ENABLE_GPU)
+       ${TFLITE_SOURCE_DIR}/tools/tool_params.cc
+       ${TFLITE_SOURCE_DIR}/tools/command_line_flags.cc
+     )
+-
+-    set_source_files_properties(${TFLITE_DELEGATES_GPU_METAL_CXX_SRCS} ${TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS} ${TFLITE_OBJC_SRCS} ${TFLITE_DELEGATES_GPU_METAL_SRCS} ${TFLITE_DELEGATES_COREML_SRCS}
++    set_source_files_properties(${TFLITE_DELEGATES_GPU_METAL_SRCS} ${TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS} ${TFLITE_DELEGATES_COREML_SRCS}
+     PROPERTIES
++      LANGUAGE OBJCXX
+       COMPILE_OPTIONS "-fobjc-arc"
+     )
+ 
+@@ -319,6 +336,7 @@ if(TFLITE_ENABLE_GPU)
+       "-framework Foundation"
+       "-framework Metal"
+       "-framework CoreML"
++      ${MLMODEL_LIBRARY}
+     )
+     list(APPEND TFLITE_DELEGATES_GPU_SRCS
+       ${TFLITE_DELEGATES_GPU_METAL_CXX_SRCS}
+@@ -327,8 +345,8 @@ if(TFLITE_ENABLE_GPU)
+       ${TFLITE_DELEGATES_COREML_BUILDERS_SRCS}
+       ${TFLITE_DELEGATES_COREML_SRCS}
+       ${TFLITE_DELEGATES_COREML_PROVIDER_SRCS}
+-      ${COREML_MLMODEL_FORMAT_PROTO_SRCS}
+       ${TFLITE_OBJC_SRCS}
++      ${TFLITE_OBJCXX_SRCS}
+     )
+   endif()
+ 
+@@ -344,6 +362,7 @@ if(TFLITE_ENABLE_GPU)
+     "delegates/gpu/cl/kernels" TFLITE_DELEGATES_GPU_CL_KERNELS_SRCS
+     FILTER "(_test)\\.(cc|h)$"
+   )
++
+   populate_tflite_source_vars(
+     "delegates/gpu/common/default" TFLITE_DELEGATES_GPU_COMMON_DEFAULT_SRCS
+     FILTER "(_test)\\.(cc|h)$"

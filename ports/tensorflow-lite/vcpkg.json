@@ -41,9 +41,17 @@
         "egl-registry",
         "fp16",
         "opencl",
+        {
+          "name": "opencl",
+          "platform": "windows"
+        },
         "opengl-registry",
         {
           "name": "protobuf",
+          "platform": "osx | ios"
+        },
+        {
+          "name": "coreml-tools",
           "platform": "osx | ios"
         },
         "vulkan-headers"
