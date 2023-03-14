@@ -538,14 +538,14 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
-              vcpkgArguments: "tensorflow-lite openssl3 metal-cpp xnnpack zlib-ng"
+              vcpkgArguments: "coreml-tools tensorflow-lite openssl3 metal-cpp zlib-ng"
               vcpkgGitCommitId: a7b6122f6b6504d16d96117336a0562693579933 # 2023.02.24
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
           - task: run-vcpkg@0
             displayName: "arm64-ios-simulator"
             inputs:
-              vcpkgArguments: "tensorflow-lite openssl3 xnnpack"
+              vcpkgArguments: "coreml-tools tensorflow-lite openssl3"
               vcpkgGitCommitId: a7b6122f6b6504d16d96117336a0562693579933 # 2023.02.24
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator

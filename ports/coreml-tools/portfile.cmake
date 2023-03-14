@@ -17,17 +17,6 @@ find_program(PROTOC NAMES protoc
 )
 message(STATUS "Using protoc: ${PROTOC}")
 
-file(GLOB MLMODEL_PROTO_FILES "${SOURCE_PATH}/mlmodel/format/*.proto")
-# vcpkg_execute_required_process(
-#     COMMAND ${PROTOC}
-#         --cpp_out "${SOURCE_PATH}/mlmodel/build/format"
-#         --proto_path "${SOURCE_PATH}/mlmodel/format"
-#         ${MLMODEL_PROTO_FILES}
-#     LOGNAME codegen-protoc
-#     WORKING_DIRECTORY "${SOURCE_PATH}/mlmodel/format"
-# )
-file(INSTALL ${MLMODEL_PROTO_FILES} DESTINATION "${CURRENT_PACKAGES_DIR}/include/mlmodel/format")
-
 # see ${SOURCE_PATH}/setup.py
 x_vcpkg_get_python_packages(
     PYTHON_VERSION 3
@@ -35,10 +24,8 @@ x_vcpkg_get_python_packages(
     OUT_PYTHON_VAR PYTHON3
 )
 message(STATUS "Using python3: ${PYTHON3}")
-
 get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
 get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
-
 # ${PYTHON3} -m site --user-site
 find_path(SITE_PACKAGES_DIR
     NAMES "isympy.py"
@@ -49,25 +36,45 @@ find_path(SITE_PACKAGES_DIR
 )
 message(STATUS "  site-packages: ${SITE_PACKAGES_DIR}")
 
+if(VCPKG_CROSSCOMPILING)
+    find_program(ENUMGEN NAMES enumgen
+        PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/coreml-tools"
+        REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
+    )
+    message(STATUS "Using enumgen: ${ENUMGEN}")
+    get_filename_component(ENUMGEN_DIR "${ENUMGEN}" PATH)
+    vcpkg_add_to_path(PREPEND "${ENUMGEN_DIR}")
+endif()
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
+    # GENERATOR Xcode
     OPTIONS
-        -DProtobuf_PROTOC_EXECUTABLE:FILE_PATH="${PROTOC}"
+        -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
+        -DPython3_EXECUTABLE:FILEPATH=${PYTHON3}
         -DPython3_ROOT_DIR:PATH="${PYTHON_ROOT}"
-        -DPython3_EXECUTABLE:FILEPATH="${PYTHON3}"
         -Dpybind11_DIR:PATH="${SITE_PACKAGES_DIR}/pybind11/share/cmake/pybind11"
+        -DCMAKE_CROSSCOMPILING=${VCPKG_CROSSCOMPILING}
         -DOVERWRITE_PB_SOURCE=ON
 )
 vcpkg_cmake_build(TARGET protosrc   LOGFILE_BASE build-protosrc)
-vcpkg_cmake_build(TARGET enumgen    LOGFILE_BASE build-enumgen)
 vcpkg_cmake_install()
-vcpkg_copy_tools(TOOL_NAMES enumgen mlmodel_test_runner AUTO_CLEAN)
+
+if(VCPKG_TARGET_IS_OSX)
+    vcpkg_copy_tools(TOOL_NAMES enumgen mlmodel_test_runner AUTO_CLEAN)
+endif()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+if(VCPKG_TARGET_IS_IOS)
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/debug/bin")
+endif()
 
-file(GLOB MLMODEL_GENERATED_HEADERS
+file(GLOB proto_files
+    "${SOURCE_PATH}/mlmodel/format/*.proto"
+)
+file(GLOB generated_headers
     "${SOURCE_PATH}/mlmodel/build/format/*.h" # *.pb.h
 )
-file(INSTALL ${MLMODEL_GENERATED_HEADERS} DESTINATION "${CURRENT_PACKAGES_DIR}/include/mlmodel/format")
+file(INSTALL ${proto_files} ${generated_headers} DESTINATION "${CURRENT_PACKAGES_DIR}/include/mlmodel/format")
 
 file(INSTALL "${SOURCE_PATH}/LICENSE.txt" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
