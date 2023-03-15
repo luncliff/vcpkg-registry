@@ -127,11 +127,8 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_XNNPACK=ON
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
         -DTFLITE_ENABLE_EXTERNAL_DELEGATE=ON
-        -DProtobuf_PROTOC_EXECUTABLE=${PROTOC} # use host executable
     OPTIONS_DEBUG
         -DTFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION=${VCPKG_TARGET_IS_ANDROID}
-    MAYBE_UNUSED_VARIABLES
-        Protobuf_PROTOC_EXECUTABLE
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()

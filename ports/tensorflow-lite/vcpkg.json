@@ -16,7 +16,10 @@
     },
     "gemmlowp",
     "neon2sse",
-    "nsync",
+    {
+      "name": "nsync",
+      "platform": "android"
+    },
     {
       "name": "protobuf",
       "host": true
@@ -36,22 +39,21 @@
       ]
     },
     "gpu": {
-      "description": "Enable GPU delegates (Windows only)",
+      "description": "Enable GPU delegates",
       "dependencies": [
+        {
+          "name": "coreml-tools",
+          "platform": "osx | ios"
+        },
         "egl-registry",
         "fp16",
-        "opencl",
         {
           "name": "opencl",
-          "platform": "windows"
+          "platform": "!(osx | ios)"
         },
         "opengl-registry",
         {
           "name": "protobuf",
-          "platform": "osx | ios"
-        },
-        {
-          "name": "coreml-tools",
           "platform": "osx | ios"
         },
         "vulkan-headers"
