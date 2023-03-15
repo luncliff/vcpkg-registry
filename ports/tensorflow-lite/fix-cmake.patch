@@ -538,3 +538,32 @@ index 96928be5..9e8cd45b 100644
    populate_tflite_source_vars(
      "delegates/gpu/common/default" TFLITE_DELEGATES_GPU_COMMON_DEFAULT_SRCS
      FILTER "(_test)\\.(cc|h)$"
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 9e8cd45b..86f6129a 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -213,15 +213,16 @@ if(_TFLITE_ENABLE_MMAP)
+ else()
+   list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*mmap_allocation\\.cc$")
+ endif()
+-if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
+-  list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*minimal_logging_android\\.cc$")
+-endif()
+-if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "iOS")
+-  list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*minimal_logging_ios\\.cc$")
+-endif()
+-if(WIN32 OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin"))
+-  list(APPEND TFLITE_SRCS "${TFLITE_SOURCE_DIR}/minimal_logging_default.cc")
++
++list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*minimal_logging_*\\.cc$")
++if(ANDROID)
++  list(APPEND TFLITE_SRCS ${TFLITE_SOURCE_DIR}/minimal_logging_android.cc)
++elseif(IOS)
++  list(APPEND TFLITE_SRCS ${TFLITE_SOURCE_DIR}/minimal_logging_ios.cc)
++elseif(WIN32 OR APPLE)
++  list(APPEND TFLITE_SRCS ${TFLITE_SOURCE_DIR}/minimal_logging_default.cc)
+ endif()
++
+ populate_tflite_source_vars("core" TFLITE_CORE_SRCS)
+ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
+ populate_tflite_source_vars("c" TFLITE_C_SRCS)
