@@ -7,8 +7,6 @@ vcpkg_from_github(
     REPO openssl/openssl
     REF openssl-3.1.0
     SHA512 877b4bc4b59126bdaf626b01322c8ac5325945234acd14907e4a23019f1fd38ec17b5fae9ff60aa9b6b0089c29b0e4255a19cd2a1743c3db82a616286c60d3b9
-    PATCHES
-        ${MSVC_INTRINSIC_PATCH_PATH}
 )
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
