@@ -58,6 +58,9 @@ vcpkg_cmake_configure(
         -DOVERWRITE_PB_SOURCE=ON
 )
 vcpkg_cmake_build(TARGET protosrc   LOGFILE_BASE build-protosrc)
+if(VCPKG_TARGET_IS_OSX)
+    vcpkg_cmake_build(TARGET enumgen   LOGFILE_BASE build-enumgen)
+endif()
 vcpkg_cmake_install()
 
 if(VCPKG_TARGET_IS_OSX)
