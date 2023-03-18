@@ -1,13 +1,16 @@
-vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
+if(NOT VCPKG_TARGET_IS_IOS)
+    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
+endif()
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.9.3
-    SHA512 31cc11e166454e4ec8c27355990081d4a763fb83a1d6da6e44dc47a2c27cc7be8188b2af2e8ecd9789da0bf28500e57e178a100c74dfce670a7dc7fd3f5e2da3
+    REF v2.10.1
+    SHA512 83c02b808ec0df313bd7c89bd50b7a9bb3691a7b476e72fdd8ba95c26d7fcb3fb268201830e4885010a36860c2dc369c4621f9d1d7c2cc1c4999b416412fd392
     PATCHES
         fix-cmake.patch
         fix-source.patch
+        fix-opencl-extension.patch
 )
 
 file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
@@ -24,18 +27,6 @@ find_program(PROTOC NAMES protoc
     REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
 )
 message(STATUS "Using protoc: ${PROTOC}")
-
-if("gpu" IN_LIST FEATURES)
-    if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS) # .proto files for coreml_mlmodel_codegen
-        vcpkg_from_github(
-            OUT_SOURCE_PATH COREML_SOURCE_PATH
-            REPO apple/coremltools
-            REF 5.1
-            SHA512 4cabfcdee33e2f45626a80e2a9a2aa94ffe33bfc6daff941fca32b1b8428eeec6f65f552b9370c38fa6fca7aa075ff303e1c9b9cdf6cb680b41b6185e94ce36f
-            HEAD_REF main
-        )
-    endif()
-endif()
 
 # Run codegen with existing .fbs, .proto files
 set(TENSORFLOW_SOURCE_DIR "${SOURCE_PATH}")
@@ -138,13 +129,8 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_XNNPACK=ON
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
         -DTFLITE_ENABLE_EXTERNAL_DELEGATE=ON
-        -DProtobuf_PROTOC_EXECUTABLE:FILE_PATH=${PROTOC} # use host executable
-        -DCOREML_SOURCE_DIR:PATH=${COREML_SOURCE_PATH}
     OPTIONS_DEBUG
         -DTFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION=${VCPKG_TARGET_IS_ANDROID}
-    MAYBE_UNUSED_VARIABLES
-        Protobuf_PROTOC_EXECUTABLE
-        COREML_SOURCE_DIR
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()

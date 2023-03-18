@@ -1,7 +1,6 @@
 {
   "name": "tensorflow-lite",
-  "version-semver": "2.9.3",
-  "port-version": 1,
+  "version-semver": "2.10.1",
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://www.tensorflow.org/",
   "license": "Apache-2.0",
@@ -17,7 +16,10 @@
     },
     "gemmlowp",
     "neon2sse",
-    "nsync",
+    {
+      "name": "nsync",
+      "platform": "android"
+    },
     {
       "name": "protobuf",
       "host": true
@@ -37,8 +39,12 @@
       ]
     },
     "gpu": {
-      "description": "Enable GPU delegates (Windows only)",
+      "description": "Enable GPU delegates",
       "dependencies": [
+        {
+          "name": "coreml-tools",
+          "platform": "osx | ios"
+        },
         "egl-registry",
         "fp16",
         "opencl",
