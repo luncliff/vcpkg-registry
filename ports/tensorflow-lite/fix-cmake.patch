@@ -87,7 +87,8 @@ index 70642fdd..c3318a5d 100644
 -    find_package(egl_headers REQUIRED)
 +  find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
 +  if(APPLE)
-+    find_package(OpenCL 2.0)
++    find_path(OpenCL_INCLUDE_DIR "CL/opencl.h" REQUIRED)
++    find_package(OpenCL)
 +  elseif(ANDROID)
 +    find_path(OpenCL_INCLUDE_DIR "CL/opencl.h" REQUIRED)
 +  else()
@@ -112,6 +113,7 @@ index 70642fdd..c3318a5d 100644
 +    set(CMAKE_OBJCXX_STANDARD 17)
 +    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL")
 +  endif()
++
 +  if(TFLITE_ENABLE_METAL AND APPLE)
 +    # expect same protobuf version with mlmodel library
 +    find_package(Protobuf REQUIRED)
@@ -123,12 +125,10 @@ index 70642fdd..c3318a5d 100644
 +    set_source_files_properties(${TFLITE_OBJCXX_SRCS} PROPERTIES
 +      LANGUAGE OBJCXX COMPILE_OPTIONS "-fobjc-arc"
 +    )
-+
 +    populate_tflite_source_vars("objc/sources" TFLITE_OBJC_SRCS FILTER "(_test)\\.(m|c)$")
 +    set_source_files_properties(${TFLITE_OBJC_SRCS} PROPERTIES
 +      LANGUAGE OBJC COMPILE_OPTIONS "-fobjc-arc"
 +    )
-+
 +    populate_tflite_source_vars("delegates/coreml/builders" TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS FILTER "(_test)\\.(mm|cc)$")
 +    populate_tflite_source_vars("delegates/coreml" TFLITE_DELEGATES_COREML_SRCS FILTER "(_test)\\.(mm|cc)$")
 +    list(APPEND TFLITE_DELEGATES_COREML_SRCS

@@ -47,10 +47,7 @@
         },
         "egl-registry",
         "fp16",
-        {
-          "name": "opencl",
-          "platform": "!(osx | ios)"
-        },
+        "opencl",
         "opengl-registry",
         {
           "name": "protobuf",
