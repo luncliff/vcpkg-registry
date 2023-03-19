@@ -1,188 +1,100 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9d40384..4a4b302 100644
+index 2e7f753..b33f03d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -7246,7 +7246,7 @@ ELSE()
-   SET_PROPERTY(SOURCE ${COLD_SRCS} APPEND_STRING PROPERTY COMPILE_FLAGS "$<$<NOT:$<CONFIG:Debug>>: -Os >")
- ENDIF()
+@@ -14,7 +14,7 @@ CMAKE_POLICY(SET CMP0091 NEW)
+ # ---[ Project and semantic versioning.
+ PROJECT(XNNPACK C CXX ASM)
  
--TARGET_INCLUDE_DIRECTORIES(XNNPACK PUBLIC include)
-+TARGET_INCLUDE_DIRECTORIES(XNNPACK PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
- TARGET_INCLUDE_DIRECTORIES(XNNPACK PRIVATE src)
- TARGET_INCLUDE_DIRECTORIES(allocator PRIVATE include src)
- TARGET_INCLUDE_DIRECTORIES(all_microkernels PRIVATE src)
-@@ -7277,7 +7277,7 @@ IF(LIBM)
+-SET(CMAKE_C_STANDARD 99)
++SET(CMAKE_C_STANDARD 11)
+ SET(CMAKE_C_EXTENSIONS NO)
+ SET(CMAKE_CXX_STANDARD 14)
+ SET(CMAKE_CXX_STANDARD_REQUIRED YES)
+@@ -118,7 +118,7 @@ ENDIF()
+ # ---[ Build flags
+ IF(NOT CMAKE_SYSTEM_NAME)
+   MESSAGE(FATAL_ERROR "CMAKE_SYSTEM_NAME not defined")
+-ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Android|Darwin|iOS|Linux|Windows|CYGWIN|MSYS|QURT)$")
++ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Android|Darwin|iOS|Linux|Windows|WindowsStore|CYGWIN|MSYS|QURT)$")
+   MESSAGE(FATAL_ERROR "Unrecognized CMAKE_SYSTEM_NAME value \"${CMAKE_SYSTEM_NAME}\"")
  ENDIF()
- 
- # ---[ Configure clog
--IF(NOT TARGET clog)
-+IF(false)
-   IF(NOT XNNPACK_USE_SYSTEM_LIBS)
-     SET(CLOG_BUILD_TESTS OFF CACHE BOOL "")
-     SET(CLOG_RUNTIME_TYPE "${CPUINFO_RUNTIME_TYPE}" CACHE STRING "")
-@@ -7297,7 +7297,8 @@ IF(NOT TARGET clog)
+ IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
+@@ -785,7 +785,7 @@ TARGET_INCLUDE_DIRECTORIES(normalization PRIVATE include src)
+ TARGET_INCLUDE_DIRECTORIES(packing PRIVATE include src)
+ TARGET_INCLUDE_DIRECTORIES(logging PRIVATE include src)
+ IF(XNNPACK_BUILD_LIBRARY)
+-  TARGET_INCLUDE_DIRECTORIES(XNNPACK PUBLIC include)
++  TARGET_INCLUDE_DIRECTORIES(XNNPACK PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+   TARGET_INCLUDE_DIRECTORIES(XNNPACK PRIVATE src)
+   TARGET_INCLUDE_DIRECTORIES(allocator PRIVATE include src)
+   TARGET_INCLUDE_DIRECTORIES(cache PRIVATE include src)
+@@ -818,7 +818,9 @@ IF(LIBM)
  ENDIF()
  
  # ---[ Configure cpuinfo
 -IF(NOT TARGET cpuinfo)
 +find_package(cpuinfo CONFIG REQUIRED)
-+IF(false)
++add_library(cpuinfo ALIAS cpuinfo::cpuinfo)
++IF(FALSE)
    IF(NOT XNNPACK_USE_SYSTEM_LIBS)
      SET(CPUINFO_BUILD_TOOLS OFF CACHE BOOL "")
      SET(CPUINFO_BUILD_UNIT_TESTS OFF CACHE BOOL "")
-@@ -7315,10 +7316,11 @@ IF(NOT TARGET cpuinfo)
-     SET_PROPERTY(TARGET cpuinfo PROPERTY IMPORTED_LOCATION "${CPUINFO_LIBRARY}")
-   ENDIF()
+@@ -843,7 +845,9 @@ IF(XNNPACK_BUILD_LIBRARY)
  ENDIF()
--TARGET_LINK_LIBRARIES(XNNPACK PRIVATE cpuinfo)
-+target_link_libraries(XNNPACK PRIVATE cpuinfo::cpuinfo cpuinfo::clog)
  
  # ---[ Configure pthreadpool
 -IF(NOT TARGET pthreadpool)
 +find_package(unofficial-pthreadpool CONFIG REQUIRED)
-+IF(false)
++add_library(pthreadpool ALIAS unofficial::pthreadpool)
++IF(FALSE)
    IF(NOT XNNPACK_USE_SYSTEM_LIBS)
      SET(PTHREADPOOL_BUILD_TESTS OFF CACHE BOOL "")
      SET(PTHREADPOOL_BUILD_BENCHMARKS OFF CACHE BOOL "")
-@@ -7335,22 +7337,23 @@ IF(NOT TARGET pthreadpool)
-     SET_PROPERTY(TARGET pthreadpool PROPERTY IMPORTED_LOCATION "${PTHREADPOOL_LIBRARY}")
-   ENDIF()
+@@ -871,7 +875,7 @@ TARGET_LINK_LIBRARIES(microparams-init PRIVATE pthreadpool)
+ TARGET_LINK_LIBRARIES(normalization PRIVATE pthreadpool)
+ TARGET_LINK_LIBRARIES(packing PRIVATE pthreadpool)
+ IF(XNNPACK_BUILD_LIBRARY)
+-  TARGET_LINK_LIBRARIES(XNNPACK PUBLIC pthreadpool)
++  TARGET_LINK_LIBRARIES(XNNPACK PRIVATE pthreadpool)
+   TARGET_LINK_LIBRARIES(allocator PRIVATE pthreadpool)
+   TARGET_LINK_LIBRARIES(cache PRIVATE memory pthreadpool)
+   TARGET_LINK_LIBRARIES(subgraph PRIVATE pthreadpool)
+@@ -884,7 +888,10 @@ IF(XNNPACK_BUILD_LIBRARY)
  ENDIF()
--TARGET_LINK_LIBRARIES(XNNPACK PUBLIC pthreadpool allocator)
--TARGET_LINK_LIBRARIES(allocator PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(all_microkernels PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(cache PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(indirection PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(jit PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(logging PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(packing PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(microparams_init PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(subgraph PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(operators PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(mutex PRIVATE pthreadpool)
--TARGET_LINK_LIBRARIES(post-operation PUBLIC pthreadpool allocator)
-+target_link_libraries(XNNPACK PRIVATE unofficial::pthreadpool allocator post-operation)
-+target_link_libraries(allocator PRIVATE unofficial::pthreadpool)
-+target_link_libraries(all_microkernels PRIVATE unofficial::pthreadpool)
-+target_link_libraries(cache PRIVATE unofficial::pthreadpool)
-+target_link_libraries(indirection PRIVATE unofficial::pthreadpool)
-+target_link_libraries(jit PRIVATE unofficial::pthreadpool)
-+target_link_libraries(logging PRIVATE unofficial::pthreadpool)
-+target_link_libraries(packing PRIVATE unofficial::pthreadpool)
-+target_link_libraries(microparams_init PRIVATE unofficial::pthreadpool)
-+target_link_libraries(subgraph PRIVATE unofficial::pthreadpool)
-+target_link_libraries(operators PRIVATE unofficial::pthreadpool)
-+target_link_libraries(mutex PRIVATE unofficial::pthreadpool)
-+target_link_libraries(post-operation PUBLIC unofficial::pthreadpool allocator)
  
  # ---[ Configure FXdiv
 -IF(NOT TARGET fxdiv)
 +find_path(FXDIV_INCLUDE_DIRS "fxdiv.h" REQUIRED)
-+IF(false)
++add_library(fxdiv INTERFACE)
++target_include_directories(fxdiv INTERFACE ${FXDIV_INCLUDE_DIRS})
++IF(FALSE)
    IF(NOT XNNPACK_USE_SYSTEM_LIBS)
      SET(FXDIV_BUILD_TESTS OFF CACHE BOOL "")
      SET(FXDIV_BUILD_BENCHMARKS OFF CACHE BOOL "")
-@@ -7366,12 +7369,13 @@ IF(NOT TARGET fxdiv)
-     SET_PROPERTY(TARGET fxdiv PROPERTY LINKER_LANGUAGE C)
-   ENDIF()
+@@ -908,7 +915,10 @@ IF(XNNPACK_BUILD_LIBRARY)
  ENDIF()
--TARGET_LINK_LIBRARIES(XNNPACK PRIVATE fxdiv)
--TARGET_LINK_LIBRARIES(all_microkernels PRIVATE fxdiv)
--TARGET_LINK_LIBRARIES(indirection PRIVATE fxdiv)
-+target_include_directories(XNNPACK PRIVATE ${FXDIV_INCLUDE_DIRS})
-+target_include_directories(all_microkernels PRIVATE ${FXDIV_INCLUDE_DIRS})
-+target_include_directories(indirection PRIVATE ${FXDIV_INCLUDE_DIRS})
  
  # ---[ Configure FP16
 -IF(NOT TARGET fp16)
 +find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
-+IF(false)
++add_library(fp16 INTERFACE)
++target_include_directories(fp16 INTERFACE ${FP16_INCLUDE_DIRS})
++IF(FALSE)
    IF(NOT XNNPACK_USE_SYSTEM_LIBS)
      SET(FP16_BUILD_TESTS OFF CACHE BOOL "")
      SET(FP16_BUILD_BENCHMARKS OFF CACHE BOOL "")
-@@ -7396,12 +7400,13 @@ TARGET_LINK_LIBRARIES(XNNPACK PRIVATE
-   operators
-   microparams_init
-   subgraph)
--TARGET_LINK_LIBRARIES(all_microkernels PRIVATE fp16)
--TARGET_LINK_LIBRARIES(packing PRIVATE fp16)
--TARGET_LINK_LIBRARIES(microparams_init PRIVATE fp16)
--TARGET_LINK_LIBRARIES(indirection PRIVATE fp16)
--TARGET_LINK_LIBRARIES(subgraph PRIVATE fp16)
--TARGET_LINK_LIBRARIES(operators PRIVATE fp16)
-+target_include_directories(XNNPACK PRIVATE ${FP16_INCLUDE_DIRS})
-+target_include_directories(all_microkernels PRIVATE ${FP16_INCLUDE_DIRS})
-+target_include_directories(packing PRIVATE ${FP16_INCLUDE_DIRS})
-+target_include_directories(microparams_init PRIVATE ${FP16_INCLUDE_DIRS})
-+target_include_directories(indirection PRIVATE ${FP16_INCLUDE_DIRS})
-+target_include_directories(subgraph PRIVATE ${FP16_INCLUDE_DIRS})
-+target_include_directories(operators PRIVATE ${FP16_INCLUDE_DIRS})   
- 
- INSTALL(TARGETS XNNPACK
-     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 195d001..740b5d3 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -70,7 +70,7 @@ IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+@@ -939,6 +949,13 @@ IF(XNNPACK_BUILD_LIBRARY)
+       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+       PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
++  # support find_package(xnnpack CONFIG)
++  include(CMakePackageConfigHelpers)
++  get_filename_component(CONFIG_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/xnnpack-config.cmake ABSOLUTE)
++  configure_package_config_file(
++    cmake/xnnpack-config.cmake.in ${CONFIG_FILE_PATH}
++    INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR})
++  install(FILES ${CONFIG_FILE_PATH} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}) # ${prefix}/share
  ENDIF()
  
- # ---[ Build flags
--IF(NOT CMAKE_SYSTEM_PROCESSOR)
-+IF((NOT CMAKE_SYSTEM_PROCESSOR) OR (CMAKE_SYSTEM_NAME STREQUAL iOS))
-   IF(IOS)
-     LIST(LENGTH IOS_ARCH IOS_ARCH_COUNT)
-     IF(IOS_ARCH_COUNT GREATER 1)
-@@ -89,7 +89,7 @@ ENDIF()
- 
- IF(NOT CMAKE_SYSTEM_NAME)
-   MESSAGE(FATAL_ERROR "CMAKE_SYSTEM_NAME not defined")
--ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Darwin|Linux|Android|Windows|CYGWIN|MSYS)$")
-+ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Darwin|iOS|Linux|Android|Windows|CYGWIN|MSYS)$")
-   MESSAGE(FATAL_ERROR "Unrecognized CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
- ENDIF()
- 
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 4a4b302..195d001 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -7413,6 +7413,14 @@ INSTALL(TARGETS XNNPACK
-     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
- 
-+# support find_package(xnnpack CONFIG)
-+include(CMakePackageConfigHelpers)
-+get_filename_component(CONFIG_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/xnnpack-config.cmake ABSOLUTE)
-+configure_package_config_file(
-+  cmake/xnnpack-config.cmake.in ${CONFIG_FILE_PATH}
-+  INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR})
-+install(FILES ${CONFIG_FILE_PATH} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}) # ${prefix}/share
-+
  # ---[ XNNPACK unit tests
- IF(XNNPACK_BUILD_TESTS)
-   # ---[ Build google test
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 831031f..6fbd7cd 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -7393,7 +7393,6 @@ IF(false)
- ENDIF()
- TARGET_LINK_LIBRARIES(XNNPACK PRIVATE
-   cache
--  fp16
-   logging
-   mutex
-   normalization
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8f0ba9a..9c13cc5 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -89,7 +89,7 @@ ENDIF()
- 
- IF(NOT CMAKE_SYSTEM_NAME)
-   MESSAGE(FATAL_ERROR "CMAKE_SYSTEM_NAME not defined")
--ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Darwin|iOS|Linux|Android|Windows|CYGWIN|MSYS)$")
-+ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Darwin|iOS|Linux|Android|Windows|WindowsStore|CYGWIN|MSYS)$")
-   MESSAGE(FATAL_ERROR "Unrecognized CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
- ENDIF()
- 
