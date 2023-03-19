@@ -52,10 +52,10 @@ jobs:
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
       - restore_cache:
           keys:
-            - v1-downs-{{ checksum ".circleci/config.yml" }}
+            - 2310-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
-            - v1-bins-{{ .Branch }}
+            - 2310-bins-{{ .Branch }}
 
   windows_2022_x64:
     executor:
@@ -90,10 +90,10 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - v1-downs-{{ checksum ".circleci/config.yml" }}
+            - 2310-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
-            - v1-bins-{{ checksum ".circleci/config.yml" }}
+            - 2310-bins-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Port: vcpkg-cmake"
           command: |
@@ -112,16 +112,16 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: v1-bins-{{ .Branch }}
+              key: 2310-bins-{{ .Branch }}
               paths:
                 - C:/vcpkg-bins
       - save_cache:
-          key: v1-downs-{{ checksum ".circleci/config.yml" }}
+          key: 2310-downs-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-downs
           when: always
       - save_cache:
-          key: v1-bins-{{ checksum ".circleci/config.yml" }}
+          key: 2310-bins-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-bins
           when: always
@@ -162,10 +162,10 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - v1-downs-{{ checksum ".circleci/config.yml" }}
+            - 2310-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
-            - v1-bins-{{ checksum ".circleci/config.yml" }}
+            - 2310-bins-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Port: vcpkg-cmake"
           command: |

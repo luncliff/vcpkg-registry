@@ -24,7 +24,7 @@ schedules:
 
 variables:
   - name: vcpkg.commit
-    value: "94ce0dab56f4d8ba6bd631ba59ed682b02d45c46" # mainstream 2022.10.19
+    value: "a7b6122f6b6504d16d96117336a0562693579933" # mainstream 2023.02.24
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
   - name: vcpkg.disable.metrics
@@ -99,9 +99,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"2308-archives" | "mac-host"'
+              key: '"2310-bin-mac-host"'
               restoreKeys: |
-                "2308-archives" | "mac-host"
+                "2310-bin-mac-host"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "coreml-tools"
@@ -123,32 +123,6 @@ stages:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
               ArtifactName: "$(Agent.JobName)"
             condition: always()
-      # - job: "osx_host_qt"
-      #   displayName: "Mac"
-      #   pool:
-      #     vmImage: macOS-12
-      #   strategy:
-      #     matrix:
-      #       qt5:
-      #         homebrew.packages: "qt@5"
-      #         portname: "system-qt5"
-      #         qt.root: "/usr/local/Cellar/qt@5/5.15.7"
-      #         QTDIR: "/usr/local/Cellar/qt@5/5.15.7/lib/cmake/Qt5" # Qt5_DIR
-      #       qt6:
-      #         homebrew.packages: "qt@6"
-      #         portname: "system-qt6"
-      #         qt.root: "/usr/local/Cellar/qt/6.4.0/"
-      #         QTDIR: "/usr/local/Cellar/qt/6.4.0/lib/cmake/Qt6" # Qt6_DIR
-      #   steps:
-      #     - powershell: brew install $(homebrew.packages) tree
-      #       displayName: "Install HomeBrew packages"
-      #     - powershell: tree -L 2 $(qt.root)
-      #       displayName: "Show Qt install location"
-      #     - task: run-vcpkg@0
-      #       displayName: "system-qt"
-      #       inputs:
-      #         vcpkgArguments: $(portname)
-      #         vcpkgGitCommitId: $(vcpkg.commit)
 
   - stage: "Ports"
     dependsOn: "Triplets"
@@ -166,14 +140,6 @@ stages:
             x64_uwp:
               vcpkg.default.triplet: "x64-uwp"
         steps:
-          - task: UsePythonVersion@0
-            displayName: "Setup: Python 3.11"
-            inputs:
-              versionSpec: "3.11"
-              addToPath: true
-              architecture: "x64"
-          - powershell: pip install typing-extensions pybind11 numpy pyyaml
-            displayName: "Install Python packages"
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: run-vcpkg@0
             displayName: "Setup Vcpkg"
@@ -182,16 +148,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2308-downloads" | "windows"'
+              key: '"2310-down-windows"'
               restoreKeys: |
-                "2308-downloads" | "windows"
-                "2308-downloads"
+                "2310-down-windows"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2310-archives" | "windows" | "$(vcpkg.default.triplet)"'
+              key: '"2310-bin-windows" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2310-archives" | "windows" | "$(vcpkg.default.triplet)"
+                "2310-bin-windows" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs: # usisng features requires over 10 GB space ...
@@ -250,15 +215,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2308-downloads" | "uwp"'
+              key: '"2310-down-uwp"'
               restoreKeys: |
-                "2308-downloads" | "uwp"
+                "2310-down-uwp"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2308-archives" | "uwp" | "$(vcpkg.default.triplet)"'
+              key: '"2310-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2308-archives" | "uwp" | "$(vcpkg.default.triplet)"
+                "2310-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -309,8 +274,6 @@ stages:
         steps:
           - powershell: sudo apt-get install -y nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
             displayName: "Install APT packages"
-          - powershell: pip install typing-extensions pybind11 numpy pyyaml
-            displayName: "Install Python packages"
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: run-vcpkg@0
             displayName: "Setup Vcpkg"
@@ -319,16 +282,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2308-downloads" | "ubuntu"'
+              key: '"2310-down-ubuntu"'
               restoreKeys: |
-                "2308-downloads" | "ubuntu"
-                "2308-downloads"
+                "2310-down-ubuntu"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2308-archives" | "ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"2310-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
-                "2308-archives" | "ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
+                "2310-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "x64-linux(failure)"
@@ -379,12 +341,6 @@ stages:
             x64_ndk25:
               vcpkg.default.triplet: "x64-android"
               android.ndk.home: "/usr/local/lib/android/sdk/ndk/25.2.9519653"
-            arm64_ndk24:
-              vcpkg.default.triplet: "arm64-android"
-              android.ndk.home: "/usr/local/lib/android/sdk/ndk/24.0.8215888"
-            arm_neon_ndk24:
-              vcpkg.default.triplet: "arm-neon-android"
-              android.ndk.home: "/usr/local/lib/android/sdk/ndk/24.0.8215888"
         steps:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: run-vcpkg@0
@@ -394,16 +350,16 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2308-downloads" | "android"'
+              key: '"2310-down-android"'
               restoreKeys: |
-                "2308-downloads" | "android"
+                "2310-down-android"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2309-archives" | "android" | "$(vcpkg.default.triplet)"'
+              key: '"2310-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2309-archives" | "android" | "$(vcpkg.default.triplet)"
-                "2308-archives" | "android" | "$(vcpkg.default.triplet)"
+                "2310-bin-android" | "$(vcpkg.default.triplet)"
+                "2310-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "Custom Triplet"
@@ -463,16 +419,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2308-downloads" | "apple"'
+              key: '"2310-down-apple"'
               restoreKeys: |
-                "2308-downloads" | "apple"
-                "2308-downloads"
+                "2310-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2308-archives" | "osx" | "$(vcpkg.default.triplet)"'
+              key: '"2310-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2308-archives" | "osx" | "$(vcpkg.default.triplet)"
+                "2310-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -524,36 +479,35 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2308-downloads" | "apple"'
+              key: '"2310-down-apple"'
               restoreKeys: |
-                "2308-downloads" | "apple"
-                "2308-downloads"
+                "2310-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2309-archives" | "ios" | "$(vcpkg.default.triplet)"'
+              key: '"2310-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2309-archives" | "ios" | "$(vcpkg.default.triplet)"
+                "2310-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
               vcpkgArguments: "coreml-tools tensorflow-lite openssl3 metal-cpp zlib-ng"
-              vcpkgGitCommitId: a7b6122f6b6504d16d96117336a0562693579933 # 2023.02.24
+              vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
           - task: run-vcpkg@0
             displayName: "arm64-ios-simulator"
             inputs:
               vcpkgArguments: "coreml-tools tensorflow-lite openssl3"
-              vcpkgGitCommitId: a7b6122f6b6504d16d96117336a0562693579933 # 2023.02.24
+              vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
           - task: run-vcpkg@0
             displayName: "x64-ios-simulator"
             inputs:
               vcpkgArguments: "openssl3 xnnpack"
-              vcpkgGitCommitId: a7b6122f6b6504d16d96117336a0562693579933 # 2023.02.24
+              vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
           - task: CopyFiles@2
