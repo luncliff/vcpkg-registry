@@ -3,22 +3,14 @@ if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 endif()
 
-# Support UWP build: https://github.com/pytorch/cpuinfo/pull/116
-vcpkg_download_distfile(PR_116_PATCH_PATH
-    URLS "https://github.com/pytorch/cpuinfo/compare/8ec7bd9..8e2f169.diff"
-    FILENAME cpuinfo-pr-116.patch
-    HEADERS "Accept: application/vnd.github.v3.raw" # "Authorization: token $ENV{GITHUB_ACCESS_TOKEN}"
-    SHA512 7577aebe8a00296c08f1b4cef448c570c438117bd0f97a377f171440febbb7df36580bb107109e4c44d9181dc4c89b44786d68028f5bcd578b8a74bf3e9a7f72
-)
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/cpuinfo
-    REF 8ec7bd91ad0470e61cf38f618cc1f270dede599c
-    SHA512 b3342ce0a1f842084ff53efdfd15c44586ac7cd36249211e2925d84aa1f33ee8d6f76cd62ea20e91d8b908c3c8afda5a47516008b69749504024b9813a623ee2
-    HEAD_REF master
+    REF eb4a6674bfe9cf91b63b9817412ae5f6862c8432
+    SHA512 2b8bca09c140ad5d3c7c42d4a117642bad8ec1644085c20876006575428db756c11a1ffaaa24788b43020fc0822ca56695e6969c8a946070aafee93d2f7a66a3
+    HEAD_REF main
     PATCHES
-        ${PR_116_PATCH_PATH}
+        build-clog.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -74,7 +66,11 @@ vcpkg_fixup_pkgconfig() # pkg_check_modules(libcpuinfo)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 
 if("tools" IN_LIST FEATURES)
-    vcpkg_copy_tools(TOOL_NAMES cache-info cpuid-dump cpu-info isa-info AUTO_CLEAN)
+    find_program(CPUID_DUMP NAMES cpuid-dump PATHS "${CURRENT_PACKAGES_DIR}/bin")
+    if(CPUID_DUMP)
+        vcpkg_copy_tools(TOOL_NAMES cpuid-dump AUTO_CLEAN)
+    endif()
+    vcpkg_copy_tools(TOOL_NAMES cache-info cpu-info isa-info AUTO_CLEAN)
 endif()
 
 file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)

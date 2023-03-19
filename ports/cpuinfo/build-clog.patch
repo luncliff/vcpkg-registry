@@ -1,0 +1,26 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9f4d1d1..1d7d348 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -133,6 +133,8 @@ IF(CPUINFO_BUILD_BENCHMARKS)
+   ENDIF()
+ ENDIF()
+ 
++# ---[ clog library
++add_subdirectory(deps/clog)
+ # ---[ cpuinfo library
+ SET(CPUINFO_SRCS src/api.c src/cache.c src/init.c src/log.c)
+ 
+diff --git a/deps/clog/CMakeLists.txt b/deps/clog/CMakeLists.txt
+index 4f34d23..42807dd 100644
+--- a/deps/clog/CMakeLists.txt
++++ b/deps/clog/CMakeLists.txt
+@@ -13,7 +13,7 @@ IF(ANDROID)
+ ELSE()
+   OPTION(CLOG_LOG_TO_STDIO "Log errors, warnings, and information to stdout/stderr" ON)
+ ENDIF()
+-OPTION(CLOG_BUILD_TESTS "Build clog tests" ON)
++OPTION(CLOG_BUILD_TESTS "Build clog tests" OFF)
+ 
+ # ---[ CMake options
+ IF(CLOG_BUILD_TESTS)
