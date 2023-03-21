@@ -98,3 +98,18 @@ index 2e7f753..b33f03d 100644
  ENDIF()
  
  # ---[ XNNPACK unit tests
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0f0d9d3..658d310 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -797,6 +797,10 @@ IF(XNNPACK_BUILD_LIBRARY)
+   TARGET_INCLUDE_DIRECTORIES(memory PRIVATE include src)
+   TARGET_INCLUDE_DIRECTORIES(mutex PRIVATE include src)
+   TARGET_INCLUDE_DIRECTORIES(post-operation PUBLIC include src)
++  if(ANDROID)
++    find_library(LOG_LIB NAMES log REQUIRED)
++    target_link_libraries(XNNPACK PRIVATE log)
++  endif()
+   IF(WIN32)
+     # Target Windows 7+ API
+     TARGET_COMPILE_DEFINITIONS(XNNPACK PRIVATE _WIN32_WINNT=0x0601)
