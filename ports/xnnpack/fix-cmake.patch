@@ -108,7 +108,7 @@ index 0f0d9d3..658d310 100755
    TARGET_INCLUDE_DIRECTORIES(post-operation PUBLIC include src)
 +  if(ANDROID)
 +    find_library(LOG_LIB NAMES log REQUIRED)
-+    link_libraries(${LOG_LIB})
++    target_link_libraries(XNNPACK PRIVATE log)
 +  endif()
    IF(WIN32)
      # Target Windows 7+ API
