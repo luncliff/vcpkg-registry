@@ -1,8 +1,8 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 70642fdd..c3318a5d 100644
+index 073b29c4..fd5e8dca 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -50,14 +50,8 @@ if(NOT TENSORFLOW_SOURCE_DIR)
+@@ -50,14 +50,6 @@ if(NOT TENSORFLOW_SOURCE_DIR)
  endif()
  set(TF_SOURCE_DIR "${TENSORFLOW_SOURCE_DIR}/tensorflow")
  set(TFLITE_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}")
@@ -14,49 +14,62 @@ index 70642fdd..c3318a5d 100644
 -  "${TFLITE_SOURCE_DIR}/tools/cmake/modules"
 -  ${CMAKE_PREFIX_PATH}
 -)
-+# dependencies will be imported from vcpkg
-+include(GNUInstallDirs)
+ include(GNUInstallDirs)
  include(CMakeDependentOption)
- option(TFLITE_ENABLE_RUY "Enable experimental RUY integration" OFF)
- option(TFLITE_ENABLE_RESOURCE "Enable experimental support for resources" ON)
-@@ -137,16 +131,16 @@ macro(populate_tf_source_vars RELATIVE_DIR SOURCES_VAR)
+ option(TFLITE_ENABLE_INSTALL "Enable install rule" OFF)
+@@ -139,15 +131,16 @@ macro(populate_tf_source_vars RELATIVE_DIR SOURCES_VAR)
    )
  endmacro()
  # Find TensorFlow Lite dependencies.
 -find_package(absl REQUIRED)
--find_package(eigen REQUIRED)
+-find_package(Eigen3 REQUIRED)
 -find_package(farmhash REQUIRED)
 -find_package(fft2d REQUIRED)
--find_package(flatbuffers REQUIRED)
+-find_package(Flatbuffers REQUIRED)
 -find_package(gemmlowp REQUIRED)
--find_package(neon2sse REQUIRED)
--find_package(clog REQUIRED)
+-find_package(NEON_2_SSE REQUIRED)
 -find_package(cpuinfo REQUIRED)  #CPUINFO is used by XNNPACK and RUY library
 -find_package(ruy REQUIRED)
 +find_package(absl CONFIG REQUIRED)
 +find_package(Eigen3 3.4 CONFIG REQUIRED)
-+find_library(FARMHASH_LIBPATH farmhash REQUIRED)
-+find_library(FFT2D_SG2D_LIBPATH fft2d_fftsg2d REQUIRED)
-+find_library(FFT2D_SG_LIBPATH fft2d_fftsg REQUIRED)
++find_library(FARMHASH_LIBPATH NAMES farmhash REQUIRED)
++find_library(FFT2D_SG2D_LIBPATH NAMES fft2d_fftsg2d REQUIRED)
++find_library(FFT2D_SG_LIBPATH NAMES fft2d_fftsg REQUIRED)
 +find_package(Flatbuffers 2.0 CONFIG REQUIRED)
 +find_package(gemmlowp CONFIG REQUIRED)
 +find_package(NEON_2_SSE CONFIG REQUIRED)
 +find_package(cpuinfo CONFIG REQUIRED)
 +find_package(ruy CONFIG REQUIRED)
- # Generate TensorFlow Lite FlatBuffer code.
- # We used to have an actual compilation logic with flatc but decided to use
- # schema_generated.h since flatc doesn't work with cross compilation.
-@@ -198,7 +192,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+ set(TF_TARGET_PRIVATE_OPTIONS "")
+ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang$")
+   # TensorFlow uses a heap of deprecated proto fields so surpress these
+@@ -173,7 +166,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+   # lite/kernels/conv.cc has more than 64k sections so enable /bigobj to
+   # support compilation with MSVC2015.
+   if(MSVC)
+-    list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "/bigobj")
++    list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "/bigobj" "/Zc:__cplusplus")
+     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+       message("Disabling MSVC /O2 optimization for Win32")
+       set(CompFlags
+@@ -197,11 +190,15 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
    endif()
  endif()
  if(CMAKE_SYSTEM_NAME MATCHES "Android")
 -  find_library(ANDROID_LOG_LIB log)
-+  find_library(ANDROID_LOG_LIB log REQUIRED)
++  find_library(ANDROID_LOG_LIB NAMES log REQUIRED)
 +  list(APPEND TFLITE_TARGET_DEPENDENCIES ${ANDROID_LOG_LIB})
  endif()
  # Build a list of source files to compile into the TF Lite library.
  populate_tflite_source_vars("." TFLITE_SRCS)
-@@ -218,25 +213,97 @@ if(_TFLITE_ENABLE_MMAP)
+ 
++# Exclude tensorflow::profiler usage
++list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*tensorflow_profiler_logger\\.cc$")
++
+ # This particular file is excluded because the more explicit approach to enable
+ # XNNPACK delegate is preferred to the weak-symbol one.
+ list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*tflite_with_xnnpack\\.cc$")
+@@ -214,24 +211,95 @@ if(_TFLITE_ENABLE_MMAP)
  else()
    list(FILTER TFLITE_SRCS EXCLUDE REGEX ".*mmap_allocation\\.cc$")
  endif()
@@ -94,12 +107,11 @@ index 70642fdd..c3318a5d 100644
 +  else()
 +    find_package(OpenCL 2.0 REQUIRED)
 +  endif()
-+
++  # Vulkan headers will be installed with vcpkg
 +  find_package(Vulkan)
 +  if(Vulkan_FOUND)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES Vulkan::Headers)
 +  endif()
-+
 +  # OpenGL, EGL headers will be installed with vcpkg
 +  if(WIN32 OR ANDROID OR (CMAKE_SYSTEM_NAME STREQUAL Linux))
 +    find_library(EGL_LIBPATH NAMES libEGL EGL REQUIRED)
@@ -131,18 +143,19 @@ index 70642fdd..c3318a5d 100644
 +    )
 +    populate_tflite_source_vars("delegates/coreml/builders" TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS FILTER "(_test)\\.(mm|cc)$")
 +    populate_tflite_source_vars("delegates/coreml" TFLITE_DELEGATES_COREML_SRCS FILTER "(_test)\\.(mm|cc)$")
-+    list(APPEND TFLITE_DELEGATES_COREML_SRCS
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
-+      ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
-+      ${TFLITE_SOURCE_DIR}/tools/delegates/coreml_delegate_provider.cc
-+      ${TFLITE_SOURCE_DIR}/tools/delegates/delegate_provider.cc
-+      ${TFLITE_SOURCE_DIR}/tools/delegates/default_execution_provider.cc
-+      ${TFLITE_SOURCE_DIR}/tools/delegates/external_delegate_provider.cc
++    populate_tflite_source_vars("tools/delegates" TFLITE_DELEGATES_PROVIDER_SRCS FILTER "(_test)\\.(mm|cc)$")
++    list(APPEND TFLITE_DELEGATES_PROVIDER_SRCS
++      # ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_executor.mm
++      # ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate_kernel.mm
++      # ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.mm
++      # ${TFLITE_SOURCE_DIR}/tools/delegates/coreml_delegate_provider.cc
++      # ${TFLITE_SOURCE_DIR}/tools/delegates/delegate_provider.cc
++      # ${TFLITE_SOURCE_DIR}/tools/delegates/default_execution_provider.cc
++      # ${TFLITE_SOURCE_DIR}/tools/delegates/external_delegate_provider.cc
 +      ${TFLITE_SOURCE_DIR}/tools/tool_params.cc
 +      ${TFLITE_SOURCE_DIR}/tools/command_line_flags.cc
 +    )
-+    set_source_files_properties(${TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS} ${TFLITE_DELEGATES_COREML_SRCS} PROPERTIES
++    set_source_files_properties(${TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS} ${TFLITE_DELEGATES_COREML_SRCS} ${TFLITE_DELEGATES_PROVIDER_SRCS} PROPERTIES
 +      LANGUAGE OBJCXX COMPILE_OPTIONS "-fobjc-arc"
 +    )
 +
@@ -157,16 +170,14 @@ index 70642fdd..c3318a5d 100644
 +      ${TFLITE_DELEGATES_COREML_BUILDERS_CXX_SRCS}
 +      ${TFLITE_DELEGATES_COREML_BUILDERS_SRCS}
 +      ${TFLITE_DELEGATES_COREML_SRCS}
-+      ${TFLITE_DELEGATES_COREML_PROVIDER_SRCS}
++      ${TFLITE_DELEGATES_PROVIDER_SRCS}
 +      ${TFLITE_OBJC_SRCS}
 +      ${TFLITE_OBJCXX_SRCS}
 +    )
    endif()
-+
    populate_tflite_source_vars(
      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-     FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
-@@ -314,7 +381,7 @@ if(TFLITE_ENABLE_GPU)
+@@ -311,7 +379,7 @@ if(TFLITE_ENABLE_GPU)
      ${TFLITE_SOURCE_DIR}/delegates/gpu/common
      ${TFLITE_SOURCE_DIR}/delegates/gpu/common/task
    )
@@ -175,51 +186,54 @@ index 70642fdd..c3318a5d 100644
      #
      # libmetal_delegate library
      #
-@@ -325,10 +392,11 @@ if(TFLITE_ENABLE_GPU)
+@@ -322,10 +390,11 @@ if(TFLITE_ENABLE_GPU)
      add_library(metal_delegate STATIC
        ${TFLITE_DELEGATES_METAL_SRCS}
      )
 -    target_include_directories(metal_delegate PUBLIC
 -      ${CMAKE_BINARY_DIR}/abseil-cpp
 -      ${CMAKE_BINARY_DIR}/flatbuffers/include
+-    )
 +    target_link_libraries(metal_delegate PUBLIC
 +      absl::base
 +      flatbuffers::flatbuffers
-     )
++    )
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES metal_delegate)
  
      #
      # supplementary libraries for libmetal_delegate
-@@ -348,12 +416,12 @@ if(TFLITE_ENABLE_GPU)
+@@ -345,12 +414,12 @@ if(TFLITE_ENABLE_GPU)
     foreach(lib_name ${CC_SRCS})
       set_source_files_properties(${METAL_DELEGATE_PATH}${lib_name}.cc  PROPERTIES LANGUAGE OBJCXX)
       add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.cc)
 -     target_include_directories("${lib_name}" PUBLIC
 -       ${CMAKE_BINARY_DIR}/abseil-cpp
 -       ${CMAKE_BINARY_DIR}/flatbuffers/include
+-     )
 +     target_link_libraries(${lib_name} PUBLIC
 +       absl::base
 +       flatbuffers::flatbuffers
-      )
++     )
       set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE OBJCXX)
 -     target_link_libraries(${lib_name})
 +     list(APPEND TFLITE_TARGET_DEPENDENCIES "${lib_name}")
     endforeach()
  
     list(APPEND MM_SRCS
-@@ -362,21 +430,22 @@ if(TFLITE_ENABLE_GPU)
+@@ -359,21 +428,23 @@ if(TFLITE_ENABLE_GPU)
     )
     foreach(lib_name ${MM_SRCS})
       add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.mm)
 -     target_include_directories("${lib_name}" PUBLIC
 -       ${CMAKE_BINARY_DIR}/abseil-cpp
 -       ${CMAKE_BINARY_DIR}/flatbuffers/include
+-     )
 +     target_link_libraries(${lib_name} PUBLIC
 +       absl::base
 +       flatbuffers::flatbuffers
-      )
--     target_link_libraries(${lib_name})
-+     list(APPEND TFLITE_TARGET_DEPENDENCIES "${lib_name}") # todo: install this
++     )
+      target_link_libraries(${lib_name})
++     list(APPEND TFLITE_TARGET_DEPENDENCIES "${lib_name}")
     endforeach()
  endif()
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
@@ -235,25 +249,22 @@ index 70642fdd..c3318a5d 100644
    populate_tflite_source_vars("delegates/nnapi"
      TFLITE_DELEGATES_NNAPI_SRCS
      FILTER "(_test_list|_disabled)\\.(cc|h)$"
-@@ -386,8 +455,12 @@ if(_TFLITE_ENABLE_NNAPI)
-   )
- 
+@@ -385,7 +456,8 @@ if(_TFLITE_ENABLE_NNAPI)
    list(APPEND TFLITE_NNAPI_SRCS
-+    "${TF_SOURCE_DIR}/core/platform/default/mutex.cc"
-+    "${TF_SOURCE_DIR}/core/platform/default/logging.cc"
      "${TFLITE_SOURCE_DIR}/nnapi/sl/SupportLibrary.cc"
    )
+-
 +  find_library(NSYNC_LIBRARY NAMES nsync_cpp nsync REQUIRED)
 +  list(APPEND TFLITE_TARGET_DEPENDENCIES ${NSYNC_LIBRARY})
- 
    if(${TFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION})
      list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DNNAPI_VERBOSE_VALIDATION")
-@@ -401,14 +474,16 @@ else()
+   endif()
+@@ -398,14 +470,16 @@ else()
    )
  endif()
  if(TFLITE_ENABLE_XNNPACK)
 -  find_package(fp16_headers REQUIRED)
--  find_package(xnnpack REQUIRED)
+-  find_package(XNNPACK REQUIRED)
 +  find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
 +  find_package(unofficial-pthreadpool CONFIG REQUIRED)
 +  find_package(cpuinfo CONFIG REQUIRED)
@@ -268,127 +279,134 @@ index 70642fdd..c3318a5d 100644
    )
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
  endif()
-@@ -469,6 +544,13 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+@@ -470,11 +544,12 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
    list(APPEND TFLITE_PROFILER_SRCS
      ${TFLITE_SOURCE_DIR}/profiling/atrace_profiler.cc
    )
+-elseif(CMAKE_SYSTEM_NAME MATCHES "iOS")
 +elseif(APPLE)
-+  add_compile_definitions(TFLITE_ENABLE_DEFAULT_PROFILER)
-+  list(APPEND TFLITE_PROFILER_SRCS
-+    ${TFLITE_SOURCE_DIR}/profiling/signpost_profiler.h
-+    ${TFLITE_SOURCE_DIR}/profiling/signpost_profiler.mm
-+  )
+   enable_language(OBJCXX)
+   list(APPEND TFLITE_PROFILER_SRCS
+     ${TFLITE_SOURCE_DIR}/profiling/signpost_profiler.mm
+   )
 +  list(APPEND TFLITE_TARGET_DEPENDENCIES "-framework Foundation")
  endif()
  
- # Common include directories
-@@ -511,27 +593,34 @@ add_library(tensorflow-lite
- )
- target_include_directories(tensorflow-lite
-   PUBLIC
--    ${TFLITE_INCLUDE_DIRS}
-+    $<BUILD_INTERFACE:${TFLITE_INCLUDE_DIRS}>
-+    $<BUILD_INTERFACE:${TFLITE_SOURCE_DIR}/delegates/gpu/common>
-+    $<BUILD_INTERFACE:${TFLITE_SOURCE_DIR}/delegates/gpu/common/task>
- )
- target_link_libraries(tensorflow-lite
-   PUBLIC
-     Eigen3::Eigen
--    NEON_2_SSE
-+    NEON_2_SSE::NEON_2_SSE
-     absl::flags
-     absl::hash
-     absl::status
+ # TFLite library
+@@ -526,15 +601,37 @@ target_link_libraries(tensorflow-lite
      absl::strings
      absl::synchronization
      absl::variant
 -    farmhash
 -    fft2d_fftsg2d
--    flatbuffers
--    gemmlowp
 +    ${FARMHASH_LIBPATH}
 +    ${FFT2D_SG2D_LIBPATH} ${FFT2D_SG_LIBPATH}
-+    flatbuffers::flatbuffers
+     flatbuffers::flatbuffers
+-    gemmlowp
 +    gemmlowp::gemmlowp
      ruy::ruy
      ${CMAKE_DL_LIBS}
      ${TFLITE_TARGET_DEPENDENCIES}
  )
  
++# include sources of tensorflowlite_c
++target_sources(tensorflow-lite PRIVATE
++  c/builtin_op_data.h
++  c/common.h
++  c/common.cc
++  c/c_api_types.h
++  c/c_api.h
++  c/c_api.cc
++  c/c_api_experimental.h
++  c/c_api_experimental.cc
++  c/c_api_internal.h
++  c/c_api_internal.cc
++  c/c_api_opaque_internal.cc
++)
 +if (WIN32)
-+  target_sources(tensorflow-lite PRIVATE ${TF_SOURCE_DIR}/core/platform/windows/env_time.cc)
++  target_compile_definitions(tensorflow-lite PRIVATE TFL_COMPILE_LIBRARY)
++  target_link_libraries(tensorflow-lite PRIVATE Kernel32) # for UWP
++elseif (APPLE)
++  target_link_options(tensorflow-lite PRIVATE "-Wl,-exported_symbols_list,${TENSORFLOW_SOURCE_DIR}/tensorflow/lite/c/exported_symbols.lds")
 +else()
-+  target_sources(tensorflow-lite PRIVATE ${TF_SOURCE_DIR}/core/platform/default/env_time.cc)
++  target_link_options(tensorflow-lite PRIVATE "-Wl,--version-script,${TENSORFLOW_SOURCE_DIR}/tensorflow/lite/c/version_script.lds")
 +endif()
  if (NOT BUILD_SHARED_LIBS)
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFL_STATIC_LIBRARY_BUILD")
  endif()
-@@ -542,6 +631,68 @@ target_compile_options(tensorflow-lite
- )
- add_library(tensorflow::tensorflowlite ALIAS tensorflow-lite)
+@@ -554,14 +651,59 @@ if(TFLITE_ENABLE_INSTALL)
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   )
  
-+# Moved from tensorflow/lite/c/CMakeLists.txt
-+if (WIN32)
-+  target_compile_definitions(tensorflow-lite PRIVATE TFL_COMPILE_LIBRARY)
-+  target_compile_options(tensorflow-lite PRIVATE /Zc:__cplusplus)
-+  target_link_libraries(tensorflow-lite PRIVATE Kernel32) # for UWP
-+elseif (APPLE)
-+  target_link_options(tensorflow-lite PRIVATE "-Wl,-exported_symbols_list,${TENSORFLOW_SOURCE_DIR}/tensorflow/lite/c/exported_symbols.lds")
-+else ()
-+  target_link_options(tensorflow-lite PRIVATE "-Wl,--version-script,${TENSORFLOW_SOURCE_DIR}/tensorflow/lite/c/version_script.lds")
-+endif()
-+
-+# C API
-+install(DIRECTORY   ${TFLITE_SOURCE_DIR}/c
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
-+        FILES_MATCHING PATTERN "*.h"
-+)
-+install(FILES ${TFLITE_SOURCE_DIR}/builtin_ops.h
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
-+)
-+install(FILES ${TF_SOURCE_DIR}/core/public/version.h
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/core/public
-+)
-+
-+# Delegate
-+install(FILES  ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.h
-+               ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/gpu_api_delegate.h
-+               ${TFLITE_SOURCE_DIR}/delegates/gpu/gl_delegate.h
-+               ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate.h
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/gpu
-+)
-+
-+# Delegate: XNNPack
-+install(FILES  ${TFLITE_SOURCE_DIR}/delegates/xnnpack/xnnpack_delegate.h
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/xnnpack
-+)
-+
-+if(APPLE)
-+  install(FILES ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h
-+          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/coreml
+-  foreach(hdr ${_ALL_TFLITE_HDRS})
+-    get_filename_component(dir ${hdr} DIRECTORY)
+-    file(RELATIVE_PATH dir ${CMAKE_CURRENT_SOURCE_DIR} ${dir})
+-    install(
+-      FILES ${hdr}
+-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/${dir}"
+-    )
+-  endforeach()
++  install(
++    DIRECTORY   ${TFLITE_SOURCE_DIR}/c
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
++    FILES_MATCHING PATTERN "*.h"
 +  )
-+endif()
-+
-+if(ANDROID)
-+  install(FILES ${TFLITE_SOURCE_DIR}/nnapi/NeuralNetworksTypes.h
-+                ${TFLITE_SOURCE_DIR}/nnapi/NeuralNetworksShim.h
-+                ${TFLITE_SOURCE_DIR}/nnapi/nnapi_implementation.h
-+                ${TFLITE_SOURCE_DIR}/nnapi/nnapi_util.h
-+          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/nnapi
++  install(
++    FILES ${TFLITE_SOURCE_DIR}/builtin_ops.h
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite
 +  )
-+  install(FILES  ${TFLITE_SOURCE_DIR}/delegates/nnapi/nnapi_delegate.h
-+          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/nnapi
++  install(
++    FILES ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.h
++          ${TFLITE_SOURCE_DIR}/delegates/gpu/cl/gpu_api_delegate.h
++          ${TFLITE_SOURCE_DIR}/delegates/gpu/gl_delegate.h
++          ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate_options.h
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/gpu
 +  )
-+endif()
-+
-+install(TARGETS tensorflow-lite
-+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-+)
-+
-+# Discard the other targets
-+return()
++  install(
++    FILES ${TFLITE_SOURCE_DIR}/delegates/xnnpack/xnnpack_delegate.h
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/xnnpack
++  )
++  install(
++    FILES ${TFLITE_SOURCE_DIR}/delegates/external/external_delegate.h
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/external
++  )
++  install(
++    FILES ${TFLITE_SOURCE_DIR}/delegates/hexagon/hexagon_delegate.h
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/hexagon
++  )
++  if(APPLE)
++    install(
++      FILES ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate.h
++            ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate_internal.h
++      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/gpu
++    )
++    install(
++      FILES ${TFLITE_SOURCE_DIR}/delegates/coreml/coreml_delegate.h
++      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/coreml
++    )
++  endif()
++  if(ANDROID)
++    install(
++      FILES ${TFLITE_SOURCE_DIR}/nnapi/NeuralNetworksTypes.h
++            ${TFLITE_SOURCE_DIR}/nnapi/NeuralNetworksShim.h
++            ${TFLITE_SOURCE_DIR}/nnapi/nnapi_implementation.h
++            ${TFLITE_SOURCE_DIR}/nnapi/nnapi_util.h
++      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/nnapi
++    )
++    install(
++      FILES ${TFLITE_SOURCE_DIR}/delegates/nnapi/nnapi_delegate.h
++            ${TFLITE_SOURCE_DIR}/delegates/nnapi/nnapi_delegate_c_api.h
++      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/delegates/nnapi
++    )
++  endif()
+ 
+   install(
+     EXPORT ${PROJECT_NAME}Targets
+@@ -584,6 +730,7 @@ if(TFLITE_ENABLE_INSTALL)
+   )
+ endif()
+ 
++return() # ----- Discard the other targets -----
  # The kernel tests.
  if(TFLITE_KERNEL_TEST)
    enable_testing()

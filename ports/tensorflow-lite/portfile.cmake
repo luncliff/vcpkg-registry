@@ -5,8 +5,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.10.1
-    SHA512 83c02b808ec0df313bd7c89bd50b7a9bb3691a7b476e72fdd8ba95c26d7fcb3fb268201830e4885010a36860c2dc369c4621f9d1d7c2cc1c4999b416412fd392
+    REF v2.11.1
+    SHA512 2ca39d005efa129b5bebd3729f2550d8de659acd57b797f501307c28eb3d0d482703abe4d7364d5572fa600287505f4ed3b4f78eaae6867dc85b4a7d53d4b60b
     PATCHES
         fix-cmake.patch
         fix-source.patch
@@ -129,12 +129,16 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_XNNPACK=ON
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
         -DTFLITE_ENABLE_EXTERNAL_DELEGATE=ON
+        -DTFLITE_ENABLE_INSTALL=ON
+        -DTENSORFLOW_SOURCE_DIR:PATH="${SOURCE_PATH}"
     OPTIONS_DEBUG
         -DTFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION=${VCPKG_TARGET_IS_ANDROID}
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
+vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/${PORT}")
 
+file(INSTALL "${SOURCE_PATH}/tensorflow/core/public/version.h" DESTINATION "${CURRENT_PACKAGES_DIR}/include/tensorflow/core/public")
 file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
