@@ -99,7 +99,7 @@ index 073b29c4..9cb7f5fd 100644
 +    find_package(OpenCL 2.0 REQUIRED)
 +  endif()
 +  if(OpenCL_LIBRARY)
-+    list(APPEND TFLITE_TARGET_DEPENDENCIES protobuf::libprotobuf ${OpenCL_LIBRARY})
++    list(APPEND TFLITE_TARGET_DEPENDENCIES ${OpenCL_LIBRARY})
 +  endif()
 +  # Vulkan headers will be installed with vcpkg
 +  find_package(Vulkan)
