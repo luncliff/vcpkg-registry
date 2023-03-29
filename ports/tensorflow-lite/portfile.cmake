@@ -132,11 +132,11 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         gpu     TFLITE_ENABLE_GPU
         gpu     TFLITE_ENABLE_METAL
         mmap    TFLITE_ENABLE_MMAP
+        mediapipe WITH_MEDIAPIPE
 )
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/tensorflow/lite"
-    # WINDOWS_USE_MSBUILD
     OPTIONS
         ${FEATURE_OPTIONS}
         -DTFLITE_ENABLE_RESOURCE=ON

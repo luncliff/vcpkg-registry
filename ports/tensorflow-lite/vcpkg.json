@@ -60,6 +60,9 @@
         },
         "vulkan-headers"
       ]
+    },
+    "mediapipe": {
+      "description": "Build with sources of Google/MediaPipe"
     }
   }
 }

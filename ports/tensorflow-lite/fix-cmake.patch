@@ -437,3 +437,23 @@ index 1267b46c..9f2157ee 100644
    populate_tflite_source_vars(
      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
      FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 9f2157ee..ebe824d2 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -305,6 +305,15 @@ if(TFLITE_ENABLE_GPU)
+       ${TFLITE_DELEGATES_GPU_GL_SRCS}
+     )
+   endif()
++  if(WITH_MEDIAPIPE)
++    # custom_registry.cc from TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS
++    list(FILTER TFLITE_DELEGATES_GPU_SRCS EXCLUDE REGEX  ".*custom_registry\\.cc$")
++    # mediapipe/registry.cc will replace RegisterCustomOps
++    populate_tflite_source_vars("delegates/gpu/gl/kernels/mediapipe" TFLITE_DELEGATES_GPU_GL_KERNELS_MEDIAPIPE_SRCS)
++    list(APPEND TFLITE_DELEGATES_GPU_SRCS
++      ${TFLITE_DELEGATES_GPU_GL_KERNELS_MEDIAPIPE_SRCS}
++    )
++  endif()
+   populate_tflite_source_vars(
+     "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
+     FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
