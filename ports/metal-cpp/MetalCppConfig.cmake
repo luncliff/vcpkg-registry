@@ -84,8 +84,13 @@ The CMake module is wriiten by luncliff@gmail.com.
 You can do everything what you want with this file.
 
 #]===]
+if(MetalCpp_FOUND)
+    return()
+endif()
+set(MetalCpp_FOUND ON CACHE INTERNAL "Guard variable for 'MetalCppConfig.cmake'")
+
 cmake_minimum_required(VERSION 3.19)
-include(FindPackageHandleStandardArgs)
+find_package(PackageHandleStandardArgs REQUIRED)
 
 find_path(Foundation_INCLUDE_DIR "Foundation/Foundation.hpp" REQUIRED)
 find_library(Foundation_LIBRARY NAMES Foundation REQUIRED)

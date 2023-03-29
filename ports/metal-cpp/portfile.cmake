@@ -1,7 +1,7 @@
 vcpkg_download_distfile(ARCHIVE
-    URLS "https://developer.apple.com/metal/cpp/files/metal-cpp_macOS12_iOS15.zip"
-    FILENAME metal-cpp_macOS12_iOS15.zip
-    SHA512 dabb4109c7bf283288b5b3bd392892a7a52ad13b4d53a72a117a852f54b0a82871bec3e55c8493d8048365839bd1be37d72f872041f43db314622bb4a983921f
+    URLS "https://developer.apple.com/metal/cpp/files/metal-cpp_macOS13_iOS16.zip"
+    FILENAME metal-cpp_macOS13_iOS16.zip
+    SHA512 d35133f2b8829a28129a1662f8bf0f81df9a7937cd943abc948329fcade35b5258892cdf8b134cec0d9828cb0db67a708922eab0c2f64a8367c9bbf0382e043e
 )
 
 vcpkg_extract_source_archive_ex(
