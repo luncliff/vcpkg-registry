@@ -1,6 +1,6 @@
 {
   "name": "metal-cpp",
-  "version-date": "2022-01-18",
+  "version-date": "2023-03-29",
   "description": "Metal-cpp is a low-overhead C++ interface for Metal that helps developers add Metal functionality to graphics apps, games, and game engines that are written in C++.",
   "homepage": "https://developer.apple.com/metal/cpp/",
   "license": "Apache-2.0",
