@@ -1,0 +1,227 @@
+diff --git a/tensorflow/lite/delegates/gpu/gl/compiler.cc b/tensorflow/lite/delegates/gpu/gl/compiler.cc
+index d6e670e0..bafa99fb 100644
+--- a/tensorflow/lite/delegates/gpu/gl/compiler.cc
++++ b/tensorflow/lite/delegates/gpu/gl/compiler.cc
+@@ -196,7 +196,7 @@ class CompilerImpl : public Compiler {
+     // Prepare readonly objects and check whether object types are supported.
+     for (auto node : compiled_graph_.nodes()) {
+       auto& attr =
+-          std::any_cast<CompiledNodeAttributes&>(node->operation.attributes);
++          absl::any_cast<CompiledNodeAttributes&>(node->operation.attributes);
+ 
+       // Set workload explicitly.
+       if (attr.code.workload == uint3()) {
+@@ -251,7 +251,7 @@ class CompilerImpl : public Compiler {
+     ShaderCodegen codegen(options_, gpu_info_);
+     for (auto node : compiled_graph_.nodes()) {
+       auto& attr =
+-          std::any_cast<CompiledNodeAttributes&>(node->operation.attributes);
++          absl::any_cast<CompiledNodeAttributes&>(node->operation.attributes);
+       if (attr.code.source_code.empty()) {
+         // noop. Skip this node.
+         continue;
+diff --git a/tensorflow/lite/delegates/gpu/gl/compiler/fuse_auto_input.cc b/tensorflow/lite/delegates/gpu/gl/compiler/fuse_auto_input.cc
+index 761fb8b4..c7a7de9a 100644
+--- a/tensorflow/lite/delegates/gpu/gl/compiler/fuse_auto_input.cc
++++ b/tensorflow/lite/delegates/gpu/gl/compiler/fuse_auto_input.cc
+@@ -46,7 +46,7 @@ std::pair<std::string, std::string> MakeDataReplacement(int n, int k) {
+ 
+ TransformResult FuseAutoInput::ApplyToNode(Node* node, GraphFloat32* graph) {
+   auto& node_attr =
+-      std::any_cast<CompiledNodeAttributes&>(node->operation.attributes);
++      absl::any_cast<CompiledNodeAttributes&>(node->operation.attributes);
+   auto& node_code = node_attr.code;
+ 
+   if (node_code.input != IOStructure::AUTO) {
+@@ -75,7 +75,7 @@ TransformResult FuseAutoInput::ApplyToNode(Node* node, GraphFloat32* graph) {
+     if (graph->FindOutputs(input_producer->id).size() != 1) {
+       continue;  // input node has more than one output
+     }
+-    auto& input_producer_attr = std::any_cast<const CompiledNodeAttributes&>(
++    auto& input_producer_attr = absl::any_cast<const CompiledNodeAttributes&>(
+         input_producer->operation.attributes);
+     if (input_producer_attr.code.output != IOStructure::AUTO) {
+       continue;
+@@ -143,7 +143,7 @@ TransformResult FuseAutoInput::ApplyToNode(Node* node, GraphFloat32* graph) {
+   for (auto input_and_num : nodes_to_fuse) {
+     auto& input = input_and_num.first;
+     auto& attr =
+-        std::any_cast<CompiledNodeAttributes&>(input->operation.attributes);
++        absl::any_cast<CompiledNodeAttributes&>(input->operation.attributes);
+     auto super_inputs = graph->FindInputs(input->id);
+ 
+     // Replace all internal references in the input source code. For example:
+diff --git a/tensorflow/lite/delegates/gpu/gl/compiler/fuse_inline.cc b/tensorflow/lite/delegates/gpu/gl/compiler/fuse_inline.cc
+index f227ab21..486d4544 100644
+--- a/tensorflow/lite/delegates/gpu/gl/compiler/fuse_inline.cc
++++ b/tensorflow/lite/delegates/gpu/gl/compiler/fuse_inline.cc
+@@ -40,9 +40,9 @@ TransformResult FuseAutoOutputWithInline::ApplyToNodesSequence(
+   Node* node1 = sequence.front();
+   Node* node2 = sequence.back();
+   auto& attr1 =
+-      std::any_cast<CompiledNodeAttributes&>(node1->operation.attributes);
++      absl::any_cast<CompiledNodeAttributes&>(node1->operation.attributes);
+   auto& attr2 =
+-      std::any_cast<CompiledNodeAttributes&>(node2->operation.attributes);
++      absl::any_cast<CompiledNodeAttributes&>(node2->operation.attributes);
+ 
+   if (attr1.code.output != IOStructure::AUTO ||
+       graph->FindInputs(node2->id).size() != 1 ||
+diff --git a/tensorflow/lite/delegates/gpu/gl/compiler/fuse_inplace.cc b/tensorflow/lite/delegates/gpu/gl/compiler/fuse_inplace.cc
+index 1e27404b..b7719c49 100644
+--- a/tensorflow/lite/delegates/gpu/gl/compiler/fuse_inplace.cc
++++ b/tensorflow/lite/delegates/gpu/gl/compiler/fuse_inplace.cc
+@@ -81,7 +81,7 @@ class InplaceCodeRewrite : public InlineRewrite {
+ TransformResult RemoveUnusedInplaceUpdates::ApplyToNode(Node* node,
+                                                         GraphFloat32* graph) {
+   auto& attr =
+-      std::any_cast<CompiledNodeAttributes&>(node->operation.attributes);
++      absl::any_cast<CompiledNodeAttributes&>(node->operation.attributes);
+   // Remove inplace block by rewriting to empty string.
+   EmptyInplaceRewrite rewrite;
+   TextPreprocessor preprocessor('$', true);
+@@ -100,9 +100,9 @@ TransformResult FuseInplaceUpdate::ApplyToNodesSequence(
+   Node* node1 = sequence.front();
+   Node* node2 = sequence.back();
+   auto& attr1 =
+-      std::any_cast<CompiledNodeAttributes&>(node1->operation.attributes);
++      absl::any_cast<CompiledNodeAttributes&>(node1->operation.attributes);
+   auto& attr2 =
+-      std::any_cast<CompiledNodeAttributes&>(node2->operation.attributes);
++      absl::any_cast<CompiledNodeAttributes&>(node2->operation.attributes);
+ 
+   if (graph->FindInputs(node2->id).size() != 1 ||
+       graph->FindOutputs(node2->id).size() != 1 ||
+diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/add.cc b/tensorflow/lite/delegates/gpu/gl/kernels/add.cc
+index a14d7f24..faf3c0e3 100644
+--- a/tensorflow/lite/delegates/gpu/gl/kernels/add.cc
++++ b/tensorflow/lite/delegates/gpu/gl/kernels/add.cc
+@@ -42,11 +42,11 @@ class Add : public NodeShader {
+   absl::Status GenerateCode(const GenerationContext& ctx,
+                             GeneratedCode* generated_code) const final {
+     const auto& attr = std::any_cast<const ElementwiseAttributes&>(ctx.op_attr);
+-    auto adds = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.param);
+-    auto scalar = std::get_if<float>(&attr.param);
++    auto adds = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.param);
++    auto scalar = absl::get_if<float>(&attr.param);
+ 
+     const auto* hwc_tensor =
+-        std::get_if<Tensor<HWC, DataType::FLOAT32>>(&attr.param);
++        absl::get_if<Tensor<HWC, DataType::FLOAT32>>(&attr.param);
+ 
+     if (hwc_tensor) {
+       std::string code;
+@@ -69,7 +69,7 @@ class Add : public NodeShader {
+                 uint3(hwc_tensor->shape.w, hwc_tensor->shape.h,
+                       DivideRoundUp(hwc_tensor->shape.c, 4)),
+                 ConvertToPHWC4(
+-                    std::get<Tensor<HWC, DataType::FLOAT32>>(attr.param)))}},
++                    absl::get<Tensor<HWC, DataType::FLOAT32>>(attr.param)))}},
+           /*shared_variables=*/{},
+           // Declare workload explicitly because shader depends on gid.z.
+           /*workload=*/
+diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/elementwise.cc b/tensorflow/lite/delegates/gpu/gl/kernels/elementwise.cc
+index b2a6a997..4bc34fc5 100644
+--- a/tensorflow/lite/delegates/gpu/gl/kernels/elementwise.cc
++++ b/tensorflow/lite/delegates/gpu/gl/kernels/elementwise.cc
+@@ -159,10 +159,10 @@ class ElementwiseTwoArguments : public NodeShader {
+       argument1 = "$input_data_1[0, 0, gid.z]$";
+     } else {  // Scalar of const vector case
+       const auto& attr =
+-          std::any_cast<const ElementwiseAttributes&>(ctx.op_attr);
++          absl::any_cast<const ElementwiseAttributes&>(ctx.op_attr);
+       const auto* tensor =
+-          std::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.param);
+-      const auto* scalar = std::get_if<float>(&attr.param);
++          absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.param);
++      const auto* scalar = absl::get_if<float>(&attr.param);
+       if (!tensor && !scalar) {
+         return absl::InvalidArgumentError(
+             "Couldn't read scalar of const vector data from the attributes.");
+diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/mul.cc b/tensorflow/lite/delegates/gpu/gl/kernels/mul.cc
+index 3d21a0ae..410ea0c8 100644
+--- a/tensorflow/lite/delegates/gpu/gl/kernels/mul.cc
++++ b/tensorflow/lite/delegates/gpu/gl/kernels/mul.cc
+@@ -87,9 +87,9 @@ absl::Status GenerateMultiplyScalarCode(
+     const NodeShader::GenerationContext& ctx, GeneratedCode* generated_code) {
+   const auto& attr = std::any_cast<const ElementwiseAttributes&>(ctx.op_attr);
+ 
+-  if (std::holds_alternative<float>(attr.param)) {
++  if (absl::holds_alternative<float>(attr.param)) {
+     *generated_code = {
+-        /*parameters=*/{{"scalar", std::get<float>(attr.param)}},
++        /*parameters=*/{{"scalar", absl::get<float>(attr.param)}},
+         /*objects=*/{},
+         /*shared_variables=*/{},
+         /*workload=*/uint3(),
+@@ -101,13 +101,13 @@ absl::Status GenerateMultiplyScalarCode(
+     return absl::OkStatus();
+   }
+ 
+-  if (std::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(attr.param)) {
++  if (absl::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(attr.param)) {
+     *generated_code = {
+         /*parameters=*/{},
+         /*objects=*/
+         {{"mul_buffer",
+           MakeReadonlyObject(
+-              std::get<Tensor<Linear, DataType::FLOAT32>>(attr.param).data)}},
++              absl::get<Tensor<Linear, DataType::FLOAT32>>(attr.param).data)}},
+         /*shared_variables=*/{},
+         // Declare workload explicitly because shader depends on gid.z.
+         /*workload=*/
+@@ -122,7 +122,7 @@ absl::Status GenerateMultiplyScalarCode(
+     return absl::OkStatus();
+   }
+ 
+-  if (std::holds_alternative<Tensor<HWC, DataType::FLOAT32>>(attr.param)) {
++  if (absl::holds_alternative<Tensor<HWC, DataType::FLOAT32>>(attr.param)) {
+     *generated_code = {
+         /*parameters=*/{},
+         /*objects=*/
+@@ -132,7 +132,7 @@ absl::Status GenerateMultiplyScalarCode(
+                     static_cast<int>(ctx.input_shapes[0][1]),
+                     DivideRoundUp(static_cast<int>(ctx.input_shapes[0][3]), 4)),
+               ConvertToPHWC4(
+-                  std::get<Tensor<HWC, DataType::FLOAT32>>(attr.param)))}},
++                  absl::get<Tensor<HWC, DataType::FLOAT32>>(attr.param)))}},
+         /*shared_variables=*/{},
+         // Declare workload explicitly because shader depends on gid.z.
+         /*workload=*/
+diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/prelu.cc b/tensorflow/lite/delegates/gpu/gl/kernels/prelu.cc
+index 58882ba1..c71579ea 100644
+--- a/tensorflow/lite/delegates/gpu/gl/kernels/prelu.cc
++++ b/tensorflow/lite/delegates/gpu/gl/kernels/prelu.cc
+@@ -40,8 +40,8 @@ class PReLULinearAlpha : public NodeShader {
+  public:
+   absl::Status GenerateCode(const GenerationContext& ctx,
+                             GeneratedCode* generated_code) const final {
+-    const auto& attr = std::any_cast<const PReLUAttributes&>(ctx.op_attr);
+-    auto alpha = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.alpha);
++    const auto& attr = absl::any_cast<const PReLUAttributes&>(ctx.op_attr);
++    auto alpha = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.alpha);
+     if (!alpha) {
+       return absl::InvalidArgumentError("Alpha is missing");
+     }
+@@ -75,8 +75,8 @@ class PReLUFull : public NodeShader {
+  public:
+   absl::Status GenerateCode(const GenerationContext& ctx,
+                             GeneratedCode* generated_code) const final {
+-    const auto& attr = std::any_cast<const PReLUAttributes&>(ctx.op_attr);
+-    auto alpha = std::get_if<Tensor<HWC, DataType::FLOAT32>>(&attr.alpha);
++    const auto& attr = absl::any_cast<const PReLUAttributes&>(ctx.op_attr);
++    auto alpha = absl::get_if<Tensor<HWC, DataType::FLOAT32>>(&attr.alpha);
+     if (!alpha) {
+       return absl::InvalidArgumentError("Alpha is missing");
+     }
+@@ -118,8 +118,8 @@ class PReLU : public NodeShader {
+  public:
+   absl::Status GenerateCode(const GenerationContext& ctx,
+                             GeneratedCode* generated_code) const final {
+-    const auto& attr = std::any_cast<const PReLUAttributes&>(ctx.op_attr);
+-    auto* alpha = std::get_if<Tensor<HWC, DataType::FLOAT32>>(&attr.alpha);
++    const auto& attr = absl::any_cast<const PReLUAttributes&>(ctx.op_attr);
++    auto* alpha = absl::get_if<Tensor<HWC, DataType::FLOAT32>>(&attr.alpha);
+     return alpha ? full_.GenerateCode(ctx, generated_code)
+                  : linear_.GenerateCode(ctx, generated_code);
+   }

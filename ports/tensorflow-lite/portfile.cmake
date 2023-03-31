@@ -2,6 +2,17 @@ if(NOT VCPKG_TARGET_IS_IOS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
 
+# vcpkg_download_distfile(MP_PATCH_1
+#     URLS "https://raw.githubusercontent.com/google/mediapipe/v0.9.2.1/third_party/org_tensorflow_compatibility_fixes.diff"
+#     FILENAME org_tensorflow_compatibility_fixes.diff
+#     SHA512 4f30038f78e2cc8991a7ec173f6b081ba8bd151163569e840fa34d091ece0ec61eeebde18210a2f11b9bc21a5d8a0bde29a9c0a3638a4d7936b99de8781b7df1
+# )
+# vcpkg_download_distfile(MP_PATCH_2
+#     URLS "https://raw.githubusercontent.com/google/mediapipe/v0.9.2.1/third_party/org_tensorflow_custom_ops.diff"
+#     FILENAME org_tensorflow_custom_ops.diff
+#     SHA512 11fb8f48e39ef30328af0a216c3ea6bcbbbf68980dbbb5b6a9e4a1f11586f5f7836caf8ab6357785c624c3c6d10f516b185a504ea1bbcdaa69ce84522c8df60a
+# )
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
@@ -10,7 +21,10 @@ vcpkg_from_github(
     PATCHES
         fix-cmake.patch
         fix-source.patch
+        fix-absl.patch
         fix-opencl-extension.patch
+        org_tensorflow_compatibility_fixes.diff # ${MP_PATCH_1}
+        org_tensorflow_custom_ops.diff # ${MP_PATCH_2}
 )
 
 file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
@@ -118,6 +132,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         gpu     TFLITE_ENABLE_GPU
         gpu     TFLITE_ENABLE_METAL
         mmap    TFLITE_ENABLE_MMAP
+        mediapipe WITH_MEDIAPIPE
 )
 
 vcpkg_cmake_configure(

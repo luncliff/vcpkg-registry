@@ -410,3 +410,50 @@ index 073b29c4..9cb7f5fd 100644
  # The kernel tests.
  if(TFLITE_KERNEL_TEST)
    enable_testing()
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 1267b46c..9f2157ee 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -289,6 +289,22 @@ if(TFLITE_ENABLE_GPU)
+       ${TFLITE_OBJC_SRCS}
+     )
+   endif()
++  if(WIN32 OR ANDROID)
++    populate_tflite_source_vars("delegates/gpu/gl/compiler" TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS)
++    populate_tflite_source_vars("delegates/gpu/gl/converters" TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS)
++    populate_tflite_source_vars("delegates/gpu/gl/kernels" TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS)
++    populate_tflite_source_vars("delegates/gpu/gl/runtime" TFLITE_DELEGATES_GPU_GL_RUNTIME_SRCS)
++    populate_tflite_source_vars("delegates/gpu/gl/workgroups" TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS)
++    populate_tflite_source_vars("delegates/gpu/gl" TFLITE_DELEGATES_GPU_GL_SRCS)
++    list(APPEND TFLITE_DELEGATES_GPU_SRCS
++      ${TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS}
++      ${TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS}
++      ${TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS}
++      ${TFLITE_DELEGATES_GPU_GL_RUNTIME_SRCS}
++      ${TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS}
++      ${TFLITE_DELEGATES_GPU_GL_SRCS}
++    )
++  endif()
+   populate_tflite_source_vars(
+     "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
+     FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 9f2157ee..ebe824d2 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -305,6 +305,15 @@ if(TFLITE_ENABLE_GPU)
+       ${TFLITE_DELEGATES_GPU_GL_SRCS}
+     )
+   endif()
++  if(WITH_MEDIAPIPE)
++    # custom_registry.cc from TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS
++    list(FILTER TFLITE_DELEGATES_GPU_SRCS EXCLUDE REGEX  ".*custom_registry\\.cc$")
++    # mediapipe/registry.cc will replace RegisterCustomOps
++    populate_tflite_source_vars("delegates/gpu/gl/kernels/mediapipe" TFLITE_DELEGATES_GPU_GL_KERNELS_MEDIAPIPE_SRCS)
++    list(APPEND TFLITE_DELEGATES_GPU_SRCS
++      ${TFLITE_DELEGATES_GPU_GL_KERNELS_MEDIAPIPE_SRCS}
++    )
++  endif()
+   populate_tflite_source_vars(
+     "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
+     FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
