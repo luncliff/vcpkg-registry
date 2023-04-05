@@ -49,7 +49,7 @@
       "port-version": 4
     },
     "metal-cpp": {
-      "baseline": "2023-03-29",
+      "baseline": "2023-04-05",
       "port-version": 0
     },
     "onnx": {
