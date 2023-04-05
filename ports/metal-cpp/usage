@@ -1,24 +1,25 @@
 The package metal-cpp provides CMake variables:
 
-    find_package(MetalCpp CONFIG REQUIRED)
+    find_path(Foundation_INCLUDE_DIR NAMES "Foundation/Foundation.hpp" REQUIRED)
+    find_path(QuartzCore_INCLUDE_DIR NAMES "QuartzCore/QuartzCore.hpp" REQUIRED)
+    find_path(MetalCpp_INCLUDE_DIR NAMES "Metal/Metal.hpp" REQUIRED)
 
-    # Include Metal/Metal.hpp
-    target_include_directories(main PRIVATE ${MetalCpp_INCLUDE_DIRS})
-
-    # Link with frameworks: Foundation, QuartzCore, Metal
-    target_link_libraries(main PRIVATE ${MetalCpp_LIBRARIES})
-
-    # And provide compile definitions for one of the source file
-    set_source_files_properties(main.cpp
-    PROPERTIES
-        COMPILE_DEFINITIONS "NS_PRIVATE_IMPLEMENTATION;CA_PRIVATE_IMPLEMENTATION;MTL_PRIVATE_IMPLEMENTATION"
+    target_include_directories(main
+    PRIVATE
+        ${Foundation_INCLUDE_DIR}
+        ${QuartzCore_INCLUDE_DIR}
+        ${MetalCpp_INCLUDE_DIR}
     )
-
-Or you can use linker options for frameworks instead of libraries.
-
     target_link_options(main 
     PRIVATE
         "-framework Foundation"
         "-framework QuartzCore"
         "-framework Metal"
+    )
+
+Then provide compile definitions for one of the source file
+
+    set_source_files_properties(main.cpp
+    PROPERTIES
+        COMPILE_DEFINITIONS "NS_PRIVATE_IMPLEMENTATION;CA_PRIVATE_IMPLEMENTATION;MTL_PRIVATE_IMPLEMENTATION"
     )
