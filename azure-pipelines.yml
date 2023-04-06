@@ -99,9 +99,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"2310-bin-mac-host"'
+              key: '"2313-bin-mac-host"'
               restoreKeys: |
-                "2310-bin-mac-host"
+                "2313-bin-mac-host"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "coreml-tools"
@@ -148,15 +148,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2310-down-windows"'
+              key: '"2313-down-windows"'
               restoreKeys: |
-                "2310-down-windows"
+                "2313-down-windows"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2310-bin-windows" | "$(vcpkg.default.triplet)"'
+              key: '"2313-bin-windows" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2310-bin-windows" | "$(vcpkg.default.triplet)"
+                "2313-bin-windows" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs: # usisng features requires over 10 GB space ...
@@ -215,15 +215,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2310-down-uwp"'
+              key: '"2313-down-uwp"'
               restoreKeys: |
-                "2310-down-uwp"
+                "2313-down-uwp"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2310-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"2313-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2310-bin-uwp" | "$(vcpkg.default.triplet)"
+                "2313-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -282,15 +282,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2310-down-ubuntu"'
+              key: '"2313-down-ubuntu"'
               restoreKeys: |
-                "2310-down-ubuntu"
+                "2313-down-ubuntu"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2310-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"2313-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
-                "2310-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
+                "2313-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "x64-linux(failure)"
@@ -350,16 +350,16 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2310-down-android"'
+              key: '"2313-down-android"'
               restoreKeys: |
-                "2310-down-android"
+                "2313-down-android"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2310-bin-android" | "$(vcpkg.default.triplet)"'
+              key: '"2313-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2310-bin-android" | "$(vcpkg.default.triplet)"
-                "2310-bin-android" | "$(vcpkg.default.triplet)"
+                "2313-bin-android" | "$(vcpkg.default.triplet)"
+                "2313-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "Custom Triplet"
@@ -419,15 +419,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2310-down-apple"'
+              key: '"2313-down-apple"'
               restoreKeys: |
-                "2310-down-apple"
+                "2313-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2310-bin-osx" | "$(vcpkg.default.triplet)"'
+              key: '"2313-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2310-bin-osx" | "$(vcpkg.default.triplet)"
+                "2313-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -479,15 +479,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2310-down-apple"'
+              key: '"2313-down-apple"'
               restoreKeys: |
-                "2310-down-apple"
+                "2313-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2310-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"2313-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2310-bin-ios" | "$(vcpkg.default.triplet)"
+                "2313-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "arm64-ios"

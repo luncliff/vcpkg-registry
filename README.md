@@ -5,7 +5,7 @@
 
 Targets...
 
-* [vcpkg](https://github.com/microsoft/vcpkg): [2022.10.19](https://github.com/microsoft/vcpkg/tree/2022.10.19) or later
+* [vcpkg](https://github.com/microsoft/vcpkg): recommend [2022.11.14](https://github.com/microsoft/vcpkg/releases/tag/2022.11.14) or later
 * [vcpkg-tool](https://github.com/microsoft/vcpkg-tool) follows the vcpkg
 
 ### References
@@ -72,6 +72,11 @@ The `ports/` folder contains `openssl3` and `tensorflow-lite`. Put them in the "
 
 ```json
 {
+    "default-registry": {
+        "kind": "git",
+        "repository": "https://github.com/Microsoft/vcpkg",
+        "baseline": "6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2"
+    },
     "registries": [
         {
             "kind": "git",
