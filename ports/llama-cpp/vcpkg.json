@@ -1,0 +1,26 @@
+{
+  "name": "llama-cpp",
+  "version-date": "2023-04-25",
+  "description": "...",
+  "homepage": "https://github.com/ggerganov/llama.cpp",
+  "supports": "windows | linux | osx",
+  "dependencies": [
+    "openblas",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-get-python-packages",
+      "host": true
+    }
+  ],
+  "features": {
+    "cublas": {
+      "description": "Use CUBLAS",
+      "dependencies": [
+        "cudnn"
+      ]
+    }
+  }
+}
