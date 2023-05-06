@@ -431,7 +431,7 @@ stages:
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
-              vcpkgArguments: "zlib-ng openssl3 metal-cpp"
+              vcpkgArguments: "zlib-ng openssl3 metal-cpp apple-crypto"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "tensorflow-lite"
@@ -492,7 +492,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
-              vcpkgArguments: "coreml-tools tensorflow-lite openssl3 metal-cpp zlib-ng"
+              vcpkgArguments: "coreml-tools tensorflow-lite openssl3 metal-cpp zlib-ng apple-crypto"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
