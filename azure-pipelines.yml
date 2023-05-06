@@ -431,7 +431,7 @@ stages:
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
-              vcpkgArguments: "zlib-ng openssl3 metal-cpp"
+              vcpkgArguments: "zlib-ng openssl3 metal-cpp apple-nio-ssl"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "tensorflow-lite"
@@ -492,7 +492,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
-              vcpkgArguments: "coreml-tools tensorflow-lite openssl3 metal-cpp zlib-ng"
+              vcpkgArguments: "coreml-tools tensorflow-lite openssl3 metal-cpp zlib-ng apple-nio-ssl"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
@@ -506,7 +506,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "x64-ios-simulator"
             inputs:
-              vcpkgArguments: "openssl3 xnnpack"
+              vcpkgArguments: "openssl3 xnnpack apple-nio-ssl"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator

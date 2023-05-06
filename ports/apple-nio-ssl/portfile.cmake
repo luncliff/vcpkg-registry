@@ -13,11 +13,10 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO apple/swift-nio-ssl
-    REF 2.23.0
-    SHA512 a7d4478f3ebd8dd1ee78c71afef610c33b74fb1b38054ef352dccbc454b8c56b30158c63d20d8468fa17e3f688445814ea743b841bbac28b8639bc81cef86632
+    REF 2.24.0
+    SHA512 2cbb7a2294f518a5c3159dcdfd66227eb08b3aa83092f99d201a1a3ea943272b78249dab5b0150fa91f6373cbdb1771a0e9e42144b311ea0845a47996a6f43be
     HEAD_REF main
     PATCHES
-        swiftpm-use-local.patch
         ${SWIFTPM_PATCHES}
 )
 
