@@ -1,6 +1,6 @@
 {
   "name": "apple-crypto",
-  "version": "2.2.4",
+  "version": "2.5.0",
   "description": "Open-source implementation of a substantial portion of the API of Apple CryptoKit suitable for use on Linux platforms",
   "homepage": "https://apple.github.io/swift-crypto",
   "license": "Apache-2.0",
