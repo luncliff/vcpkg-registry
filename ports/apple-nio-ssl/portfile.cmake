@@ -37,42 +37,19 @@ endif()
 get_filename_component(CUSTOM_BUILDTREES_DIR "${SOURCE_PATH}" PATH)
 file(CREATE_LINK "${NIO_SOURCE_PATH}" "${CUSTOM_BUILDTREES_DIR}/swift-nio" SYMBOLIC)
 
-function(swiftpm_generatate_xcodeproj)
-    cmake_parse_arguments(PARSE_ARGV 0 swiftpm "" "LOGNAME" "PARAMS")
+function(xcodebuild_build_swiftpm)
+    cmake_parse_arguments(PARSE_ARGV 0 xc "COPY_AFTER_BUILD" "SCHEME;DESTINATION;OUTPUT_DIR;LOGNAME" "PARAMS")
     if(DEFINED xc_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} can't handle extra arguments: ${xc_UNPARSED_ARGUMENTS}")
     endif()
-    if(NOT DEFINED swiftpm_LOGNAME)
-        set(swiftpm_LOGNAME "generate")
-    endif()
-    if(NOT DEFINED swiftpm_WORKING_DIRECTORY)
-        set(swiftpm_WORKING_DIRECTORY "${SOURCE_PATH}")
-    endif()
 
-    find_program(SWIFT NAMES swift REQUIRED)
-    message(STATUS "Generating Xcode project from Package.swift")
-    vcpkg_execute_required_process(
-        COMMAND ${SWIFT} package generate-xcodeproj ${swiftpm_PARAMS}
-        WORKING_DIRECTORY ${swiftpm_WORKING_DIRECTORY}
-        LOGNAME "${swiftpm_LOGNAME}-${TARGET_TRIPLET}"
-    )
-endfunction()
-
-function(xcodebuild_build_framework)
-    cmake_parse_arguments(PARSE_ARGV 0 xc "COPY_AFTER_BUILD" "PROJECT;FRAMEWORK;OUTPUT_DIR;LOGNAME" "PARAMS")
-    if(DEFINED xc_UNPARSED_ARGUMENTS)
-        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} can't handle extra arguments: ${xc_UNPARSED_ARGUMENTS}")
-    endif()
     # required arguments
-    if(NOT DEFINED xc_PROJECT)
-        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} requires: PROJECT")
+    if(NOT DEFINED xc_SCHEME)
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} requires: SCHEME")
     endif()
-    set(PROJECT_FILENAME "${xc_PROJECT}.xcodeproj")
-
-    if(NOT DEFINED xc_FRAMEWORK)
-        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} requires: FRAMEWORK")
+    if(NOT DEFINED xc_DESTINATION)
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} requires: DESTINATION")
     endif()
-    set(FRAMEWORK_FILENAME "${xc_FRAMEWORK}.framework")
 
     # optional arguments with default values
     if(NOT DEFINED xc_LOGNAME)
@@ -105,7 +82,7 @@ function(xcodebuild_build_framework)
 
     message(STATUS "Building ${TARGET_TRIPLET}-dbg")
     vcpkg_execute_required_process(
-        COMMAND ${XCODEBUILD} -project ${PROJECT_FILENAME} -target ${xc_FRAMEWORK} -jobs ${VCPKG_CONCURRENCY} -configuration Debug ${xc_PARAMS}
+        COMMAND ${XCODEBUILD} -scheme ${xc_SCHEME} -destination ${xc_DESTINATION} -jobs ${VCPKG_CONCURRENCY} -configuration Debug ${xc_PARAMS}
         WORKING_DIRECTORY ${xc_WORKING_DIRECTORY}
         LOGNAME "${xc_LOGNAME}-${TARGET_TRIPLET}-dbg"
     )
@@ -115,7 +92,7 @@ function(xcodebuild_build_framework)
 
     message(STATUS "Building ${TARGET_TRIPLET}-rel")
     vcpkg_execute_required_process(
-        COMMAND ${XCODEBUILD} -project ${PROJECT_FILENAME} -target ${xc_FRAMEWORK} -jobs ${VCPKG_CONCURRENCY} -configuration Release ${xc_PARAMS}
+        COMMAND ${XCODEBUILD} -scheme ${xc_SCHEME} -destination ${xc_DESTINATION} -jobs ${VCPKG_CONCURRENCY} -configuration Release ${xc_PARAMS}
         WORKING_DIRECTORY ${xc_WORKING_DIRECTORY}
         LOGNAME "${xc_LOGNAME}-${TARGET_TRIPLET}-rel"
     )
@@ -134,42 +111,51 @@ endif()
 
 if(VCPKG_TARGET_IS_OSX)
     set(SDK macosx)
+    set(PLATFORM macOS)
+    list(APPEND XCODEBUILD_DESTINATION "platform=${PLATFORM},arch=${ARCH}")
 elseif(VCPKG_TARGET_IS_IOS)
     set(SDK iphoneos)
+    set(PLATFORM iOS)
     if(VCPKG_TARGET_IS_SIMULATOR)
         set(SDK iphonesimulator)
+        set(PLATFORM "iOS Simulator")
     endif()
+    list(APPEND XCODEBUILD_DESTINATION "generic/platform=${PLATFORM}")
 else()
     message(FATAL_ERROR "Unsupported target platform")
 endif()
 
-# generate xcodeproject: swift-nio-ssl.xcodeproj
 find_program(SWIFT NAMES swift REQUIRED)
 message(STATUS "Using swift: ${SWIFT}")
-swiftpm_generatate_xcodeproj(LOGNAME "generate")
 
 find_program(XCODEBUILD NAMES xcodebuild REQUIRED)
 message(STATUS "Using xcodebuild: ${XCODEBUILD}")
-message(STATUS "  -sdk ${SDK} -arch ${ARCH}")
+if(DEFINED XCODEBUILD_DESTINATION)
+message(STATUS "  -destination ${XCODEBUILD_DESTINATION}")
+endif()
 if(DEFINED XCODEBUILD_PARAMS)
 message(STATUS "  ${XCODEBUILD_PARAMS}")
 endif()
 
+set(ENV{SWIFTCI_USE_LOCAL_DEPS} true)
+
 # before build, record some project info for CI environment debugging
 vcpkg_execute_required_process(
-    COMMAND ${XCODEBUILD} -project swift-nio-ssl.xcodeproj -list
+    COMMAND ${XCODEBUILD} -list
+    LOGNAME "project-schemes"
     WORKING_DIRECTORY ${SOURCE_PATH}
-    LOGNAME "project-${TARGET_TRIPLET}"
+)
+vcpkg_execute_required_process(
+    COMMAND ${XCODEBUILD} -scheme CNIOBoringSSL -showdestinations
+    LOGNAME "project-destinations"
+    WORKING_DIRECTORY ${SOURCE_PATH}
 )
 
 # build some targets
-xcodebuild_build_framework(PROJECT swift-nio-ssl FRAMEWORK CNIOBoringSSL
-    PARAMS -sdk ${SDK} -arch ${ARCH} ${XCODEBUILD_PARAMS}
+xcodebuild_build_swiftpm(SCHEME CNIOBoringSSL
+    DESTINATION ${XCODEBUILD_DESTINATION}
+    PARAMS ${XCODEBUILD_PARAMS}
     LOGNAME "build1" COPY_AFTER_BUILD
-)
-xcodebuild_build_framework(PROJECT swift-nio-ssl FRAMEWORK CNIOBoringSSLShims
-    PARAMS -sdk ${SDK} -arch ${ARCH} ${XCODEBUILD_PARAMS}
-    LOGNAME "build2" COPY_AFTER_BUILD
 )
 
 # install public/private headers
