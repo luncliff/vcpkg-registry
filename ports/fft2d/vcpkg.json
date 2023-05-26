@@ -1,7 +1,7 @@
 {
   "name": "fft2d",
   "version": "1.0",
-  "port-version": 1,
+  "port-version": 2,
   "description": "General Purpose FFT (Fast Fourier/Cosine/Sine Transform) Package",
   "homepage": "http://www.kurims.kyoto-u.ac.jp/~ooura/fft.html",
   "dependencies": [
