@@ -159,7 +159,13 @@ stages:
                 "2313-bin-windows" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
-            inputs: # usisng features requires over 10 GB space ...
+            displayName: "google-filament"
+            inputs:
+              vcpkgArguments: "google-filament"
+              vcpkgGitCommitId: $(vcpkg.commit)
+            condition: ne(variables['vcpkg.default.triplet'], 'x64-uwp')
+          - task: run-vcpkg@0
+            inputs:
               vcpkgArguments: "zlib-ng openssl3 onnx"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
