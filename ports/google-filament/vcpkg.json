@@ -18,8 +18,7 @@
     {
       "name": "imgui",
       "features": [
-        "glfw-binding",
-        "vulkan-binding"
+        "glfw-binding"
       ],
       "platform": "linux"
     },
@@ -36,6 +35,7 @@
     "spirv-cross",
     "spirv-tools",
     "stb",
+    "getopt",
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -44,16 +44,46 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
-    "vulkan",
-    "zlib"
+    "assimp",
+    "zlib",
+    "robin-map",
+    "jsmn",
+    "cgltf",
+    "meshoptimizer",
+    "draco",
+    "mikktspace",
+    "tinyexr",
+    {
+      "name": "sdl2",
+      "platform": "windows"
+    }
   ],
   "features": {
+    "test": {
+      "description": "Build test executables",
+      "dependencies": [
+        "gtest",
+        "benchmark"
+      ]
+    },
     "gles3": {
       "description": "Experimental: Compile Filament against OpenGL ES 3",
       "dependencies": [
         {
           "name": "angle",
           "platform": "windows"
+        }
+      ]
+    },
+    "vulkan": {
+      "description": "Include the Vulkan backend",
+      "dependencies": [
+        "vulkan",
+        {
+          "name": "imgui",
+          "features": [
+            "vulkan-binding"
+          ]
         }
       ]
     }

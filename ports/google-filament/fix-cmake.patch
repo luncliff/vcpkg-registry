@@ -1,0 +1,87 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a8f99ad..58bfecc 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -665,7 +665,7 @@ endfunction()
+ # ==================================================================================================
+ 
+ # Common to all platforms
+-add_subdirectory(${EXTERNAL}/libgtest/tnt)
++find_package(GTest CONFIG REQUIRED) # GTest::gtest
+ add_subdirectory(${LIBRARIES}/camutils)
+ add_subdirectory(${LIBRARIES}/filabridge)
+ add_subdirectory(${LIBRARIES}/filaflat)
+@@ -684,27 +684,30 @@ add_subdirectory(${LIBRARIES}/utils)
+ add_subdirectory(${LIBRARIES}/viewer)
+ add_subdirectory(${FILAMENT}/filament)
+ add_subdirectory(${FILAMENT}/shaders)
+-add_subdirectory(${EXTERNAL}/basisu/tnt)
+-add_subdirectory(${EXTERNAL}/civetweb/tnt)
+-add_subdirectory(${EXTERNAL}/hat-trie/tnt)
+-add_subdirectory(${EXTERNAL}/imgui/tnt)
+-add_subdirectory(${EXTERNAL}/robin-map/tnt)
+-add_subdirectory(${EXTERNAL}/smol-v/tnt)
+-add_subdirectory(${EXTERNAL}/benchmark/tnt)
+-add_subdirectory(${EXTERNAL}/meshoptimizer/tnt)
+-add_subdirectory(${EXTERNAL}/mikktspace)
+-add_subdirectory(${EXTERNAL}/cgltf/tnt)
+-add_subdirectory(${EXTERNAL}/draco/tnt)
+-add_subdirectory(${EXTERNAL}/jsmn/tnt)
+-add_subdirectory(${EXTERNAL}/stb/tnt)
+-add_subdirectory(${EXTERNAL}/getopt)
++# vcpkg: civetweb
++# add_subdirectory(${EXTERNAL}/hat-trie/tnt)
++find_package(imgui CONFIG REQUIRED) # imgui::imgui
++find_package(tsl-robin-map CONFIG REQUIRED) # tsl::robin_map
++# add_subdirectory(${EXTERNAL}/smol-v/tnt)
++find_package(benchmark CONFIG REQUIRED) # benchmark::benchmark
++find_package(meshoptimizer CONFIG REQUIRED) # meshoptimizer::meshoptimizer
++find_package(mikktspace CONFIG REQUIRED) # mikktspace::mikktspace
++find_path(CGLTF_INCLUDE_DIRS "cgltf.h" REQUIRED)
++find_package(draco CONFIG REQUIRED) # draco::draco
++find_path(JSMN_INCLUDE_DIRS "jsmn.h" REQUIRED)
++find_path(STB_INCLUDE_DIRS "stb_image.h" REQUIRED)
++# vcpkg: getopt
+ 
+ if (FILAMENT_BUILD_FILAMAT OR IS_HOST_PLATFORM)
+     # spirv-tools must come before filamat, as filamat relies on the presence of the
+     # spirv-tools_SOURCE_DIR variable.
+-    add_subdirectory(${EXTERNAL}/spirv-tools)
+-    add_subdirectory(${EXTERNAL}/glslang/tnt)
+-    add_subdirectory(${EXTERNAL}/spirv-cross/tnt)
++    find_package(SDL2 REQUIRED)
++    find_package(glslang CONFIG REQUIRED)
++    find_package(SPIRV-Tools CONFIG REQUIRED)
++    find_package(SPIRV-Tools-opt CONFIG REQUIRED)
++    find_package(SPIRV-Tools-link CONFIG REQUIRED)
++    find_package(SPIRV-Tools-lint CONFIG REQUIRED)
++    # find_package(SPIRV-Tools-reduce CONFIG REQUIRED)
+     add_subdirectory(${LIBRARIES}/filamat)
+ 
+     # the material debugger requires filamat
+@@ -715,7 +718,7 @@ endif()
+ 
+ if (FILAMENT_SUPPORTS_VULKAN)
+     add_subdirectory(${LIBRARIES}/bluevk)
+-    add_subdirectory(${EXTERNAL}/vkmemalloc/tnt)
++    # add_subdirectory(${EXTERNAL}/vkmemalloc/tnt)
+ endif()
+ 
+ set(FILAMENT_SAMPLES_BINARY_DIR ${PROJECT_BINARY_DIR}/samples)
+@@ -736,11 +739,11 @@ if (IS_HOST_PLATFORM)
+ 
+     add_subdirectory(${FILAMENT}/samples)
+ 
+-    add_subdirectory(${EXTERNAL}/libassimp/tnt)
+-    add_subdirectory(${EXTERNAL}/libpng/tnt)
+-    add_subdirectory(${EXTERNAL}/libsdl2/tnt)
+-    add_subdirectory(${EXTERNAL}/libz/tnt)
+-    add_subdirectory(${EXTERNAL}/tinyexr/tnt)
++    find_package(assimp CONFIG REQUIRED) # assimp::assimp
++    find_package(PNG REQUIRED) # PNG::PNG
++    find_package(SDL2 REQUIRED) # vcpkg: sdl2?
++    find_package(ZLIB REQUIRED) # ZLIB::ZLIB
++    find_package(tinyexr CONFIG REQUIRED) # unofficial::tinyexr::tinyexr
+ 
+     add_subdirectory(${TOOLS}/cmgen)
+     add_subdirectory(${TOOLS}/cso-lut)
