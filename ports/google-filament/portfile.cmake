@@ -1,0 +1,41 @@
+
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO google/filament
+    REF v1.37.0
+    SHA512 c3bae22a0e96f5793b731bcc1d3be3a8c7ecc7d234bae2cd90446286b019c806bc72effebe23621888d6fcf0b0a14fad847048e97b79924d56c84fbd65edf557
+    # PATCHES
+    #     fix-cmakelists.patch
+)
+
+string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_CRT)
+
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+        gles3   FILAMENT_USE_EXTERNAL_GLES3
+        gles3   FILAMENT_SUPPORTS_EGL_ON_LINUX
+)
+
+vcpkg_cmake_configure(
+    SOURCE_PATH "${SOURCE_PATH}"
+    OPTIONS
+        -DUSE_STATIC_CRT=${USE_STATIC_CRT}
+        ${FEATURE_OPTIONS}
+        -DFILAMENT_SKIP_SDL2=ON
+        -DFILAMENT_SUPPORTS_XCB=${VCPKG_TARGET_IS_LINUX}
+        -DFILAMENT_SUPPORTS_XLIB=${VCPKG_TARGET_IS_LINUX}
+        -DFILAMENT_SUPPORTS_WAYLAND=${VCPKG_TARGET_IS_LINUX}
+        -DFILAMENT_ENABLE_ASAN_UBSAN=OFF
+        -DFILAMENT_ENABLE_LTO=ON
+        -DFILAMENT_SKIP_SAMPLES=ON
+)
+vcpkg_cmake_install()
+vcpkg_copy_pdbs()
+# vcpkg_cmake_config_fixup(PACKAGE_NAME ... CONFIG_PATH share/cmake/${PORT})
+
+file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/debug/include"
+    "${CURRENT_PACKAGES_DIR}/debug/share"
+)
+     
+file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME "copyright")
