@@ -5,8 +5,20 @@
   "homepage": "https://github.com/google/filament",
   "supports": "windows | osx | linux",
   "dependencies": [
+    "assimp",
     "basisu",
+    "cgltf",
+    "civetweb",
+    "draco",
+    "getopt",
     "glslang",
+    {
+      "name": "glslang",
+      "host": true,
+      "features": [
+        "tools"
+      ]
+    },
     {
       "name": "imgui",
       "features": [
@@ -26,16 +38,23 @@
       "name": "imgui",
       "features": [
         "dx11-binding",
-        "dx12-binding",
-        "opengl3-binding"
+        "dx12-binding"
       ],
       "platform": "windows"
     },
+    "jsmn",
     "libpng",
+    "meshoptimizer",
+    "mikktspace",
+    "robin-map",
+    {
+      "name": "sdl2",
+      "platform": "windows"
+    },
     "spirv-cross",
     "spirv-tools",
     "stb",
-    "getopt",
+    "tinyexr",
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -44,47 +63,42 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
-    "assimp",
     "zlib",
-    "robin-map",
-    "jsmn",
-    "cgltf",
-    "meshoptimizer",
-    "draco",
-    "mikktspace",
-    "tinyexr",
-    {
-      "name": "sdl2",
-      "platform": "windows"
-    }
+    "zstd"
   ],
   "features": {
+    "gles3": {
+      "description": "Experimental: Compile Filament against OpenGL ES 3",
+      "supports": "windows | linux",
+      "dependencies": [
+        "angle",
+        {
+          "name": "imgui",
+          "features": [
+            "opengl3-binding"
+          ],
+          "platform": "windows"
+        }
+      ]
+    },
     "test": {
       "description": "Build test executables",
       "dependencies": [
-        "gtest",
-        "benchmark"
-      ]
-    },
-    "gles3": {
-      "description": "Experimental: Compile Filament against OpenGL ES 3",
-      "dependencies": [
-        {
-          "name": "angle",
-          "platform": "windows"
-        }
+        "benchmark",
+        "gtest"
       ]
     },
     "vulkan": {
       "description": "Include the Vulkan backend",
       "dependencies": [
-        "vulkan",
         {
           "name": "imgui",
           "features": [
             "vulkan-binding"
           ]
-        }
+        },
+        "vulkan",
+        "vulkan-memory-allocator"
       ]
     }
   }

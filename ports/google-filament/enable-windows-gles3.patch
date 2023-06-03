@@ -1,0 +1,35 @@
+diff --git a/filament/backend/CMakeLists.txt b/filament/backend/CMakeLists.txt
+index b5136eb..c629ab8 100644
+--- a/filament/backend/CMakeLists.txt
++++ b/filament/backend/CMakeLists.txt
+@@ -63,7 +63,7 @@ set(PRIVATE_HDRS
+ # OpenGL / OpenGL ES Sources
+ # ==================================================================================================
+ 
+-if (FILAMENT_SUPPORTS_OPENGL AND NOT FILAMENT_USE_EXTERNAL_GLES3 AND NOT FILAMENT_USE_SWIFTSHADER)
++if (FILAMENT_SUPPORTS_OPENGL AND NOT FILAMENT_USE_SWIFTSHADER)
+     list(APPEND SRCS
+             include/backend/platforms/OpenGLPlatform.h
+             src/opengl/gl_headers.cpp
+@@ -83,7 +83,7 @@ if (FILAMENT_SUPPORTS_OPENGL AND NOT FILAMENT_USE_EXTERNAL_GLES3 AND NOT FILAMEN
+             src/opengl/OpenGLTimerQuery.cpp
+             src/opengl/OpenGLTimerQuery.h
+     )
+-    if (EGL)
++    if (EGL OR FILAMENT_USE_EXTERNAL_GLES3)
+         list(APPEND SRCS src/opengl/platforms/PlatformEGL.cpp)
+     endif()
+     if (ANDROID)
+diff --git a/filament/backend/src/PlatformFactory.cpp b/filament/backend/src/PlatformFactory.cpp
+index accd9fd..a9d6348 100644
+--- a/filament/backend/src/PlatformFactory.cpp
++++ b/filament/backend/src/PlatformFactory.cpp
+@@ -43,7 +43,7 @@
+         #endif
+     #endif
+ #elif defined(WIN32)
+-    #if defined(FILAMENT_SUPPORTS_OPENGL) && !defined(FILAMENT_USE_EXTERNAL_GLES3) && !defined(FILAMENT_USE_SWIFTSHADER)
++    #if defined(FILAMENT_SUPPORTS_OPENGL) && !defined(FILAMENT_USE_SWIFTSHADER)
+         #include "backend/platforms/PlatformWGL.h"
+     #endif
+ #elif defined(__EMSCRIPTEN__)

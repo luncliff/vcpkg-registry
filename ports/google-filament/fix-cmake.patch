@@ -1,20 +1,115 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index a8f99ad..58bfecc 100644
+index a8f99ad..1356b2b 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -665,7 +665,7 @@ endfunction()
+@@ -172,21 +172,6 @@ if (WIN32)
+     # __declspec(dllexport) in front of each functions).
+     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+ 
+-    # The CMAKE_CXX_FLAGS vars can be overriden by some Visual Studio generators, so we use an alternative
+-    # global method here:
+-    if (${USE_STATIC_CRT})
+-        add_compile_options(
+-            $<$<CONFIG:>:/MT>
+-            $<$<CONFIG:Debug>:/MTd>
+-            $<$<CONFIG:Release>:/MT>
+-        )
+-    else()
+-        add_compile_options(
+-            $<$<CONFIG:>:/MD>
+-            $<$<CONFIG:Debug>:/MDd>
+-            $<$<CONFIG:Release>:/MD>
+-        )
+-    endif()
+ 
+     # TODO: Figure out why pdb generation messes with incremental compilaton.
+     # IN RELEASE_WITH_DEBUG_INFO, generate debug info in .obj, no in pdb.
+@@ -287,7 +272,7 @@ endif()
+ 
+ if (MSVC)
+     set(CXX_STANDARD "/std:c++latest")
+-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_STANDARD} /W0 /Zc:__cplusplus")
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_STANDARD} /Zc:__cplusplus")
+ else()
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_STANDARD} -fstrict-aliasing -Wno-unknown-pragmas -Wno-unused-function -Wno-deprecated-declarations")
+ endif()
+@@ -405,7 +390,7 @@ endif()
+ # Linker flags
+ # ==================================================================================================
+ # Strip unused sections
+-if (NOT WEBGL)
++if (NOT WEBGL AND NOT WIN32)
+     set(GC_SECTIONS "-Wl,--gc-sections")
+ endif()
+ set(B_SYMBOLIC_FUNCTIONS "-Wl,-Bsymbolic-functions")
+@@ -660,12 +645,52 @@ function(get_resgen_vars ARCHIVE_DIR ARCHIVE_NAME)
+     endif()
+ endfunction()
+ 
++# Import packages
++find_package(PkgConfig REQUIRED)
++pkg_check_modules(ZSTD REQUIRED IMPORTED_TARGET GLOBAL libzstd>=1.5) # PkgConfig::ZSTD
++find_package(ZLIB REQUIRED)
++find_package(PNG REQUIRED) # PNG::PNG
++find_package(civetweb CONFIG REQUIRED) # civetweb::civetweb
++find_package(imgui CONFIG REQUIRED) # imgui::imgui
++find_package(tsl-robin-map CONFIG REQUIRED) # tsl::robin_map
++find_package(meshoptimizer CONFIG REQUIRED) # meshoptimizer::meshoptimizer
++find_package(mikktspace CONFIG REQUIRED) # mikktspace::mikktspace
++find_package(draco CONFIG REQUIRED) # draco::draco
++find_package(assimp CONFIG REQUIRED) # assimp::assimp
++find_package(tinyexr CONFIG REQUIRED) # unofficial::tinyexr::tinyexr
++find_package(spirv_cross_core CONFIG REQUIRED) # spirv-cross-core
++find_package(spirv_cross_glsl CONFIG REQUIRED) # spirv-cross-glsl
++find_package(spirv_cross_hlsl CONFIG REQUIRED) # spirv-cross-hlsl
++find_package(spirv_cross_msl CONFIG REQUIRED) # spirv-cross-msl
++find_package(GTest CONFIG REQUIRED) # GTest::gtest
++find_package(benchmark CONFIG REQUIRED) # benchmark::benchmark benchmark::benchmark_main
++
++find_path(CGLTF_INCLUDE_DIRS NAMES "cgltf.h" REQUIRED)
++find_path(JSMN_INCLUDE_DIRS NAMES "jsmn.h" REQUIRED)
++find_path(STB_INCLUDE_DIRS NAMES "stb_image.h" REQUIRED)
++find_path(BASISU_INCLUDE_DIRS NAMES "transcoder/basisu_transcoder.h" PATH_SUFFIXES "basisu" REQUIRED)
++
++find_library(TINYEXR_LIBRARY NAMES tinyexr REQUIRED) # vcpkg: tinyexr
++find_library(BASIS_ENCODER_LIBRARY NAMES basisu_encoder REQUIRED) # vcpkg: basisu
++find_library(BASIS_TRANSCODER_LIBRARY NAMES basisu_transcoder REQUIRED) # vcpkg: basisu
++find_library(GETOPT_LIBRARY NAMES getopt REQUIRED) # vcpkg: getopt
++get_filename_component(GETOPT_LIBPATH "${GETOPT_LIBRARY}" PATH)
++
++include_directories(
++    ${CGLTF_INCLUDE_DIRS} ${JSMN_INCLUDE_DIRS} ${STB_INCLUDE_DIRS}
++    ${BASISU_INCLUDE_DIRS}
++)
++link_directories(
++    ${GETOPT_LIBPATH}
++)
++
+ # ==================================================================================================
+ # Sub-projects
  # ==================================================================================================
  
- # Common to all platforms
+-# Common to all platforms
 -add_subdirectory(${EXTERNAL}/libgtest/tnt)
-+find_package(GTest CONFIG REQUIRED) # GTest::gtest
++add_subdirectory(${EXTERNAL}/hat-trie/tnt) # TODO: make port
++add_subdirectory(${EXTERNAL}/smol-v/tnt) # TODO: make port
++
  add_subdirectory(${LIBRARIES}/camutils)
  add_subdirectory(${LIBRARIES}/filabridge)
  add_subdirectory(${LIBRARIES}/filaflat)
-@@ -684,27 +684,30 @@ add_subdirectory(${LIBRARIES}/utils)
+@@ -676,35 +701,25 @@ add_subdirectory(${LIBRARIES}/gltfio)
+ add_subdirectory(${LIBRARIES}/ibl)
+ add_subdirectory(${LIBRARIES}/iblprefilter)
+ add_subdirectory(${LIBRARIES}/image)
+-add_subdirectory(${LIBRARIES}/ktxreader)
++# add_subdirectory(${LIBRARIES}/ktxreader) # old basisu code
+ add_subdirectory(${LIBRARIES}/math)
+ add_subdirectory(${LIBRARIES}/mathio)
+ add_subdirectory(${LIBRARIES}/uberz)
+ add_subdirectory(${LIBRARIES}/utils)
  add_subdirectory(${LIBRARIES}/viewer)
  add_subdirectory(${FILAMENT}/filament)
- add_subdirectory(${FILAMENT}/shaders)
+-add_subdirectory(${FILAMENT}/shaders)
 -add_subdirectory(${EXTERNAL}/basisu/tnt)
 -add_subdirectory(${EXTERNAL}/civetweb/tnt)
 -add_subdirectory(${EXTERNAL}/hat-trie/tnt)
@@ -29,19 +124,7 @@ index a8f99ad..58bfecc 100644
 -add_subdirectory(${EXTERNAL}/jsmn/tnt)
 -add_subdirectory(${EXTERNAL}/stb/tnt)
 -add_subdirectory(${EXTERNAL}/getopt)
-+# vcpkg: civetweb
-+# add_subdirectory(${EXTERNAL}/hat-trie/tnt)
-+find_package(imgui CONFIG REQUIRED) # imgui::imgui
-+find_package(tsl-robin-map CONFIG REQUIRED) # tsl::robin_map
-+# add_subdirectory(${EXTERNAL}/smol-v/tnt)
-+find_package(benchmark CONFIG REQUIRED) # benchmark::benchmark
-+find_package(meshoptimizer CONFIG REQUIRED) # meshoptimizer::meshoptimizer
-+find_package(mikktspace CONFIG REQUIRED) # mikktspace::mikktspace
-+find_path(CGLTF_INCLUDE_DIRS "cgltf.h" REQUIRED)
-+find_package(draco CONFIG REQUIRED) # draco::draco
-+find_path(JSMN_INCLUDE_DIRS "jsmn.h" REQUIRED)
-+find_path(STB_INCLUDE_DIRS "stb_image.h" REQUIRED)
-+# vcpkg: getopt
++add_subdirectory(${FILAMENT}/shaders) # requires host executables
  
  if (FILAMENT_BUILD_FILAMAT OR IS_HOST_PLATFORM)
      # spirv-tools must come before filamat, as filamat relies on the presence of the
@@ -59,16 +142,17 @@ index a8f99ad..58bfecc 100644
      add_subdirectory(${LIBRARIES}/filamat)
  
      # the material debugger requires filamat
-@@ -715,7 +718,7 @@ endif()
+@@ -714,8 +729,8 @@ if (FILAMENT_BUILD_FILAMAT OR IS_HOST_PLATFORM)
+ endif()
  
  if (FILAMENT_SUPPORTS_VULKAN)
++    find_path(VKMEMALLOC_INCLUDE_DIR NAMES "vk_mem_alloc.h" REQUIRED)
      add_subdirectory(${LIBRARIES}/bluevk)
 -    add_subdirectory(${EXTERNAL}/vkmemalloc/tnt)
-+    # add_subdirectory(${EXTERNAL}/vkmemalloc/tnt)
  endif()
  
  set(FILAMENT_SAMPLES_BINARY_DIR ${PROJECT_BINARY_DIR}/samples)
-@@ -736,11 +739,11 @@ if (IS_HOST_PLATFORM)
+@@ -736,12 +751,6 @@ if (IS_HOST_PLATFORM)
  
      add_subdirectory(${FILAMENT}/samples)
  
@@ -77,11 +161,607 @@ index a8f99ad..58bfecc 100644
 -    add_subdirectory(${EXTERNAL}/libsdl2/tnt)
 -    add_subdirectory(${EXTERNAL}/libz/tnt)
 -    add_subdirectory(${EXTERNAL}/tinyexr/tnt)
-+    find_package(assimp CONFIG REQUIRED) # assimp::assimp
-+    find_package(PNG REQUIRED) # PNG::PNG
-+    find_package(SDL2 REQUIRED) # vcpkg: sdl2?
-+    find_package(ZLIB REQUIRED) # ZLIB::ZLIB
-+    find_package(tinyexr CONFIG REQUIRED) # unofficial::tinyexr::tinyexr
- 
+-
      add_subdirectory(${TOOLS}/cmgen)
      add_subdirectory(${TOOLS}/cso-lut)
+     add_subdirectory(${TOOLS}/filamesh)
+diff --git a/filament/CMakeLists.txt b/filament/CMakeLists.txt
+index 1ec4c94..191fa55 100644
+--- a/filament/CMakeLists.txt
++++ b/filament/CMakeLists.txt
+@@ -552,7 +552,7 @@ set(LINUX_COMPILER_FLAGS
+ )
+ 
+ if (MSVC)
+-    set(FILAMENT_WARNINGS /W3)
++    # set(FILAMENT_WARNINGS /W3)
+ else()
+     set(FILAMENT_WARNINGS
+             -Wall -Wextra -Wno-unused-parameter
+diff --git a/filament/backend/CMakeLists.txt b/filament/backend/CMakeLists.txt
+index 7c851d1..c629ab8 100644
+--- a/filament/backend/CMakeLists.txt
++++ b/filament/backend/CMakeLists.txt
+@@ -342,7 +342,7 @@ set(LINUX_LINKER_OPTIMIZATION_FLAGS
+ )
+ 
+ if (MSVC)
+-    set(FILAMENT_WARNINGS /W3)
++    # set(FILAMENT_WARNINGS /W3)
+ else()
+     set(FILAMENT_WARNINGS
+             -Wall -Wextra -Wno-unused-parameter
+@@ -407,21 +407,21 @@ if (APPLE)
+     target_link_libraries(backend_test PRIVATE
+         backend
+         getopt
+-        gtest
++        GTest::gtest
+         filamat
+-        SPIRV
++        glslang::SPIRV
+         spirv-cross-glsl)
+ 
+     set(BACKEND_TEST_DEPS
+-            OGLCompiler
+-            OSDependent
+-            SPIRV
++            glslang::OGLCompiler
++            glslang::OSDependent
++            glslang::SPIRV
+             SPIRV-Tools
+             SPIRV-Tools-opt
+             backend_test
+             getopt
+-            gtest
+-            glslang
++            GTest::gtest
++            glslang::glslang
+             spirv-cross-core
+             spirv-cross-glsl
+             spirv-cross-msl
+@@ -468,7 +468,7 @@ add_executable(compute_test
+ target_link_libraries(compute_test PRIVATE
+         backend
+         getopt
+-        gtest
++        GTest::gtest
+         )
+ 
+ set_target_properties(compute_test PROPERTIES FOLDER Tests)
+diff --git a/filament/benchmark/CMakeLists.txt b/filament/benchmark/CMakeLists.txt
+index a14f15b..cb24126 100644
+--- a/filament/benchmark/CMakeLists.txt
++++ b/filament/benchmark/CMakeLists.txt
+@@ -10,6 +10,6 @@ set(BENCHMARK_SRCS
+ 
+ add_executable(benchmark_filament ${BENCHMARK_SRCS})
+ 
+-target_link_libraries(benchmark_filament PRIVATE benchmark_main utils math filament)
++target_link_libraries(benchmark_filament PRIVATE benchmark::benchmark_main utils math filament)
+ 
+ set_target_properties(benchmark_filament PROPERTIES FOLDER Benchmarks)
+diff --git a/filament/test/CMakeLists.txt b/filament/test/CMakeLists.txt
+index f9aedc5..9c05f28 100644
+--- a/filament/test/CMakeLists.txt
++++ b/filament/test/CMakeLists.txt
+@@ -48,7 +48,7 @@ if (TNT_DEV)
+             filament_framegraph_test.cpp
+             filament_test.cpp)
+ 
+-    target_link_libraries(test_${TARGET} PRIVATE filament gtest)
++    target_link_libraries(test_${TARGET} PRIVATE filament GTest::gtest)
+     target_compile_options(test_${TARGET} PRIVATE ${COMPILER_FLAGS})
+     set_target_properties(test_${TARGET} PROPERTIES FOLDER Tests)
+ 
+@@ -59,7 +59,7 @@ endif()
+ add_executable(test_material_parser
+         filament_test_material_parser.cpp
+         ${RESGEN_SOURCE})
+-target_link_libraries(test_material_parser PRIVATE filament gtest)
++target_link_libraries(test_material_parser PRIVATE filament GTest::gtest)
+ target_compile_options(test_material_parser PRIVATE ${COMPILER_FLAGS})
+ target_include_directories(test_material_parser PRIVATE ${RESOURCE_DIR})
+ set_target_properties(test_material_parser PROPERTIES FOLDER Tests)
+diff --git a/libs/bluegl/CMakeLists.txt b/libs/bluegl/CMakeLists.txt
+index 9ce75c1..0e8d283 100644
+--- a/libs/bluegl/CMakeLists.txt
++++ b/libs/bluegl/CMakeLists.txt
+@@ -72,5 +72,5 @@ endif()
+ 
+ # and we're linking against the libraries below, importing their public headers
+ target_link_libraries(test_${TARGET} LINK_PUBLIC ${TARGET})
+-target_link_libraries(test_${TARGET} LINK_PUBLIC gtest)
++target_link_libraries(test_${TARGET} LINK_PUBLIC GTest::gtest)
+ set_target_properties(test_${TARGET} PROPERTIES FOLDER Tests)
+diff --git a/libs/camutils/CMakeLists.txt b/libs/camutils/CMakeLists.txt
+index 541261c..3931767 100644
+--- a/libs/camutils/CMakeLists.txt
++++ b/libs/camutils/CMakeLists.txt
+@@ -52,6 +52,6 @@ install(DIRECTORY ${PUBLIC_HDR_DIR}/camutils DESTINATION include)
+ # ==================================================================================================
+ if (NOT ANDROID AND NOT WEBGL AND NOT IOS)
+     add_executable(test_${TARGET} tests/test_camutils.cpp)
+-    target_link_libraries(test_${TARGET} PRIVATE camutils gtest)
++    target_link_libraries(test_${TARGET} PRIVATE camutils GTest::gtest)
+     set_target_properties(test_${TARGET} PROPERTIES FOLDER Tests)
+ endif()
+diff --git a/libs/filaflat/CMakeLists.txt b/libs/filaflat/CMakeLists.txt
+index 0ebf53e..d836d64 100644
+--- a/libs/filaflat/CMakeLists.txt
++++ b/libs/filaflat/CMakeLists.txt
+@@ -20,7 +20,7 @@ set(SRCS
+ # ==================================================================================================
+ include_directories(${PUBLIC_HDR_DIR})
+ 
+-add_library(${TARGET} ${HDRS} ${SRCS})
++add_library(${TARGET} STATIC ${HDRS} ${SRCS})
+ target_include_directories(${TARGET} PUBLIC ${PUBLIC_HDR_DIR})
+ set_target_properties(${TARGET} PROPERTIES FOLDER Libs)
+ 
+@@ -35,4 +35,4 @@ endif()
+ # ==================================================================================================
+ # We do not need filaflat headers in the install directory
+ # install(DIRECTORY ${PUBLIC_HDR_DIR}/filaflat DESTINATION include)
+-install(TARGETS ${TARGET} ARCHIVE DESTINATION lib/${DIST_DIR})
++install(TARGETS ${TARGET} DESTINATION lib/${DIST_DIR})
+diff --git a/libs/filamat/CMakeLists.txt b/libs/filamat/CMakeLists.txt
+index 897eb60..e1cbad2 100644
+--- a/libs/filamat/CMakeLists.txt
++++ b/libs/filamat/CMakeLists.txt
+@@ -109,11 +109,9 @@ target_include_directories(${TARGET} PRIVATE ${spirv-tools_SOURCE_DIR}/include)
+ # glslang libraries have circular dependencies. To make sure the proper object are part of the link
+ # we need to force archive re-scan on new symbol dependencies via start/end-group.
+ # Read more about this here https://eli.thegreenplace.net/2013/07/09/library-order-in-static-linking
+-if (APPLE OR MSVC)
+-    target_link_libraries(${TARGET} glslang SPIRV SPIRV-Tools-opt spirv-cross-glsl)
+-else()
+-    target_link_libraries(${TARGET}
+-            -Wl,--start-group glslang SPIRV SPIRV-Tools-opt spirv-cross-glsl -Wl,--end-group)
++target_link_libraries(${TARGET} glslang::glslang glslang::SPIRV SPIRV-Tools-opt spirv-cross-glsl)
++if (NOT (APPLE OR MSVC))
++    target_link_options(-Wl,--start-group -Wl,--end-group)
+ endif()
+ 
+ # ==================================================================================================
+@@ -125,7 +123,7 @@ target_compile_options(${TARGET} PRIVATE -DAMD_EXTENSIONS -DNV_EXTENSIONS )
+ target_compile_definitions(filamat_lite PRIVATE FILAMAT_LITE)
+ 
+ if (MSVC)
+-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0 /Zc:__cplusplus")
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus")
+ endif()
+ 
+ # ==================================================================================================
+@@ -137,20 +135,20 @@ endif()
+ # requires us to explicitly list the dependencies below, as CMake doesn't have a way to recursively
+ # query dependencies.
+ set(FILAMAT_DEPS
+-        OGLCompiler
+-        OSDependent
+-        SPIRV
++        glslang::OGLCompiler
++        glslang::OSDependent
++        glslang::SPIRV
+         SPIRV-Tools
+         SPIRV-Tools-opt
+         filamat
+-        glslang
++        glslang::glslang
+         spirv-cross-core
+         spirv-cross-glsl
+         spirv-cross-msl
+         )
+ 
+ set(FILAMAT_COMBINED_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/libfilamat_combined.a")
+-combine_static_libs(filamat "${FILAMAT_COMBINED_OUTPUT}" "${FILAMAT_DEPS}")
++combine_static_libs(filamat "${FILAMAT_COMBINED_OUTPUT}" "${FILAMAT_DEPS}")
+ 
+ set(FILAMAT_LIB_NAME ${CMAKE_STATIC_LIBRARY_PREFIX}filamat${CMAKE_STATIC_LIBRARY_SUFFIX})
+ install(FILES "${FILAMAT_COMBINED_OUTPUT}" DESTINATION lib/${DIST_DIR} RENAME ${FILAMAT_LIB_NAME})
+@@ -172,7 +170,7 @@ add_executable(${TARGET} ${SRCS})
+ 
+ target_include_directories(${TARGET} PRIVATE src)
+ 
+-target_link_libraries(${TARGET} filamat gtest)
++target_link_libraries(${TARGET} filamat GTest::gtest)
+ 
+ set_target_properties(${TARGET} PROPERTIES FOLDER Tests)
+ 
+@@ -184,6 +182,6 @@ add_executable(${TARGET} ${SRCS})
+ 
+ target_include_directories(${TARGET} PRIVATE src)
+ 
+-target_link_libraries(${TARGET} filamat_lite gtest)
++target_link_libraries(${TARGET} filamat_lite GTest::gtest)
+ 
+ set_target_properties(${TARGET} PROPERTIES FOLDER Tests)
+diff --git a/libs/filamentapp/CMakeLists.txt b/libs/filamentapp/CMakeLists.txt
+index a2c1d0d..ac346e5 100644
+--- a/libs/filamentapp/CMakeLists.txt
++++ b/libs/filamentapp/CMakeLists.txt
+@@ -38,20 +38,19 @@ set(SRCS
+ )
+ 
+ set(LIBS
+-        assimp
++        assimp::assimp
+         camutils
+         filagui
+         filamat
+         filament
+         filament-iblprefilter
+         geometry
+-        getopt
++        ${GETOPT_LIBRARY}
+         image
+-        imgui
+-        ktxreader
++        imgui::imgui
++        # ktxreader
+         math
+         sdl2
+-        stb
+         utils
+ )
+ 
+diff --git a/libs/filameshio/CMakeLists.txt b/libs/filameshio/CMakeLists.txt
+index eab3192..5de70ed 100644
+--- a/libs/filameshio/CMakeLists.txt
++++ b/libs/filameshio/CMakeLists.txt
+@@ -39,6 +39,6 @@ install(FILES ${DIST_HDRS} DESTINATION include/${TARGET})
+ # ==================================================================================================
+ if (NOT IOS AND NOT WEBGL AND NOT ANDROID)
+     add_executable(test_${TARGET} tests/test_filamesh.cpp )
+-    target_link_libraries(test_${TARGET} PRIVATE filameshio gtest)
++    target_link_libraries(test_${TARGET} PRIVATE filameshio GTest::gtest)
+     set_target_properties(test_${TARGET} PROPERTIES FOLDER Tests)
+ endif()
+diff --git a/libs/geometry/CMakeLists.txt b/libs/geometry/CMakeLists.txt
+index d09e1c5..21ee1cf 100644
+--- a/libs/geometry/CMakeLists.txt
++++ b/libs/geometry/CMakeLists.txt
+@@ -28,8 +28,8 @@ include_directories(${PUBLIC_HDR_DIR})
+ add_library(${TARGET} STATIC ${PUBLIC_HDRS} ${SRCS})
+ 
+ set(GEOMETRY_DEPS
+-    meshoptimizer
+-    mikktspace
++    meshoptimizer::meshoptimizer
++    mikktspace::mikktspace
+ )
+ 
+ target_link_libraries(${TARGET} PUBLIC math utils)
+@@ -73,11 +73,11 @@ install(FILES "${GEOMETRY_COMBINED_OUTPUT}" DESTINATION lib/${DIST_DIR} RENAME $
+ if (NOT ANDROID AND NOT WEBGL AND NOT IOS)
+     set(TARGET test_transcoder)
+     add_executable(${TARGET} tests/test_transcoder.cpp)
+-    target_link_libraries(${TARGET} PRIVATE geometry gtest)
++    target_link_libraries(${TARGET} PRIVATE geometry GTest::gtest)
+     set_target_properties(${TARGET} PROPERTIES FOLDER Tests)
+ 
+     set(TARGET test_tangent_space_mesh)
+     add_executable(${TARGET} tests/test_tangent_space_mesh.cpp)
+-    target_link_libraries(${TARGET} PRIVATE geometry gtest)
++    target_link_libraries(${TARGET} PRIVATE geometry GTest::gtest)
+     set_target_properties(${TARGET} PROPERTIES FOLDER Tests)
+ endif()
+diff --git a/libs/gltfio/CMakeLists.txt b/libs/gltfio/CMakeLists.txt
+index d06676e..e8cd295 100644
+--- a/libs/gltfio/CMakeLists.txt
++++ b/libs/gltfio/CMakeLists.txt
+@@ -153,7 +153,7 @@ set_target_properties(uberarchive PROPERTIES FOLDER Libs)
+ # ==================================================================================================
+ 
+ include_directories(${PUBLIC_HDR_DIR} ${RESOURCE_DIR})
+-link_libraries(math utils filament cgltf stb ktxreader geometry tsl trie uberzlib)
++link_libraries(math utils filament ktxreader geometry tsl::robin_map trie uberzlib)
+ 
+ add_library(gltfio_core STATIC ${PUBLIC_HDRS} ${SRCS})
+ 
+diff --git a/libs/ibl/CMakeLists.txt b/libs/ibl/CMakeLists.txt
+index aae32fb..a3c7dea 100644
+--- a/libs/ibl/CMakeLists.txt
++++ b/libs/ibl/CMakeLists.txt
+@@ -33,12 +33,12 @@ set(SRCS
+ # ==================================================================================================
+ include_directories(${PUBLIC_HDR_DIR})
+ 
+-add_library(${TARGET} ${PUBLIC_HDRS} ${PRIVATE_HDRS} ${SRCS})
++add_library(${TARGET} STATIC ${PUBLIC_HDRS} ${PRIVATE_HDRS} ${SRCS})
+ target_include_directories(${TARGET} PUBLIC ${PUBLIC_HDR_DIR})
+ set_target_properties(${TARGET} PROPERTIES FOLDER Libs)
+ target_link_libraries(${TARGET} math utils)
+ 
+-add_library(${TARGET}-lite ${PUBLIC_HDRS} ${PRIVATE_HDRS} ${SRCS})
++add_library(${TARGET}-lite STATIC ${PUBLIC_HDRS} ${PRIVATE_HDRS} ${SRCS})
+ target_compile_definitions(${TARGET}-lite PUBLIC -DFILAMENT_IBL_LITE=1)
+ target_include_directories(${TARGET}-lite PUBLIC ${PUBLIC_HDR_DIR})
+ set_target_properties(${TARGET}-lite PROPERTIES FOLDER Libs)
+@@ -59,6 +59,6 @@ endif()
+ # ==================================================================================================
+ # Installation
+ # ==================================================================================================
+-install(TARGETS ${TARGET} ARCHIVE DESTINATION lib/${DIST_DIR})
+-install(TARGETS ${TARGET}-lite ARCHIVE DESTINATION lib/${DIST_DIR})
++install(TARGETS ${TARGET} DESTINATION lib/${DIST_DIR})
++install(TARGETS ${TARGET}-lite DESTINATION lib/${DIST_DIR})
+ install(DIRECTORY ${PUBLIC_HDR_DIR}/ibl DESTINATION include)
+diff --git a/libs/image/CMakeLists.txt b/libs/image/CMakeLists.txt
+index 8816a8d..5931c7d 100644
+--- a/libs/image/CMakeLists.txt
++++ b/libs/image/CMakeLists.txt
+@@ -55,6 +55,6 @@ install(DIRECTORY ${PUBLIC_HDR_DIR}/image DESTINATION include)
+ # ==================================================================================================
+ if (NOT ANDROID AND NOT WEBGL AND NOT IOS AND NOT FILAMENT_SKIP_SDL2)
+     add_executable(test_${TARGET} tests/test_image.cpp)
+-    target_link_libraries(test_${TARGET} PRIVATE image imageio gtest)
++    target_link_libraries(test_${TARGET} PRIVATE image imageio GTest::gtest)
+     set_target_properties(test_${TARGET} PROPERTIES FOLDER Tests)
+ endif()
+diff --git a/libs/imageio/CMakeLists.txt b/libs/imageio/CMakeLists.txt
+index 4754465..b2321c0 100644
+--- a/libs/imageio/CMakeLists.txt
++++ b/libs/imageio/CMakeLists.txt
+@@ -33,7 +33,7 @@ add_library(${TARGET} STATIC ${PUBLIC_HDRS} ${SRCS})
+ target_include_directories(${TARGET} PUBLIC ${PUBLIC_HDR_DIR})
+ set_target_properties(${TARGET} PROPERTIES FOLDER Libs)
+ 
+-target_link_libraries(${TARGET} PUBLIC image math png tinyexr utils z basis_encoder)
++target_link_libraries(${TARGET} PUBLIC image math PNG::PNG unofficial::tinyexr::tinyexr utils ZLIB::ZLIB ${BASIS_ENCODER_LIBRARY})
+ if (WIN32)
+     target_link_libraries(${TARGET} PRIVATE wsock32)
+ endif()
+diff --git a/libs/ktxreader/CMakeLists.txt b/libs/ktxreader/CMakeLists.txt
+index a9d5714..35c29a6 100644
+--- a/libs/ktxreader/CMakeLists.txt
++++ b/libs/ktxreader/CMakeLists.txt
+@@ -62,6 +62,6 @@ add_testfile(lightroom_ibl.ktx)
+ 
+ if (NOT ANDROID AND NOT WEBGL AND NOT IOS)
+     add_executable(test_ktxreader tests/test_ktxreader.cpp ${TESTFILES})
+-    target_link_libraries(test_ktxreader PRIVATE ${TARGET} gtest)
++    target_link_libraries(test_ktxreader PRIVATE ${TARGET} GTest::gtest)
+     set_target_properties(test_ktxreader PROPERTIES FOLDER Tests)
+ endif()
+diff --git a/libs/matdbg/CMakeLists.txt b/libs/matdbg/CMakeLists.txt
+index f53413b..551196d 100644
+--- a/libs/matdbg/CMakeLists.txt
++++ b/libs/matdbg/CMakeLists.txt
+@@ -73,13 +73,13 @@ add_library(${TARGET} STATIC ${PUBLIC_HDRS} ${SRCS})
+ 
+ target_link_libraries(${TARGET} PUBLIC
+         backend_headers
+-        civetweb
++        civetweb::civetweb
+         filabridge
+         filaflat
+         filamat
+-        glslang
++        glslang::glslang
+         matdbg_resources
+-        SPIRV
++        glslang::SPIRV
+         spirv-cross-glsl
+         SPIRV-Tools
+         utils
+diff --git a/libs/math/CMakeLists.txt b/libs/math/CMakeLists.txt
+index 838aa2d..db82b60 100644
+--- a/libs/math/CMakeLists.txt
++++ b/libs/math/CMakeLists.txt
+@@ -59,7 +59,7 @@ add_executable(test_${TARGET}
+         tests/test_vec.cpp
+         tests/test_quat.cpp
+ )
+-target_link_libraries(test_${TARGET} PRIVATE math gtest)
++target_link_libraries(test_${TARGET} PRIVATE math GTest::gtest)
+ set_target_properties(test_${TARGET} PROPERTIES FOLDER Tests)
+ 
+ # ==================================================================================================
+@@ -73,6 +73,6 @@ add_executable(benchmark_${TARGET} ${BENCHMARK_SRCS})
+ 
+ target_compile_options(benchmark_${TARGET} PRIVATE ${OPTIMIZATION_FLAGS})
+ 
+-target_link_libraries(benchmark_${TARGET} PRIVATE benchmark_main utils math)
++target_link_libraries(benchmark_${TARGET} PRIVATE utils math benchmark::benchmark_main)
+ 
+ set_target_properties(benchmark_${TARGET} PROPERTIES FOLDER Benchmarks)
+diff --git a/libs/uberz/CMakeLists.txt b/libs/uberz/CMakeLists.txt
+index 47744e2..d1283ca 100644
+--- a/libs/uberz/CMakeLists.txt
++++ b/libs/uberz/CMakeLists.txt
+@@ -25,7 +25,7 @@ include_directories(${PUBLIC_HDR_DIR})
+ 
+ add_library(${TARGET} STATIC ${PUBLIC_HDRS} ${SRCS})
+ 
+-target_link_libraries(${TARGET} PUBLIC math utils filabridge zstd)
++target_link_libraries(${TARGET} PUBLIC math utils filabridge PkgConfig::ZSTD)
+ 
+ target_include_directories(${TARGET} PUBLIC ${PUBLIC_HDR_DIR})
+ set_target_properties(${TARGET} PROPERTIES FOLDER Libs)
+diff --git a/libs/utils/CMakeLists.txt b/libs/utils/CMakeLists.txt
+index 44b45cd..1473851 100644
+--- a/libs/utils/CMakeLists.txt
++++ b/libs/utils/CMakeLists.txt
+@@ -99,7 +99,7 @@ include_directories(${PUBLIC_HDR_DIR})
+ add_library(${TARGET} STATIC ${PUBLIC_HDRS} ${SRCS})
+ target_include_directories(${TARGET} PUBLIC ${PUBLIC_HDR_DIR})
+ set_target_properties(${TARGET} PROPERTIES FOLDER Libs)
+-target_link_libraries(${TARGET} PUBLIC tsl)
++target_link_libraries(${TARGET} PUBLIC tsl::robin_map)
+ 
+ if (ANDROID)
+     target_link_libraries(${TARGET} PUBLIC log)
+@@ -171,7 +171,7 @@ endif()
+ 
+ add_executable(test_${TARGET} ${TEST_SRCS})
+ 
+-target_link_libraries(test_${TARGET} PRIVATE gtest utils tsl math)
++target_link_libraries(test_${TARGET} PRIVATE GTest::gtest utils tsl::robin_map math)
+ set_target_properties(test_${TARGET} PROPERTIES FOLDER Tests)
+ 
+ # ==================================================================================================
+@@ -180,7 +180,7 @@ set_target_properties(test_${TARGET} PROPERTIES FOLDER Tests)
+ 
+ if (NOT WEBGL)
+ 
+-    add_library(benchmark_${TARGET}_callee SHARED benchmark/benchmark_callee.cpp)
++    add_library(benchmark_${TARGET}_callee STATIC benchmark/benchmark_callee.cpp)
+     set_target_properties(benchmark_${TARGET}_callee PROPERTIES FOLDER Benchmarks)
+ 
+     set(BENCHMARK_SRCS
+@@ -194,7 +194,7 @@ if (NOT WEBGL)
+ 
+     add_executable(benchmark_${TARGET} ${BENCHMARK_SRCS})
+ 
+-    target_link_libraries(benchmark_${TARGET} PRIVATE benchmark_main utils benchmark_${TARGET}_callee)
++    target_link_libraries(benchmark_${TARGET} PRIVATE benchmark::benchmark_main utils benchmark_${TARGET}_callee)
+ 
+     set_target_properties(benchmark_${TARGET} PROPERTIES FOLDER Benchmarks)
+ 
+diff --git a/libs/viewer/CMakeLists.txt b/libs/viewer/CMakeLists.txt
+index 5d2a13e..9909779 100644
+--- a/libs/viewer/CMakeLists.txt
++++ b/libs/viewer/CMakeLists.txt
+@@ -53,6 +53,6 @@ install(DIRECTORY ${PUBLIC_HDR_DIR}/viewer DESTINATION include)
+ # ==================================================================================================
+ if (NOT ANDROID AND NOT WEBGL AND NOT IOS)
+     add_executable(test_settings tests/test_settings.cpp)
+-    target_link_libraries(test_settings PRIVATE ${TARGET} gtest)
++    target_link_libraries(test_settings PRIVATE ${TARGET} GTest::gtest)
+     set_target_properties(test_settings PROPERTIES FOLDER Tests)
+ endif()
+diff --git a/tools/cmgen/CMakeLists.txt b/tools/cmgen/CMakeLists.txt
+index 9e67ea2..96024f5 100644
+--- a/tools/cmgen/CMakeLists.txt
++++ b/tools/cmgen/CMakeLists.txt
+@@ -22,7 +22,7 @@ set(SRCS
+ # ==================================================================================================
+ add_executable(${TARGET} ${HDRS} ${SRCS})
+ 
+-target_link_libraries(${TARGET} PRIVATE math utils ibl z image imageio getopt)
++target_link_libraries(${TARGET} PRIVATE math utils ibl ZLIB::ZLIB image imageio getopt)
+ set_target_properties(${TARGET} PROPERTIES FOLDER Tools)
+ 
+ # ==================================================================================================
+@@ -35,7 +35,7 @@ else()
+ endif()
+ 
+ if (MSVC)
+-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0 /Zc:__cplusplus")
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus")
+ endif()
+ 
+ # =================================================================================================
+@@ -56,6 +56,6 @@ install(TARGETS ${TARGET} RUNTIME DESTINATION bin)
+ # ==================================================================================================
+ if (NOT ANDROID)
+     add_executable(test_${TARGET} tests/test_cmgen.cpp)
+-    target_link_libraries(test_${TARGET} PRIVATE image imageio gtest)
++    target_link_libraries(test_${TARGET} PRIVATE image imageio GTest::gtest)
+     set_target_properties(test_${TARGET} PROPERTIES FOLDER Tests)
+ endif()
+diff --git a/tools/cso-lut/CMakeLists.txt b/tools/cso-lut/CMakeLists.txt
+index 0d3eab1..f413673 100644
+--- a/tools/cso-lut/CMakeLists.txt
++++ b/tools/cso-lut/CMakeLists.txt
+@@ -15,7 +15,7 @@ set(SRCS src/main.cpp)
+ # ==================================================================================================
+ add_executable(${TARGET} ${HDRS} ${SRCS})
+ 
+-target_link_libraries(${TARGET} PRIVATE math utils z image imageio getopt)
++target_link_libraries(${TARGET} PRIVATE math utils ZLIB::ZLIB image imageio getopt)
+ set_target_properties(${TARGET} PROPERTIES FOLDER Tools)
+ 
+ # ==================================================================================================
+diff --git a/tools/filamesh/CMakeLists.txt b/tools/filamesh/CMakeLists.txt
+index fa97069..713e0cc 100644
+--- a/tools/filamesh/CMakeLists.txt
++++ b/tools/filamesh/CMakeLists.txt
+@@ -18,8 +18,8 @@ add_executable(${TARGET} ${SRCS})
+ 
+ target_link_libraries(${TARGET} PUBLIC math)
+ target_link_libraries(${TARGET} PUBLIC utils)
+-target_link_libraries(${TARGET} PUBLIC assimp)
+-target_link_libraries(${TARGET} PRIVATE getopt filameshio meshoptimizer)
++target_link_libraries(${TARGET} PUBLIC assimp::assimp)
++target_link_libraries(${TARGET} PRIVATE getopt filameshio meshoptimizer::meshoptimizer)
+ set_target_properties(${TARGET} PROPERTIES FOLDER Tools)
+ 
+ # ==================================================================================================
+diff --git a/tools/glslminifier/CMakeLists.txt b/tools/glslminifier/CMakeLists.txt
+index c278320..7a651bb 100644
+--- a/tools/glslminifier/CMakeLists.txt
++++ b/tools/glslminifier/CMakeLists.txt
+@@ -37,6 +37,6 @@ if (NOT ANDROID)
+             tests/test_glslminifier.cpp
+     )
+     target_include_directories(test_${TARGET} PRIVATE src)
+-    target_link_libraries(test_${TARGET} PRIVATE gtest)
++    target_link_libraries(test_${TARGET} PRIVATE GTest::gtest)
+     set_target_properties(test_${TARGET} PROPERTIES FOLDER Tests)
+ endif()
+diff --git a/tools/matc/CMakeLists.txt b/tools/matc/CMakeLists.txt
+index 8199edc..64c894b 100644
+--- a/tools/matc/CMakeLists.txt
++++ b/tools/matc/CMakeLists.txt
+@@ -93,6 +93,6 @@ set(SRCS
+ 
+ add_executable(${TARGET} ${SRCS})
+ 
+-target_link_libraries(${TARGET} matlang gtest)
++target_link_libraries(${TARGET} matlang GTest::gtest)
+ 
+ set_target_properties(test_matc PROPERTIES FOLDER Tests)
+diff --git a/tools/mipgen/CMakeLists.txt b/tools/mipgen/CMakeLists.txt
+index b26c8b6..06bd87f 100644
+--- a/tools/mipgen/CMakeLists.txt
++++ b/tools/mipgen/CMakeLists.txt
+@@ -12,7 +12,7 @@ set(SRCS src/main.cpp)
+ # Target definitions
+ # ==================================================================================================
+ add_executable(${TARGET} ${SRCS})
+-target_link_libraries(${TARGET} PRIVATE math utils z image imageio getopt)
++target_link_libraries(${TARGET} PRIVATE math utils ZLIB::ZLIB image imageio getopt)
+ set_target_properties(${TARGET} PROPERTIES FOLDER Tools)
+ 
+ # =================================================================================================
+diff --git a/tools/normal-blending/CMakeLists.txt b/tools/normal-blending/CMakeLists.txt
+index 8600334..d978634 100644
+--- a/tools/normal-blending/CMakeLists.txt
++++ b/tools/normal-blending/CMakeLists.txt
+@@ -15,7 +15,7 @@ set(SRCS src/main.cpp)
+ # ==================================================================================================
+ add_executable(${TARGET} ${HDRS} ${SRCS})
+ 
+-target_link_libraries(${TARGET} PRIVATE math utils z image imageio getopt)
++target_link_libraries(${TARGET} PRIVATE math utils ZLIB::ZLIB image imageio getopt)
+ 
+ set_target_properties(${TARGET} PROPERTIES FOLDER Tools)
+ 
+diff --git a/tools/roughness-prefilter/CMakeLists.txt b/tools/roughness-prefilter/CMakeLists.txt
+index c8387e5..53f14f1 100644
+--- a/tools/roughness-prefilter/CMakeLists.txt
++++ b/tools/roughness-prefilter/CMakeLists.txt
+@@ -15,7 +15,7 @@ set(SRCS src/main.cpp)
+ # ==================================================================================================
+ add_executable(${TARGET} ${HDRS} ${SRCS})
+ 
+-target_link_libraries(${TARGET} PRIVATE math utils z image imageio getopt)
++target_link_libraries(${TARGET} PRIVATE math utils ZLIB::ZLIB image imageio getopt)
+ 
+ set_target_properties(${TARGET} PROPERTIES FOLDER Tools)
+ 
+diff --git a/tools/matc/CMakeLists.txt b/tools/matc/CMakeLists.txt
+index 64c894b..661d041 100644
+--- a/tools/matc/CMakeLists.txt
++++ b/tools/matc/CMakeLists.txt
+@@ -44,7 +44,7 @@ add_library(${TARGET} STATIC ${SRCS} ${HDRS})
+ target_include_directories(${TARGET} PUBLIC src)
+ target_include_directories(${TARGET} PRIVATE ${filamat_SOURCE_DIR}/src)
+ 
+-target_link_libraries(${TARGET} getopt filamat filabridge utils)
++target_link_libraries(${TARGET} getopt filamat filabridge utils glslang::SPVRemapper spirv-cross-msl)
+ set_target_properties(${TARGET} PROPERTIES FOLDER Tools)
+ 
+ # =================================================================================================
