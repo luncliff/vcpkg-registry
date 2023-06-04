@@ -1,0 +1,31 @@
+{
+  "name": "basis-universal",
+  "version": "1.16.4",
+  "description": "Low-precision matrix multiplication",
+  "homepage": "https://github.com/BinomialLLC/basis_universal",
+  "license": "Apache-2.0",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ],
+  "default-features": [
+    "zstd"
+  ],
+  "features": {
+    "opencl": {
+      "description": "OpenCL support in encoder",
+      "supports": "!windows",
+      "dependencies": [
+        "opencl"
+      ]
+    },
+    "zstd": {
+      "description": "ZSTD support for KTX2 transcoding/encoding",
+      "dependencies": [
+        "zstd"
+      ]
+    }
+  }
+}
