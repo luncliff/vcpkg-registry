@@ -92,6 +92,11 @@ if (NOT MSVC)
 	list(APPEND CMAKE_CXX_FLAGS	${GCC_COMPILE_FLAGS})
 endif()
 
+add_library(basisu_transcoder STATIC
+	transcoder/basisu_transcoder.cpp
+)
+set_target_properties(basisu_transcoder PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 add_library(basisu_encoder STATIC
 	encoder/basisu_backend.cpp
 	encoder/basisu_basis_file.cpp
@@ -111,10 +116,8 @@ add_library(basisu_encoder STATIC
 	encoder/basisu_opencl.cpp
 	encoder/pvpngreader.cpp
 )
-
-add_library(basisu_transcoder STATIC
-	transcoder/basisu_transcoder.cpp
-)
+set_target_properties(basisu_encoder PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+target_link_libraries(basisu_encoder PUBLIC basisu_transcoder)
 
 add_executable(basisu basisu_tool.cpp)
 target_link_libraries(basisu PRIVATE basisu_encoder basisu_transcoder)
