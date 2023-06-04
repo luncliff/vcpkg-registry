@@ -11,9 +11,19 @@ vcpkg_from_github(
         disable-static-lib-combine.patch
         enable-windows-gles3.patch
         fix-sources.patch
-        fix-sources2.patch
+        fix-libs-viewer.patch
+        fix-libs-matdbg.patch
+        fix-cmake2.patch
 )
 file(APPEND "${SOURCE_PATH}/.gitignore" "\nthird_party\n")
+
+function(leave_license SRC_PORT DST_NAME)
+    get_filename_component(DST_DIR "${SOURCE_PATH}/third_party/${DST_NAME}" ABSOLUTE)
+    get_filename_component(DST_PATH "${DST_DIR}/LICENSE" ABSOLUTE)
+    file(REMOVE_RECURSE "${DST_DIR}")
+    file(MAKE_DIRECTORY "${DST_DIR}")
+    file(COPY_FILE "${CURRENT_INSTALLED_DIR}/share/${SRC_PORT}/copyright" "${DST_PATH}")
+endfunction()
 
 file(REMOVE_RECURSE
     "${SOURCE_PATH}/android"
@@ -21,33 +31,39 @@ file(REMOVE_RECURSE
     "${SOURCE_PATH}/web"
     "${SOURCE_PATH}/docs"
     "${SOURCE_PATH}/site"
-    "${SOURCE_PATH}/third_party/basisu"
-    "${SOURCE_PATH}/third_party/civetweb"
-    "${SOURCE_PATH}/third_party/benchmark"
-    "${SOURCE_PATH}/third_party/cgltf"
     "${SOURCE_PATH}/third_party/clang"
-    # "${SOURCE_PATH}/third_party/getopt"
-    # "${SOURCE_PATH}/third_party/glslang"
-    "${SOURCE_PATH}/third_party/imgui"
-    "${SOURCE_PATH}/third_party/jsmn"
-    # "${SOURCE_PATH}/third_party/libassimp"
-    "${SOURCE_PATH}/third_party/libgtest"
-    # "${SOURCE_PATH}/third_party/libpng"
-    "${SOURCE_PATH}/third_party/libsdl2"
-    # "${SOURCE_PATH}/third_party/libz"
-    # "${SOURCE_PATH}/third_party/meshoptimizer"
-    "${SOURCE_PATH}/third_party/robin-map"
-    # "${SOURCE_PATH}/third_party/spirv-cross"
-    # "${SOURCE_PATH}/third_party/spirv-tools"
-    # "${SOURCE_PATH}/third_party/stb"
-    "${SOURCE_PATH}/third_party/draco"
-    "${SOURCE_PATH}/third_party/gl-matrix"
-    "${SOURCE_PATH}/third_party/gltumble"
     "${SOURCE_PATH}/third_party/markdeep"
     "${SOURCE_PATH}/third_party/vkmemalloc"
-    # "${SOURCE_PATH}/third_party/tinyexr"
-    "${SOURCE_PATH}/third_party/mikktspace"
 )
+
+leave_license(glslang glslang)
+leave_license(assimp libassimp)
+leave_license(libpng libpng)
+leave_license(spirv-cross spirv-cross)
+leave_license(spirv-tools spirv-tools)
+leave_license(stb stb)
+leave_license(mikktspace mikktspace)
+leave_license(meshoptimizer meshoptimizer)
+leave_license(tinyexr tinyexr)
+leave_license(zlib libz)
+if(TRUE)
+    leave_license(sdl2 libsdl2)
+    leave_license(draco draco)
+    leave_license(gtest libgtest)
+    leave_license(benchmark benchmark)
+    leave_license(civetweb civetweb)
+    leave_license(basis-universal basisu)
+    leave_license(cgltf cgltf)
+    leave_license(imgui imgui)
+    leave_license(jsmn jsmn)
+    leave_license(robin-map robin-map)
+endif()
+if(VCPKG_TARGET_IS_WINDOWS)
+    leave_license(getopt-win32 getopt)
+endif()
+if("vulkan" IN_LIST FEATURES)
+    leave_license(vulkan-memory-allocator vkmemalloc)
+endif()
 
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_CRT)
 
@@ -63,6 +79,7 @@ vcpkg_cmake_configure(
     GENERATOR Ninja
     # WINDOWS_USE_MSBUILD
     OPTIONS
+        -DDIST_DIR= # empty lib/bin suffix
         -DPKG_CONFIG_EXECUTABLE:FILEPATH=${PKGCONFIG}
         -DCMAKE_CROSSCOMPILING=${VCPKG_CROSSCOMPILING}
         ${FEATURE_OPTIONS}
@@ -81,14 +98,22 @@ vcpkg_cmake_configure(
         -DFILAMENT_DISABLE_MATOPT=OFF
 )
 
-if(NOT VCPKG_CROSSCOMPILING)
-    # some targets requires tools for resource generation
-    list(APPEND TOOL_TARGET_NAMES resgen glslminifier matc cmgen mipgen uberz filamesh)
+vcpkg_cmake_build(TARGET uberarchive    LOGFILE_BASE build-uberarchive  DISABLE_PARALLEL ADD_BIN_TO_PATH)
+vcpkg_cmake_build(TARGET gltfio         LOGFILE_BASE build-gltfio       ADD_BIN_TO_PATH)
+
+# some targets requires tools for resource generation
+if(VCPKG_CROSSCOMPILING)
+    vcpkg_add_to_path(PREPEND "${CURRENT_HOST_INSTALLED_DIR}/bin")
+    vcpkg_add_to_path(PREPEND "${CURRENT_HOST_INSTALLED_DIR}/tools/${PORT}")
+else()
+    list(APPEND TOOL_TARGET_NAMES resgen glslminifier matc cmgen mipgen uberz filamesh matinfo)
     foreach(NAME ${TOOL_TARGET_NAMES})
-        message(STATUS "Target: ${NAME} ...")
-        vcpkg_cmake_build(TARGET ${NAME} ADD_BIN_TO_PATH LOGFILE_BASE build-${NAME})
+        message(STATUS "Target: ${NAME} ... ${CURRENT_BUILDTREES_DIR}/${PORT}/${TARGET_TRIPLET}-dbg/tools/${NAME}")
+        vcpkg_cmake_build(TARGET ${NAME} LOGFILE_BASE build-${NAME} ADD_BIN_TO_PATH)
     endforeach()
+    message(STATUS "Finished building tool targets")
 endif()
+
 vcpkg_cmake_install(ADD_BIN_TO_PATH)
 vcpkg_copy_pdbs()
 # vcpkg_cmake_config_fixup(PACKAGE_NAME ... CONFIG_PATH share/cmake/${PORT})

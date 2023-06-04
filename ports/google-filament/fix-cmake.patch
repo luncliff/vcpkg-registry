@@ -398,7 +398,7 @@ index a2c1d0d..ac346e5 100644
 -        imgui
 -        ktxreader
 +        imgui::imgui
-+        # ktxreader
++        ktxreader
          math
          sdl2
 -        stb
@@ -722,7 +722,7 @@ index b26c8b6..06bd87f 100644
  # ==================================================================================================
  add_executable(${TARGET} ${SRCS})
 -target_link_libraries(${TARGET} PRIVATE math utils z image imageio getopt)
-+target_link_libraries(${TARGET} PRIVATE math utils ZLIB::ZLIB image imageio getopt)
++target_link_libraries(${TARGET} PRIVATE math utils ZLIB::ZLIB image imageio getopt ${BASIS_ENCODER_LIBRARY} ${BASIS_TRANSCODER_LIBRARY} PkgConfig::ZSTD)
  set_target_properties(${TARGET} PROPERTIES FOLDER Tools)
  
  # =================================================================================================
@@ -765,3 +765,108 @@ index 64c894b..661d041 100644
  set_target_properties(${TARGET} PROPERTIES FOLDER Tools)
  
  # =================================================================================================
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1356b2b..d22a2c9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -701,7 +701,7 @@ add_subdirectory(${LIBRARIES}/gltfio)
+ add_subdirectory(${LIBRARIES}/ibl)
+ add_subdirectory(${LIBRARIES}/iblprefilter)
+ add_subdirectory(${LIBRARIES}/image)
+-# add_subdirectory(${LIBRARIES}/ktxreader) # old basisu code
++add_subdirectory(${LIBRARIES}/ktxreader)
+ add_subdirectory(${LIBRARIES}/math)
+ add_subdirectory(${LIBRARIES}/mathio)
+ add_subdirectory(${LIBRARIES}/uberz)
+diff --git a/libs/filagui/CMakeLists.txt b/libs/filagui/CMakeLists.txt
+index e68a511..a4f7f8c 100644
+--- a/libs/filagui/CMakeLists.txt
++++ b/libs/filagui/CMakeLists.txt
+@@ -80,7 +80,7 @@ include_directories(${GENERATION_ROOT})
+ 
+ add_library(${TARGET} STATIC ${PUBLIC_HDRS} ${SRCS} ${RESGEN_SOURCE})
+ 
+-target_link_libraries(${TARGET} PUBLIC imgui filament)
++target_link_libraries(${TARGET} PUBLIC imgui::imgui filament)
+ 
+ target_include_directories(${TARGET} PUBLIC ${PUBLIC_HDR_DIR})
+ set_target_properties(${TARGET} PROPERTIES FOLDER Libs)
+diff --git a/libs/filamat/CMakeLists.txt b/libs/filamat/CMakeLists.txt
+index e1cbad2..4b49c15 100644
+--- a/libs/filamat/CMakeLists.txt
++++ b/libs/filamat/CMakeLists.txt
+@@ -104,12 +104,11 @@ target_link_libraries(filamat_lite shaders filabridge utils)
+ 
+ # We are being naughty and accessing private headers here
+ # For spirv-tools, we're just following glslang's example
+-target_include_directories(${TARGET} PRIVATE ${spirv-tools_SOURCE_DIR}/include)
+ 
+ # glslang libraries have circular dependencies. To make sure the proper object are part of the link
+ # we need to force archive re-scan on new symbol dependencies via start/end-group.
+ # Read more about this here https://eli.thegreenplace.net/2013/07/09/library-order-in-static-linking
+-target_link_libraries(${TARGET} glslang::glslang glslang::SPIRV SPIRV-Tools-opt spirv-cross-glsl)
++target_link_libraries(${TARGET} glslang::glslang glslang::SPIRV glslang::SPVRemapper SPIRV-Tools-opt spirv-cross-glsl spirv-cross-msl)
+ if (NOT (APPLE OR MSVC))
+     target_link_options(-Wl,--start-group -Wl,--end-group)
+ endif()
+diff --git a/libs/gltfio/CMakeLists.txt b/libs/gltfio/CMakeLists.txt
+index e8cd295..20a348a 100644
+--- a/libs/gltfio/CMakeLists.txt
++++ b/libs/gltfio/CMakeLists.txt
+@@ -161,7 +161,7 @@ target_include_directories(gltfio_core PUBLIC ${PUBLIC_HDR_DIR})
+ set_target_properties(gltfio_core PROPERTIES FOLDER Libs)
+ 
+ target_compile_definitions(gltfio_core PUBLIC -DGLTFIO_DRACO_SUPPORTED=1)
+-target_link_libraries(gltfio_core PUBLIC dracodec meshoptimizer)
++target_link_libraries(gltfio_core PUBLIC draco::draco meshoptimizer::meshoptimizer)
+ 
+ if (WEBGL_PTHREADS)
+     target_compile_definitions(gltfio_core PUBLIC -DFILAMENT_WASM_THREADS)
+diff --git a/libs/ktxreader/CMakeLists.txt b/libs/ktxreader/CMakeLists.txt
+index 35c29a6..9300f18 100644
+--- a/libs/ktxreader/CMakeLists.txt
++++ b/libs/ktxreader/CMakeLists.txt
+@@ -24,7 +24,7 @@ include_directories(${PUBLIC_HDR_DIR})
+ 
+ add_library(${TARGET} STATIC ${PUBLIC_HDRS} ${SRCS})
+ 
+-target_link_libraries(${TARGET} PUBLIC utils image filament basis_transcoder)
++target_link_libraries(${TARGET} PUBLIC utils image filament ${BASIS_ENCODER_LIBRARY} ${BASIS_TRANSCODER_LIBRARY} PkgConfig::ZSTD)
+ 
+ target_include_directories(${TARGET} PUBLIC ${PUBLIC_HDR_DIR})
+ set_target_properties(${TARGET} PROPERTIES FOLDER Libs)
+diff --git a/libs/viewer/CMakeLists.txt b/libs/viewer/CMakeLists.txt
+index 9909779..1b0f2cb 100644
+--- a/libs/viewer/CMakeLists.txt
++++ b/libs/viewer/CMakeLists.txt
+@@ -30,7 +30,7 @@ set(SRCS
+ # Include and target definitions
+ # ==================================================================================================
+ add_library(${TARGET} STATIC ${PUBLIC_HDRS} ${SRCS})
+-target_link_libraries(${TARGET} PUBLIC imgui filament gltfio_core filagui jsmn civetweb)
++target_link_libraries(${TARGET} PUBLIC imgui::imgui filament gltfio_core filagui civetweb::civetweb)
+ target_include_directories(${TARGET} PUBLIC ${PUBLIC_HDR_DIR})
+ set_target_properties(${TARGET} PROPERTIES FOLDER Libs)
+ 
+diff --git a/libs/gltfio/CMakeLists.txt b/libs/gltfio/CMakeLists.txt
+index 20a348a..6cf1816 100644
+--- a/libs/gltfio/CMakeLists.txt
++++ b/libs/gltfio/CMakeLists.txt
+@@ -144,7 +144,8 @@ endif()
+ set(DUMMY_SRC "${RESOURCE_DIR}/dummy.c")
+ add_custom_command(OUTPUT ${DUMMY_SRC} COMMAND echo "//" > ${DUMMY_SRC})
+ 
+-add_library(uberarchive ${DUMMY_SRC} ${RESGEN_SOURCE})
++add_library(uberarchive STATIC ${DUMMY_SRC} ${RESGEN_SOURCE})
++
+ target_include_directories(uberarchive PUBLIC ${RESOURCE_DIR})
+ set_target_properties(uberarchive PROPERTIES FOLDER Libs)
+ 
+@@ -193,6 +193,6 @@ endif()
+ # Installation
+ # ==================================================================================================
+ 
+-install(TARGETS gltfio_core uberarchive ARCHIVE DESTINATION lib/${DIST_DIR})
++install(TARGETS gltfio_core uberarchive ARCHIVE DESTINATION lib/${DIST_DIR} LIBRARY DESTINATION lib/${DIST_DIR} RUNTIME DESTINATION bin/${DIST_DIR})
+ install(DIRECTORY ${PUBLIC_HDR_DIR}/gltfio DESTINATION include)
+ install(FILES ${RESOURCE_DIR}/materials/uberarchive.h DESTINATION include/gltfio/materials)

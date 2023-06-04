@@ -6,7 +6,7 @@
   "supports": "windows | osx | linux",
   "dependencies": [
     "assimp",
-    "basisu",
+    "basis-universal",
     "cgltf",
     "civetweb",
     "draco",
