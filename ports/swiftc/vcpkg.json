@@ -1,0 +1,36 @@
+{
+  "name": "swiftc",
+  "version": "5.8.1",
+  "description": "The Swift Programming Language",
+  "homepage": "https://github.com/apple/swift",
+  "license": "Apache-2.0",
+  "supports": "osx | linux",
+  "dependencies": [
+    "libuuid",
+    {
+      "name": "cmark",
+      "features": [
+        "tools"
+      ],
+      "platform": "linux"
+    },
+    {
+      "name": "llvm",
+      "features": [
+        "clang",
+        "lld"
+      ],
+      "platform": "osx"
+    },
+    "libdispatch",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ],
+  "features": {
+    "tools": {
+      "description": "Generate build targets for swift tools"
+    }
+  }
+}

@@ -1,0 +1,137 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8f8b08c2..0de28add 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -630,15 +630,8 @@ set(SWIFT_BUILD_HOST_DISPATCH FALSE)
+ if(SWIFT_ENABLE_DISPATCH AND NOT CMAKE_SYSTEM_NAME STREQUAL Darwin)
+   # Only build libdispatch for the host if the host tools are being built and
+   # specifically if these two libraries that depend on it are built.
+-  if(SWIFT_INCLUDE_TOOLS AND SWIFT_BUILD_SOURCEKIT)
+-    set(SWIFT_BUILD_HOST_DISPATCH TRUE)
+-  endif()
+-
+-  if(SWIFT_BUILD_HOST_DISPATCH OR SWIFT_CONCURRENCY_USES_DISPATCH)
+-    if(NOT EXISTS "${SWIFT_PATH_TO_LIBDISPATCH_SOURCE}")
+-      message(SEND_ERROR "SourceKit and concurrency require libdispatch on non-Darwin hosts.  Please specify SWIFT_PATH_TO_LIBDISPATCH_SOURCE")
+-    endif()
+-  endif()
++  find_library(DISPATCH_LIBRARY NAMES dispatch REQUIRED)
++  find_path(DISPATCH_INCLUDE_DIR NAMES "dispatch/dispatch.h" REQUIRED)
+ endif()
+ 
+ file(STRINGS "utils/availability-macros.def" SWIFT_STDLIB_AVAILABILITY_DEFINITIONS)
+@@ -1155,7 +1148,7 @@ if (LLVM_ENABLE_DOXYGEN)
+ endif()
+ 
+ if(SWIFT_ENABLE_DISPATCH)
+-  include(Libdispatch)
++  # include(Libdispatch) # see DISPATCH_LIBRARY above
+ endif()
+ 
+ # Add all of the subdirectories, where we actually do work.
+diff --git a/cmake/modules/SwiftSharedCMakeConfig.cmake b/cmake/modules/SwiftSharedCMakeConfig.cmake
+index 6679f404..c6f8a43b 100644
+--- a/cmake/modules/SwiftSharedCMakeConfig.cmake
++++ b/cmake/modules/SwiftSharedCMakeConfig.cmake
+@@ -41,8 +41,8 @@ macro(swift_common_standalone_build_config_llvm product)
+   precondition(LLVM_TOOLS_BINARY_DIR)
+   escape_path_for_xcode("${LLVM_BUILD_TYPE}" "${LLVM_TOOLS_BINARY_DIR}" LLVM_TOOLS_BINARY_DIR)
+ 
+-  precondition_translate_flag(LLVM_BUILD_LIBRARY_DIR LLVM_LIBRARY_DIR)
+-  escape_path_for_xcode("${LLVM_BUILD_TYPE}" "${LLVM_LIBRARY_DIR}" LLVM_LIBRARY_DIR)
++  # precondition_translate_flag(LLVM_BUILD_LIBRARY_DIR LLVM_LIBRARY_DIR)
++  # escape_path_for_xcode("${LLVM_BUILD_TYPE}" "${LLVM_LIBRARY_DIR}" LLVM_LIBRARY_DIR)
+ 
+   precondition(LLVM_LIBRARY_DIRS)
+   escape_path_for_xcode("${LLVM_BUILD_TYPE}" "${LLVM_LIBRARY_DIRS}" LLVM_LIBRARY_DIRS)
+@@ -217,30 +217,13 @@ macro(swift_common_standalone_build_config_clang product)
+ endmacro()
+ 
+ macro(swift_common_standalone_build_config_cmark product)
+-  set(${product}_PATH_TO_CMARK_SOURCE "${${product}_PATH_TO_CMARK_SOURCE}"
+-    CACHE PATH "Path to CMark source code.")
+-  set(${product}_PATH_TO_CMARK_BUILD "${${product}_PATH_TO_CMARK_BUILD}"
+-    CACHE PATH "Path to the directory where CMark was built.")
+-  set(${product}_CMARK_LIBRARY_DIR "${${product}_CMARK_LIBRARY_DIR}" CACHE PATH
+-    "Path to the directory where CMark was installed.")
+-  get_filename_component(PATH_TO_CMARK_BUILD "${${product}_PATH_TO_CMARK_BUILD}"
+-    ABSOLUTE)
+-  get_filename_component(CMARK_MAIN_SRC_DIR "${${product}_PATH_TO_CMARK_SOURCE}"
+-    ABSOLUTE)
+-  get_filename_component(CMARK_LIBRARY_DIR "${${product}_CMARK_LIBRARY_DIR}"
+-    ABSOLUTE)
+-
+-  set(CMARK_MAIN_INCLUDE_DIR "${CMARK_MAIN_SRC_DIR}/src/include")
+-  set(CMARK_BUILD_INCLUDE_DIR "${PATH_TO_CMARK_BUILD}/src")
+-
+-  file(TO_CMAKE_PATH "${CMARK_MAIN_INCLUDE_DIR}" CMARK_MAIN_INCLUDE_DIR)
+-  file(TO_CMAKE_PATH "${CMARK_BUILD_INCLUDE_DIR}" CMARK_BUILD_INCLUDE_DIR)
+-
+-  include_directories("${CMARK_MAIN_INCLUDE_DIR}"
+-                      "${CMARK_BUILD_INCLUDE_DIR}")
+-
+-  include(${PATH_TO_CMARK_BUILD}/src/cmarkTargets.cmake)
+-  add_definitions(-DCMARK_STATIC_DEFINE)
++  # vcpkg port 'cmark'
++  find_package(PkgConfig REQUIRED)
++  pkg_check_modules(CMARK REQUIRED IMPORTED_TARGET GLOBAL libcmark>=0.30)
++  set(CMARK_MAIN_INCLUDE_DIR ${CMARK_INCLUDE_DIRS})
++  if(CMARK_STATIC)
++    add_compile_definitions(CMARK_STATIC_DEFINE)
++  endif()
+ endmacro()
+ 
+ # Common cmake project config for standalone builds.
+diff --git a/lib/Basic/CMakeLists.txt b/lib/Basic/CMakeLists.txt
+index d2a07b3a..166d0398 100644
+--- a/lib/Basic/CMakeLists.txt
++++ b/lib/Basic/CMakeLists.txt
+@@ -38,8 +38,8 @@ function(generate_revision_inc revision_inc_var name dir)
+   set(${revision_inc_var} ${version_inc} PARENT_SCOPE)
+ endfunction()
+ 
+-generate_revision_inc(llvm_revision_inc LLVM "${LLVM_MAIN_SRC_DIR}")
+-generate_revision_inc(swift_revision_inc Swift "${SWIFT_SOURCE_DIR}")
++# generate_revision_inc(llvm_revision_inc LLVM "${LLVM_MAIN_SRC_DIR}")
++# generate_revision_inc(swift_revision_inc Swift "${SWIFT_SOURCE_DIR}")
+ 
+ add_swift_host_library(swiftBasic STATIC
+   BasicBridging.cpp
+@@ -76,9 +76,9 @@ add_swift_host_library(swiftBasic STATIC
+   UUID.cpp
+   Version.cpp
+ 
+-  ${llvm_revision_inc}
+-  ${clang_revision_inc}
+-  ${swift_revision_inc}
++  # ${llvm_revision_inc}
++  # ${clang_revision_inc}
++  # ${swift_revision_inc}
+ 
+   # Platform-specific TaskQueue implementations
+   Unix/TaskQueue.inc
+diff --git a/lib/Option/CMakeLists.txt b/lib/Option/CMakeLists.txt
+index 8659377a..f1550933 100644
+--- a/lib/Option/CMakeLists.txt
++++ b/lib/Option/CMakeLists.txt
+@@ -8,7 +8,7 @@ target_link_libraries(swiftOption PRIVATE
+ 
+ set(features_merger "${SWIFT_SOURCE_DIR}/utils/merge-features.py")
+ set(features_file_swift_src "${CMAKE_CURRENT_SOURCE_DIR}/features.json")
+-set(features_file_clang_src "${LLVM_BINARY_DIR}/share/clang/features.json")
++# set(features_file_clang_src "${LLVM_BINARY_DIR}/share/clang/features.json")
+ set(features_file_dest "${CMAKE_BINARY_DIR}/share/swift/features.json")
+ 
+ add_custom_command(
+diff --git a/stdlib/cmake/modules/StdlibOptions.cmake b/stdlib/cmake/modules/StdlibOptions.cmake
+index 7533bc4b..e56295bb 100644
+--- a/stdlib/cmake/modules/StdlibOptions.cmake
++++ b/stdlib/cmake/modules/StdlibOptions.cmake
+@@ -1,6 +1,6 @@
+ include_guard(GLOBAL)
+ 
+-include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/modules/SwiftUtils.cmake)
++include(SwiftUtils)
+ 
+ precondition(SWIFT_HOST_VARIANT_SDK)
+ precondition(SWIFT_DARWIN_PLATFORMS)
