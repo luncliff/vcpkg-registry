@@ -17,7 +17,10 @@ if(VCPKG_TARGET_IS_WINDOWS)
     list(APPEND PLATFORM_PATCHES
         "${TSD_DTOR_PATCH}" "${X86_BUILD_PATCH}"
     )
+elseif(VCPKG_TARGET_IS_LINUX)
+    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 elseif(VCPKG_TARGET_IS_ANDROID)
+    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
     # check https://github.com/apple/swift-corelibs-libdispatch/pull/568 for the details...
     vcpkg_download_distfile(NDK23_STDATOMIC_PATCH
         URLS "https://patch-diff.githubusercontent.com/raw/apple/swift-corelibs-libdispatch/pull/568.diff"
@@ -30,9 +33,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO apple/swift-corelibs-libdispatch
-    REF swift-5.5-RELEASE
-    SHA512 58ad7122d2fac7b117f4e81eec2b5c1dfdf5256865337110d660790744e83c3fea5e82fbe521b6e56fd0e2f09684e5e1475cf2cac67989a8f78dd0a284fb0d21
-    HEAD_REF master
+    REF swift-5.8.1-RELEASE
+    SHA512 a3344e9df912c5cf86aa7e225748a22a747f48a41354e9bc38d03a20231676c199d2a1cd66091cc1edc87e2236fff79d92988b205c4921ec732c2a695fea23b6
     PATCHES
         ${PLATFORM_PATCHES}
         fix-cmake.patch
