@@ -1,0 +1,118 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8f8b08c2..e6a3beb4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -597,6 +597,7 @@ endif()
+ if(SWIFT_BUILT_STANDALONE)
+   project(Swift C CXX ASM)
+ endif()
++include(GNUInstallDirs)
+ 
+ if(MSVC OR "${CMAKE_SIMULATE_ID}" STREQUAL MSVC)
+   include(ClangClCompileRules)
+@@ -1155,7 +1156,15 @@ if (LLVM_ENABLE_DOXYGEN)
+ endif()
+ 
+ if(SWIFT_ENABLE_DISPATCH)
+-  include(Libdispatch)
++  if(NOT APPLE)
++    find_path(LIBDISPATCH_INCLUDE_DIR NAMES "dispatch/dispatch.h" REQUIRED)
++    include_directories(${LIBDISPATCH_INCLUDE_DIR})
++    find_library(LIBDISPATCH_LIBRARY NAMES dispatch REQUIRED)
++    find_library(LIBDISPATCH_BLOCKSRUNTIME_LIBRARY NAMES BlocksRuntime REQUIRED)
++    link_libraries(${LIBDISPATCH_LIBRARY} ${LIBDISPATCH_BLOCKSRUNTIME_LIBRARY})
++  else()
++    include(Libdispatch)
++  endif()
+ endif()
+ 
+ # Add all of the subdirectories, where we actually do work.
+diff --git a/cmake/modules/AddSwift.cmake b/cmake/modules/AddSwift.cmake
+index 58c7eb1b..36129138 100644
+--- a/cmake/modules/AddSwift.cmake
++++ b/cmake/modules/AddSwift.cmake
+@@ -840,6 +840,7 @@ function(add_swift_host_tool executable)
+   _add_host_variant_c_compile_flags(${executable})
+   _add_host_variant_link_flags(${executable})
+   _add_host_variant_c_compile_link_flags(${executable})
++  install(TARGETS ${executable} DESTINATION ${CMAKE_INSTALL_BINDIR})
+ 
+   # Force executables linker language to be CXX so that we do not link using the
+   # host toolchain swiftc.
+diff --git a/cmake/modules/SwiftSharedCMakeConfig.cmake b/cmake/modules/SwiftSharedCMakeConfig.cmake
+index 6679f404..beaa5aba 100644
+--- a/cmake/modules/SwiftSharedCMakeConfig.cmake
++++ b/cmake/modules/SwiftSharedCMakeConfig.cmake
+@@ -41,8 +41,10 @@ macro(swift_common_standalone_build_config_llvm product)
+   precondition(LLVM_TOOLS_BINARY_DIR)
+   escape_path_for_xcode("${LLVM_BUILD_TYPE}" "${LLVM_TOOLS_BINARY_DIR}" LLVM_TOOLS_BINARY_DIR)
+ 
+-  precondition_translate_flag(LLVM_BUILD_LIBRARY_DIR LLVM_LIBRARY_DIR)
+-  escape_path_for_xcode("${LLVM_BUILD_TYPE}" "${LLVM_LIBRARY_DIR}" LLVM_LIBRARY_DIR)
++  if(APPLE)
++    precondition_translate_flag(LLVM_BUILD_LIBRARY_DIR LLVM_LIBRARY_DIR)
++    escape_path_for_xcode("${LLVM_BUILD_TYPE}" "${LLVM_LIBRARY_DIR}" LLVM_LIBRARY_DIR)
++  endif()
+ 
+   precondition(LLVM_LIBRARY_DIRS)
+   escape_path_for_xcode("${LLVM_BUILD_TYPE}" "${LLVM_LIBRARY_DIRS}" LLVM_LIBRARY_DIRS)
+@@ -217,30 +219,9 @@ macro(swift_common_standalone_build_config_clang product)
+ endmacro()
+ 
+ macro(swift_common_standalone_build_config_cmark product)
+-  set(${product}_PATH_TO_CMARK_SOURCE "${${product}_PATH_TO_CMARK_SOURCE}"
+-    CACHE PATH "Path to CMark source code.")
+-  set(${product}_PATH_TO_CMARK_BUILD "${${product}_PATH_TO_CMARK_BUILD}"
+-    CACHE PATH "Path to the directory where CMark was built.")
+-  set(${product}_CMARK_LIBRARY_DIR "${${product}_CMARK_LIBRARY_DIR}" CACHE PATH
+-    "Path to the directory where CMark was installed.")
+-  get_filename_component(PATH_TO_CMARK_BUILD "${${product}_PATH_TO_CMARK_BUILD}"
+-    ABSOLUTE)
+-  get_filename_component(CMARK_MAIN_SRC_DIR "${${product}_PATH_TO_CMARK_SOURCE}"
+-    ABSOLUTE)
+-  get_filename_component(CMARK_LIBRARY_DIR "${${product}_CMARK_LIBRARY_DIR}"
+-    ABSOLUTE)
+-
+-  set(CMARK_MAIN_INCLUDE_DIR "${CMARK_MAIN_SRC_DIR}/src/include")
+-  set(CMARK_BUILD_INCLUDE_DIR "${PATH_TO_CMARK_BUILD}/src")
+-
+-  file(TO_CMAKE_PATH "${CMARK_MAIN_INCLUDE_DIR}" CMARK_MAIN_INCLUDE_DIR)
+-  file(TO_CMAKE_PATH "${CMARK_BUILD_INCLUDE_DIR}" CMARK_BUILD_INCLUDE_DIR)
+-
+-  include_directories("${CMARK_MAIN_INCLUDE_DIR}"
+-                      "${CMARK_BUILD_INCLUDE_DIR}")
+-
+-  include(${PATH_TO_CMARK_BUILD}/src/cmarkTargets.cmake)
+-  add_definitions(-DCMARK_STATIC_DEFINE)
++  find_path(CMARK_MAIN_INCLUDE_DIR NAMES cmark.h REQUIRED)
++  include_directories("${CMARK_MAIN_INCLUDE_DIR}")
++  add_compile_definitions(CMARK_STATIC_DEFINE)
+ endmacro()
+ 
+ # Common cmake project config for standalone builds.
+diff --git a/lib/Option/CMakeLists.txt b/lib/Option/CMakeLists.txt
+index 8659377a..73809deb 100644
+--- a/lib/Option/CMakeLists.txt
++++ b/lib/Option/CMakeLists.txt
+@@ -8,7 +8,8 @@ target_link_libraries(swiftOption PRIVATE
+ 
+ set(features_merger "${SWIFT_SOURCE_DIR}/utils/merge-features.py")
+ set(features_file_swift_src "${CMAKE_CURRENT_SOURCE_DIR}/features.json")
+-set(features_file_clang_src "${LLVM_BINARY_DIR}/share/clang/features.json")
++# set(features_file_clang_src "${LLVM_BINARY_DIR}/share/clang/features.json")
++get_filename_component(features_file_clang_src "${LLVM_MAIN_SRC_DIR}/../clang-tools-extra/clangd/quality/model/features.json" ABSOLUTE)
+ set(features_file_dest "${CMAKE_BINARY_DIR}/share/swift/features.json")
+ 
+ add_custom_command(
+diff --git a/stdlib/cmake/modules/AddSwiftStdlib.cmake b/stdlib/cmake/modules/AddSwiftStdlib.cmake
+index 25a79d14..489d16f2 100644
+--- a/stdlib/cmake/modules/AddSwiftStdlib.cmake
++++ b/stdlib/cmake/modules/AddSwiftStdlib.cmake
+@@ -1,6 +1,6 @@
+ 
+ include(AddSwift)
+-include(SwiftSource)
++include(SwiftSource) # ...
+ 
+ function(add_dependencies_multiple_targets)
+   cmake_parse_arguments(

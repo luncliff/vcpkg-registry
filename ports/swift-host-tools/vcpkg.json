@@ -1,10 +1,10 @@
 {
-  "name": "swiftc",
+  "name": "swift-host-tools",
   "version": "5.8.1",
   "description": "The Swift Programming Language",
   "homepage": "https://github.com/apple/swift",
   "license": "Apache-2.0",
-  "supports": "osx | linux",
+  "supports": "linux",
   "dependencies": [
     "libuuid",
     {
@@ -14,17 +14,13 @@
       ],
       "platform": "linux"
     },
-    {
-      "name": "llvm",
-      "features": [
-        "clang",
-        "lld"
-      ],
-      "platform": "osx"
-    },
     "libdispatch",
     {
       "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-get-python-packages",
       "host": true
     }
   ],
