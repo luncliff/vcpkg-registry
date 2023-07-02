@@ -8,6 +8,17 @@
   "dependencies": [
     "libuuid",
     {
+      "name": "llvm-staging",
+      "features": [
+        "clang",
+        "clang-tools-extra",
+        "compiler-rt",
+        "libcxx",
+        "utils"
+      ],
+      "platform": "linux"
+    },
+    {
       "name": "cmark",
       "features": [
         "tools"

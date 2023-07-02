@@ -13,21 +13,23 @@ workflows:
               ignore:
                 - gh-pages
                 - docs
+                - port/swiftc
       - windows_2022_uwp:
           filters:
             branches:
               ignore:
                 - gh-pages
                 - docs
+                - port/swiftc
           requires:
             - windows_2022_x64
-      - deploy:
-          requires:
-            - windows_2022_x64
-            - windows_2022_uwp
-          filters:
-            branches:
-              only: main
+      # - deploy:
+      #     requires:
+      #       - windows_2022_x64
+      #       - windows_2022_uwp
+      #     filters:
+      #       branches:
+      #         only: main
   linux_ports:
     jobs:
       - ubuntu_2204:
@@ -38,33 +40,6 @@ workflows:
                 - docs
 
 jobs:
-  deploy:
-    executor:
-      name: win/server-2022
-    environment:
-      VCPKG_DOWNLOADS: C:/vcpkg-downs
-      VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
-    steps:
-      - checkout
-      - run:
-          name: "Install Chocolatey packages"
-          command: |
-            choco install --yes --no-progress jq
-      - run:
-          name: "Print baseline.json"
-          command: Get-Content versions/baseline.json | jq
-      - run:
-          name: "Create cache folders"
-          command: |
-            New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
-            New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-      - restore_cache:
-          keys:
-            - 2313-downs-{{ checksum ".circleci/config.yml" }}
-      - restore_cache:
-          keys:
-            - 2313-bins-{{ .Branch }}
-
   windows_2022_x64:
     executor:
       name: win/server-2022 # from the Orbs
@@ -86,11 +61,11 @@ jobs:
             Get-Content .circleci/port-windows.txt | jq -Rn '[inputs]'
             Get-Content .circleci/port-uwp.txt | jq -Rn '[inputs]'
       - run:
-          name: "Setup: microsoft/vcpkg(2022.10.19)"
+          name: "Setup: microsoft/vcpkg(2023.06.20)"
           command: |
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2022.10.19 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2023.06.20 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
@@ -98,10 +73,10 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - 2313-downs-{{ checksum ".circleci/config.yml" }}
+            - 2325-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
-            - 2313-bins-{{ checksum ".circleci/config.yml" }}
+            - 2325-bins-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Port: vcpkg-cmake"
           command: |
@@ -120,16 +95,16 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: 2313-bins-{{ .Branch }}
+              key: 2325-bins-{{ .Branch }}
               paths:
                 - C:/vcpkg-bins
       - save_cache:
-          key: 2313-downs-{{ checksum ".circleci/config.yml" }}
+          key: 2325-downs-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-downs
           when: always
       - save_cache:
-          key: 2313-bins-{{ checksum ".circleci/config.yml" }}
+          key: 2325-bins-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-bins
           when: always
@@ -154,16 +129,32 @@ jobs:
       - checkout
 
   ubuntu_2204:
-    machine:
-      image: ubuntu-2204:2022.04.2
+    docker:
+      - image: cimg/base:2023.07-22.04
+    resource_class: large
     environment:
-      VCPKG_DOWNLOADS: C:/vcpkg-downs
-      VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
-      # VCPKG_DEFAULT_TRIPLET: x64-uwp
+      VCPKG_DEFAULT_TRIPLET: x64-linux
     steps:
       - checkout
       - run:
           name: "Install APT packages"
           command: |
-            apt install --yes `
-              clang-15 clang-tools-15 llvm-15-dev libclang-15-dev
+            sudo apt update --yes
+            sudo apt install --yes zip pkg-config clang-15 clang-tools-15 llvm-15-dev libclang-15-dev
+      - run:
+          name: "Setup: microsoft/vcpkg(2023.06.20)"
+          command: |
+            git clone --branch=2023.06.20 --depth=1 https://github.com/microsoft/vcpkg
+            pushd vcpkg
+              ./bootstrap-vcpkg.sh
+              ./vcpkg --version
+            popd
+      - run:
+          name: "Port: llvm-staging"
+          command: |
+            ./vcpkg install --clean-buildtrees-after-build --clean-packages-after-build \
+              llvm-staging[clang,clang-tools-extra,compiler-rt,libcxx,utils]
+          working_directory: vcpkg
+          no_output_timeout: 4h
+          environment:
+            VCPKG_OVERLAY_PORTS: /home/circleci/project/ports

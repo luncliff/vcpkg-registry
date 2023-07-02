@@ -4,15 +4,15 @@ vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 # todo: Xml2, FFI, ZLIB, etc...
 set(VCPKG_PREFER_SYSTEM_LIBS ON)
 
-message(STATUS "Required APT packages")
-message(STATUS "  clang-15 clang-tools-15 llvm-15-dev libclang-15-dev")
+# message(STATUS "Required APT packages")
+# message(STATUS "  clang-15 clang-tools-15 llvm-15-dev libclang-15-dev")
 
 vcpkg_from_github(
-    OUT_SOURCE_PATH LLVM_SOURCE_PATH
-    REPO llvm/llvm-project
-    REF llvmorg-15.0.7
-    SHA512 99beff9ee6f8c26f16ea53f03ba6209a119099cbe361701b0d5f4df9d5cc5f2f0da7c994c899a4cec876da8428564dc7a8e798226a9ba8b5c18a3ef8b181d39e
-    HEAD_REF release/15.x
+    OUT_SOURCE_PATH LLVM_STAGING_SOURCE_PATH
+    REPO llvm/llvm-project-staging
+    REF cc926dc3a87af7023aa9b6c392347a0a8ed6949b
+    SHA512 c6d31b859bc7099d3abfda9af97493e1a42afe40cffcb86a76b79d63800ab457048c6d4ffce172e0deefbdf255b03f48d31da545d5a44100926dd8764fbb4067
+    HEAD_REF staging/apple
 )
 
 vcpkg_from_github(
@@ -39,25 +39,34 @@ x_vcpkg_get_python_packages(
 )
 message(STATUS "Using python3: ${PYTHON3}")
 
-find_path(ClangConfig_DIR NAMES ClangConfig.cmake
-    PATHS /usr/lib/llvm-15/lib/cmake/clang
-          /usr/lib/cmake/clang-15
+find_path(Clang_DIR NAMES ClangConfig.cmake
+    PATHS ${CURRENT_INSTALLED_DIR}/lib/cmake/clang
+        #   /usr/lib/llvm-15/lib/cmake/clang
+        #   /usr/lib/cmake/clang-15
+    REQUIRED NO_DEFAULT_PATH
+)
+message(STATUS "Found ClangConfig.cmake: ${Clang_DIR}")
+
+find_program(CLANG_EXE NAMES clang clang-14 # clang-15
+    PATHS ${CURRENT_INSTALLED_DIR}/bin
     REQUIRED
 )
-message(STATUS "Found ClangConfig.cmake: ${ClangConfig_DIR}")
+message(STATUS "Found clang: ${CLANG_EXE}")
+get_filename_component(CLANG_TOOL_DIR "${CLANG_EXE}" PATH)
 
-find_path(LLVM_LIBRARY_DIR NAMES cmake/llvm/LLVMConfig.cmake PATHS /usr/lib/llvm-15/lib REQUIRED)
+find_path(LLVM_LIBRARY_DIR NAMES cmake/llvm/LLVMConfig.cmake
+    PATHS ${CURRENT_INSTALLED_DIR}/lib
+        #   /usr/lib/llvm-15/lib
+    REQUIRED NO_DEFAULT_PATH
+)
 find_path(LLVM_DIR NAMES LLVMConfig.cmake
     PATHS ${LLVM_LIBRARY_DIR}/cmake/llvm
     REQUIRED
 )
 message(STATUS "Found LLVMConfig.cmake: ${LLVM_DIR}")
 
-find_program(CLANG_EXE NAMES clang-15 clang REQUIRED)
-get_filename_component(CLANG_TOOL_DIR "${CLANG_EXE}" PATH)
-
 list(APPEND PLATFORM_OPTIONS
-    -DClang_DIR:PATH=${ClangConfig_DIR}
+    -DClang_DIR:PATH=${Clang_DIR}
     -DSWIFT_NATIVE_CLANG_TOOLS_PATH:PATH=${CLANG_TOOL_DIR}
     -DSWIFT_BUILD_RUNTIME_WITH_HOST_COMPILER=ON
     -DSWIFT_PREBUILT_SWIFT=OFF
@@ -66,7 +75,7 @@ list(APPEND PLATFORM_OPTIONS
     -DCLANG_BUILD_TOOLS=OFF # suppress custom targets from AddLLVM.cmake
 
     -DLLVM_DIR:PATH="${LLVM_DIR}"
-    -DLLVM_MAIN_SRC_DIR:PATH="${LLVM_SOURCE_PATH}/llvm"
+    -DLLVM_MAIN_SRC_DIR:PATH="${LLVM_STAGING_SOURCE_PATH}/llvm"
 
     -DLLVM_ENABLE_LIBCXX=ON
     -DLLVM_ENABLE_IDE=ON
@@ -79,10 +88,12 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         sourcekit SWIFT_BUILD_SOURCEKIT
         sourcekit SWIFT_ENABLE_SOURCEKIT_TESTS
-        # tools SWIFT_INCLUDE_TOOLS
+        tools SWIFT_INCLUDE_TOOLS
         tools SWIFT_TOOLS_ENABLE_LTO
         tests SWIFT_INCLUDE_TESTS
         tests SWIFT_INCLUDE_TEST_BINARIES
+        docs  SWIFT_INCLUDE_APINOTES
+        docs  SWIFT_INCLUDE_DOCS
         exp   SWIFT_EXPERIMENTAL_EXTRA_FLAGS
         exp   SWIFT_EXPERIMENTAL_EXTRA_REGEXP_FLAGS
         exp   SWIFT_EXPERIMENTAL_EXTRA_NEGATIVE_REGEXP_FLAGS
@@ -104,15 +115,11 @@ vcpkg_cmake_configure(
         -DSWIFT_BUILD_DYNAMIC_STDLIB=OFF
         -DSWIFT_BUILD_STATIC_STDLIB=OFF
         -DSWIFT_BUILD_STDLIB=OFF
-        -DSWIFT_INCLUDE_TOOLS=ON
-        -DSWIFT_INCLUDE_APINOTES=OFF
 
         -DPython3_EXECUTABLE:FILEPATH="${PYTHON3}"
         -DBUILD_SHARED_LIBS=ON
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON
         -DSWIFT_COMPILER_VERSION:STRING="346fb02"
-        -DSWIFT_INCLUDE_APINOTES=ON
-        -DSWIFT_INCLUDE_DOCS=OFF
         -DSWIFT_PATH_TO_SWIFT_SYNTAX_SOURCE:PATH=${SYNTAX_SOURCE_PATH}
         # -DSWIFT_BUILD_HOST_DISPATCH=OFF
         -DSWIFT_ENABLE_DISPATCH=ON

@@ -24,7 +24,7 @@
     }
   ],
   "default-features": [
-    "clang"
+    "default-options"
   ],
   "features": {
     "bolt": {
