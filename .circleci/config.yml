@@ -158,3 +158,4 @@ jobs:
           no_output_timeout: 4h
           environment:
             VCPKG_OVERLAY_PORTS: /home/circleci/project/ports
+            VCPKG_MAX_CONCURRENCY: 2

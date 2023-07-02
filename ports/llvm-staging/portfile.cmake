@@ -1,4 +1,5 @@
 vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
+set(VCPKG_BUILD_TYPE "release") # currently experimental
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
