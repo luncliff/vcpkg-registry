@@ -1,10 +1,21 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index f914e78..9644877 100644
+index 4dd56b6..92a9bb8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -666,6 +666,27 @@ endif()
+@@ -116,8 +116,9 @@ endif()
+ # find_package Python has replaced PythonInterp and PythonLibs since cmake 3.12
+ # Use the following command in the future; now this is only compatible with the latest pybind11
+ # find_package(Python ${PY_VERSION} COMPONENTS Interpreter Development REQUIRED)
+-find_package(PythonInterp ${PY_VERSION} REQUIRED)
++find_package(Python3 ${PY_VERSION} REQUIRED COMPONENTS Interpreter)
+ if(BUILD_ONNX_PYTHON)
++  # find_package(Python3 ${PY_VERSION} REQUIRED COMPONENTS Development)
+   find_package(PythonLibs ${PY_VERSION})
+ endif()
  
- include(GNUInstallDirs)
+@@ -624,6 +625,27 @@ install(TARGETS
+   onnx onnx_proto
+   EXPORT ONNXTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
  
 +# install protobuf files
 +install(FILES ${CMAKE_CURRENT_BINARY_DIR}/onnx/onnx-data.proto
@@ -27,6 +38,6 @@ index f914e78..9644877 100644
 +  )
 +endif()
 +
- install(DIRECTORY ${ONNX_ROOT}/onnx
-         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-         FILES_MATCHING
+ if(ONNX_BUILD_TESTS)
+   include(${ONNX_ROOT}/cmake/unittest.cmake)
+ endif()
