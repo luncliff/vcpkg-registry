@@ -1,0 +1,102 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d22a2c9..0bd3869 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -525,12 +525,6 @@ if (NOT DIST_ARCH)
+     endif()
+ 
+ endif()
+-# On Windows machines, the host processor is set to 'AMD64', which we'll interpret as x86_64.
+-string(TOLOWER "${DIST_ARCH}" DIST_ARCH)
+-string(REPLACE "amd64" "x86_64" DIST_ARCH "${DIST_ARCH}")
+-if (NOT DIST_DIR)
+-    set(DIST_DIR "${DIST_ARCH}")
+-endif()
+ 
+ # ==================================================================================================
+ # Functions
+@@ -618,17 +612,19 @@ endif()
+ # incbin directive will happily consume a blob from the wrong project without warnings or errors.
+ # Also be sure to include the ASM language in the CMake "project" directive for your project.
+ function(get_resgen_vars ARCHIVE_DIR ARCHIVE_NAME)
+-    set(OUTPUTS
+-        ${ARCHIVE_DIR}/${ARCHIVE_NAME}.bin
++    list(APPEND OUTPUTS
+         ${ARCHIVE_DIR}/${ARCHIVE_NAME}.S
+-        ${ARCHIVE_DIR}/${ARCHIVE_NAME}.apple.S
+         ${ARCHIVE_DIR}/${ARCHIVE_NAME}.h
+     )
++    if(NOT WIN32)
++        list(APPEND OUTPUTS ${ARCHIVE_DIR}/${ARCHIVE_NAME}.bin)
++    endif()
+     if (IOS)
+         set(ASM_ARCH_FLAG "-arch ${DIST_ARCH}")
+     endif()
+     if (APPLE)
+         set(ASM_SUFFIX ".apple")
++        list(APPEND OUTPUTS ${ARCHIVE_DIR}/${ARCHIVE_NAME}.apple.S)
+     endif()
+     set(RESGEN_HEADER "${ARCHIVE_DIR}/${ARCHIVE_NAME}.h" PARENT_SCOPE)
+     # Visual Studio makes it difficult to use assembly without using MASM. MASM doesn't support
+@@ -723,7 +719,7 @@ if (FILAMENT_BUILD_FILAMAT OR IS_HOST_PLATFORM)
+     add_subdirectory(${LIBRARIES}/filamat)
+ 
+     # the material debugger requires filamat
+-    if (FILAMENT_ENABLE_MATDBG OR IS_HOST_PLATFORM)
++    if (FILAMENT_ENABLE_MATDBG AND IS_HOST_PLATFORM)
+         add_subdirectory(${LIBRARIES}/matdbg)
+     endif()
+ endif()
+@@ -756,7 +752,9 @@ if (IS_HOST_PLATFORM)
+     add_subdirectory(${TOOLS}/filamesh)
+     add_subdirectory(${TOOLS}/glslminifier)
+     add_subdirectory(${TOOLS}/matc)
+-    add_subdirectory(${TOOLS}/matinfo)
++    if(FILAMENT_ENABLE_MATDBG)
++        add_subdirectory(${TOOLS}/matinfo)
++    endif()
+     add_subdirectory(${TOOLS}/mipgen)
+     add_subdirectory(${TOOLS}/normal-blending)
+     add_subdirectory(${TOOLS}/resgen)
+diff --git a/filament/CMakeLists.txt b/filament/CMakeLists.txt
+index 191fa55..e1029fc 100644
+--- a/filament/CMakeLists.txt
++++ b/filament/CMakeLists.txt
+@@ -512,10 +512,10 @@ target_link_libraries(${TARGET} PUBLIC filabridge)
+ target_link_libraries(${TARGET} PUBLIC ibl-lite)
+ 
+ if (FILAMENT_ENABLE_MATDBG)
+-    target_link_libraries(${TARGET} PUBLIC matdbg)
+-    add_definitions(-DFILAMENT_ENABLE_MATDBG=1)
++    target_link_libraries(${TARGET} PRIVATE matdbg)
++    add_compile_definitions(FILAMENT_ENABLE_MATDBG=1)
+ else()
+-    add_definitions(-DFILAMENT_ENABLE_MATDBG=0)
++    add_compile_definitions(FILAMENT_ENABLE_MATDBG=0)
+ endif()
+ 
+ if (LINUX)
+@@ -526,9 +526,7 @@ endif()
+ # Compiler flags
+ # ==================================================================================================
+ if (MSVC)
+-    set(OPTIMIZATION_FLAGS
+-        /fp:fast
+-    )
++    add_compile_options(/MP /fp:fast)
+ elseif(WEBGL)
+     # Avoid strict-vtable-pointers here, it is broken in WebAssembly.
+     set(OPTIMIZATION_FLAGS -fvisibility-inlines-hidden)
+diff --git a/shaders/CMakeLists.txt b/shaders/CMakeLists.txt
+index dbabd77..a51aa66 100644
+--- a/shaders/CMakeLists.txt
++++ b/shaders/CMakeLists.txt
+@@ -80,7 +80,7 @@ foreach(SHADER_FILE ${SHADERS})
+     add_custom_command(
+         OUTPUT ${SHADER_MIN}
+         COMMAND glslminifier ${OPT_FLAG} ${LINE_FLAG} -o ${SHADER_MIN} ${SHADER_RAW}
+-        DEPENDS glslminifier ${SHADER_RAW}
++        DEPENDS glslminifier # ${SHADER_RAW}
+         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+         COMMENT "Minifying shader ${SHADER_NAME}"
+     )

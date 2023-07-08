@@ -90,6 +90,7 @@
     },
     "vulkan": {
       "description": "Include the Vulkan backend",
+      "supports": "linux",
       "dependencies": [
         {
           "name": "imgui",
