@@ -1092,3 +1092,17 @@ index d9352e5..57e349f 100644
  set_target_properties(${TARGET} PROPERTIES FOLDER Tools)
  
  # =================================================================================================
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index cee22ba..ca4d62e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -733,7 +733,8 @@ if (IS_HOST_PLATFORM)
+         add_subdirectory(${LIBRARIES}/bluegl)
+     endif()
+     if (NOT FILAMENT_SKIP_SDL2)
+-      add_subdirectory(${LIBRARIES}/filamentapp)
++        find_package(assimp CONFIG REQUIRED) # assimp::assimp
++        add_subdirectory(${LIBRARIES}/filamentapp)
+     endif()
+     add_subdirectory(${LIBRARIES}/imageio)
+ 

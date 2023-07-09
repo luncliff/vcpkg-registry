@@ -52,10 +52,10 @@ jobs:
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
       - restore_cache:
           keys:
-            - 2313-downs-{{ checksum ".circleci/config.yml" }}
+            - 2327-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
-            - 2313-bins-{{ .Branch }}
+            - 2327-bins-{{ .Branch }}
 
   windows_2022_x64:
     executor:
@@ -78,11 +78,11 @@ jobs:
             Get-Content .circleci/port-windows.txt | jq -Rn '[inputs]'
             Get-Content .circleci/port-uwp.txt | jq -Rn '[inputs]'
       - run:
-          name: "Setup: microsoft/vcpkg(2022.10.19)"
+          name: "Setup: microsoft/vcpkg(2023.06.20)"
           command: |
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2022.10.19 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2023.06.20 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
@@ -90,10 +90,10 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - 2313-downs-{{ checksum ".circleci/config.yml" }}
+            - 2327-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
-            - 2313-bins-{{ checksum ".circleci/config.yml" }}
+            - 2327-bins-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Port: vcpkg-cmake"
           command: |
@@ -112,16 +112,16 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: 2313-bins-{{ .Branch }}
+              key: 2327-bins-{{ .Branch }}
               paths:
                 - C:/vcpkg-bins
       - save_cache:
-          key: 2313-downs-{{ checksum ".circleci/config.yml" }}
+          key: 2327-downs-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-downs
           when: always
       - save_cache:
-          key: 2313-bins-{{ checksum ".circleci/config.yml" }}
+          key: 2327-bins-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-bins
           when: always
@@ -150,11 +150,11 @@ jobs:
             choco install --yes --no-progress `
               rsync ninja jq nuget.commandline
       - run:
-          name: "Setup: microsoft/vcpkg(2022.10.19)"
+          name: "Setup: microsoft/vcpkg(2023.06.20)"
           command: |
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2022.10.19 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2023.06.20 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
@@ -162,10 +162,10 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - 2313-downs-{{ checksum ".circleci/config.yml" }}
+            - 2327-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
-            - 2313-bins-{{ checksum ".circleci/config.yml" }}
+            - 2327-bins-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Port: vcpkg-cmake"
           command: |
