@@ -7,76 +7,32 @@ orbs:
 workflows:
   windows_ports:
     jobs:
-      - windows_2022_x64:
+      - setup_cache:
           filters:
             branches:
               ignore:
                 - gh-pages
                 - docs
-      - windows_2022_uwp:
+      - x64_windows:
           filters:
             branches:
               ignore:
                 - gh-pages
                 - docs
           requires:
-            - windows_2022_x64
-      - deploy:
-          requires:
-            - windows_2022_x64
-            - windows_2022_uwp
-          filters:
-            branches:
-              only: main
+            - setup_cache
 
 jobs:
-  deploy:
+  setup_cache:
     executor:
       name: win/server-2022
-    environment:
-      VCPKG_DOWNLOADS: C:/vcpkg-downs
-      VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
-    steps:
-      - checkout
-      - run:
-          name: "Install Chocolatey packages"
-          command: |
-            choco install --yes --no-progress jq
-      - run:
-          name: "Print baseline.json"
-          command: Get-Content versions/baseline.json | jq
-      - run:
-          name: "Create cache folders"
-          command: |
-            New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
-            New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-      - restore_cache:
-          keys:
-            - 2327-downs-{{ checksum ".circleci/config.yml" }}
-      - restore_cache:
-          keys:
-            - 2327-bins-{{ .Branch }}
-
-  windows_2022_x64:
-    executor:
-      name: win/server-2022 # from the Orbs
       size: large
     environment:
       VCPKG_DOWNLOADS: C:/vcpkg-downs
       VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
-      # VCPKG_DEFAULT_TRIPLET: x64-windows
+      VCPKG_DEFAULT_TRIPLET: x64-windows
     steps:
       - checkout
-      - run:
-          name: "Install Chocolatey packages"
-          command: |
-            choco install --yes --no-progress `
-              rsync ninja jq nuget.commandline
-      - run:
-          name: "Print with jq"
-          command: |
-            Get-Content .circleci/port-windows.txt | jq -Rn '[inputs]'
-            Get-Content .circleci/port-uwp.txt | jq -Rn '[inputs]'
       - run:
           name: "Setup: microsoft/vcpkg(2023.06.20)"
           command: |
@@ -86,8 +42,59 @@ jobs:
             Push-Location vcpkg
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
-              ./vcpkg.exe fetch nuget
             Pop-Location
+      - restore_cache:
+          keys:
+            - 2326-downs-{{ checksum ".circleci/config.yml" }}
+      - restore_cache:
+          keys:
+            - 2326-bins-{{ checksum ".circleci/config.yml" }}
+      - run:
+          name: "Install: port-setup.txt"
+          command: |
+            ./vcpkg.exe install `
+              --clean-buildtrees-after-build `
+              --clean-packages-after-build `
+              --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
+              $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-setup.txt")
+          working_directory: vcpkg
+      - save_cache:
+          key: 2326-downs-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - C:/vcpkg-downs
+          when: always
+      - save_cache:
+          key: 2326-bins-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - C:/vcpkg-bins
+          when: always
+
+  x64_windows:
+    executor:
+      name: win/server-2022 # the Orbs
+      size: large
+    environment:
+      VCPKG_DOWNLOADS: C:/vcpkg-downs
+      VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
+      VCPKG_DEFAULT_TRIPLET: x64-windows
+    steps:
+      - checkout
+      - run:
+          name: "Setup: microsoft/vcpkg(2023.06.20)"
+          command: |
+            New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
+            New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
+            git clone --branch=2023.06.20 --depth=1 https://github.com/microsoft/vcpkg
+            Push-Location vcpkg
+              ./bootstrap-vcpkg.bat
+              ./vcpkg.exe --version
+            Pop-Location
+      - restore_cache:
+          keys:
+            - 2326-downs-{{ checksum ".circleci/config.yml" }}
+      - restore_cache:
+          keys:
+            - 2326-bins-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
             - 2327-downs-{{ checksum ".circleci/config.yml" }}
@@ -95,15 +102,12 @@ jobs:
           keys:
             - 2327-bins-{{ checksum ".circleci/config.yml" }}
       - run:
-          name: "Port: vcpkg-cmake"
+          name: "Install: port-windows.txt"
           command: |
-            ./vcpkg.exe install --debug `
-              vcpkg-cmake vcpkg-cmake-config vcpkg-cmake-get-vars
-          working_directory: vcpkg
-      - run:
-          name: "Port: from port-windows.text"
-          command: |
-            ./vcpkg.exe install --clean-buildtrees-after-build --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
+            ./vcpkg.exe install `
+              --clean-buildtrees-after-build `
+              --clean-packages-after-build `
+              --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-windows.txt")
           working_directory: vcpkg
           no_output_timeout: 1h
@@ -125,60 +129,6 @@ jobs:
           paths:
             - C:/vcpkg-bins
           when: always
-      # - run:
-      #     name: "Stage buildtrees logs"
-      #     command: rsync -r vcpkg/buildtrees/ buildtrees-log
-      #     when: always
-      - store_artifacts:
-          name: "Upload buildtrees log"
-          path: vcpkg/buildtrees/ # buildtrees-log
-          destination: "build-logs"
-
-  windows_2022_uwp:
-    executor:
-      name: win/server-2022
-      size: large
-    environment:
-      VCPKG_DOWNLOADS: C:/vcpkg-downs
-      VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
-      # VCPKG_DEFAULT_TRIPLET: x64-uwp
-    steps:
-      - checkout
-      - run:
-          name: "Install Chocolatey packages"
-          command: |
-            choco install --yes --no-progress `
-              rsync ninja jq nuget.commandline
-      - run:
-          name: "Setup: microsoft/vcpkg(2023.06.20)"
-          command: |
-            New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
-            New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2023.06.20 --depth=1 https://github.com/microsoft/vcpkg
-            Push-Location vcpkg
-              ./bootstrap-vcpkg.bat
-              ./vcpkg.exe --version
-              ./vcpkg.exe fetch nuget
-            Pop-Location
-      - restore_cache:
-          keys:
-            - 2327-downs-{{ checksum ".circleci/config.yml" }}
-      - restore_cache:
-          keys:
-            - 2327-bins-{{ checksum ".circleci/config.yml" }}
-      - run:
-          name: "Port: vcpkg-cmake"
-          command: |
-            ./vcpkg.exe install --debug `
-              vcpkg-cmake vcpkg-cmake-config vcpkg-cmake-get-vars
-          working_directory: vcpkg
-      - run:
-          name: "Port: from port-uwp.text"
-          command: |
-            ./vcpkg.exe install --clean-buildtrees-after-build --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
-              $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-uwp.txt")
-          working_directory: vcpkg
-          no_output_timeout: 1h
       - store_artifacts:
           name: "Upload buildtrees log"
           path: vcpkg/buildtrees/ # buildtrees-log

@@ -1,0 +1,13 @@
+angle:x64-windows
+glslang[tools]:x64-windows
+spirv-cross:x64-windows
+spirv-tools:x64-windows
+spirv-headers:x64-windows
+assimp:x64-windows
+tinyexr:x64-windows
+gtest:x64-windows
+benchmark:x64-windows
+zstd:x64-windows
+draco:x64-windows
+civetweb:x64-windows
+cgltf:x64-windows
