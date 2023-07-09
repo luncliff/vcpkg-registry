@@ -627,3 +627,32 @@ index df67bee..7797c6b 100644
  
  #include "../src/GLSLPostProcessor.h"
  
+diff --git a/libs/filamentapp/src/FilamentApp.cpp b/libs/filamentapp/src/FilamentApp.cpp
+index 2e7bae9..125d565 100644
+--- a/libs/filamentapp/src/FilamentApp.cpp
++++ b/libs/filamentapp/src/FilamentApp.cpp
+@@ -51,6 +51,7 @@
+ #include <filamentapp/Cube.h>
+ #include <filamentapp/NativeWindowHelper.h>
+ 
++#define STB_IMAGE_IMPLEMENTATION
+ #include <stb_image.h>
+ 
+ #include "generated/resources/filamentapp.h"
+diff --git a/libs/filamentapp/src/MeshAssimp.cpp b/libs/filamentapp/src/MeshAssimp.cpp
+index 5e3f403..2bf74af 100644
+--- a/libs/filamentapp/src/MeshAssimp.cpp
++++ b/libs/filamentapp/src/MeshAssimp.cpp
+@@ -51,7 +51,12 @@
+ #include <assimp/postprocess.h>
+ #include <assimp/cimport.h>
+ #include <assimp/scene.h>
++#include <assimp/material.h>
++#include <assimp/GltfMaterial.h>
+ #include <assimp/pbrmaterial.h>
++#if !defined(_AI_MATKEY_GLTF_TEXTURE_TEXCOORD_BASE)
++#define _AI_MATKEY_GLTF_TEXTURE_TEXCOORD_BASE "$tex.file.texCoord"
++#endif
+ 
+ #include <stb_image.h>
+ 

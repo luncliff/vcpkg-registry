@@ -124,7 +124,17 @@ vcpkg_copy_pdbs()
 
 if(NOT VCPKG_CROSSCOMPILING)
     vcpkg_copy_tools(TOOL_NAMES ${TOOL_TARGET_NAMES} AUTO_CLEAN)
+    if("samples" IN_LIST FEATURES)
+        vcpkg_copy_tools(TOOL_NAMES gltf_viewer material_sandbox AUTO_CLEAN)
+    endif()
 endif()
+
+file(COPY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/shaders/minified"
+     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
+)
+file(COPY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/filament/generated/material"
+     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
+)
 
 file(INSTALL "${SOURCE_PATH}/README.md" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
 file(REMOVE_RECURSE
