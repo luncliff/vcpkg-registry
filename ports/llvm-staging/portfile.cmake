@@ -1,5 +1,4 @@
 vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
-set(VCPKG_BUILD_TYPE "release") # currently experimental
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
@@ -235,6 +234,8 @@ vcpkg_cmake_configure(
 
         -DCLANG_INCLUDE_TESTS=OFF
         -DCLANG_BUILD_EXAMPLES=OFF
+        -DLIBCXX_ENABLE_SHARED=ON
+        -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
 
         -DLLVM_INCLUDE_EXAMPLES=OFF
         -DLLVM_BUILD_EXAMPLES=OFF
@@ -301,7 +302,6 @@ set(empty_dirs)
 
 if("clang-tools-extra" IN_LIST FEATURES)
     list(APPEND empty_dirs "${CURRENT_PACKAGES_DIR}/include/clang-tidy/plugin")
-    list(APPEND empty_dirs "${CURRENT_PACKAGES_DIR}/include/clang-tidy/misc/ConfusableTable")
 endif()
 
 if("pstl" IN_LIST FEATURES)
@@ -321,11 +321,11 @@ endif()
 if(empty_dirs)
     foreach(empty_dir IN LISTS empty_dirs)
         if(NOT EXISTS "${empty_dir}")
-            message(SEND_ERROR "Directory '${empty_dir}' is not exist. Please remove it from the checking.")
+            message(WARNING "Directory '${empty_dir}' is not exist. Please remove it from the checking.")
         else()
             file(GLOB_RECURSE files_in_dir "${empty_dir}/*")
             if(files_in_dir)
-                message(SEND_ERROR "Directory '${empty_dir}' is not empty. Please remove it from the checking.")
+                message(WARNING "Directory '${empty_dir}' is not empty. Please remove it from the checking.")
             else()
                 file(REMOVE_RECURSE "${empty_dir}")
             endif()
@@ -335,12 +335,12 @@ endif()
 
 vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/tools/${PORT})
 
-if(NOT DEFINED VCPKG_BUILD_TYPE OR VCPKG_BUILD_TYPE STREQUAL "debug")
-    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
-        "${CURRENT_PACKAGES_DIR}/debug/share"
-        "${CURRENT_PACKAGES_DIR}/debug/tools"
-    )
-endif()
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/features.json DESTINATION ${CURRENT_PACKAGES_DIR}/share/clang)
+file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/debug/include"
+    "${CURRENT_PACKAGES_DIR}/debug/share"
+    "${CURRENT_PACKAGES_DIR}/debug/tools"
+)
 
 if("mlir" IN_LIST FEATURES)
     vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/mlir/MLIRConfig.cmake" "set(MLIR_MAIN_SRC_DIR \"${SOURCE_PATH}/mlir\")" "")

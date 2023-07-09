@@ -12,8 +12,6 @@
       "features": [
         "clang",
         "clang-tools-extra",
-        "compiler-rt",
-        "libcxx",
         "utils"
       ],
       "platform": "linux"
