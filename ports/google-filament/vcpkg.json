@@ -1,6 +1,6 @@
 {
   "name": "google-filament",
-  "version": "1.37.0",
+  "version": "1.40.0",
   "description": "Filament is a real-time physically based rendering engine for Android, iOS, Windows, Linux, macOS, and WebGL2",
   "homepage": "https://github.com/google/filament",
   "supports": "windows | osx | linux",
@@ -46,6 +46,7 @@
     "libpng",
     "meshoptimizer",
     "mikktspace",
+    "miniz",
     "robin-map",
     {
       "name": "sdl2",
@@ -59,17 +60,16 @@
       "name": "vcpkg-cmake",
       "host": true
     },
-    {
-      "name": "vcpkg-cmake-config",
-      "host": true
-    },
     "zlib",
     "zstd"
+  ],
+  "default-features": [
+    "test"
   ],
   "features": {
     "gles3": {
       "description": "Experimental: Compile Filament against OpenGL ES 3",
-      "supports": "windows | linux",
+      "supports": "linux",
       "dependencies": [
         "angle",
         {
@@ -80,6 +80,13 @@
           "platform": "windows"
         }
       ]
+    },
+    "metal": {
+      "description": "Include the Metal backend",
+      "supports": "osx"
+    },
+    "samples": {
+      "description": "Build samples"
     },
     "test": {
       "description": "Build test executables",

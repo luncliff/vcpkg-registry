@@ -1,22 +1,18 @@
+if(VCPKG_CROSSCOMPILING)
+    message(WARNING "Cross compiling is NOT tested")
+endif()
 vcpkg_find_acquire_program(PKGCONFIG)
 message(STATUS "Using pkgconfig: ${PKGCONFIG}")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/filament
-    REF v1.37.0
-    SHA512 570f1167140c81653bb389a8057c47bc957fcd705e585dad925d6d6015f272dba94ac152f678f821a1e6b59f9dc5be03a4ec3188645f54170bbc3414d5566c8e
+    REF v1.40.0
+    SHA512 479e90710f140f05e07b29fde361ce25841d46da80c123ef99594a2dc253588c6bb561a1ad93580c26280793b1a47c1f89b32e31ac52b00a2fb744c15ee515ba
     PATCHES
         fix-cmake.patch
-        disable-static-lib-combine.patch
-        enable-windows-gles3.patch
         fix-sources.patch
-        fix-libs-viewer.patch
-        fix-libs-matdbg.patch
-        fix-cmake2.patch
-        fix-cmake3.patch
 )
-file(APPEND "${SOURCE_PATH}/.gitignore" "\nthird_party\n")
 
 file(REMOVE_RECURSE
     "${SOURCE_PATH}/android"
@@ -65,13 +61,15 @@ if("vulkan" IN_LIST FEATURES)
     leave_license(vulkan-memory-allocator vkmemalloc)
 endif()
 
-string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_CRT)
-
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gles3   FILAMENT_USE_EXTERNAL_GLES3
-        gles3   FILAMENT_SUPPORTS_EGL_ON_LINUX
+        # gles3   FILAMENT_SUPPORTS_OPENGL
         vulkan  FILAMENT_SUPPORTS_VULKAN
+        metal   FILAMENT_SUPPORTS_METAL
+    INVERTED_FEATURES
+        samples FILAMENT_SKIP_SDL2
+        samples FILAMENT_SKIP_SAMPLES
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)
@@ -82,23 +80,22 @@ else()
     list(APPEND GENERATOR_OPTIONS GENERATOR Ninja)
 endif()
 
+# todo: more precise control for gles3/vulkan features
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     ${GENERATOR_OPTIONS}
     OPTIONS
         ${FEATURE_OPTIONS}
-        -DUSE_STATIC_CRT=${USE_STATIC_CRT}
         -DPKG_CONFIG_EXECUTABLE:FILEPATH=${PKGCONFIG}
         -DCMAKE_CROSSCOMPILING=${VCPKG_CROSSCOMPILING}
-        -DFILAMENT_SKIP_SDL2=ON
-        -DFILAMENT_SKIP_SAMPLES=ON
         -DFILAMENT_SUPPORTS_XCB=${VCPKG_TARGET_IS_LINUX}
         -DFILAMENT_SUPPORTS_XLIB=${VCPKG_TARGET_IS_LINUX}
         -DFILAMENT_SUPPORTS_WAYLAND=${VCPKG_TARGET_IS_LINUX}
-        -DFILAMENT_SUPPORTS_METAL=${VCPKG_TARGET_IS_OSX}
+        -DFILAMENT_SUPPORTS_EGL_ON_LINUX=${VCPKG_TARGET_IS_LINUX}
         -DFILAMENT_ENABLE_ASAN_UBSAN=OFF
         -DFILAMENT_ENABLE_LTO=ON
-        -DFILAMENT_ENABLE_MATDBG=OFF # disable matdbg, matdbg_resources
+        -DFILAMENT_ENABLE_MATDBG=OFF # matdbg, matdbg_resources
+        -DFILAMENT_BUILD_FILAMAT=ON
     OPTIONS_DEBUG
         -DFILAMENT_DISABLE_MATOPT=ON
     OPTIONS_RELEASE
@@ -110,20 +107,22 @@ if(VCPKG_CROSSCOMPILING)
     vcpkg_add_to_path(PREPEND "${CURRENT_HOST_INSTALLED_DIR}/bin")
     vcpkg_add_to_path(PREPEND "${CURRENT_HOST_INSTALLED_DIR}/tools/${PORT}")
 else()
-    message(STATUS "Building tools first...")
-    vcpkg_cmake_build(TARGET resgen         LOGFILE_BASE build-resgen       ADD_BIN_TO_PATH)
-    vcpkg_cmake_build(TARGET glslminifier   LOGFILE_BASE build-glslminifier ADD_BIN_TO_PATH)
-    vcpkg_cmake_build(TARGET shaders        LOGFILE_BASE build-shaders      ADD_BIN_TO_PATH)
+    message(STATUS "Building tools ...")
     list(APPEND TOOL_TARGET_NAMES
-        resgen glslminifier matc cmgen mipgen uberz filamesh
+        resgen glslminifier matc cmgen mipgen uberz filamesh # matinfo
         normal-blending roughness-prefilter specular-color
     )
+    foreach(NAME ${TOOL_TARGET_NAMES})
+        vcpkg_cmake_build(TARGET ${NAME} LOGFILE_BASE build-${NAME} ADD_BIN_TO_PATH)
+    endforeach()
+    message(STATUS "Building shaders ...")
+    vcpkg_cmake_build(TARGET shaders LOGFILE_BASE build-shaders ADD_BIN_TO_PATH)
 endif()
 
-message(STATUS "Starting build/install...")
+message(STATUS "Building libraries ...")
+vcpkg_cmake_build(TARGET filament LOGFILE_BASE build-filament ADD_BIN_TO_PATH)
 vcpkg_cmake_install(ADD_BIN_TO_PATH)
 vcpkg_copy_pdbs()
-# vcpkg_cmake_config_fixup(PACKAGE_NAME ... CONFIG_PATH share/cmake/${PORT})
 
 if(NOT VCPKG_CROSSCOMPILING)
     vcpkg_copy_tools(TOOL_NAMES ${TOOL_TARGET_NAMES} AUTO_CLEAN)
@@ -134,8 +133,7 @@ file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
     "${CURRENT_PACKAGES_DIR}/debug/docs"
-    "${CURRENT_PACKAGES_DIR}/debug/LICENSE"
-    "${CURRENT_PACKAGES_DIR}/debug/README.md"
-    "${CURRENT_PACKAGES_DIR}/LICENSE"
+    "${CURRENT_PACKAGES_DIR}/share/LICENSE"
+    "${CURRENT_PACKAGES_DIR}/share/README.md"
 )
 file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME "copyright")

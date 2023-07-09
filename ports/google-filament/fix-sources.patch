@@ -11,6 +11,139 @@ index 49fa4b7..1332d78 100644
  
  #include <iostream>
  #include <string>
+diff --git a/filament/backend/test/ShaderGenerator.cpp b/filament/backend/test/ShaderGenerator.cpp
+index 8e32948..df67bee 100644
+--- a/filament/backend/test/ShaderGenerator.cpp
++++ b/filament/backend/test/ShaderGenerator.cpp
+@@ -16,10 +16,10 @@
+ 
+ #include "ShaderGenerator.h"
+ 
+-#include <GlslangToSpv.h>
++#include <glslang/SPIRV/GlslangToSpv.h>
+ #include <SPVRemapper.h>
+ 
+-#include <spirv_glsl.hpp>
++#include <spirv_cross/spirv_glsl.hpp>
+ #include <spirv_msl.hpp>
+ 
+ #include "../src/GLSLPostProcessor.h"
+diff --git a/libs/filamat/src/GLSLPostProcessor.cpp b/libs/filamat/src/GLSLPostProcessor.cpp
+index a538d02..850def4 100644
+--- a/libs/filamat/src/GLSLPostProcessor.cpp
++++ b/libs/filamat/src/GLSLPostProcessor.cpp
+@@ -16,11 +16,11 @@
+ 
+ #include "GLSLPostProcessor.h"
+ 
+-#include <GlslangToSpv.h>
+-#include <SPVRemapper.h>
++#include <glslang/SPIRV/GlslangToSpv.h>
++#include <glslang/SPIRV/SPVRemapper.h>
+ 
+-#include <spirv_glsl.hpp>
+-#include <spirv_msl.hpp>
++#include <spirv_cross/spirv_glsl.hpp>
++#include <spirv_cross/spirv_msl.hpp>
+ 
+ #include "sca/builtinResource.h"
+ #include "sca/GLSLTools.h"
+@@ -240,7 +240,7 @@ void GLSLPostProcessor::spirvToMsl(const SpirvBlob *spirv, std::string *outMsl,
+         // buffer itself;
+         MSLResourceBinding argBufferBinding;
+         // the baseType doesn't matter, but can't be UNKNOWN
+-        argBufferBinding.basetype = SPIRType::BaseType::Float;
++        //argBufferBinding.basetype = SPIRType::BaseType::Float;
+         argBufferBinding.stage = executionModel;
+         argBufferBinding.desc_set = bindingPoint + 1;
+         argBufferBinding.binding = kArgumentBufferBinding;
+@@ -255,7 +255,7 @@ void GLSLPostProcessor::spirvToMsl(const SpirvBlob *spirv, std::string *outMsl,
+         auto set = mslCompiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+         auto binding = mslCompiler.get_decoration(resource.id, spv::DecorationBinding);
+         MSLResourceBinding newBinding;
+-        newBinding.basetype = SPIRType::BaseType::Void;
++        //newBinding.basetype = SPIRType::BaseType::Void;
+         newBinding.stage = executionModel;
+         newBinding.desc_set = set;
+         newBinding.binding = binding;
+@@ -542,7 +542,7 @@ void GLSLPostProcessor::fullOptimization(const TShader& tShader,
+ 
+         if (tShader.getStage() == EShLangFragment && glslOptions.es) {
+             for (auto i : config.glsl.subpassInputToColorLocation) {
+-                glslCompiler.remap_ext_framebuffer_fetch(i.first, i.second, true);
++                glslCompiler.remap_ext_framebuffer_fetch(i.first, i.second);
+             }
+         }
+ 
+diff --git a/libs/filamat/src/GLSLPostProcessor.h b/libs/filamat/src/GLSLPostProcessor.h
+index cb95079..2f3c84e 100644
+--- a/libs/filamat/src/GLSLPostProcessor.h
++++ b/libs/filamat/src/GLSLPostProcessor.h
+@@ -25,7 +25,7 @@
+ 
+ #include <spirv-tools/optimizer.hpp>
+ 
+-#include <ShaderLang.h>
++#include <glslang/Public/ShaderLang.h>
+ 
+ #include <backend/DriverEnums.h>
+ 
+diff --git a/libs/filamat/src/sca/ASTHelpers.cpp b/libs/filamat/src/sca/ASTHelpers.cpp
+index 0ef9ec6..efdaf86 100644
+--- a/libs/filamat/src/sca/ASTHelpers.cpp
++++ b/libs/filamat/src/sca/ASTHelpers.cpp
+@@ -18,8 +18,8 @@
+ 
+ #include "GLSLTools.h"
+ 
+-#include <intermediate.h>
+-#include <localintermediate.h>
++#include <glslang/Include/intermediate.h>
++#include <glslang/MachineIndependent/localintermediate.h>
+ 
+ #include <utils/Log.h>
+ 
+diff --git a/libs/filamat/src/sca/ASTHelpers.h b/libs/filamat/src/sca/ASTHelpers.h
+index b4e4983..e297a3a 100644
+--- a/libs/filamat/src/sca/ASTHelpers.h
++++ b/libs/filamat/src/sca/ASTHelpers.h
+@@ -20,7 +20,7 @@
+ #include <deque>
+ #include <string>
+ #include <vector>
+-#include <intermediate.h>
++#include <glslang/Include/intermediate.h>
+ 
+ #include "GLSLTools.h"
+ 
+diff --git a/libs/filamat/src/sca/GLSLTools.cpp b/libs/filamat/src/sca/GLSLTools.cpp
+index 0ee77a5..9c59a69 100644
+--- a/libs/filamat/src/sca/GLSLTools.cpp
++++ b/libs/filamat/src/sca/GLSLTools.cpp
+@@ -27,8 +27,8 @@
+ #include "ASTHelpers.h"
+ 
+ // GLSLANG headers
+-#include <InfoSink.h>
+-#include <localintermediate.h>
++#include <glslang/include/InfoSink.h>
++#include <glslang/MachineIndependent/localintermediate.h>
+ 
+ #include "builtinResource.h"
+ 
+diff --git a/libs/filamat/src/sca/GLSLTools.h b/libs/filamat/src/sca/GLSLTools.h
+index 082a684..8d40a8d 100644
+--- a/libs/filamat/src/sca/GLSLTools.h
++++ b/libs/filamat/src/sca/GLSLTools.h
+@@ -24,7 +24,7 @@
+ 
+ #include <filamat/MaterialBuilder.h>
+ 
+-#include <ShaderLang.h>
++#include <glslang/Public/ShaderLang.h>
+ 
+ class TIntermNode;
+ namespace glslang {
 diff --git a/libs/geometry/src/MikktspaceImpl.cpp b/libs/geometry/src/MikktspaceImpl.cpp
 index f40da14..cb2b914 100644
 --- a/libs/geometry/src/MikktspaceImpl.cpp
@@ -50,6 +183,60 @@ index 5d53861..d401133 100644
  #pragma clang diagnostic pop
  
  using namespace basist;
+diff --git a/libs/matdbg/src/DebugServer.cpp b/libs/matdbg/src/DebugServer.cpp
+index 95c5a63..fd2caef 100644
+--- a/libs/matdbg/src/DebugServer.cpp
++++ b/libs/matdbg/src/DebugServer.cpp
+@@ -22,7 +22,7 @@
+ #include <utils/Hash.h>
+ #include <utils/Log.h>
+ 
+-#include <spirv_glsl.hpp>
++#include <spirv_cross/spirv_glsl.hpp>
+ #include <spirv-tools/libspirv.h>
+ 
+ #include <matdbg/JsonWriter.h>
+diff --git a/libs/matdbg/src/ShaderExtractor.cpp b/libs/matdbg/src/ShaderExtractor.cpp
+index 3f10b60..bee32dc 100644
+--- a/libs/matdbg/src/ShaderExtractor.cpp
++++ b/libs/matdbg/src/ShaderExtractor.cpp
+@@ -26,7 +26,7 @@
+ 
+ #include <backend/DriverEnums.h>
+ 
+-#include <spirv_glsl.hpp>
++#include <spirv_cross/spirv_glsl.hpp>
+ #include <spirv-tools/libspirv.h>
+ 
+ using namespace filament;
+diff --git a/libs/matdbg/src/ShaderReplacer.cpp b/libs/matdbg/src/ShaderReplacer.cpp
+index 8eb3497..8be176e 100644
+--- a/libs/matdbg/src/ShaderReplacer.cpp
++++ b/libs/matdbg/src/ShaderReplacer.cpp
+@@ -27,7 +27,7 @@
+ 
+ #include <sstream>
+ 
+-#include <GlslangToSpv.h>
++#include <glslang/SPIRV/GlslangToSpv.h>
+ 
+ #include "sca/builtinResource.h"
+ #include "sca/GLSLTools.h"
+diff --git a/libs/viewer/src/RemoteServer.cpp b/libs/viewer/src/RemoteServer.cpp
+index 441c730..89c492f 100644
+--- a/libs/viewer/src/RemoteServer.cpp
++++ b/libs/viewer/src/RemoteServer.cpp
+@@ -208,8 +208,8 @@ bool MessageReceiver::handleData(CivetServer* server, struct mg_connection* conn
+ 
+ void MessageSender::sendMessage(const char* label, const char* buffer, size_t bufsize) {
+     for (auto iter : connections) {
+-        mg_websocket_write(iter.first, 0x80, label, strlen(label) + 1);
+-        mg_websocket_write(iter.first, 0x80, buffer, bufsize);
++        mg_websocket_write(const_cast<mg_connection*>(iter.first), 0x80, label, strlen(label) + 1);
++        mg_websocket_write(const_cast<mg_connection*>(iter.first), 0x80, buffer, bufsize);
+     }
+ }
+ 
 diff --git a/samples/frame_generator.cpp b/samples/frame_generator.cpp
 index a6a2164..3fb7e80 100644
 --- a/samples/frame_generator.cpp
@@ -77,7 +264,7 @@ index 688272d..5210ebd 100644
  #include <utils/NameComponentManager.h>
  
 diff --git a/samples/gltf_viewer.cpp b/samples/gltf_viewer.cpp
-index f088ee2..138b773 100644
+index 6f4bf72..787a459 100644
 --- a/samples/gltf_viewer.cpp
 +++ b/samples/gltf_viewer.cpp
 @@ -41,7 +41,7 @@
@@ -233,7 +420,7 @@ index 26ee9ac..1467589 100644
  #include <iostream>
  #include <string>
 diff --git a/tools/cmgen/src/cmgen.cpp b/tools/cmgen/src/cmgen.cpp
-index ed8e7f1..83b6c0f 100644
+index 04eb151..c37dff6 100644
 --- a/tools/cmgen/src/cmgen.cpp
 +++ b/tools/cmgen/src/cmgen.cpp
 @@ -44,7 +44,7 @@
@@ -285,7 +472,7 @@ index a6d2f56..4f79833 100644
  #include <fstream>
  #include <iostream>
 diff --git a/tools/matc/src/matc/CommandlineConfig.cpp b/tools/matc/src/matc/CommandlineConfig.cpp
-index 2705d95..d98131b 100644
+index 78460ad..85c4118 100644
 --- a/tools/matc/src/matc/CommandlineConfig.cpp
 +++ b/tools/matc/src/matc/CommandlineConfig.cpp
 @@ -18,7 +18,7 @@
@@ -297,8 +484,21 @@ index 2705d95..d98131b 100644
  
  #include <utils/Path.h>
  
+diff --git a/tools/matc/src/matc/MaterialCompiler.cpp b/tools/matc/src/matc/MaterialCompiler.cpp
+index 2785a73..3685dd8 100644
+--- a/tools/matc/src/matc/MaterialCompiler.cpp
++++ b/tools/matc/src/matc/MaterialCompiler.cpp
+@@ -33,7 +33,7 @@
+ #include "JsonishParser.h"
+ #include "ParametersProcessor.h"
+ 
+-#include <GlslangToSpv.h>
++#include <glslang/SPIRV/GlslangToSpv.h>
+ 
+ #include "sca/builtinResource.h"
+ 
 diff --git a/tools/matinfo/src/main.cpp b/tools/matinfo/src/main.cpp
-index 15a4583..d803883 100644
+index 15a4583..368d7a6 100644
 --- a/tools/matinfo/src/main.cpp
 +++ b/tools/matinfo/src/main.cpp
 @@ -14,7 +14,7 @@
@@ -310,6 +510,15 @@ index 15a4583..d803883 100644
  
  #include <utils/Path.h>
  
+@@ -25,7 +25,7 @@
+ #include <matdbg/ShaderInfo.h>
+ #include <matdbg/TextWriter.h>
+ 
+-#include <spirv_glsl.hpp>
++#include <spirv_cross/spirv_glsl.hpp>
+ #include <spirv-tools/libspirv.h>
+ 
+ #include <chrono>
 diff --git a/tools/mipgen/src/main.cpp b/tools/mipgen/src/main.cpp
 index c7afabf..8a87dce 100644
 --- a/tools/mipgen/src/main.cpp
@@ -401,201 +610,3 @@ index 43e2005..365222b 100644
  
  #include <fstream>
  #include <iostream>
-diff --git a/filament/backend/test/ShaderGenerator.cpp b/filament/backend/test/ShaderGenerator.cpp
-index 8e32948..df67bee 100644
---- a/filament/backend/test/ShaderGenerator.cpp
-+++ b/filament/backend/test/ShaderGenerator.cpp
-@@ -16,10 +16,10 @@
- 
- #include "ShaderGenerator.h"
- 
--#include <GlslangToSpv.h>
-+#include <glslang/SPIRV/GlslangToSpv.h>
- #include <SPVRemapper.h>
- 
--#include <spirv_glsl.hpp>
-+#include <spirv_cross/spirv_glsl.hpp>
- #include <spirv_msl.hpp>
- 
- #include "../src/GLSLPostProcessor.h"
-diff --git a/libs/filamat/src/GLSLPostProcessor.cpp b/libs/filamat/src/GLSLPostProcessor.cpp
-index 0b39c13..9fd2b5f 100644
---- a/libs/filamat/src/GLSLPostProcessor.cpp
-+++ b/libs/filamat/src/GLSLPostProcessor.cpp
-@@ -16,11 +16,11 @@
- 
- #include "GLSLPostProcessor.h"
- 
--#include <GlslangToSpv.h>
--#include <SPVRemapper.h>
-+#include <glslang/SPIRV/GlslangToSpv.h>
-+#include <glslang/SPIRV/SPVRemapper.h>
- 
--#include <spirv_glsl.hpp>
--#include <spirv_msl.hpp>
-+#include <spirv_cross/spirv_glsl.hpp>
-+#include <spirv_cross/spirv_msl.hpp>
- 
- #include "sca/builtinResource.h"
- #include "sca/GLSLTools.h"
-@@ -240,7 +240,7 @@ void GLSLPostProcessor::spirvToMsl(const SpirvBlob *spirv, std::string *outMsl,
-         // buffer itself;
-         MSLResourceBinding argBufferBinding;
-         // the baseType doesn't matter, but can't be UNKNOWN
--        argBufferBinding.basetype = SPIRType::BaseType::Float;
-+        //argBufferBinding.basetype = SPIRType::BaseType::Float;
-         argBufferBinding.stage = executionModel;
-         argBufferBinding.desc_set = bindingPoint + 1;
-         argBufferBinding.binding = kArgumentBufferBinding;
-@@ -255,7 +255,7 @@ void GLSLPostProcessor::spirvToMsl(const SpirvBlob *spirv, std::string *outMsl,
-         auto set = mslCompiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-         auto binding = mslCompiler.get_decoration(resource.id, spv::DecorationBinding);
-         MSLResourceBinding newBinding;
--        newBinding.basetype = SPIRType::BaseType::Void;
-+        //newBinding.basetype = SPIRType::BaseType::Void;
-         newBinding.stage = executionModel;
-         newBinding.desc_set = set;
-         newBinding.binding = binding;
-@@ -540,7 +540,7 @@ void GLSLPostProcessor::fullOptimization(const TShader& tShader,
- 
-         if (tShader.getStage() == EShLangFragment && glslOptions.es) {
-             for (auto i : config.glsl.subpassInputToColorLocation) {
--                glslCompiler.remap_ext_framebuffer_fetch(i.first, i.second, true);
-+                glslCompiler.remap_ext_framebuffer_fetch(i.first, i.second);
-             }
-         }
- 
-diff --git a/libs/filamat/src/GLSLPostProcessor.h b/libs/filamat/src/GLSLPostProcessor.h
-index cb95079..2f3c84e 100644
---- a/libs/filamat/src/GLSLPostProcessor.h
-+++ b/libs/filamat/src/GLSLPostProcessor.h
-@@ -25,7 +25,7 @@
- 
- #include <spirv-tools/optimizer.hpp>
- 
--#include <ShaderLang.h>
-+#include <glslang/Public/ShaderLang.h>
- 
- #include <backend/DriverEnums.h>
- 
-diff --git a/libs/filamat/src/sca/ASTHelpers.cpp b/libs/filamat/src/sca/ASTHelpers.cpp
-index 0ef9ec6..efdaf86 100644
---- a/libs/filamat/src/sca/ASTHelpers.cpp
-+++ b/libs/filamat/src/sca/ASTHelpers.cpp
-@@ -18,8 +18,8 @@
- 
- #include "GLSLTools.h"
- 
--#include <intermediate.h>
--#include <localintermediate.h>
-+#include <glslang/Include/intermediate.h>
-+#include <glslang/MachineIndependent/localintermediate.h>
- 
- #include <utils/Log.h>
- 
-diff --git a/libs/filamat/src/sca/ASTHelpers.h b/libs/filamat/src/sca/ASTHelpers.h
-index b4e4983..e297a3a 100644
---- a/libs/filamat/src/sca/ASTHelpers.h
-+++ b/libs/filamat/src/sca/ASTHelpers.h
-@@ -20,7 +20,7 @@
- #include <deque>
- #include <string>
- #include <vector>
--#include <intermediate.h>
-+#include <glslang/Include/intermediate.h>
- 
- #include "GLSLTools.h"
- 
-diff --git a/libs/filamat/src/sca/GLSLTools.cpp b/libs/filamat/src/sca/GLSLTools.cpp
-index 0ee77a5..9c59a69 100644
---- a/libs/filamat/src/sca/GLSLTools.cpp
-+++ b/libs/filamat/src/sca/GLSLTools.cpp
-@@ -27,8 +27,8 @@
- #include "ASTHelpers.h"
- 
- // GLSLANG headers
--#include <InfoSink.h>
--#include <localintermediate.h>
-+#include <glslang/include/InfoSink.h>
-+#include <glslang/MachineIndependent/localintermediate.h>
- 
- #include "builtinResource.h"
- 
-diff --git a/libs/filamat/src/sca/GLSLTools.h b/libs/filamat/src/sca/GLSLTools.h
-index 082a684..8d40a8d 100644
---- a/libs/filamat/src/sca/GLSLTools.h
-+++ b/libs/filamat/src/sca/GLSLTools.h
-@@ -24,7 +24,7 @@
- 
- #include <filamat/MaterialBuilder.h>
- 
--#include <ShaderLang.h>
-+#include <glslang/Public/ShaderLang.h>
- 
- class TIntermNode;
- namespace glslang {
-diff --git a/libs/matdbg/src/DebugServer.cpp b/libs/matdbg/src/DebugServer.cpp
-index 95c5a63..fd2caef 100644
---- a/libs/matdbg/src/DebugServer.cpp
-+++ b/libs/matdbg/src/DebugServer.cpp
-@@ -22,7 +22,7 @@
- #include <utils/Hash.h>
- #include <utils/Log.h>
- 
--#include <spirv_glsl.hpp>
-+#include <spirv_cross/spirv_glsl.hpp>
- #include <spirv-tools/libspirv.h>
- 
- #include <matdbg/JsonWriter.h>
-diff --git a/libs/matdbg/src/ShaderExtractor.cpp b/libs/matdbg/src/ShaderExtractor.cpp
-index 3f10b60..bee32dc 100644
---- a/libs/matdbg/src/ShaderExtractor.cpp
-+++ b/libs/matdbg/src/ShaderExtractor.cpp
-@@ -26,7 +26,7 @@
- 
- #include <backend/DriverEnums.h>
- 
--#include <spirv_glsl.hpp>
-+#include <spirv_cross/spirv_glsl.hpp>
- #include <spirv-tools/libspirv.h>
- 
- using namespace filament;
-diff --git a/libs/matdbg/src/ShaderReplacer.cpp b/libs/matdbg/src/ShaderReplacer.cpp
-index 8eb3497..8be176e 100644
---- a/libs/matdbg/src/ShaderReplacer.cpp
-+++ b/libs/matdbg/src/ShaderReplacer.cpp
-@@ -27,7 +27,7 @@
- 
- #include <sstream>
- 
--#include <GlslangToSpv.h>
-+#include <glslang/SPIRV/GlslangToSpv.h>
- 
- #include "sca/builtinResource.h"
- #include "sca/GLSLTools.h"
-diff --git a/tools/matc/src/matc/MaterialCompiler.cpp b/tools/matc/src/matc/MaterialCompiler.cpp
-index ff4c3f3..afb2158 100644
---- a/tools/matc/src/matc/MaterialCompiler.cpp
-+++ b/tools/matc/src/matc/MaterialCompiler.cpp
-@@ -33,7 +33,7 @@
- #include "JsonishParser.h"
- #include "ParametersProcessor.h"
- 
--#include <GlslangToSpv.h>
-+#include <glslang/SPIRV/GlslangToSpv.h>
- 
- #include "sca/builtinResource.h"
- 
-diff --git a/tools/matinfo/src/main.cpp b/tools/matinfo/src/main.cpp
-index d803883..368d7a6 100644
---- a/tools/matinfo/src/main.cpp
-+++ b/tools/matinfo/src/main.cpp
-@@ -25,7 +25,7 @@
- #include <matdbg/ShaderInfo.h>
- #include <matdbg/TextWriter.h>
- 
--#include <spirv_glsl.hpp>
-+#include <spirv_cross/spirv_glsl.hpp>
- #include <spirv-tools/libspirv.h>
- 
- #include <chrono>

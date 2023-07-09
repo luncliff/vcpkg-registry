@@ -165,7 +165,7 @@ stages:
           - task: run-vcpkg@0
             displayName: "google-filament"
             inputs:
-              vcpkgArguments: "google-filament[gles3,test]"
+              vcpkgArguments: "google-filament[test]"
               vcpkgGitCommitId: $(vcpkg.commit)
             condition: eq(variables['vcpkg.default.triplet'], 'x64-windows')
           - task: run-vcpkg@0
