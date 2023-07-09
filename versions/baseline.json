@@ -8,6 +8,10 @@
       "baseline": "2.23.0",
       "port-version": 1
     },
+    "basis-universal": {
+      "baseline": "1.16.4",
+      "port-version": 0
+    },
     "coreml-tools": {
       "baseline": "6.1",
       "port-version": 2
@@ -39,6 +43,10 @@
     "gemmlowp": {
       "baseline": "2022-02-09",
       "port-version": 1
+    },
+    "google-filament": {
+      "baseline": "1.40.0",
+      "port-version": 0
     },
     "google-jni-bind": {
       "baseline": "2023-02-24",
