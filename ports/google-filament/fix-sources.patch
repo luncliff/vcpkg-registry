@@ -610,3 +610,20 @@ index 43e2005..365222b 100644
  
  #include <fstream>
  #include <iostream>
+diff --git a/filament/backend/test/ShaderGenerator.cpp b/filament/backend/test/ShaderGenerator.cpp
+index df67bee..7797c6b 100644
+--- a/filament/backend/test/ShaderGenerator.cpp
++++ b/filament/backend/test/ShaderGenerator.cpp
+@@ -17,10 +17,10 @@
+ #include "ShaderGenerator.h"
+ 
+ #include <glslang/SPIRV/GlslangToSpv.h>
+-#include <SPVRemapper.h>
++#include <glslang/SPIRV/SPVRemapper.h>
+ 
+ #include <spirv_cross/spirv_glsl.hpp>
+-#include <spirv_msl.hpp>
++#include <spirv_cross/spirv_msl.hpp>
+ 
+ #include "../src/GLSLPostProcessor.h"
+ 

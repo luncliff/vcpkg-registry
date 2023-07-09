@@ -27,7 +27,7 @@ message(STATUS "Initial ZSTD=${ZSTD}")
 message(STATUS "Initial OPENCL=${OPENCL}")
 message(STATUS "Initial SAN=${SAN}")
 
-if (NOT MSVC)
+if (NOT MSVC AND OPENCL)
 	# With MSVC builds we use the Khronos lib/include files in the project's "OpenCL" directory, to completely avoid requiring fiddly to install vendor SDK's.
 	# Otherwise we use the system's (if any).
 	find_package( OpenCL )
@@ -69,9 +69,10 @@ endif()
 
 set(CMAKE_CXX_STANDARD 14)
 if (NOT MSVC)
-	list(APPEND GCC_COMPILE_FLAGS -fvisibility=hidden -fPIC -fno-strict-aliasing -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64 -Wall -Wextra -Wno-unused-local-typedefs -Wno-unused-value -Wno-unused-parameter -Wno-unused-variable)
+	add_compile_options(-fvisibility=hidden -fPIC -fno-strict-aliasing -D_LARGEFILE64_SOURCE=1 -Wall -Wextra -Wno-unused-local-typedefs -Wno-unused-value -Wno-unused-parameter -Wno-unused-variable)
+	add_compile_definitions(_FILE_OFFSET_BITS=64)
 	if (NOT BUILD_X64)
-		list(APPEND GCC_COMPILE_FLAGS -m32)
+		add_compile_options(-m32)
 	endif()
 
 	if (EMSCRIPTEN)
@@ -87,9 +88,6 @@ if (NOT MSVC)
 			add_compile_options(-msse4.1)
 		endif()
 	endif()
-
-	list(APPEND CMAKE_C_FLAGS	${GCC_COMPILE_FLAGS})
-	list(APPEND CMAKE_CXX_FLAGS	${GCC_COMPILE_FLAGS})
 endif()
 
 add_library(basisu_transcoder STATIC

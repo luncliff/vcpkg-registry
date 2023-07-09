@@ -6,11 +6,24 @@
   "supports": "windows | osx | linux",
   "dependencies": [
     "assimp",
-    "basis-universal",
+    {
+      "name": "basis-universal",
+      "platform": "windows"
+    },
+    {
+      "name": "basis-universal",
+      "features": [
+        "opencl"
+      ],
+      "platform": "!windows"
+    },
     "cgltf",
     "civetweb",
     "draco",
-    "getopt",
+    {
+      "name": "getopt-win32",
+      "platform": "windows"
+    },
     "glslang",
     {
       "name": "glslang",
@@ -50,7 +63,7 @@
     "robin-map",
     {
       "name": "sdl2",
-      "platform": "windows"
+      "platform": "windows | osx"
     },
     "spirv-cross",
     "spirv-tools",
@@ -69,7 +82,7 @@
   "features": {
     "gles3": {
       "description": "Experimental: Compile Filament against OpenGL ES 3",
-      "supports": "linux",
+      "supports": "windows | linux",
       "dependencies": [
         "angle",
         {
@@ -97,7 +110,7 @@
     },
     "vulkan": {
       "description": "Include the Vulkan backend",
-      "supports": "linux",
+      "supports": "windows | linux",
       "dependencies": [
         {
           "name": "imgui",

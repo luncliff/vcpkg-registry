@@ -25,46 +25,46 @@ file(REMOVE_RECURSE
     "${SOURCE_PATH}/third_party/vkmemalloc"
 )
 
-function(leave_license SRC_PORT DST_NAME)
+message(STATUS "Editing third_party folder ...")
+function(edit_third_party SRC_PORT DST_NAME)
     get_filename_component(DST_DIR "${SOURCE_PATH}/third_party/${DST_NAME}" ABSOLUTE)
     get_filename_component(DST_PATH "${DST_DIR}/LICENSE" ABSOLUTE)
     file(REMOVE_RECURSE "${DST_DIR}")
     file(MAKE_DIRECTORY "${DST_DIR}")
     file(COPY_FILE "${CURRENT_INSTALLED_DIR}/share/${SRC_PORT}/copyright" "${DST_PATH}")
 endfunction()
-leave_license(glslang glslang)
-leave_license(assimp libassimp)
-leave_license(libpng libpng)
-leave_license(spirv-cross spirv-cross)
-leave_license(spirv-tools spirv-tools)
-leave_license(stb stb)
-leave_license(mikktspace mikktspace)
-leave_license(meshoptimizer meshoptimizer)
-leave_license(tinyexr tinyexr)
-leave_license(zlib libz)
-# ...
-leave_license(sdl2 libsdl2)
-leave_license(draco draco)
-leave_license(gtest libgtest)
-leave_license(benchmark benchmark)
-leave_license(civetweb civetweb)
-leave_license(basis-universal basisu)
-leave_license(cgltf cgltf)
-leave_license(imgui imgui)
-leave_license(jsmn jsmn)
-leave_license(robin-map robin-map)
+edit_third_party(glslang glslang)
+edit_third_party(assimp libassimp)
+edit_third_party(libpng libpng)
+edit_third_party(spirv-cross spirv-cross)
+edit_third_party(spirv-tools spirv-tools)
+edit_third_party(stb stb)
+edit_third_party(mikktspace mikktspace)
+edit_third_party(meshoptimizer meshoptimizer)
+edit_third_party(tinyexr tinyexr)
+edit_third_party(zlib libz)
+edit_third_party(sdl2 libsdl2)
+edit_third_party(draco draco)
+edit_third_party(gtest libgtest)
+edit_third_party(benchmark benchmark)
+edit_third_party(civetweb civetweb)
+edit_third_party(basis-universal basisu)
+edit_third_party(cgltf cgltf)
+edit_third_party(imgui imgui)
+edit_third_party(jsmn jsmn)
+edit_third_party(robin-map robin-map)
 
 if(VCPKG_TARGET_IS_WINDOWS)
-    leave_license(getopt-win32 getopt)
+    edit_third_party(getopt-win32 getopt)
 endif()
 if("vulkan" IN_LIST FEATURES)
-    leave_license(vulkan-memory-allocator vkmemalloc)
+    edit_third_party(vulkan-memory-allocator vkmemalloc)
 endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gles3   FILAMENT_USE_EXTERNAL_GLES3
-        # gles3   FILAMENT_SUPPORTS_OPENGL
+        gles3   FILAMENT_SUPPORTS_OPENGL
         vulkan  FILAMENT_SUPPORTS_VULKAN
         metal   FILAMENT_SUPPORTS_METAL
     INVERTED_FEATURES
@@ -74,8 +74,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 
 if(VCPKG_TARGET_IS_WINDOWS)
     list(APPEND GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
-elseif(VCPKG_TARGET_IS_OSX)
-    list(APPEND GENERATOR_OPTIONS GENERATOR Xcode)
 else()
     list(APPEND GENERATOR_OPTIONS GENERATOR Ninja)
 endif()
