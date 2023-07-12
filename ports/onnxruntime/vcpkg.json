@@ -1,9 +1,8 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.12.1",
-  "port-version": 2,
+  "version-semver": "1.15.1",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
-  "homepage": "www.onnxruntime.ai",
+  "homepage": "https://www.onnxruntime.ai",
   "dependencies": [
     "boost-config",
     "boost-mp11",
@@ -31,6 +30,14 @@
       "host": true
     },
     {
+      "name": "vcpkg-get-python-packages",
+      "host": true
+    },
+    {
+      "name": "protobuf",
+      "host": true
+    },
+    {
       "name": "wil",
       "platform": "windows"
     },
@@ -38,7 +45,8 @@
   ],
   "features": {
     "coreml": {
-      "description": "Build with CoreML support"
+      "description": "Build with CoreML support",
+      "supports": "osx | ios"
     },
     "cuda": {
       "description": "Build with CUDA/NCCL support"

@@ -5,14 +5,20 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF v1.12.1
-    SHA512 fc2e8be54fbeb32744c8882e61aa514be621eb621a073d05a85c6e2deac8c9bf1103e746711f5c33a4fa55a257807ba0159d9f23684f4926ff38b40591575d91
+    REF v1.14.1
+    SHA512 d8f7ea161e850a738b9a22187662218871f88ad711282c58631196a74f4a4567184047bab0001b973f841a3b63c7dc7e350f92306cc5fa9a7adc4db2ce09766f
     PATCHES
-        fix-cmake.patch
-        fix-sources.patch
-        # https://learn.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt
-        # support-windows10.patch
+        fix-cmake1.patch
+    #     fix-sources.patch
+    #     # https://learn.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt
+    #     # support-windows10.patch
 )
+
+find_program(PROTOC NAMES protoc
+    PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
+    REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
+)
+message(STATUS "Using protoc: ${PROTOC}")
 
 find_program(FLATC NAMES flatc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers"
@@ -22,12 +28,17 @@ message(STATUS "Using flatc: ${FLATC}")
 
 set(SCHEMA_DIR "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema")
 vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp ort.fbs
+    COMMAND ${FLATC} --cpp --filename-suffix ".fbs" ort.fbs
     LOGNAME codegen-flatc-cpp
     WORKING_DIRECTORY "${SCHEMA_DIR}"
 )
-file(REMOVE "${SCHEMA_DIR}/ort.fbs.h")
-file(RENAME "${SCHEMA_DIR}/ort_generated.h" "${SCHEMA_DIR}/ort.fbs.h")
+# file(REMOVE "${SCHEMA_DIR}/ort.fbs.h")
+# file(RENAME "${SCHEMA_DIR}/ort_generated.h" "${SCHEMA_DIR}/ort.fbs.h")
+# vcpkg_execute_required_process(
+#     COMMAND ${FLATC} --scoped-enums --python ort.fbs
+#     LOGNAME codegen-flatc-python
+#     WORKING_DIRECTORY "${SCHEMA_DIR}" # probably?
+# )
 
 if("xnnpack" IN_LIST FEATURES)
     # see https://github.com/microsoft/onnxruntime/pull/11798
@@ -38,6 +49,8 @@ endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
+        python    onnxruntime_ENABLE_PYTHON
+        interop   onnxruntime_ENABLE_LANGUAGE_INTEROP_OPS
         training  onnxruntime_ENABLE_TRAINING
         training  onnxruntime_ENABLE_TRAINING_OPS
         cuda      onnxruntime_USE_CUDA
@@ -50,8 +63,11 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         mimalloc  onnxruntime_USE_MIMALLOC
         valgrind  onnxruntime_USE_VALGRIND
         xnnpack   onnxruntime_USE_XNNPACK
+        nnapi     onnxruntime_USE_NNAPI_BUILTIN
+        azure     onnxruntime_USE_AZURE
         test      onnxruntime_BUILD_UNIT_TESTS
         framework onnxruntime_BUILD_APPLE_FRAMEWORK
+        framework onnxruntime_BUILD_OBJC
     INVERTED_FEATURES
         abseil   onnxruntime_DISABLE_ABSEIL
 
@@ -81,8 +97,16 @@ endif()
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
-vcpkg_find_acquire_program(PYTHON3)
-message(STATUS "Using Python3: ${PYTHON3}")
+x_vcpkg_get_python_packages(
+    PYTHON_VERSION 3
+    PACKAGES numpy pybind11
+    OUT_PYTHON_VAR PYTHON3
+)
+message(STATUS "Using python3: ${PYTHON3}")
+get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
+get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
+# PATH for .bat scripts so it can find 'python'
+vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
@@ -92,17 +116,14 @@ vcpkg_cmake_configure(
         ${FEATURE_OPTIONS}
         -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
         # -DProtobuf_USE_STATIC_LIBS=OFF
+        -DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
-        -Donnxruntime_BUILD_OBJC=${VCPKG_TARGET_IS_IOS}
-        -Donnxruntime_BUILD_NODEJS=OFF
-        -Donnxruntime_BUILD_JAVA=OFF
-        -Donnxruntime_BUILD_CSHARP=OFF
         -Donnxruntime_BUILD_WEBASSEMBLY=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
-        -Donnxruntime_PREFER_SYSTEM_LIB=ON
         -Donnxruntime_USE_FULL_PROTOBUF=ON
-        -Donnxruntime_USE_PREINSTALLED_EIGEN=ON -Deigen_SOURCE_PATH="${CURRENT_INSTALLED_DIR}/include"
+        -Donnxruntime_USE_PREINSTALLED_EIGEN=ON
+        -Deigen_SOURCE_PATH:PATH="${CURRENT_INSTALLED_DIR}/include"
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_MPI=OFF # ${VCPKG_TARGET_IS_LINUX}
         -Donnxruntime_ENABLE_CPUINFO=ON
