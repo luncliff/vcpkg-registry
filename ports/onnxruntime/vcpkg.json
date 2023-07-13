@@ -1,6 +1,6 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.15.1",
+  "version-semver": "1.14.1",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://www.onnxruntime.ai",
   "dependencies": [
@@ -23,6 +23,10 @@
     "onnx",
     "optional-lite",
     "protobuf",
+    {
+      "name": "protobuf",
+      "host": true
+    },
     "re2",
     "safeint",
     {
@@ -31,10 +35,6 @@
     },
     {
       "name": "vcpkg-get-python-packages",
-      "host": true
-    },
-    {
-      "name": "protobuf",
       "host": true
     },
     {
@@ -49,7 +49,10 @@
       "supports": "osx | ios"
     },
     "cuda": {
-      "description": "Build with CUDA/NCCL support"
+      "description": "Build with CUDA/NCCL support",
+      "dependencies": [
+        "cuda"
+      ]
     },
     "directml": {
       "description": "Build with DirectML support",
@@ -58,11 +61,28 @@
         "directml"
       ]
     },
+    "framework": {
+      "description": "Build with CoreML support",
+      "supports": "osx | ios"
+    },
+    "python": {
+      "description": "Enable python buildings"
+    },
     "tensorrt": {
       "description": "Build with NVIDIA TensorRT support"
     },
+    "test": {
+      "description": "Build ONNXRuntime unit tests",
+      "dependencies": [
+        "benchmark",
+        "gtest"
+      ]
+    },
     "training": {
       "description": "Turn on build options for ML training"
+    },
+    "winml": {
+      "description": "Build with WinML support"
     },
     "xnnpack": {
       "description": "Build with XNNPack support",

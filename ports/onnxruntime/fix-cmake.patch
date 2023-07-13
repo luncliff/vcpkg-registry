@@ -94,7 +94,7 @@ index 0c41945..593912e 100644
  
  if (onnxruntime_BUILD_UNIT_TESTS)
    # WebAssembly threading support in Node.js is still an experimental feature and
-@@ -43,379 +37,103 @@ if (onnxruntime_BUILD_UNIT_TESTS)
+@@ -43,379 +37,104 @@ if (onnxruntime_BUILD_UNIT_TESTS)
      set(GTEST_HAS_ABSL OFF CACHE BOOL "" FORCE)
    endif()
    # gtest and gmock
@@ -403,6 +403,7 @@ index 0c41945..593912e 100644
 -  endif()
 -endif()
 +find_package(protobuf CONFIG REQUIRED) # protobuf::libprotobuf protobuf::libprotobuf-lite
++include(protobuf_function)
  if (onnxruntime_USE_FULL_PROTOBUF)
    set(PROTOBUF_LIB protobuf::libprotobuf)
  else()
@@ -539,3 +540,76 @@ index 0c41945..593912e 100644
  
  
  set(onnxruntime_LINK_DIRS )
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index ee07ec1..553838d 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -755,7 +755,7 @@ endif()
+ 
+ function(onnxruntime_set_compile_flags target_name)
+     if (CPUINFO_SUPPORTED)
+-      onnxruntime_add_include_to_target(${target_name} cpuinfo)
++      onnxruntime_add_include_to_target(${target_name} cpuinfo::cpuinfo)
+     endif()
+     if(onnxruntime_ENABLE_EAGER_MODE)
+       target_compile_definitions(${target_name} PRIVATE ENABLE_EAGER_MODE)
+diff --git a/cmake/external/onnxruntime_external_deps.cmake b/cmake/external/onnxruntime_external_deps.cmake
+index 593912e..07d56cd 100644
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -119,7 +119,8 @@ if (onnxruntime_USE_XNNPACK)
+     message(FATAL_ERROR "XNNPACK EP requires the internal NHWC contrib ops to be available "
+                          "but onnxruntime_DISABLE_CONTRIB_OPS is ON")
+   endif()
+-  find_package(xnnpack CONFIG REQUIRED) # xnnpack
++  find_library(XNNPACK_LIBRARY NAMES XNNPACK REQUIRED)
++  find_package(unofficial-pthreadpool CONFIG REQUIRED) # unofficial::pthreadpool unofficial::pthreadpool_interface
+ endif()
+ 
+ if (onnxruntime_USE_MIMALLOC)
+@@ -130,7 +131,7 @@ endif()
+ #onnxruntime_EXTERNAL_LIBRARIES could contain onnx, onnx_proto,libprotobuf, cuda/cudnn,
+ # dnnl/mklml, onnxruntime_codegen_tvm, tvm and pthread
+ # pthread is always at the last
+-list(APPEND onnxruntime_EXTERNAL_LIBRARIES xnnpack WIL::WIL nlohmann_json::nlohmann_json onnx onnx_proto ${PROTOBUF_LIB} re2::re2 Boost::headers safeint_interface flatbuffers::flatbuffers ${GSL_TARGET} ${ABSEIL_LIBS} date::date)
++list(APPEND onnxruntime_EXTERNAL_LIBRARIES ${XNNPACK_LIBRARY} unofficial::pthreadpool WIL::WIL nlohmann_json::nlohmann_json onnx onnx_proto ${PROTOBUF_LIB} re2::re2 Boost::headers safeint_interface flatbuffers::flatbuffers ${GSL_TARGET} ${ABSEIL_LIBS} date::date)
+ # The source code of onnx_proto is generated, we must build this lib first before starting to compile the other source code that uses ONNX protobuf types.
+ # The other libs do not have the problem. All the sources are already there. We can compile them in any order.
+ list(APPEND onnxruntime_EXTERNAL_DEPENDENCIES onnx_proto flatbuffers::flatbuffers)
+diff --git a/cmake/onnxruntime_common.cmake b/cmake/onnxruntime_common.cmake
+index 0e02ad9..0410d33 100644
+--- a/cmake/onnxruntime_common.cmake
++++ b/cmake/onnxruntime_common.cmake
+@@ -194,8 +194,8 @@ if (ARM64 OR ARM OR X86 OR X64 OR X86_64)
+     # Using it mainly in ARM with Android.
+     # Its functionality in detecting x86 cpu features are lacking, so is support for Windows.
+     if (CPUINFO_SUPPORTED)
+-      onnxruntime_add_include_to_target(onnxruntime_common cpuinfo)
+-      list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo clog)
++      onnxruntime_add_include_to_target(onnxruntime_common cpuinfo::cpuinfo)
++      list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo::cpuinfo cpuinfo::clog)
+     endif()
+   endif()
+ endif()
+diff --git a/cmake/onnxruntime_unittests.cmake b/cmake/onnxruntime_unittests.cmake
+index 00c0172..6aeead7 100644
+--- a/cmake/onnxruntime_unittests.cmake
++++ b/cmake/onnxruntime_unittests.cmake
+@@ -998,7 +998,7 @@ if (NOT onnxruntime_ENABLE_TRAINING_TORCH_INTEROP)
+       target_link_libraries(onnxruntime_mlas_benchmark PRIVATE nsync_cpp ${CMAKE_DL_LIBS})
+     endif()
+     if (CPUINFO_SUPPORTED AND NOT onnxruntime_BUILD_WEBASSEMBLY)
+-      target_link_libraries(onnxruntime_mlas_benchmark PRIVATE cpuinfo)
++      target_link_libraries(onnxruntime_mlas_benchmark PRIVATE cpuinfo::cpuinfo)
+     endif()
+     set_target_properties(onnxruntime_mlas_benchmark PROPERTIES FOLDER "ONNXRuntimeTest")
+   endif()
+@@ -1276,7 +1276,7 @@ if (NOT onnxruntime_ENABLE_TRAINING_TORCH_INTEROP)
+           ${CMAKE_CURRENT_BINARY_DIR})
+   target_link_libraries(onnxruntime_mlas_test PRIVATE GTest::gtest GTest::gmock ${ONNXRUNTIME_MLAS_LIBS} onnxruntime_common)
+   if (CPUINFO_SUPPORTED AND NOT onnxruntime_BUILD_WEBASSEMBLY)
+-    target_link_libraries(onnxruntime_mlas_test PRIVATE cpuinfo)
++    target_link_libraries(onnxruntime_mlas_test PRIVATE cpuinfo::cpuinfo)
+   endif()
+   if(NOT WIN32)
+     target_link_libraries(onnxruntime_mlas_test PRIVATE nsync_cpp ${CMAKE_DL_LIBS})

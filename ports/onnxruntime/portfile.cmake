@@ -8,10 +8,8 @@ vcpkg_from_github(
     REF v1.14.1
     SHA512 d8f7ea161e850a738b9a22187662218871f88ad711282c58631196a74f4a4567184047bab0001b973f841a3b63c7dc7e350f92306cc5fa9a7adc4db2ce09766f
     PATCHES
-        fix-cmake1.patch
-    #     fix-sources.patch
-    #     # https://learn.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt
-    #     # support-windows10.patch
+        fix-cmake.patch
+        import-flatbuffers.patch
 )
 
 find_program(PROTOC NAMES protoc
@@ -28,7 +26,7 @@ message(STATUS "Using flatc: ${FLATC}")
 
 set(SCHEMA_DIR "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema")
 vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --filename-suffix ".fbs" ort.fbs
+    COMMAND ${FLATC} --cpp --scoped-enums --filename-suffix ".fbs" ort.fbs
     LOGNAME codegen-flatc-cpp
     WORKING_DIRECTORY "${SCHEMA_DIR}"
 )
@@ -50,9 +48,9 @@ endif()
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         python    onnxruntime_ENABLE_PYTHON
-        interop   onnxruntime_ENABLE_LANGUAGE_INTEROP_OPS
+        python    onnxruntime_ENABLE_LANGUAGE_INTEROP_OPS
         training  onnxruntime_ENABLE_TRAINING
-        training  onnxruntime_ENABLE_TRAINING_OPS
+        training  onnxruntime_ENABLE_TRAINING_OPS # todo: port `tensorboard`
         cuda      onnxruntime_USE_CUDA
         cuda      onnxruntime_USE_NCCL
         tensorrt  onnxruntime_USE_TENSORRT
@@ -65,15 +63,15 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         xnnpack   onnxruntime_USE_XNNPACK
         nnapi     onnxruntime_USE_NNAPI_BUILTIN
         azure     onnxruntime_USE_AZURE
+        llvm      onnxruntime_USE_LLVM
         test      onnxruntime_BUILD_UNIT_TESTS
         framework onnxruntime_BUILD_APPLE_FRAMEWORK
         framework onnxruntime_BUILD_OBJC
     INVERTED_FEATURES
         abseil   onnxruntime_DISABLE_ABSEIL
-
 )
 
-if(VCPKG_TARGET_IS_UWP)
+if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     set(CONFIG_OPTIONS WINDOWS_USE_MSBUILD)
 else()
     set(CONFIG_OPTIONS GENERATOR Ninja)
@@ -115,15 +113,15 @@ vcpkg_cmake_configure(
         ${GENERATOR_OPTIONS}
         ${FEATURE_OPTIONS}
         -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
-        # -DProtobuf_USE_STATIC_LIBS=OFF
+        -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         -DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
+        # -DProtobuf_USE_STATIC_LIBS=OFF
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
         -Donnxruntime_BUILD_WEBASSEMBLY=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
         -Donnxruntime_USE_FULL_PROTOBUF=ON
         -Donnxruntime_USE_PREINSTALLED_EIGEN=ON
-        -Deigen_SOURCE_PATH:PATH="${CURRENT_INSTALLED_DIR}/include"
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_MPI=OFF # ${VCPKG_TARGET_IS_LINUX}
         -Donnxruntime_ENABLE_CPUINFO=ON
@@ -131,6 +129,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_BITCODE=${VCPKG_TARGET_IS_IOS}
         -Donnxruntime_ENABLE_PYTHON=OFF
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
+        -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
@@ -142,7 +141,7 @@ vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
 
-if(VCPKG_TARGET_IS_IOS)
+if("framework" IN_LIST FEATURES)
     set(FRAMEWORK_NAME "onnxruntime.framework")
     file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/${FRAMEWORK_NAME}"
                 "${CURRENT_PACKAGES_DIR}/debug/lib/${FRAMEWORK_NAME}"
