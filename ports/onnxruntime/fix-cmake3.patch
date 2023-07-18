@@ -1,0 +1,25 @@
+diff --git a/cmake/tensorboard/compat/proto/CMakeLists.txt b/cmake/tensorboard/compat/proto/CMakeLists.txt
+index b3b5ff9..726794c 100644
+--- a/cmake/tensorboard/compat/proto/CMakeLists.txt
++++ b/cmake/tensorboard/compat/proto/CMakeLists.txt
+@@ -9,9 +9,17 @@ file(GLOB_RECURSE tensorboard_proto_srcs CONFIGURE_DEPENDS
+   "${TENSORBOARD_ROOT}/tensorboard/compat/proto/*.proto"
+ )
+ 
+-add_library(tensorboard STATIC ${tensorboard_proto_srcs})
+-onnxruntime_protobuf_generate(APPEND_PATH IMPORT_DIRS ${TENSORBOARD_ROOT} ${PROTOBUF_INCLUDE_DIR} TARGET tensorboard)
+-onnxruntime_add_include_to_target(tensorboard ${PROTOBUF_LIB})
++add_library(tensorboard STATIC ${TENSORBOARD_PROTO_GENERATED_SRCS})
++
++protobuf_generate(
++  PROTOS ${tensorboard_proto_srcs}
++  TARGET tensorboard
++  PROTOC_OUT_DIR ${PROJECT_BINARY_DIR}
++  IMPORT_DIRS ${TENSORBOARD_ROOT} ${PROTOBUF_INCLUDE_DIR}
++  LANGUAGE cpp
++)
++target_link_libraries(tensorboard PUBLIC ${PROTOBUF_LIB})
++
+ target_include_directories(tensorboard PRIVATE ${PROJECT_BINARY_DIR})
+ add_dependencies(tensorboard ${onnxruntime_EXTERNAL_DEPENDENCIES})
+ if(WIN32)

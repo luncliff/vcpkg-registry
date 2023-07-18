@@ -1,6 +1,7 @@
 if(NOT VCPKG_TARGET_IS_IOS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
+vcpkg_find_acquire_program(NUGET)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
@@ -10,7 +11,19 @@ vcpkg_from_github(
     PATCHES
         fix-cmake.patch
         import-flatbuffers.patch
+        fix-cmake2.patch
+        fix-cmake3.patch
+        fix-cmake4.patch # todo: use downloaded NuGet.exe
 )
+
+if("training" IN_LIST FEATURES)
+    vcpkg_from_github(
+        OUT_SOURCE_PATH TENSORBOARD_SOURCE_PATH # just for .proto files
+        REPO tensorflow/tensorboard
+        REF 2.13.0
+        SHA512 c4c2770552dc0816cde1350ba2676f4660d2c9e0a911544620b5e93089d94dedd328efe23316801f1959c40706519141aeb30cdb5072fca231443d11a1ffb2eb
+    )
+endif()
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
@@ -30,13 +43,6 @@ vcpkg_execute_required_process(
     LOGNAME codegen-flatc-cpp
     WORKING_DIRECTORY "${SCHEMA_DIR}"
 )
-# file(REMOVE "${SCHEMA_DIR}/ort.fbs.h")
-# file(RENAME "${SCHEMA_DIR}/ort_generated.h" "${SCHEMA_DIR}/ort.fbs.h")
-# vcpkg_execute_required_process(
-#     COMMAND ${FLATC} --scoped-enums --python ort.fbs
-#     LOGNAME codegen-flatc-python
-#     WORKING_DIRECTORY "${SCHEMA_DIR}" # probably?
-# )
 
 if("xnnpack" IN_LIST FEATURES)
     # see https://github.com/microsoft/onnxruntime/pull/11798
@@ -106,15 +112,22 @@ get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
 # PATH for .bat scripts so it can find 'python'
 vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
 
+if("training" IN_LIST FEATURES)
+    # todo: dlpack in onnxruntime_provider. see `onnxruntime_ENABLE_ATEN`, https://github.com/dmlc/dlpack
+    list(APPEND FEATURE_OPTIONS
+        -DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}
+    )
+endif()
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
     ${CONFIG_OPTIONS}
     OPTIONS
         ${GENERATOR_OPTIONS}
         ${FEATURE_OPTIONS}
+        -Dnuget_exe:FILEPATH:=${NUGET}
         -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
-        -DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         # -DProtobuf_USE_STATIC_LIBS=OFF
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
@@ -136,7 +149,10 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_CUDA_PROFILING=ON
         -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=ON
 )
-vcpkg_cmake_build(TARGET onnxruntime)
+if("training" IN_LIST FEATURES)
+    vcpkg_cmake_build(TARGET onnxruntime_training LOGFILE_BASE build-training)
+endif()
+vcpkg_cmake_build(TARGET onnxruntime LOGFILE_BASE build-onnxruntime)
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
