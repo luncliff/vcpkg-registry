@@ -5,31 +5,32 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggerganov/llama.cpp
-    REF 54bb60e26858be251a0eb3cb70f80322aff804a0 # 2023-04-25
-    SHA512 64f14c25a8dc6dabf7a222a452f986cb2d9477ae3d44e42a7fec630663fceb30f74a7ec80d1c73c6690f572075f39e20e916aaa41a8480f8a59b9c08d81d22f6
-    PATCHES
-        fix-openblas.patch
+    REF b1213
+    SHA512 b39736ece0ee701ac355f5115b0d7cefd5a9723bb2cec6b895181a7764bd0f23b3d14cd5b1c175dccd1ad5e9219d2f7500b2c5c840a504abbd2e50ed62965c3e
 )
 
-x_vcpkg_get_python_packages(
-    PYTHON_VERSION 3
-    PACKAGES numpy pybind11
-    OUT_PYTHON_VAR PYTHON3
-)
-message(STATUS "Using python3: ${PYTHON3}")
+vcpkg_find_acquire_program(PKGCONFIG)
+message(STATUS "Using pkgconfig: ${PKGCONFIG}")
+
+if(VCPKG_TARGET_IS_WINDOWS)
+    list(APPEND BLAS_OPTIONS -DLLAMA_BLAS_VENDOR=OpenBLAS)
+endif()
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
-    # list(APPEND ARCH_OPTIONS)
-elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
-    # list(APPEND ARCH_OPTIONS)
-elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-    # list(APPEND ARCH_OPTIONS)
+    list(APPEND ARCH_OPTIONS
+        -DLLAMA_AVX512=ON -DLLAMA_AVX512_VBMI=ON -DLLAMA_AVX512_VNNI=ON
+        # -DLLAMA_AVX2=ON
+        # -DLLAMA_AVX=ON
+    )
 endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        f16c LLAMA_F16C
-        cublas LLAMA_CUBLAS
+        cublas  LLAMA_CUBLAS
+        cublas  LLAMA_CUDA_F16
+        clblast LLAMA_CLBLAST
+        mpi     LLAMA_MPI
+        test    LLAMA_BUILD_TESTS
 )
 
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC)
@@ -37,15 +38,46 @@ string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC)
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
-        ${ARCH_OPTIONS} ${FEATURE_OPTIONS}
+        ${ARCH_OPTIONS}
+        ${FEATURE_OPTIONS}
         -DLLAMA_ACCELERATE=${VCPKG_TARGET_IS_OSX}
+        -DLLAMA_METAL=${VCPKG_TARGET_IS_OSX} # todo: support VCPKG_TARGET_IS_IOS
         -DLLAMA_STATIC=${USE_STATIC}
-        -DLLAMA_OPENBLAS=${VCPKG_TARGET_IS_WINDOWS}
+        -DLLAMA_BLAS=ON
+        ${BLAS_OPTIONS}
+        -DPKG_CONFIG_EXECUTABLE:FILEPATH=${PKGCONFIG}
+    OPTIONS_RELEASE
+        -DLLAMA_METAL_NDEBUG=ON
 )
-vcpkg_cmake_build(TARGET "llama")
+vcpkg_cmake_build(TARGET "llama" LOGFILE_BASE build-llama)
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 
-# this internal header is required by pytorch
+vcpkg_copy_tools(TOOL_NAMES
+    baby-llama beam-search benchmark convert-llama2c-to-ggml embd-input-test embedding llama-bench
+    main perplexity quantize-stats quantize save-load-state server simple speculative train-text-from-scratch    
+    AUTO_CLEAN
+)
+if("test" IN_LIST FEATURES)
+    vcpkg_copy_tools(TOOL_NAMES
+        test-grad0 test-grammar-parser test-llama-grammar test-quantize-fns test-quantize-perf
+        test-sampling test-tokenizer-0-falcon test-tokenizer-0-llama test-tokenizer-1
+        AUTO_CLEAN
+    )
+endif()
+
+file(INSTALL "${SOURCE_PATH}/llama.h" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
+
+file(INSTALL    "${CURRENT_PACKAGES_DIR}/bin/convert.py"
+                "${CURRENT_PACKAGES_DIR}/bin/convert-lora-to-ggml.py"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/tools"
+)
+
+file(REMOVE
+    "${CURRENT_PACKAGES_DIR}/bin/convert.py"
+    "${CURRENT_PACKAGES_DIR}/debug/bin/convert.py"
+    "${CURRENT_PACKAGES_DIR}/bin/convert-lora-to-ggml.py"
+    "${CURRENT_PACKAGES_DIR}/debug/bin/convert-lora-to-ggml.py"
+)
+
 file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME "copyright")
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")

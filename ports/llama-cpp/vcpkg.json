@@ -1,26 +1,47 @@
 {
   "name": "llama-cpp",
-  "version-date": "2023-04-25",
-  "description": "...",
+  "version-string": "b1213",
+  "description": "Port of Facebook's LLaMA model in C/C++",
   "homepage": "https://github.com/ggerganov/llama.cpp",
   "supports": "windows | linux | osx",
   "dependencies": [
-    "openblas",
     {
-      "name": "vcpkg-cmake",
-      "host": true
+      "name": "openblas",
+      "platform": "windows"
     },
     {
-      "name": "vcpkg-get-python-packages",
+      "name": "vcpkg-cmake",
       "host": true
     }
   ],
   "features": {
+    "clblast": {
+      "description": "Use CLBlast",
+      "dependencies": [
+        "clblast"
+      ]
+    },
     "cublas": {
-      "description": "Use CUBLAS",
+      "description": "Use CUDA",
       "dependencies": [
         "cudnn"
       ]
+    },
+    "mpi": {
+      "description": "Use MPI",
+      "dependencies": [
+        {
+          "name": "msmpi",
+          "platform": "windows"
+        },
+        {
+          "name": "openmpi",
+          "platform": "!windows"
+        }
+      ]
+    },
+    "test": {
+      "description": "Build tests"
     }
   }
 }
