@@ -1,0 +1,89 @@
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 0924ca9d..69e217bd 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -26,7 +26,7 @@
+ # - Many features in experimental
+ # - Host Tools (i.e conversion / analysis tools etc.)
+ 
+-cmake_minimum_required(VERSION 3.16)
++cmake_minimum_required(VERSION 3.27)
+ if(NOT CMAKE_BUILD_TYPE)
+   message(STATUS "Setting build type to Release, for debug builds use"
+     "'-DCMAKE_BUILD_TYPE=Debug'.")
+@@ -274,17 +274,30 @@ populate_tflite_source_vars("core/tools" TFLITE_CORE_TOOLS_SRCS)
+ populate_tflite_source_vars("c" TFLITE_C_SRCS)
+ populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
+ if(TFLITE_ENABLE_GPU)
+-  find_package(opencl_headers REQUIRED)
+-  find_package(vulkan_headers REQUIRED)
+-  find_package(fp16_headers REQUIRED)
+-  # Android NDK already has OpenGL, EGL headers.
+-  if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
+-    find_package(opengl_headers REQUIRED)
+-    find_package(egl_headers REQUIRED)
++  find_package(OpenCL REQUIRED) # OpenCL::OpenCL
++  find_package(Vulkan COMPONENTS Headers) # Vulkan::Headers Vulkan::Vulkan
++  if(Vulkan_FOUND)
++    list(APPEND TFLITE_TARGET_DEPENDENCIES Vulkan::Headers)
++  endif()
++  if(ANDROID OR WIN32)
++    set(OPENGL_USE_EGL true)
++    find_path(OPENGL_EGL_INCLUDE_DIRS "EGL/egl.h" REQUIRED)
++    find_library(OPENGL_egl_LIBRARY NAMES EGL libEGL REQUIRED)
++    find_path(OPENGL_GLES3_INCLUDE_DIR "GLES3/gl3.h" REQUIRED)
++    find_library(OPENGL_gles3_LIBRARY NAMES GLESv3 libGLESv3 GLESv2 libGLESv2 REQUIRED)
++    find_library(OPENGL_gl_LIBRARY NAMES GLESv3 libGLESv3 GLESv2 libGLESv2 REQUIRED)
++    # it's using "version 310 es"
++    find_package(OpenGL REQUIRED COMPONENTS GLES3) # OpenGL::GLES3
++    list(APPEND TFLITE_TARGET_DEPENDENCIES OpenGL::GLES3 ${OPENGL_egl_LIBRARY})
++    populate_tflite_source_vars("delegates/gpu/gl" TFLITE_DELEGATES_GPU_GL_SRCS FILTER "(_test)\\.(cc|h)$")
++    populate_tflite_source_vars("delegates/gpu/gl/compiler" TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS FILTER "(_test)\\.(cc|h)$")
++    populate_tflite_source_vars("delegates/gpu/gl/converters" TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS FILTER "(_test)\\.(cc|h)$")
++    populate_tflite_source_vars("delegates/gpu/gl/kernels" TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS FILTER "(_test)\\.(cc|h)$")
++    populate_tflite_source_vars("delegates/gpu/gl/workgroups" TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS FILTER "(_test)\\.(cc|h)$")
+   endif()
+   populate_tflite_source_vars(
+     "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
+-    FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
++    FILTER "(_test)\\.(cc|h)$"
+   )
+   populate_tflite_source_vars(
+     "delegates/gpu/cl/default" TFLITE_DELEGATES_GPU_CL_DEFAULT_SRCS
+@@ -341,6 +354,11 @@ if(TFLITE_ENABLE_GPU)
+     ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate_options.cc
+     ${TFLITE_SOURCE_DIR}/delegates/gpu/tflite_profile.cc
+     ${TFLITE_SOURCE_DIR}/experimental/acceleration/compatibility/android_info.cc
++    ${TFLITE_DELEGATES_GPU_GL_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS}
++    ${TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS}
+     ${TFLITE_DELEGATES_GPU_CL_SRCS}
+     ${TFLITE_DELEGATES_GPU_CL_DEFAULT_SRCS}
+     ${TFLITE_DELEGATES_GPU_CL_KERNELS_SRCS}
+@@ -361,7 +379,7 @@ if(TFLITE_ENABLE_GPU)
+     ${TFLITE_SOURCE_DIR}/delegates/gpu/common
+     ${TFLITE_SOURCE_DIR}/delegates/gpu/common/task
+   )
+-  if(TFLITE_ENABLE_METAL AND "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
++  if(TFLITE_ENABLE_METAL AND APPLE)
+     #
+     # libmetal_delegate library
+     #
+@@ -442,8 +460,14 @@ if(TFLITE_ENABLE_GPU)
+      target_link_libraries(${lib_name})
+    endforeach()
+ endif()
+-  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
++  message(STATUS "using CL_TARGET_OPENCL_VERSION: ${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0")
++  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS
++    "-DEGL_EGLEXT_PROTOTYPES"
++    "-DCL_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0"
++    "-DEGL_NO_X11"
++  )
+   list(APPEND TFLITE_TARGET_DEPENDENCIES
++    OpenCL::OpenCL
+     absl::any
+     absl::flat_hash_map
+   )
