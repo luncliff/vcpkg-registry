@@ -132,8 +132,13 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         mmap    TFLITE_ENABLE_MMAP
 )
 
+if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+    list(APPEND GENERATOR_OPTIONS GENERATOR Xcode)
+endif()
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/tensorflow/lite"
+    ${GENERATOR_OPTIONS}
     OPTIONS
         ${FEATURE_OPTIONS}
         -DSYSTEM_PTHREADPOOL=ON
