@@ -1,5 +1,5 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 161e3421..102131d4 100644
+index 161e3421..781ff4a9 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
 @@ -26,7 +26,7 @@
@@ -11,7 +11,7 @@ index 161e3421..102131d4 100644
  if(NOT CMAKE_BUILD_TYPE)
    message(STATUS "Setting build type to Release, for debug builds use"
      "'-DCMAKE_BUILD_TYPE=Debug'.")
-@@ -268,18 +268,46 @@ populate_tflite_source_vars("core/tools" TFLITE_CORE_TOOLS_SRCS)
+@@ -268,18 +268,57 @@ populate_tflite_source_vars("core/tools" TFLITE_CORE_TOOLS_SRCS)
  populate_tflite_source_vars("c" TFLITE_C_SRCS)
  populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
  if(TFLITE_ENABLE_GPU)
@@ -55,6 +55,17 @@ index 161e3421..102131d4 100644
 +      ${TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS}
 +    )
 +  endif()
++  if(ANDROID)
++    populate_tflite_source_vars("core/async/interop/c" TFLITE_CORE_ASYNC_INTEROP_C_SRCS FILTER "(_test)\\.(cc|h)$")
++    populate_tflite_source_vars("delegates/utils" TFLITE_DELEGATES_UTILS_SRCS FILTER "(_test)\\.(cc|h)$")
++    populate_tflite_source_vars("async" TFLITE_ASYNC_SRCS FILTER "(_test)\\.(cc|h)$")
++    list(APPEND TFLITE_DELEGATES_GPU_SRCS
++      ${TFLITE_CORE_ASYNC_INTEROP_C_SRCS}
++      ${TFLITE_DELEGATES_UTILS_SRCS}
++      ${TFLITE_ASYNC_SRCS}
++    )
++    list(APPEND TFLITE_TARGET_DEPENDENCIES android nativewindow)
++  endif() # ANDROID
 +  if(ANDROID OR WIN32) # import EGL/OpenGL sources
 +    populate_tflite_source_vars(
 +      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
@@ -70,7 +81,7 @@ index 161e3421..102131d4 100644
    populate_tflite_source_vars(
      "delegates/gpu/cl/default" TFLITE_DELEGATES_GPU_CL_DEFAULT_SRCS
      FILTER "(_test)\\.(cc|h)$"
-@@ -355,11 +383,12 @@ if(TFLITE_ENABLE_GPU)
+@@ -355,11 +394,12 @@ if(TFLITE_ENABLE_GPU)
      ${TFLITE_SOURCE_DIR}/delegates/gpu/common
      ${TFLITE_SOURCE_DIR}/delegates/gpu/common/task
    )
@@ -84,7 +95,7 @@ index 161e3421..102131d4 100644
      list(APPEND TFLITE_DELEGATES_METAL_SRCS
        ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate.mm
        ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/buffer.cc
-@@ -375,30 +404,16 @@ if(TFLITE_ENABLE_GPU)
+@@ -375,30 +415,16 @@ if(TFLITE_ENABLE_GPU)
        ${TFLITE_DELEGATES_METAL_SRCS}
      )
      target_include_directories(metal_delegate PUBLIC
@@ -120,7 +131,7 @@ index 161e3421..102131d4 100644
      #
      # supplementary libraries for libmetal_delegate
      #
-@@ -415,12 +430,13 @@ if(TFLITE_ENABLE_GPU)
+@@ -415,12 +441,13 @@ if(TFLITE_ENABLE_GPU)
     foreach(lib_name ${CC_SRCS})
       set_source_files_properties(${METAL_DELEGATE_PATH}${lib_name}.cc  PROPERTIES LANGUAGE OBJCXX)
       add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.cc)
@@ -138,7 +149,7 @@ index 161e3421..102131d4 100644
     endforeach()
  
     list(APPEND MM_SRCS
-@@ -429,15 +445,23 @@ if(TFLITE_ENABLE_GPU)
+@@ -429,15 +456,23 @@ if(TFLITE_ENABLE_GPU)
     )
     foreach(lib_name ${MM_SRCS})
       add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.mm)
@@ -167,43 +178,7 @@ index 161e3421..102131d4 100644
      absl::any
      absl::flat_hash_map
    )
-@@ -620,6 +644,7 @@ target_link_libraries(tensorflow-lite
-     ruy::ruy
-     ${PTHREADPOOL_LIB}
-     ${CMAKE_DL_LIBS}
-+  PRIVATE
-     ${TFLITE_TARGET_DEPENDENCIES}
- )
- 
-diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 102131d4..8cac81dc 100644
---- a/tensorflow/lite/CMakeLists.txt
-+++ b/tensorflow/lite/CMakeLists.txt
-@@ -288,14 +288,23 @@ if(TFLITE_ENABLE_GPU)
-     populate_tflite_source_vars("delegates/gpu/gl/converters" TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS FILTER "(_test)\\.(cc|h)$")
-     populate_tflite_source_vars("delegates/gpu/gl/kernels" TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS FILTER "(_test)\\.(cc|h)$")
-     populate_tflite_source_vars("delegates/gpu/gl/workgroups" TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS FILTER "(_test)\\.(cc|h)$")
-+    populate_tflite_source_vars("core/async/interop/c" TFLITE_CORE_ASYNC_INTEROP_C_SRCS FILTER "(_test)\\.(cc|h)$")
-+    populate_tflite_source_vars("delegates/utils" TFLITE_DELEGATES_UTILS_SRCS FILTER "(_test)\\.(cc|h)$")
-+    populate_tflite_source_vars("async" TFLITE_ASYNC_SRCS FILTER "(_test)\\.(cc|h)$")
-     list(APPEND TFLITE_DELEGATES_GPU_SRCS
-       ${TFLITE_DELEGATES_GPU_GL_SRCS}
-       ${TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS}
-       ${TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS}
-       ${TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS}
-       ${TFLITE_DELEGATES_GPU_GL_WORKGROUPS_SRCS}
-+      ${TFLITE_CORE_ASYNC_INTEROP_C_SRCS}
-+      ${TFLITE_DELEGATES_UTILS_SRCS}
-+      ${TFLITE_ASYNC_SRCS}
-     )
-   endif()
-+  if(ANDROID)
-+    list(APPEND TFLITE_TARGET_DEPENDENCIES android nativewindow)
-+  endif()
-   if(ANDROID OR WIN32) # import EGL/OpenGL sources
-     populate_tflite_source_vars(
-       "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-@@ -476,7 +485,12 @@ if(_TFLITE_ENABLE_NNAPI)
+@@ -452,7 +487,12 @@ if(_TFLITE_ENABLE_NNAPI)
      "nnapi" TFLITE_NNAPI_SRCS FILTER "(_disabled)\\.(cc|h)$"
    )
  
@@ -215,4 +190,12 @@ index 102131d4..8cac81dc 100644
 +    ${TF_SOURCE_DIR}/tsl/platform/default/mutex.cc
      "${TFLITE_SOURCE_DIR}/nnapi/sl/SupportLibrary.cc"
    )
+ 
+@@ -620,6 +660,7 @@ target_link_libraries(tensorflow-lite
+     ruy::ruy
+     ${PTHREADPOOL_LIB}
+     ${CMAKE_DL_LIBS}
++  PRIVATE
+     ${TFLITE_TARGET_DEPENDENCIES}
+ )
  
