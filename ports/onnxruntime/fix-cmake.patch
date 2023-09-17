@@ -1,8 +1,8 @@
 diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
-index a5d28fb..ee07ec1 100644
+index 2e54063..688cb02 100644
 --- a/cmake/CMakeLists.txt
 +++ b/cmake/CMakeLists.txt
-@@ -14,6 +14,7 @@ cmake_policy(SET CMP0104 OLD)
+@@ -31,6 +31,7 @@ endif()
  
  # Project
  project(onnxruntime C CXX ASM)
@@ -10,7 +10,37 @@ index a5d28fb..ee07ec1 100644
  
  # Needed for Java
  set(CMAKE_C_STANDARD 99)
-@@ -318,10 +319,10 @@ endif()
+@@ -303,18 +304,18 @@ if (onnxruntime_USE_ROCM)
+     set(ROCM_VERSION_DEV "${ROCM_VERSION_DEV_MAJOR}.${ROCM_VERSION_DEV_MINOR}.${ROCM_VERSION_DEV_PATCH}")
+     math(EXPR ROCM_VERSION_DEV_INT "(${ROCM_VERSION_DEV_MAJOR}*10000) + (${ROCM_VERSION_DEV_MINOR}*100) + ${ROCM_VERSION_DEV_PATCH}")
+   endif()
+-  message("\n***** ROCm version from ${onnxruntime_ROCM_HOME}/.info/version-dev ****\n")
+-  message("ROCM_VERSION_DEV: ${ROCM_VERSION_DEV}")
+-  message("ROCM_VERSION_DEV_MAJOR: ${ROCM_VERSION_DEV_MAJOR}")
+-  message("ROCM_VERSION_DEV_MINOR: ${ROCM_VERSION_DEV_MINOR}")
+-  message("ROCM_VERSION_DEV_PATCH: ${ROCM_VERSION_DEV_PATCH}")
+-  message("ROCM_VERSION_DEV_INT:   ${ROCM_VERSION_DEV_INT}")
+-  message("\n***** HIP LANGUAGE CONFIG INFO ****\n")
+-  message("CMAKE_HIP_COMPILER:      ${CMAKE_HIP_COMPILER}")
+-  message("CMAKE_HIP_ARCHITECTURES: ${CMAKE_HIP_ARCHITECTURES}")
+-  message("CMAKE_HIP_FLAGS:         ${CMAKE_HIP_FLAGS}")
++  message(STATUS "\n***** ROCm version from ${onnxruntime_ROCM_HOME}/.info/version-dev ****\n")
++  message(STATUS "ROCM_VERSION_DEV: ${ROCM_VERSION_DEV}")
++  message(STATUS "ROCM_VERSION_DEV_MAJOR: ${ROCM_VERSION_DEV_MAJOR}")
++  message(STATUS "ROCM_VERSION_DEV_MINOR: ${ROCM_VERSION_DEV_MINOR}")
++  message(STATUS "ROCM_VERSION_DEV_PATCH: ${ROCM_VERSION_DEV_PATCH}")
++  message(STATUS "ROCM_VERSION_DEV_INT:   ${ROCM_VERSION_DEV_INT}")
++  message(STATUS "\n***** HIP LANGUAGE CONFIG INFO ****\n")
++  message(STATUS "CMAKE_HIP_COMPILER:      ${CMAKE_HIP_COMPILER}")
++  message(STATUS "CMAKE_HIP_ARCHITECTURES: ${CMAKE_HIP_ARCHITECTURES}")
++  message(STATUS "CMAKE_HIP_FLAGS:         ${CMAKE_HIP_FLAGS}")
+   string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
+-  message("CMAKE_HIP_FLAGS_${BUILD_TYPE}: ${CMAKE_HIP_FLAGS_${BUILD_TYPE}}")
++  message(STATUS "CMAKE_HIP_FLAGS_${BUILD_TYPE}: ${CMAKE_HIP_FLAGS_${BUILD_TYPE}}")
+   add_definitions(-DROCM_VERSION=${ROCM_VERSION_DEV_INT})
+ 
+   if (onnxruntime_USE_COMPOSABLE_KERNEL AND ROCM_VERSION_DEV VERSION_LESS "5.3")
+@@ -325,10 +326,10 @@ endif()
  
  if (APPLE)
      if (NOT CMAKE_OSX_ARCHITECTURES)
@@ -23,8 +53,8 @@ index a5d28fb..ee07ec1 100644
  endif()
  
  # Single output director for all binaries
-@@ -463,11 +464,11 @@ file (STRINGS "${REPO_ROOT}/VERSION_NUMBER" ORT_VERSION)
- find_package(Threads)
+@@ -481,11 +482,11 @@ if(NOT WIN32 AND NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
+ endif()
  find_package(Patch)
  if(Patch_FOUND)
 -  message("Patch found: ${Patch_EXECUTABLE}")
@@ -37,33 +67,41 @@ index a5d28fb..ee07ec1 100644
  endif()
  
  #Need python to generate def file
-@@ -489,6 +490,7 @@ get_filename_component(ORTTRAINING_ROOT "${ORTTRAINING_ROOT}" ABSOLUTE)
- get_filename_component(REPO_ROOT "${REPO_ROOT}" ABSOLUTE)
- set(ONNXRUNTIME_INCLUDE_DIR ${REPO_ROOT}/include/onnxruntime)
+@@ -1352,8 +1353,8 @@ if (onnxruntime_USE_DML)
+   if (NOT WIN32)
+     message(FATAL_ERROR "The DirectML execution provider is only supported when building for Windows.")
+   endif()
+-
+-  include(dml)
++  find_path(dml_INCLUDE_DIR NAMES "DirectML.h" REQUIRED)
++  include_directories(${dml_INCLUDE_DIR})
+ endif()
  
-+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external)
- include(external/onnxruntime_external_deps.cmake)
+ if (onnxruntime_ENABLE_TRAINING_APIS)
+@@ -1605,6 +1606,8 @@ if (WIN32 AND NOT GDK_PLATFORM)
+   endif()
+ endif()
  
- set(ORT_WARNING_FLAGS)
++# see cmake/external/
++include(external/protobuf_function.cmake)
+ foreach(target_name ${ONNXRUNTIME_CMAKE_FILES})
+   include(${target_name}.cmake)
+ endforeach()
 diff --git a/cmake/adjust_global_compile_flags.cmake b/cmake/adjust_global_compile_flags.cmake
-index e072363..dfc760d 100644
+index d4421a6..aab6a53 100644
 --- a/cmake/adjust_global_compile_flags.cmake
 +++ b/cmake/adjust_global_compile_flags.cmake
-@@ -276,10 +276,10 @@ if (MSVC)
+@@ -286,7 +286,7 @@ if (MSVC)
+ 
    if (NOT GDK_PLATFORM)
      add_compile_definitions(WINAPI_FAMILY=100) # Desktop app
-     if (onnxruntime_USE_WINML OR NOT CMAKE_CXX_STANDARD_LIBRARIES MATCHES kernel32.lib)
--        message("Building ONNX Runtime for Windows 8 and newer")
-+        message(STATUS "Building ONNX Runtime for Windows 8 and newer")
-         add_compile_definitions(WINVER=0x0602 _WIN32_WINNT=0x0602 NTDDI_VERSION=0x06020000)  # Support Windows 8 and newer
-     else()
--        message("Building ONNX Runtime for Windows 7 and newer")
-+        message(STATUS "Building ONNX Runtime for Windows 7 and newer")
-         # For people who build ONNX Runtime from source, the result binary may still support Windows 7
-         # Windows 7 doesn't have OneCore. So if CMAKE_CXX_STANDARD_LIBRARIES is for OneCore, the build won't come here
-         add_compile_definitions(WINVER=0x0601 _WIN32_WINNT=0x0601 NTDDI_VERSION=0x06010000)  # Support Windows 7 and newer
+-    message("Building ONNX Runtime for Windows 10 and newer")
++    message(STATUS "Building ONNX Runtime for Windows 10 and newer")
+     add_compile_definitions(WINVER=0x0A00 _WIN32_WINNT=0x0A00 NTDDI_VERSION=0x0A000000)
+   endif()
+   if (onnxruntime_ENABLE_LTO AND NOT onnxruntime_USE_CUDA)
 diff --git a/cmake/external/onnxruntime_external_deps.cmake b/cmake/external/onnxruntime_external_deps.cmake
-index 0c41945..593912e 100644
+index 9effd1a..6f53652 100644
 --- a/cmake/external/onnxruntime_external_deps.cmake
 +++ b/cmake/external/onnxruntime_external_deps.cmake
 @@ -1,4 +1,4 @@
@@ -72,7 +110,7 @@ index 0c41945..593912e 100644
  
  include(external/helper_functions.cmake)
  
-@@ -17,19 +17,13 @@ foreach(ONNXRUNTIME_DEP IN LISTS ONNXRUNTIME_DEPS_LIST)
+@@ -17,19 +17,15 @@ foreach(ONNXRUNTIME_DEP IN LISTS ONNXRUNTIME_DEPS_LIST)
    endif()
  endforeach()
  
@@ -80,7 +118,9 @@ index 0c41945..593912e 100644
 +message(STATUS "Loading Dependencies ...")
  # ABSL should be included before protobuf because protobuf may use absl
  if(NOT onnxruntime_DISABLE_ABSEIL)
-   include(external/abseil-cpp.cmake)
+-  include(external/abseil-cpp.cmake)
++  find_package(absl CONFIG REQUIRED)
++  list(APPEND onnxruntime_EXTERNAL_LIBRARIES absl::base)
  endif()
  
 -set(RE2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -91,30 +131,29 @@ index 0c41945..593912e 100644
 -    FIND_PACKAGE_ARGS NAMES re2
 -)
 +find_package(re2 CONFIG REQUIRED) # re2::re2
++list(APPEND onnxruntime_EXTERNAL_LIBRARIES re2::re2)
  
  if (onnxruntime_BUILD_UNIT_TESTS)
    # WebAssembly threading support in Node.js is still an experimental feature and
-@@ -43,379 +37,104 @@ if (onnxruntime_BUILD_UNIT_TESTS)
+@@ -42,13 +38,7 @@ if (onnxruntime_BUILD_UNIT_TESTS)
+     # It uses both ABSL and re2
      set(GTEST_HAS_ABSL OFF CACHE BOOL "" FORCE)
    endif()
-   # gtest and gmock
+-  # gtest and gmock
 -  FetchContent_Declare(
 -    googletest
 -    URL ${DEP_URL_googletest}
 -    FIND_PACKAGE_ARGS NAMES GTest
 -    URL_HASH SHA1=${DEP_SHA1_googletest}
 -  )
-+  find_package(GTest CONFIG REQUIRED)
-+  # GTest::gtest GTest::gtest_main
-+  # GTest::gmock GTest::gmock_main
++  find_package(GTest CONFIG REQUIRED) # GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main
  endif()
  
  if (onnxruntime_BUILD_BENCHMARKS)
--  # We will not need to test benchmark lib itself.
--  set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Disable benchmark testing as we don't need it.")
--  # We will not need to install benchmark since we link it statically.
--  set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "Disable benchmark install to avoid overwriting vendor install.")
--
+@@ -57,326 +47,50 @@ if (onnxruntime_BUILD_BENCHMARKS)
+   # We will not need to install benchmark since we link it statically.
+   set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "Disable benchmark install to avoid overwriting vendor install.")
+ 
 -  FetchContent_Declare(
 -    google_benchmark
 -    URL ${DEP_URL_google_benchmark}
@@ -132,17 +171,20 @@ index 0c41945..593912e 100644
 -    )
 +  find_package(unofficial-nsync CONFIG REQUIRED) # unofficial::nsync::nsync unofficial::nsync::nsync_cpp
  endif()
--list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external)
--
+ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external)
+ 
 -FetchContent_Declare(
 -      mimalloc
 -      URL ${DEP_URL_mimalloc}
 -      URL_HASH SHA1=${DEP_SHA1_mimalloc}
 -)
 -
--
++find_package(flatbuffers CONFIG REQUIRED) # flatbuffers::flatbuffers
++list(APPEND onnxruntime_EXTERNAL_DEPENDENCIES flatbuffers::flatbuffers)
  
- # Flatbuffers
++find_package(date CONFIG REQUIRED) # date::date date::date-tz
+ 
+-# Flatbuffers
 -# We do not need to build flatc for iOS or Android Cross Compile
 -if (CMAKE_SYSTEM_NAME STREQUAL "iOS" OR CMAKE_SYSTEM_NAME STREQUAL "Android" OR onnxruntime_BUILD_WEBASSEMBLY)
 -  set(FLATBUFFERS_BUILD_FLATC OFF CACHE BOOL "FLATBUFFERS_BUILD_FLATC" FORCE)
@@ -152,13 +194,51 @@ index 0c41945..593912e 100644
 -set(FLATBUFFERS_BUILD_FLATHASH OFF CACHE BOOL "FLATBUFFERS_BUILD_FLATHASH" FORCE)
 -set(FLATBUFFERS_BUILD_FLATLIB ON CACHE BOOL "FLATBUFFERS_BUILD_FLATLIB" FORCE)
 -
- #flatbuffers 1.11.0 does not have flatbuffers::IsOutRange, therefore we require 1.12.0+
+-#flatbuffers 1.11.0 does not have flatbuffers::IsOutRange, therefore we require 1.12.0+
 -FetchContent_Declare(
 -    flatbuffers
 -    URL ${DEP_URL_flatbuffers}
 -    URL_HASH SHA1=${DEP_SHA1_flatbuffers}
 -    FIND_PACKAGE_ARGS 1.12.0...<2.0.0 NAMES Flatbuffers
 -)
+-
+-# Download a protoc binary from Internet if needed
+-if(CMAKE_CROSSCOMPILING AND NOT ONNX_CUSTOM_PROTOC_EXECUTABLE AND NOT CMAKE_OSX_ARCHITECTURES)
+-  # This part of code is only for users' convenience. The code couldn't handle all cases. Users always can manually
+-  # download protoc from Protobuf's Github release page and pass the local path to the ONNX_CUSTOM_PROTOC_EXECUTABLE
+-  # variable.
+-  message("CMAKE_HOST_SYSTEM_NAME: ${CMAKE_HOST_SYSTEM_NAME}")
+-  if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+-    if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "AMD64")
+-      FetchContent_Declare(protoc_binary URL ${DEP_URL_protoc_win64} URL_HASH SHA1=${DEP_SHA1_protoc_win64})
+-      FetchContent_Populate(protoc_binary)
+-    elseif(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "x86")
+-      FetchContent_Declare(protoc_binary URL ${DEP_URL_protoc_win32} URL_HASH SHA1=${DEP_SHA1_protoc_win32})
+-      FetchContent_Populate(protoc_binary)
+-    endif() 
+-    if(protoc_binary_SOURCE_DIR)
+-      message("Use prebuilt protoc")
+-      set(ONNX_CUSTOM_PROTOC_EXECUTABLE ${protoc_binary_SOURCE_DIR}/bin/protoc.exe)
+-	  set(PROTOC_EXECUTABLE ${ONNX_CUSTOM_PROTOC_EXECUTABLE})
+-    endif()
+-  elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+-    if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64)$")
+-      FetchContent_Declare(protoc_binary URL ${DEP_URL_protoc_linux_x64} URL_HASH SHA1=${DEP_SHA1_protoc_linux_x64})
+-      FetchContent_Populate(protoc_binary)
+-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(i.86|x86?)$")
+-      FetchContent_Declare(protoc_binary URL ${DEP_URL_protoc_linux_x86} URL_HASH SHA1=${DEP_SHA1_protoc_linux_x86})
+-      FetchContent_Populate(protoc_binary)
+-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^aarch64.*")
+-      FetchContent_Declare(protoc_binary URL ${DEP_URL_protoc_linux_aarch64} URL_HASH SHA1=${DEP_SHA1_protoc_linux_aarch64})
+-      FetchContent_Populate(protoc_binary)
+-    endif()
+-    if(protoc_binary_SOURCE_DIR)
+-      message("Use prebuilt protoc")
+-      set(ONNX_CUSTOM_PROTOC_EXECUTABLE ${protoc_binary_SOURCE_DIR}/bin/protoc)
+-	  set(PROTOC_EXECUTABLE ${ONNX_CUSTOM_PROTOC_EXECUTABLE})
+-    endif()
+-  endif()
+-endif()
 -
 -#Here we support two build mode:
 -#1. if ONNX_CUSTOM_PROTOC_EXECUTABLE is set, build Protobuf from source, except protoc.exe. This mode is mainly
@@ -173,9 +253,8 @@ index 0c41945..593912e 100644
 -  Protobuf
 -  URL ${DEP_URL_protobuf}
 -  URL_HASH SHA1=${DEP_SHA1_protobuf}
--  SOURCE_SUBDIR  cmake
 -  PATCH_COMMAND ${ONNXRUNTIME_PROTOBUF_PATCH_COMMAND}
--  FIND_PACKAGE_ARGS 3.20.2 NAMES Protobuf
+-  FIND_PACKAGE_ARGS 3.21.12 NAMES Protobuf
 -)
 -set(protobuf_BUILD_TESTS OFF CACHE BOOL "Build protobuf tests" FORCE)
 -if (CMAKE_SYSTEM_NAME STREQUAL "Android")
@@ -185,7 +264,12 @@ index 0c41945..593912e 100644
 -if (onnxruntime_DISABLE_RTTI)
 -  set(protobuf_DISABLE_RTTI ON CACHE BOOL "Remove runtime type information in the binaries" FORCE)
 -endif()
--
++# replace Boost::mp11 to Boost::headers
++find_package(Boost REQUIRED)
++list(APPEND onnxruntime_EXTERNAL_LIBRARIES Boost::headers)
++find_path(BOOST_INCLUDEDIR "boost/mp11.hpp" REQUIRED)
++add_library(Boost::mp11 ALIAS Boost::headers)
+ 
 -include(protobuf_function)
 -#protobuf end
 -
@@ -199,10 +283,8 @@ index 0c41945..593912e 100644
 -    )
 -onnxruntime_fetchcontent_makeavailable(date)
 -
-+find_package(flatbuffers 1.12.0 CONFIG REQUIRED) # flatbuffers::flatbuffers
- 
-+find_package(date CONFIG REQUIRED) # date::date date::date-tz
- 
+-
+-
 -FetchContent_Declare(
 -  mp11
 -  URL ${DEP_URL_mp11}
@@ -213,19 +295,16 @@ index 0c41945..593912e 100644
 -set(JSON_Install OFF CACHE INTERNAL "")
 -set(JSON_BuildTests OFF CACHE INTERNAL "")
 -set(JSON_Install OFF CACHE INTERNAL "")
-+find_path(BOOST_INCLUDEDIR "boost/mp11.hpp" REQUIRED)
-+find_package(Boost REQUIRED) # Boost::headers instead of Boost::mp11
- 
+-
 -FetchContent_Declare(
 -    nlohmann_json
 -    URL ${DEP_URL_json}
 -    URL_HASH SHA1=${DEP_SHA1_json}
 -    FIND_PACKAGE_ARGS 3.10 NAMES nlohmann_json
 -)
-+find_package(nlohmann_json CONFIG REQUIRED) # nlohmann_json::nlohmann_json
- 
- #TODO: include clog first
- if (onnxruntime_ENABLE_CPUINFO)
+-
+-#TODO: include clog first
+-if (onnxruntime_ENABLE_CPUINFO)
 -  # Adding pytorch CPU info library
 -  # TODO!! need a better way to find out the supported architectures
 -  list(LENGTH CMAKE_OSX_ARCHITECTURES CMAKE_OSX_ARCHITECTURES_LEN)
@@ -262,26 +341,26 @@ index 0c41945..593912e 100644
 -      set(CPUINFO_SUPPORTED FALSE)
 -    endif()
 -  endif()
-+  find_package(cpuinfo CONFIG REQUIRED) # cpuinfo::clog cpuinfo::cpuinfo
-+  set(CPUINFO_SUPPORTED true)
- else()
-   set(CPUINFO_SUPPORTED FALSE)
- endif()
+-else()
+-  set(CPUINFO_SUPPORTED FALSE)
+-endif()
++find_package(nlohmann_json CONFIG REQUIRED) # nlohmann_json::nlohmann_json
++list(APPEND onnxruntime_EXTERNAL_LIBRARIES nlohmann_json::nlohmann_json)
  
--if (CPUINFO_SUPPORTED)
++set(CPUINFO_SUPPORTED TRUE)
+ if (CPUINFO_SUPPORTED)
 -  if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
 -    set(IOS ON CACHE INTERNAL "")
 -    set(IOS_ARCH "${CMAKE_OSX_ARCHITECTURES}" CACHE INTERNAL "")
 -  endif()
 -
--  # if this is a wasm build with xnnpack (only type of wasm build where cpuinfo is involved)
--  # we do not use cpuinfo in ORT code, so don't define CPUINFO_SUPPORTED.
--  if (NOT onnxruntime_BUILD_WEBASSEMBLY)
+   # if this is a wasm build with xnnpack (only type of wasm build where cpuinfo is involved)
+   # we do not use cpuinfo in ORT code, so don't define CPUINFO_SUPPORTED.
+   if (NOT onnxruntime_BUILD_WEBASSEMBLY)
 -    string(APPEND CMAKE_CXX_FLAGS " -DCPUINFO_SUPPORTED")
 -  endif()
 -
-+find_package(Microsoft.GSL CONFIG REQUIRED)
- 
+-
 -  set(CPUINFO_BUILD_TOOLS OFF CACHE INTERNAL "")
 -  set(CPUINFO_BUILD_UNIT_TESTS OFF CACHE INTERNAL "")
 -  set(CPUINFO_BUILD_MOCK_TESTS OFF CACHE INTERNAL "")
@@ -293,8 +372,7 @@ index 0c41945..593912e 100644
 -    URL_HASH SHA1=${DEP_SHA1_pytorch_cpuinfo}
 -    FIND_PACKAGE_ARGS NAMES cpuinfo
 -  )
-+find_path(SAFEINT_INCLUDE_DIRS "SafeInt.hpp" REQUIRED)
- 
+-
 -endif()
 -
 -
@@ -306,7 +384,11 @@ index 0c41945..593912e 100644
 -  #nsync tests failed on Mac Build
 -  set(NSYNC_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
 -  onnxruntime_fetchcontent_makeavailable(google_nsync)
--  set(nsync_SOURCE_DIR ${google_nsync_SOURCE_DIR})
+-  if (google_nsync_SOURCE_DIR)
+-    add_library(nsync::nsync_cpp ALIAS nsync_cpp)
+-    target_include_directories(nsync_cpp PUBLIC ${google_nsync_SOURCE_DIR}/public)
++    add_compile_definitions(CPUINFO_SUPPORTED)
+   endif()
 -endif()
 -
 -if(onnxruntime_USE_CUDA)
@@ -324,7 +406,7 @@ index 0c41945..593912e 100644
 -    FIND_PACKAGE_ARGS 4.0 NAMES Microsoft.GSL
 -  )
 -endif()
--
+ 
 -FetchContent_Declare(
 -    safeint
 -    URL ${DEP_URL_safeint}
@@ -357,13 +439,15 @@ index 0c41945..593912e 100644
 -      target_compile_options(flatc PRIVATE /FI${CMAKE_BINARY_DIR}/gdk_cstdlib_wrapper.h)
 -    endif()
 -  endif()
--endif()
--
++  find_package(cpuinfo CONFIG REQUIRED) # cpuinfo::cpuinfo
++  list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo::cpuinfo)
+ endif()
+ 
 -if (onnxruntime_BUILD_UNIT_TESTS)
 -  onnxruntime_fetchcontent_makeavailable(googletest)
 -endif()
-+add_library(safeint_interface INTERFACE)
-+target_include_directories(safeint_interface INTERFACE ${SAFEINT_INCLUDE_DIRS})
++find_package(Microsoft.GSL CONFIG REQUIRED) # Microsoft.GSL::GSL
++list(APPEND onnxruntime_EXTERNAL_LIBRARIES Microsoft.GSL::GSL)
  
 -if(Protobuf_FOUND)
 -  message("Protobuf version: ${Protobuf_VERSION}")
@@ -402,62 +486,52 @@ index 0c41945..593912e 100644
 -    target_compile_options(libprotobuf-lite PRIVATE "-w")
 -  endif()
 -endif()
-+find_package(protobuf CONFIG REQUIRED) # protobuf::libprotobuf protobuf::libprotobuf-lite
-+include(protobuf_function)
++find_package(protobuf CONFIG REQUIRED) # protobuf::libprotoc protobuf::libprotobuf
  if (onnxruntime_USE_FULL_PROTOBUF)
    set(PROTOBUF_LIB protobuf::libprotobuf)
  else()
    set(PROTOBUF_LIB protobuf::libprotobuf-lite)
  endif()
- 
-+find_package(Eigen3 CONFIG REQUIRED) # Eigen3::Eigen
-+find_package(wil CONFIG REQUIRED) # WIL::WIL
- 
--# ONNX
--if (NOT onnxruntime_USE_FULL_PROTOBUF)
--  set(ONNX_USE_LITE_PROTO ON CACHE BOOL "" FORCE)
--else()
--  set(ONNX_USE_LITE_PROTO OFF CACHE BOOL "" FORCE)
--endif()
 -
++list(APPEND onnxruntime_EXTERNAL_LIBRARIES ${PROTOBUF_LIB})
+ 
+ # ONNX
+ if (NOT onnxruntime_USE_FULL_PROTOBUF)
+@@ -385,46 +99,17 @@ else()
+   set(ONNX_USE_LITE_PROTO OFF CACHE BOOL "" FORCE)
+ endif()
+ 
 -if(Patch_FOUND)
 -  set(ONNXRUNTIME_ONNX_PATCH_COMMAND ${Patch_EXECUTABLE} --binary --ignore-whitespace -p1 < ${PROJECT_SOURCE_DIR}/patches/onnx/onnx.patch)
 -else()
 -  set(ONNXRUNTIME_ONNX_PATCH_COMMAND "")
 -endif()
-+find_path(ONNX_INCLUDE_DIR NAMES "onnx/common/version.h" REQUIRED)
-+find_library(ONNX_LIBRARY NAMES onnx REQUIRED)
-+find_library(ONNX_PROTO_LIBRARY NAMES onnx_proto REQUIRED)
- 
+-
 -FetchContent_Declare(
 -  onnx
 -  URL ${DEP_URL_onnx}
 -  URL_HASH SHA1=${DEP_SHA1_onnx}
 -  PATCH_COMMAND ${ONNXRUNTIME_ONNX_PATCH_COMMAND}
-+add_library(onnx STATIC IMPORTED GLOBAL)
-+set_target_properties(onnx
-+PROPERTIES
-+  INTERFACE_INCLUDE_DIRECTORIES "${ONNX_INCLUDE_DIR}"
-+  INTERFACE_COMPILE_DEFINITIONS "ONNX_ML"
-+  IMPORTED_IMPLIB "${ONNX_LIBRARY}"
-+  IMPORTED_LOCATION "${ONNX_LIBRARY}"
- )
- 
-+add_library(onnx_proto STATIC IMPORTED GLOBAL)
-+set_target_properties(onnx_proto
-+PROPERTIES
-+  INTERFACE_INCLUDE_DIRECTORIES "${ONNX_INCLUDE_DIR}"
-+  INTERFACE_COMPILE_DEFINITIONS "ONNX_ML"
-+  IMPORTED_IMPLIB "${ONNX_PROTO_LIBRARY}"
-+  IMPORTED_LOCATION "${ONNX_PROTO_LIBRARY}"
-+)
- 
+-)
+-
+-
 -if (CPUINFO_SUPPORTED)
 -  onnxruntime_fetchcontent_makeavailable(pytorch_cpuinfo)
+-  if (pytorch_cpuinfo_SOURCE_DIR)
+-    # shouldn't need to define these aliases after we use a version of cpuinfo with this commit:
+-    # https://github.com/pytorch/cpuinfo/commit/082deffc80ce517f81dc2f3aebe6ba671fcd09c9
+-    add_library(cpuinfo::cpuinfo ALIAS cpuinfo)
+-    add_library(cpuinfo::clog ALIAS clog)
+-  endif()
 -endif()
 -
--
--
++find_package(ONNX CONFIG REQUIRED)
++list(APPEND onnxruntime_EXTERNAL_LIBRARIES onnx onnx_proto)
+ 
++find_package(Eigen3 CONFIG REQUIRED)
++find_package(wil CONFIG REQUIRED)
++list(APPEND onnxruntime_EXTERNAL_LIBRARIES Eigen3::Eigen WIL::WIL)
+ 
 -include(eigen)
 -include(wil)
 -
@@ -466,26 +540,29 @@ index 0c41945..593912e 100644
 -else()
 -  include(onnx_minimal)
 -endif()
-+add_compile_definitions(ONNX_NAMESPACE=onnx)
- 
- set(GSL_TARGET "Microsoft.GSL::GSL")
- set(GSL_INCLUDE_DIR "$<TARGET_PROPERTY:${GSL_TARGET},INTERFACE_INCLUDE_DIRECTORIES>")
- 
--add_library(safeint_interface INTERFACE)
--target_include_directories(safeint_interface INTERFACE ${safeint_SOURCE_DIR})
 -
+-set(GSL_TARGET "Microsoft.GSL::GSL")
+-set(GSL_INCLUDE_DIR "$<TARGET_PROPERTY:${GSL_TARGET},INTERFACE_INCLUDE_DIRECTORIES>")
+-
++find_path(SAFEINT_INCLUDE_DIRS "SafeInt.hpp" REQUIRED)
+ add_library(safeint_interface INTERFACE)
+-target_include_directories(safeint_interface INTERFACE ${safeint_SOURCE_DIR})
++target_include_directories(safeint_interface INTERFACE ${SAFEINT_INCLUDE_DIRS})
++list(APPEND onnxruntime_EXTERNAL_LIBRARIES safeint_interface)
+ 
  # XNNPACK EP
  if (onnxruntime_USE_XNNPACK)
-   if (onnxruntime_DISABLE_CONTRIB_OPS)
+@@ -432,28 +117,15 @@ if (onnxruntime_USE_XNNPACK)
      message(FATAL_ERROR "XNNPACK EP requires the internal NHWC contrib ops to be available "
                           "but onnxruntime_DISABLE_CONTRIB_OPS is ON")
    endif()
 -  include(xnnpack)
 +  find_package(xnnpack CONFIG REQUIRED) # xnnpack
++  list(APPEND onnxruntime_EXTERNAL_LIBRARIES xnnpack)
  endif()
  
  if (onnxruntime_USE_MIMALLOC)
--  add_definitions(-DUSE_MIMALLOC)
+   add_definitions(-DUSE_MIMALLOC)
 -
 -  set(MI_OVERRIDE OFF CACHE BOOL "" FORCE)
 -  set(MI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -493,32 +570,30 @@ index 0c41945..593912e 100644
 -  set(MI_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 -  onnxruntime_fetchcontent_makeavailable(mimalloc)
 +  find_package(mimalloc CONFIG REQUIRED) # mimalloc
-+  add_compile_definitions(USE_MIMALLOC)
  endif()
  
- #onnxruntime_EXTERNAL_LIBRARIES could contain onnx, onnx_proto,libprotobuf, cuda/cudnn,
- # dnnl/mklml, onnxruntime_codegen_tvm, tvm and pthread
- # pthread is always at the last
+-#onnxruntime_EXTERNAL_LIBRARIES could contain onnx, onnx_proto,libprotobuf, cuda/cudnn,
+-# dnnl/mklml, onnxruntime_codegen_tvm, tvm and pthread
+-# pthread is always at the last
 -set(onnxruntime_EXTERNAL_LIBRARIES ${onnxruntime_EXTERNAL_LIBRARIES_XNNPACK} WIL::WIL nlohmann_json::nlohmann_json onnx onnx_proto ${PROTOBUF_LIB} re2::re2 Boost::mp11 safeint_interface flatbuffers::flatbuffers ${GSL_TARGET} ${ABSEIL_LIBS} date_interface)
-+list(APPEND onnxruntime_EXTERNAL_LIBRARIES xnnpack WIL::WIL nlohmann_json::nlohmann_json onnx onnx_proto ${PROTOBUF_LIB} re2::re2 Boost::headers safeint_interface flatbuffers::flatbuffers ${GSL_TARGET} ${ABSEIL_LIBS} date::date)
- # The source code of onnx_proto is generated, we must build this lib first before starting to compile the other source code that uses ONNX protobuf types.
- # The other libs do not have the problem. All the sources are already there. We can compile them in any order.
+-# The source code of onnx_proto is generated, we must build this lib first before starting to compile the other source code that uses ONNX protobuf types.
+-# The other libs do not have the problem. All the sources are already there. We can compile them in any order.
 -set(onnxruntime_EXTERNAL_DEPENDENCIES onnx_proto flatbuffers::flatbuffers)
 -
 -target_compile_definitions(onnx PUBLIC $<TARGET_PROPERTY:onnx_proto,INTERFACE_COMPILE_DEFINITIONS> PRIVATE "__ONNX_DISABLE_STATIC_REGISTRATION")
--if (NOT onnxruntime_USE_FULL_PROTOBUF)
--  target_compile_definitions(onnx PUBLIC "__ONNX_NO_DOC_STRINGS")
--endif()
--
--if (onnxruntime_RUN_ONNX_TESTS)
--  add_definitions(-DORT_RUN_EXTERNAL_ONNX_TESTS)
--endif()
--
-+list(APPEND onnxruntime_EXTERNAL_DEPENDENCIES onnx_proto flatbuffers::flatbuffers)
+ if (NOT onnxruntime_USE_FULL_PROTOBUF)
+   target_compile_definitions(onnx PUBLIC "__ONNX_NO_DOC_STRINGS")
+ endif()
+@@ -464,7 +136,7 @@ endif()
+ 
  
  if(onnxruntime_ENABLE_ATEN)
-   message("Aten fallback is enabled.")
-@@ -430,19 +148,10 @@ if(onnxruntime_ENABLE_ATEN)
+-  message("Aten fallback is enabled.")
++  message(STATUS "Aten fallback is enabled.")
+   FetchContent_Declare(
+     dlpack
+     URL ${DEP_URL_dlpack}
+@@ -476,19 +148,11 @@ if(onnxruntime_ENABLE_ATEN)
  endif()
  
  if(onnxruntime_ENABLE_TRAINING OR (onnxruntime_ENABLE_TRAINING_APIS AND onnxruntime_BUILD_UNIT_TESTS))
@@ -532,7 +607,8 @@ index 0c41945..593912e 100644
 -  set(CXXOPTS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 -  set(CXXOPTS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 -  onnxruntime_fetchcontent_makeavailable(cxxopts)
-+  find_package(cxxopts CONFIG REQUIRED) # cxxopts::cxxopts
++  find_package(cxxopts CONFIG REQUIRED)
++  list(APPEND onnxruntime_EXTERNAL_DEPENDENCIES cxxopts::cxxopts)
  endif()
  
 -message("Finished fetching external dependencies")
@@ -540,76 +616,61 @@ index 0c41945..593912e 100644
  
  
  set(onnxruntime_LINK_DIRS )
-diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
-index ee07ec1..553838d 100644
---- a/cmake/CMakeLists.txt
-+++ b/cmake/CMakeLists.txt
-@@ -755,7 +755,7 @@ endif()
+diff --git a/cmake/nuget_helpers.cmake b/cmake/nuget_helpers.cmake
+index e3296e1..0bf158e 100644
+--- a/cmake/nuget_helpers.cmake
++++ b/cmake/nuget_helpers.cmake
+@@ -19,7 +19,7 @@ function(package_version id out packages_config)
+     set(${out} ${version} PARENT_SCOPE)
+ endfunction()
  
- function(onnxruntime_set_compile_flags target_name)
-     if (CPUINFO_SUPPORTED)
--      onnxruntime_add_include_to_target(${target_name} cpuinfo)
-+      onnxruntime_add_include_to_target(${target_name} cpuinfo::cpuinfo)
+-# Downloads the nuget packages based on packages.config 
++# Downloads the nuget packages based on packages.config
+ function(
+     add_fetch_nuget_target
+     nuget_target # Target to be written to
+@@ -30,28 +30,12 @@ function(
+     message(FATAL_ERROR "NuGet packages are only supported for MSVC on Windows.")
      endif()
-     if(onnxruntime_ENABLE_EAGER_MODE)
-       target_compile_definitions(${target_name} PRIVATE ENABLE_EAGER_MODE)
-diff --git a/cmake/external/onnxruntime_external_deps.cmake b/cmake/external/onnxruntime_external_deps.cmake
-index 593912e..07d56cd 100644
---- a/cmake/external/onnxruntime_external_deps.cmake
-+++ b/cmake/external/onnxruntime_external_deps.cmake
-@@ -119,7 +119,8 @@ if (onnxruntime_USE_XNNPACK)
-     message(FATAL_ERROR "XNNPACK EP requires the internal NHWC contrib ops to be available "
-                          "but onnxruntime_DISABLE_CONTRIB_OPS is ON")
-   endif()
--  find_package(xnnpack CONFIG REQUIRED) # xnnpack
-+  find_library(XNNPACK_LIBRARY NAMES XNNPACK REQUIRED)
-+  find_package(unofficial-pthreadpool CONFIG REQUIRED) # unofficial::pthreadpool unofficial::pthreadpool_interface
- endif()
  
- if (onnxruntime_USE_MIMALLOC)
-@@ -130,7 +131,7 @@ endif()
- #onnxruntime_EXTERNAL_LIBRARIES could contain onnx, onnx_proto,libprotobuf, cuda/cudnn,
- # dnnl/mklml, onnxruntime_codegen_tvm, tvm and pthread
- # pthread is always at the last
--list(APPEND onnxruntime_EXTERNAL_LIBRARIES xnnpack WIL::WIL nlohmann_json::nlohmann_json onnx onnx_proto ${PROTOBUF_LIB} re2::re2 Boost::headers safeint_interface flatbuffers::flatbuffers ${GSL_TARGET} ${ABSEIL_LIBS} date::date)
-+list(APPEND onnxruntime_EXTERNAL_LIBRARIES ${XNNPACK_LIBRARY} unofficial::pthreadpool WIL::WIL nlohmann_json::nlohmann_json onnx onnx_proto ${PROTOBUF_LIB} re2::re2 Boost::headers safeint_interface flatbuffers::flatbuffers ${GSL_TARGET} ${ABSEIL_LIBS} date::date)
- # The source code of onnx_proto is generated, we must build this lib first before starting to compile the other source code that uses ONNX protobuf types.
- # The other libs do not have the problem. All the sources are already there. We can compile them in any order.
- list(APPEND onnxruntime_EXTERNAL_DEPENDENCIES onnx_proto flatbuffers::flatbuffers)
+-    # Retrieve the latest version of nuget
+-    include(ExternalProject)
+-    ExternalProject_Add(nuget_exe
+-    PREFIX nuget_exe
+-    URL "https://dist.nuget.org/win-x86-commandline/v5.3.0/nuget.exe"
+-    DOWNLOAD_NO_EXTRACT 1
+-    CONFIGURE_COMMAND ""
+-    BUILD_COMMAND ""
+-    UPDATE_COMMAND ""
+-    INSTALL_COMMAND "")
+-
+-    set(NUGET_CONFIG ${PROJECT_SOURCE_DIR}/../NuGet.config)
+-    set(PACKAGES_CONFIG ${PROJECT_SOURCE_DIR}/../packages.config)
+-    get_filename_component(PACKAGES_DIR ${CMAKE_CURRENT_BINARY_DIR}/../packages ABSOLUTE)
+-
+     # Restore nuget packages
+     add_custom_command(
+     OUTPUT ${target_dependency}
+     DEPENDS ${PACKAGES_CONFIG} ${NUGET_CONFIG}
+-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/nuget_exe/src/nuget restore ${PACKAGES_CONFIG} -PackagesDirectory ${PACKAGES_DIR} -ConfigFile ${NUGET_CONFIG}
++    COMMAND ${nuget_exe} restore ${PACKAGES_CONFIG} -PackagesDirectory ${PACKAGES_DIR} -ConfigFile ${NUGET_CONFIG}
+     VERBATIM)
+ 
+     add_custom_target(${nuget_target} DEPENDS ${target_dependency})
+-    add_dependencies(${nuget_target} nuget_exe)
+-endfunction()
+\ No newline at end of file
++endfunction()
 diff --git a/cmake/onnxruntime_common.cmake b/cmake/onnxruntime_common.cmake
-index 0e02ad9..0410d33 100644
+index 0410d33..685df7a 100644
 --- a/cmake/onnxruntime_common.cmake
 +++ b/cmake/onnxruntime_common.cmake
-@@ -194,8 +194,8 @@ if (ARM64 OR ARM OR X86 OR X64 OR X86_64)
-     # Using it mainly in ARM with Android.
+@@ -195,7 +195,7 @@ if (ARM64 OR ARM OR X86 OR X64 OR X86_64)
      # Its functionality in detecting x86 cpu features are lacking, so is support for Windows.
      if (CPUINFO_SUPPORTED)
--      onnxruntime_add_include_to_target(onnxruntime_common cpuinfo)
--      list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo clog)
-+      onnxruntime_add_include_to_target(onnxruntime_common cpuinfo::cpuinfo)
-+      list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo::cpuinfo cpuinfo::clog)
+       onnxruntime_add_include_to_target(onnxruntime_common cpuinfo::cpuinfo)
+-      list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo::cpuinfo cpuinfo::clog)
++      list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo::cpuinfo)
      endif()
    endif()
  endif()
-diff --git a/cmake/onnxruntime_unittests.cmake b/cmake/onnxruntime_unittests.cmake
-index 00c0172..6aeead7 100644
---- a/cmake/onnxruntime_unittests.cmake
-+++ b/cmake/onnxruntime_unittests.cmake
-@@ -998,7 +998,7 @@ if (NOT onnxruntime_ENABLE_TRAINING_TORCH_INTEROP)
-       target_link_libraries(onnxruntime_mlas_benchmark PRIVATE nsync_cpp ${CMAKE_DL_LIBS})
-     endif()
-     if (CPUINFO_SUPPORTED AND NOT onnxruntime_BUILD_WEBASSEMBLY)
--      target_link_libraries(onnxruntime_mlas_benchmark PRIVATE cpuinfo)
-+      target_link_libraries(onnxruntime_mlas_benchmark PRIVATE cpuinfo::cpuinfo)
-     endif()
-     set_target_properties(onnxruntime_mlas_benchmark PROPERTIES FOLDER "ONNXRuntimeTest")
-   endif()
-@@ -1276,7 +1276,7 @@ if (NOT onnxruntime_ENABLE_TRAINING_TORCH_INTEROP)
-           ${CMAKE_CURRENT_BINARY_DIR})
-   target_link_libraries(onnxruntime_mlas_test PRIVATE GTest::gtest GTest::gmock ${ONNXRUNTIME_MLAS_LIBS} onnxruntime_common)
-   if (CPUINFO_SUPPORTED AND NOT onnxruntime_BUILD_WEBASSEMBLY)
--    target_link_libraries(onnxruntime_mlas_test PRIVATE cpuinfo)
-+    target_link_libraries(onnxruntime_mlas_test PRIVATE cpuinfo::cpuinfo)
-   endif()
-   if(NOT WIN32)
-     target_link_libraries(onnxruntime_mlas_test PRIVATE nsync_cpp ${CMAKE_DL_LIBS})

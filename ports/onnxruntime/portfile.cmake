@@ -6,24 +6,16 @@ vcpkg_find_acquire_program(NUGET)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF v1.14.1
-    SHA512 d8f7ea161e850a738b9a22187662218871f88ad711282c58631196a74f4a4567184047bab0001b973f841a3b63c7dc7e350f92306cc5fa9a7adc4db2ce09766f
+    REF v1.15.1
+    SHA512 c9ad2ab1102bb97bdd88aa8e06432fff2960fb21172891eee9631ff7cbbdf3366cd7cf5c0baa494eb883135eab47273ed3128851ff4d9adfa004a479e941b6b5
     PATCHES
         fix-cmake.patch
-        import-flatbuffers.patch
-        fix-cmake2.patch
-        fix-cmake3.patch
-        fix-cmake4.patch # todo: use downloaded NuGet.exe
+        fix-source-flatbuffers.patch
+        fix-source-eigen3.patch
+        # fix-cmake2.patch
+        # fix-cmake3.patch
+        # fix-cmake4.patch # todo: use downloaded NuGet.exe
 )
-
-if("training" IN_LIST FEATURES)
-    vcpkg_from_github(
-        OUT_SOURCE_PATH TENSORBOARD_SOURCE_PATH # just for .proto files
-        REPO tensorflow/tensorboard
-        REF 2.13.0
-        SHA512 c4c2770552dc0816cde1350ba2676f4660d2c9e0a911544620b5e93089d94dedd328efe23316801f1959c40706519141aeb30cdb5072fca231443d11a1ffb2eb
-    )
-endif()
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
@@ -44,12 +36,12 @@ vcpkg_execute_required_process(
     WORKING_DIRECTORY "${SCHEMA_DIR}"
 )
 
-if("xnnpack" IN_LIST FEATURES)
-    # see https://github.com/microsoft/onnxruntime/pull/11798
-    set(PROVIDERS_DIR "${SOURCE_PATH}/include/onnxruntime/core/providers")
-    file(MAKE_DIRECTORY "${PROVIDERS_DIR}/xnnpack")
-    file(WRITE "${PROVIDERS_DIR}/xnnpack/xnnpack_provider_factory.h" "#pragma once")
-endif()
+# if("xnnpack" IN_LIST FEATURES)
+#     # see https://github.com/microsoft/onnxruntime/pull/11798
+#     set(PROVIDERS_DIR "${SOURCE_PATH}/include/onnxruntime/core/providers")
+#     file(MAKE_DIRECTORY "${PROVIDERS_DIR}/xnnpack")
+#     file(WRITE "${PROVIDERS_DIR}/xnnpack/xnnpack_provider_factory.h" "#pragma once")
+# endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
@@ -62,6 +54,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         tensorrt  onnxruntime_USE_TENSORRT
         tensorrt  onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         directml  onnxruntime_USE_DML
+        directml  onnxruntime_USE_CUSTOM_DIRECTML
         winml     onnxruntime_USE_WINML
         coreml    onnxruntime_USE_COREML
         mimalloc  onnxruntime_USE_MIMALLOC
@@ -78,24 +71,24 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 )
 
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
-    set(CONFIG_OPTIONS WINDOWS_USE_MSBUILD)
-else()
-    set(CONFIG_OPTIONS GENERATOR Ninja)
+    set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+    set(GENERATOR_OPTIONS GENERATOR Xcode)
 endif()
 
 if(VCPKG_TARGET_IS_WINDOWS)
     # target platform should be informed to activate SIMD properly
     if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
-        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="x64")
+        list(APPEND ARCH_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="x64")
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
-        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="Win32")
+        list(APPEND ARCH_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="Win32")
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="ARM64")
+        list(APPEND ARCH_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="ARM64")
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
-        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="ARM")
+        list(APPEND ARCH_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="ARM")
     else()
         message(WARNING "Unexpected architecture: ${VCPKG_TARGET_ARCHITECTURE}")
-        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="${VCPKG_TARGET_ARCHITECTURE}")
+        list(APPEND ARCH_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="${VCPKG_TARGET_ARCHITECTURE}")
     endif()
 endif()
 
@@ -112,22 +105,23 @@ get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
 # PATH for .bat scripts so it can find 'python'
 vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
 
-if("training" IN_LIST FEATURES)
-    # todo: dlpack in onnxruntime_provider. see `onnxruntime_ENABLE_ATEN`, https://github.com/dmlc/dlpack
-    list(APPEND FEATURE_OPTIONS
-        -DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}
-    )
-endif()
+# if("training" IN_LIST FEATURES)
+#     # todo: dlpack in onnxruntime_provider. see `onnxruntime_ENABLE_ATEN`, https://github.com/dmlc/dlpack
+#     list(APPEND FEATURE_OPTIONS
+#         -DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}
+#     )
+# endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
-    ${CONFIG_OPTIONS}
+    ${GENERATOR_OPTIONS}
     OPTIONS
-        ${GENERATOR_OPTIONS}
+        ${ARCH_OPTIONS}
         ${FEATURE_OPTIONS}
         -Dnuget_exe:FILEPATH:=${NUGET}
         -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
+        -DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         # -DProtobuf_USE_STATIC_LIBS=OFF
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
@@ -148,6 +142,8 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
         -Donnxruntime_ENABLE_CUDA_PROFILING=ON
         -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=ON
+    MAYBE_UNUSED_VARIABLES
+        nuget_exe
 )
 if("training" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_training LOGFILE_BASE build-training)

@@ -1,6 +1,6 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.14.1",
+  "version-semver": "1.15.1",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://www.onnxruntime.ai",
   "dependencies": [
@@ -63,7 +63,7 @@
       ]
     },
     "framework": {
-      "description": "Build with CoreML support",
+      "description": "Artifact will be Apple framework",
       "supports": "osx | ios"
     },
     "python": {
@@ -78,9 +78,6 @@
         "benchmark",
         "gtest"
       ]
-    },
-    "training": {
-      "description": "Turn on build options for ML training"
     },
     "winml": {
       "description": "Build with WinML support"

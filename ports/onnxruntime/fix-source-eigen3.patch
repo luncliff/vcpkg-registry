@@ -1,0 +1,39 @@
+diff --git a/include/onnxruntime/core/common/eigen_common_wrapper.h b/include/onnxruntime/core/common/eigen_common_wrapper.h
+index 4515f80..56ce17c 100644
+--- a/include/onnxruntime/core/common/eigen_common_wrapper.h
++++ b/include/onnxruntime/core/common/eigen_common_wrapper.h
+@@ -53,7 +53,7 @@
+ #pragma warning(disable : 4127)
+ #endif
+ 
+-#include "unsupported/Eigen/CXX11/Tensor"
++#include "eigen3/unsupported/Eigen/CXX11/Tensor"
+ 
+ #if defined(__GNUC__)
+ #pragma GCC diagnostic pop
+diff --git a/include/onnxruntime/core/platform/EigenNonBlockingThreadPool.h b/include/onnxruntime/core/platform/EigenNonBlockingThreadPool.h
+index 7f0046d..6af0888 100644
+--- a/include/onnxruntime/core/platform/EigenNonBlockingThreadPool.h
++++ b/include/onnxruntime/core/platform/EigenNonBlockingThreadPool.h
+@@ -33,7 +33,7 @@
+ #pragma warning(disable : 4805)
+ #endif
+ #include <memory>
+-#include "unsupported/Eigen/CXX11/ThreadPool"
++#include <Eigen/ThreadPool>
+ 
+ #if defined(__GNUC__)
+ #pragma GCC diagnostic pop
+diff --git a/onnxruntime/core/platform/windows/env.cc b/onnxruntime/core/platform/windows/env.cc
+index 022ecc3..94993ef 100644
+--- a/onnxruntime/core/platform/windows/env.cc
++++ b/onnxruntime/core/platform/windows/env.cc
+@@ -32,7 +32,7 @@ limitations under the License.
+ #include "core/common/span_utils.h"
+ #include "core/platform/env.h"
+ #include "core/platform/scoped_resource.h"
+-#include "unsupported/Eigen/CXX11/src/ThreadPool/ThreadPoolInterface.h"
++#include <Eigen/ThreadPool>
+ #include <wil/Resource.h>
+ 
+ #include "core/platform/path_lib.h"  // for LoopDir()

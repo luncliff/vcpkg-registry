@@ -1,5 +1,5 @@
 diff --git a/include/onnxruntime/core/graph/graph.h b/include/onnxruntime/core/graph/graph.h
-index 0fc2762..151abce 100644
+index dc6c7d2..5c39efd 100644
 --- a/include/onnxruntime/core/graph/graph.h
 +++ b/include/onnxruntime/core/graph/graph.h
 @@ -48,11 +48,7 @@
@@ -71,7 +71,7 @@ index 3d06013..4121534 100644
  namespace onnxruntime::kernel_type_str_resolver_utils {
  
 diff --git a/onnxruntime/core/framework/session_state.h b/onnxruntime/core/framework/session_state.h
-index f2d2eb1..61b48eb 100644
+index 502a635..7ca7ff4 100644
 --- a/onnxruntime/core/framework/session_state.h
 +++ b/onnxruntime/core/framework/session_state.h
 @@ -43,11 +43,7 @@
