@@ -674,3 +674,37 @@ index 0410d33..685df7a 100644
      endif()
    endif()
  endif()
+diff --git a/cmake/external/onnxruntime_external_deps.cmake b/cmake/external/onnxruntime_external_deps.cmake
+index 6f53652..6c97221 100644
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -119,6 +119,7 @@ if (onnxruntime_USE_XNNPACK)
+   endif()
+   find_package(xnnpack CONFIG REQUIRED) # xnnpack
+   list(APPEND onnxruntime_EXTERNAL_LIBRARIES xnnpack)
++  # add_compile_definitions(XNN_CACHE_ENABLE)
+ endif()
+ 
+ if (onnxruntime_USE_MIMALLOC)
+diff --git a/cmake/onnxruntime_unittests.cmake b/cmake/onnxruntime_unittests.cmake
+index 9347be1..069e434 100644
+--- a/cmake/onnxruntime_unittests.cmake
++++ b/cmake/onnxruntime_unittests.cmake
+@@ -1089,7 +1089,7 @@ if (NOT onnxruntime_ENABLE_TRAINING_TORCH_INTEROP)
+       target_link_libraries(onnxruntime_mlas_benchmark PRIVATE nsync::nsync_cpp ${CMAKE_DL_LIBS})
+     endif()
+     if (CPUINFO_SUPPORTED AND NOT onnxruntime_BUILD_WEBASSEMBLY)
+-      target_link_libraries(onnxruntime_mlas_benchmark PRIVATE cpuinfo)
++      target_link_libraries(onnxruntime_mlas_benchmark PRIVATE cpuinfo::cpuinfo)
+     endif()
+     set_target_properties(onnxruntime_mlas_benchmark PROPERTIES FOLDER "ONNXRuntimeTest")
+   endif()
+@@ -1329,7 +1329,7 @@ if (NOT onnxruntime_ENABLE_TRAINING_TORCH_INTEROP)
+           ${CMAKE_CURRENT_BINARY_DIR})
+   target_link_libraries(onnxruntime_mlas_test PRIVATE GTest::gtest GTest::gmock ${ONNXRUNTIME_MLAS_LIBS} onnxruntime_common)
+   if (CPUINFO_SUPPORTED AND NOT onnxruntime_BUILD_WEBASSEMBLY)
+-    target_link_libraries(onnxruntime_mlas_test PRIVATE cpuinfo)
++    target_link_libraries(onnxruntime_mlas_test PRIVATE cpuinfo::cpuinfo)
+   endif()
+   if(NOT WIN32)
+     target_link_libraries(onnxruntime_mlas_test PRIVATE nsync::nsync_cpp ${CMAKE_DL_LIBS})
