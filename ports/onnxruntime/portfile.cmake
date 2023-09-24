@@ -115,7 +115,7 @@ vcpkg_cmake_configure(
     OPTIONS
         ${ARCH_OPTIONS}
         ${FEATURE_OPTIONS}
-        -Dnuget_exe:FILEPATH:=${NUGET}
+        -DNUGET_EXE:FILEPATH:=${NUGET}
         -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         -DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
@@ -129,7 +129,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_MPI=OFF # ${VCPKG_TARGET_IS_LINUX}
         -Donnxruntime_ENABLE_CPUINFO=ON
-        -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=${VCPKG_TARGET_IS_WINDOWS}
+        -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=OFF
         -Donnxruntime_ENABLE_BITCODE=${VCPKG_TARGET_IS_IOS}
         -Donnxruntime_ENABLE_PYTHON=OFF
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
@@ -140,7 +140,10 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_CUDA_PROFILING=ON
         -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=ON
     MAYBE_UNUSED_VARIABLES
-        nuget_exe
+        NUGET_EXE
+        onnxruntime_BUILD_WEBASSEMBLY
+        onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
+        onnxruntime_USE_CUSTOM_DIRECTML
 )
 if("training" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_training LOGFILE_BASE build-training)

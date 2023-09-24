@@ -295,8 +295,8 @@ index e1671bc..c620dc9 100644
 -    add_library(nsync::nsync_cpp ALIAS nsync_cpp)
 -    target_include_directories(nsync_cpp PUBLIC ${google_nsync_SOURCE_DIR}/public)
 -  endif()
-+  find_package(unofficial-nsync CONFIG REQUIRED)
-+  list(APPEND onnxruntime_EXTERNAL_DEPENDENCIES unofficial::nsync::nsync_cpp)
++  find_package(nsync CONFIG REQUIRED)
++  list(APPEND onnxruntime_EXTERNAL_DEPENDENCIES nsync::nsync_cpp)
  endif()
  
 -if(onnxruntime_USE_CUDA)
