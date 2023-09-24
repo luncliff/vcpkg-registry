@@ -11,11 +11,11 @@
     "date",
     "eigen3",
     "flatbuffers",
-    "ms-gsl",
     {
       "name": "flatbuffers",
       "host": true
     },
+    "ms-gsl",
     "nlohmann-json",
     {
       "name": "nsync",
@@ -32,6 +32,10 @@
     "safeint",
     {
       "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
       "host": true
     },
     {

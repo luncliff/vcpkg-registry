@@ -6,15 +6,11 @@ vcpkg_find_acquire_program(NUGET)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF v1.15.1
-    SHA512 c9ad2ab1102bb97bdd88aa8e06432fff2960fb21172891eee9631ff7cbbdf3366cd7cf5c0baa494eb883135eab47273ed3128851ff4d9adfa004a479e941b6b5
+    REF efd416b71f0925108ff7cb0e83e99beabe7c05cd # todo: v1.15.2+
+    SHA512 5e35899e6fa347e72732fc8ad264a9d1ca7b0a6d4f1439bcdfb3a0fb30eb27a9f9d4220cb610a840f1493d85777ff7bf46bc9e7cf430dcd4ff3313a374d5ee7a
     PATCHES
         fix-cmake.patch
         fix-source-flatbuffers.patch
-        fix-source-eigen3.patch
-        # fix-cmake2.patch
-        # fix-cmake3.patch
-        # fix-cmake4.patch # todo: use downloaded NuGet.exe
 )
 
 find_program(PROTOC NAMES protoc
@@ -64,6 +60,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         azure     onnxruntime_USE_AZURE
         llvm      onnxruntime_USE_LLVM
         test      onnxruntime_BUILD_UNIT_TESTS
+        # test      onnxruntime_BUILD_BENCHMARKS
         framework onnxruntime_BUILD_APPLE_FRAMEWORK
         framework onnxruntime_BUILD_OBJC
     INVERTED_FEATURES
@@ -150,8 +147,10 @@ if("training" IN_LIST FEATURES)
 endif()
 vcpkg_cmake_build(TARGET onnxruntime LOGFILE_BASE build-onnxruntime)
 vcpkg_cmake_install()
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime)
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
+
 
 if("framework" IN_LIST FEATURES)
     set(FRAMEWORK_NAME "onnxruntime.framework")
