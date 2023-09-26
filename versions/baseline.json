@@ -38,7 +38,7 @@
     },
     "fft2d": {
       "baseline": "1.0",
-      "port-version": 2
+      "port-version": 3
     },
     "gemmlowp": {
       "baseline": "2022-02-09",
