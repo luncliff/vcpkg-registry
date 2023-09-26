@@ -1,5 +1,5 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 0924ca9d..f8709c6a 100644
+index 0924ca9d..c2b50631 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
 @@ -50,14 +50,7 @@ if(NOT TENSORFLOW_SOURCE_DIR)
@@ -14,7 +14,7 @@ index 0924ca9d..f8709c6a 100644
 -  "${TFLITE_SOURCE_DIR}/tools/cmake/modules"
 -  ${CMAKE_PREFIX_PATH}
 -)
-+
++# CMake modules/scripts are replaced to vcpkg portfile patches
  include(GNUInstallDirs)
  include(CMakeDependentOption)
  option(TFLITE_ENABLE_INSTALL "Enable install rule" OFF)
@@ -53,14 +53,18 @@ index 0924ca9d..f8709c6a 100644
    )
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
  endif()
-@@ -607,6 +601,7 @@ set(_ALL_TFLITE_HDRS ${_ALL_TFLITE_SRCS})
+@@ -607,9 +601,10 @@ set(_ALL_TFLITE_HDRS ${_ALL_TFLITE_SRCS})
  list(FILTER _ALL_TFLITE_HDRS INCLUDE REGEX ".*\\.h$")
  target_include_directories(tensorflow-lite
    PUBLIC $<BUILD_INTERFACE:${TENSORFLOW_SOURCE_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 +  PRIVATE ${FP16_INCLUDE_DIRS}
  )
  target_link_libraries(tensorflow-lite
-   PUBLIC
+-  PUBLIC
++  PRIVATE
+     Eigen3::Eigen
+     absl::flags
+     absl::hash
 @@ -623,7 +618,7 @@ target_link_libraries(tensorflow-lite
      gemmlowp::gemmlowp
      ml_dtypes

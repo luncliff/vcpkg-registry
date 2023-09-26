@@ -11,8 +11,9 @@ vcpkg_from_github(
         fix-cmake-use-vcpkg.patch   # use packages from vcpkg
         fix-cmake-c-api.patch       # includ C API sources
         fix-cmake-gpu.patch         # build settings for GPU features
+        fix-cmake-nnapi.patch       # Android NNAPI
         fix-source-abseil.patch     # replace std:: to absl::
-        fix-source-cpp20.patch      # use C++17
+        fix-source-cpp20.patch      # use C++17 syntax
         fix-source-gpu.patch        # source changes for GPU features
 )
 file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")

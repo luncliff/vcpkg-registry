@@ -1,5 +1,5 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 161e3421..781ff4a9 100644
+index 161e3421..27760a43 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
 @@ -26,7 +26,7 @@
@@ -11,37 +11,36 @@ index 161e3421..781ff4a9 100644
  if(NOT CMAKE_BUILD_TYPE)
    message(STATUS "Setting build type to Release, for debug builds use"
      "'-DCMAKE_BUILD_TYPE=Debug'.")
-@@ -268,18 +268,57 @@ populate_tflite_source_vars("core/tools" TFLITE_CORE_TOOLS_SRCS)
+@@ -268,18 +268,61 @@ populate_tflite_source_vars("core/tools" TFLITE_CORE_TOOLS_SRCS)
  populate_tflite_source_vars("c" TFLITE_C_SRCS)
  populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
  if(TFLITE_ENABLE_GPU)
 -  find_package(opencl_headers REQUIRED)
 -  find_package(vulkan_headers REQUIRED)
 -  find_package(fp16_headers REQUIRED)
--  # Android NDK already has OpenGL, EGL headers.
--  if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
--    find_package(opengl_headers REQUIRED)
--    find_package(egl_headers REQUIRED)
--  endif()
--  populate_tflite_source_vars(
--    "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
--    FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
--  )
 +  find_package(OpenCL REQUIRED) # OpenCL::OpenCL
 +  find_package(Vulkan COMPONENTS Headers) # Vulkan::Headers Vulkan::Vulkan
 +  if(Vulkan_FOUND)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES Vulkan::Headers)
-+  endif()
++  endif(Vulkan_FOUND)
+   # Android NDK already has OpenGL, EGL headers.
+-  if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
+-    find_package(opengl_headers REQUIRED)
+-    find_package(egl_headers REQUIRED)
+-  endif()
++  # In Windows, we use Google/ANGLE from vcpkg
 +  if(ANDROID OR WIN32)
 +    set(OPENGL_USE_EGL true)
 +    find_path(OPENGL_EGL_INCLUDE_DIRS "EGL/egl.h" REQUIRED)
 +    find_library(OPENGL_egl_LIBRARY NAMES EGL libEGL REQUIRED)
++    # it's using "version 310 es"
 +    find_path(OPENGL_GLES3_INCLUDE_DIR "GLES3/gl3.h" REQUIRED)
 +    find_library(OPENGL_gles3_LIBRARY NAMES GLESv3 libGLESv3 GLESv2 libGLESv2 REQUIRED)
 +    find_library(OPENGL_gl_LIBRARY NAMES GLESv3 libGLESv3 GLESv2 libGLESv2 REQUIRED)
-+    # it's using "version 310 es"
 +    find_package(OpenGL REQUIRED COMPONENTS GLES3) # OpenGL::GLES3
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES OpenGL::GLES3 ${OPENGL_egl_LIBRARY})
++    list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "-DEGL_EGLEXT_PROTOTYPES")
++    # include GPU sources ...
 +    populate_tflite_source_vars("delegates/gpu/gl" TFLITE_DELEGATES_GPU_GL_SRCS FILTER "(_test)\\.(cc|h)$")
 +    populate_tflite_source_vars("delegates/gpu/gl/compiler" TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS FILTER "(_test)\\.(cc|h)$")
 +    populate_tflite_source_vars("delegates/gpu/gl/converters" TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS FILTER "(_test)\\.(cc|h)$")
@@ -65,23 +64,27 @@ index 161e3421..781ff4a9 100644
 +      ${TFLITE_ASYNC_SRCS}
 +    )
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES android nativewindow)
-+  endif() # ANDROID
-+  if(ANDROID OR WIN32) # import EGL/OpenGL sources
-+    populate_tflite_source_vars(
-+      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-+      FILTER "(_test)\\.(cc|h)$"
-+    )
-+  else()
++  endif()
+-  populate_tflite_source_vars(
+-    "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
+-    FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
+-  )
++  if(NOT (ANDROID OR WIN32))
 +    populate_tflite_source_vars(
 +      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
 +      FILTER "(_test|gl_interop|gpu_api_delegate|egl_sync)\\.(cc|h)$"
 +    )
 +    list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "-DCL_DELEGATE_NO_GL")
++  else()
++    populate_tflite_source_vars(
++      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
++      FILTER "(_test)\\.(cc|h)$"
++    )
 +  endif()
    populate_tflite_source_vars(
      "delegates/gpu/cl/default" TFLITE_DELEGATES_GPU_CL_DEFAULT_SRCS
      FILTER "(_test)\\.(cc|h)$"
-@@ -355,11 +394,12 @@ if(TFLITE_ENABLE_GPU)
+@@ -355,11 +398,13 @@ if(TFLITE_ENABLE_GPU)
      ${TFLITE_SOURCE_DIR}/delegates/gpu/common
      ${TFLITE_SOURCE_DIR}/delegates/gpu/common/task
    )
@@ -91,11 +94,12 @@ index 161e3421..781ff4a9 100644
      # libmetal_delegate library
      #
      enable_language(OBJCXX)
-+    add_compile_options(-fobjc-arc)
++    # Xcode will apply -fobjc-arc
++    set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES")
      list(APPEND TFLITE_DELEGATES_METAL_SRCS
        ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate.mm
        ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/buffer.cc
-@@ -375,30 +415,16 @@ if(TFLITE_ENABLE_GPU)
+@@ -375,10 +420,13 @@ if(TFLITE_ENABLE_GPU)
        ${TFLITE_DELEGATES_METAL_SRCS}
      )
      target_include_directories(metal_delegate PUBLIC
@@ -104,98 +108,54 @@ index 161e3421..781ff4a9 100644
        PRIVATE ${TENSORFLOW_SOURCE_DIR}
      )
 +    target_link_libraries(metal_delegate PUBLIC
-+      absl::status
-+      flatbuffers::flatbuffers
++      absl::status flatbuffers::flatbuffers
++      "-framework Foundation" "-framework Metal"
 +    )
++    list(APPEND TFLITE_TARGET_DEPENDENCIES metal_delegate)
      #
      # generate flatbuffers header for inference_context
      #
--    if(FLATBUFFERS_FLATC_EXECUTABLE)
--      set(FLATC ${FLATBUFFERS_FLATC_EXECUTABLE})
--    else()
--      set(FLATC flatc)
--    endif()
--    add_custom_command(
--        OUTPUT ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/inference_context_generated.h
--        COMMAND ${FLATC} --scoped-enums
--        -I ${TENSORFLOW_SOURCE_DIR}
--        -o ${TFLITE_SOURCE_DIR}/delegates/gpu/metal
--        -c ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/inference_context.fbs
--    )
--    add_custom_target(
--        inference_context_cc_fbs
--        DEPENDS ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/inference_context_generated.h
--    )
--    add_dependencies(metal_delegate inference_context_cc_fbs)
-+    # note: it's already generated in portfile.cmake
-     #
-     # supplementary libraries for libmetal_delegate
-     #
-@@ -415,12 +441,13 @@ if(TFLITE_ENABLE_GPU)
+@@ -415,12 +463,13 @@ if(TFLITE_ENABLE_GPU)
     foreach(lib_name ${CC_SRCS})
       set_source_files_properties(${METAL_DELEGATE_PATH}${lib_name}.cc  PROPERTIES LANGUAGE OBJCXX)
       add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.cc)
 -     target_include_directories("${lib_name}" PUBLIC
 -       ${CMAKE_BINARY_DIR}/abseil-cpp
 -       ${CMAKE_BINARY_DIR}/flatbuffers/include
-+     target_include_directories("${lib_name}" PUBLIC ${TENSORFLOW_SOURCE_DIR})
+-     )
++     target_include_directories("${lib_name}" PRIVATE ${TENSORFLOW_SOURCE_DIR})
 +     target_link_libraries("${lib_name}" PUBLIC
 +       absl::base
 +       flatbuffers::flatbuffers
-      )
++     )
       set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE OBJCXX)
 -     target_link_libraries(${lib_name})
 +     list(APPEND TFLITE_TARGET_DEPENDENCIES "${lib_name}")
     endforeach()
  
     list(APPEND MM_SRCS
-@@ -429,15 +456,23 @@ if(TFLITE_ENABLE_GPU)
+@@ -429,15 +478,18 @@ if(TFLITE_ENABLE_GPU)
     )
     foreach(lib_name ${MM_SRCS})
       add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.mm)
 -     target_include_directories("${lib_name}" PUBLIC
 -       ${CMAKE_BINARY_DIR}/abseil-cpp
 -       ${CMAKE_BINARY_DIR}/flatbuffers/include
-+     target_include_directories("${lib_name}" PUBLIC ${TENSORFLOW_SOURCE_DIR})
+-     )
+-     target_link_libraries(${lib_name})
++     target_include_directories("${lib_name}" PRIVATE ${TENSORFLOW_SOURCE_DIR})
 +     target_link_libraries("${lib_name}" PUBLIC
 +       absl::base
 +       flatbuffers::flatbuffers
-      )
--     target_link_libraries(${lib_name})
++     )
 +     list(APPEND TFLITE_TARGET_DEPENDENCIES "${lib_name}")
     endforeach()
-+   list(APPEND TFLITE_TARGET_DEPENDENCIES metal_delegate "-framework Metal" "-framework Foundation")
  endif()
--  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
+   list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
+-  list(APPEND TFLITE_TARGET_DEPENDENCIES
 +  message(STATUS "using CL_TARGET_OPENCL_VERSION: ${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0")
-+  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS
-+    "-DEGL_EGLEXT_PROTOTYPES"
-+    "-DCL_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0"
-+    "-DEGL_NO_X11"
-+  )
-   list(APPEND TFLITE_TARGET_DEPENDENCIES
-+    OpenCL::OpenCL
++  list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "-DCL_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0")
++  list(APPEND TFLITE_TARGET_DEPENDENCIES OpenCL::OpenCL
      absl::any
      absl::flat_hash_map
    )
-@@ -452,7 +487,12 @@ if(_TFLITE_ENABLE_NNAPI)
-     "nnapi" TFLITE_NNAPI_SRCS FILTER "(_disabled)\\.(cc|h)$"
-   )
- 
-+  find_library(NSYNC_LIBRARY NAMES nsync_cpp nsync REQUIRED)
-+  list(APPEND TFLITE_TARGET_DEPENDENCIES ${NSYNC_LIBRARY})
-   list(APPEND TFLITE_NNAPI_SRCS
-+    ${TF_SOURCE_DIR}/tsl/platform/default/logging.h
-+    ${TF_SOURCE_DIR}/tsl/platform/default/logging.cc
-+    ${TF_SOURCE_DIR}/tsl/platform/default/mutex.cc
-     "${TFLITE_SOURCE_DIR}/nnapi/sl/SupportLibrary.cc"
-   )
- 
-@@ -620,6 +660,7 @@ target_link_libraries(tensorflow-lite
-     ruy::ruy
-     ${PTHREADPOOL_LIB}
-     ${CMAKE_DL_LIBS}
-+  PRIVATE
-     ${TFLITE_TARGET_DEPENDENCIES}
- )
- 
