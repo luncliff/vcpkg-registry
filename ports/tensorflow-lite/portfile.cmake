@@ -5,8 +5,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.14.0-rc1
-    SHA512 788718905e9a134f4857886f75598e605788ea441556729fcf1f615db919329bce067200b978fcecd8edecb87141fbaf6799bf63572a6100fd5b4d9cb2896b18
+    REF v2.14.0
+    SHA512 ae39fd8049f9cd3118c1f10285d5272531380bbe0506dc7fb14c8e9da34a578284af486795abdae0f82ef0b84d14896564386595669ef303a1b8dbfa06b88f7a
     PATCHES
         fix-cmake-use-vcpkg.patch   # use packages from vcpkg
         fix-cmake-c-api.patch       # includ C API sources
