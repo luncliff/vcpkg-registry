@@ -6,9 +6,13 @@
   "supports": "windows | osx",
   "dependencies": [
     {
+      "name": "apple-nio-ssl",
+      "platform": "osx"
+    },
+    "openssl3",
+    {
       "name": "vcpkg-cmake",
       "host": true
-    },
-    "openssl3"
+    }
   ]
 }
