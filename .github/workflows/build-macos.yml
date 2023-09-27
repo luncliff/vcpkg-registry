@@ -9,6 +9,7 @@ jobs:
   macos12:
     runs-on: "macos-12"
     strategy:
+      fail-fast: false
       matrix:
         triplet: [x64-osx, arm64-ios]
     env:
