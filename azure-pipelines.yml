@@ -24,7 +24,7 @@ schedules:
 
 variables:
   - name: vcpkg.commit
-    value: "a7b6122f6b6504d16d96117336a0562693579933" # mainstream 2023.02.24
+    value: "9edb1b8e590cc086563301d735cae4b6e732d2d2" # mainstream 2023.08.09
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
   - name: vcpkg.disable.metrics
@@ -35,34 +35,10 @@ variables:
 stages:
   - stage: "Triplets"
     jobs:
-      - job: "triplet_android"
-        displayName: "Android"
-        pool:
-          vmImage: ubuntu-22.04
-        variables:
-          - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
-            value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
-        steps:
-          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
-          - task: run-vcpkg@0
-            displayName: "arm64-android: vulkan-android-test"
-            inputs:
-              vcpkgArguments: "vulkan-android-test"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_DEFAULT_TRIPLET: arm64-android # --triplet ${triplet}
-          - task: run-vcpkg@0
-            displayName: "x64-android: vulkan-android-test"
-            inputs:
-              vcpkgArguments: "vulkan-android-test"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_DEFAULT_TRIPLET: x64-android
-
       - job: "triplet_ios_simulator"
         displayName: "iOS Simulator"
         pool:
-          vmImage: macOS-11
+          vmImage: macOS-12
         variables:
           - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
             value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
@@ -99,9 +75,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"2313-bin-mac-host"'
+              key: '"2338-bin-mac-host"'
               restoreKeys: |
-                "2313-bin-mac-host"
+                "2338-bin-mac-host"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "coreml-tools"
@@ -148,15 +124,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2313-down-windows"'
+              key: '"2338-down-windows"'
               restoreKeys: |
-                "2313-down-windows"
+                "2338-down-windows"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2313-bin-windows" | "$(vcpkg.default.triplet)"'
+              key: '"2338-bin-windows" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2313-bin-windows" | "$(vcpkg.default.triplet)"
+                "2338-bin-windows" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -174,11 +150,6 @@ stages:
               vcpkgArguments: "tensorflow-lite[google-angle,gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             condition: ne(variables['vcpkg.default.triplet'], 'x64-uwp')
-          - task: run-vcpkg@0
-            displayName: "tensorflow-lite(CPU)"
-            inputs:
-              vcpkgArguments: "tensorflow-lite --debug"
-              vcpkgGitCommitId: $(vcpkg.commit)
           - task: CopyFiles@2
             displayName: "Copy logs in buildtrees"
             inputs:
@@ -215,15 +186,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2313-down-uwp"'
+              key: '"2338-down-uwp"'
               restoreKeys: |
-                "2313-down-uwp"
+                "2338-down-uwp"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2313-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"2338-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2313-bin-uwp" | "$(vcpkg.default.triplet)"
+                "2338-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -282,30 +253,20 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2313-down-ubuntu"'
+              key: '"2338-down-ubuntu"'
               restoreKeys: |
-                "2313-down-ubuntu"
+                "2338-down-ubuntu"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2313-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"2338-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
-                "2313-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
+                "2338-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
-          - task: run-vcpkg@0
-            displayName: "x64-linux(failure)"
-            inputs:
-              vcpkgArguments: "xnvctrl"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            continueOnError: true
-          - task: run-vcpkg@0
-            inputs:
-              vcpkgArguments: "zlib-ng openssl3"
-              vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "tensorflow-lite"
             inputs:
-              vcpkgArguments: "tensorflow-lite"
+              vcpkgArguments: "tensorflow-lite[gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "onnxruntime"
@@ -350,29 +311,22 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2313-down-android"'
+              key: '"2338-down-android"'
               restoreKeys: |
-                "2313-down-android"
+                "2338-down-android"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2313-bin-android" | "$(vcpkg.default.triplet)"'
+              key: '"2338-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2313-bin-android" | "$(vcpkg.default.triplet)"
-                "2313-bin-android" | "$(vcpkg.default.triplet)"
+                "2338-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
-            displayName: "Custom Triplet"
-            inputs:
-              vcpkgArguments: "vulkan onnxruntime[xnnpack] tensorflow-lite[gpu]"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
-          - task: run-vcpkg@0
-            displayName: "Default Triplet"
             inputs:
               vcpkgArguments: "openssl3 zlib-ng libdispatch fft2d farmhash ruy eigen3 google-jni-bind"
               vcpkgGitCommitId: $(vcpkg.commit)
+            env:
+              VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
           - task: CopyFiles@2
             displayName: "Copy logs in buildtrees"
             inputs:
@@ -419,15 +373,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2313-down-apple"'
+              key: '"2338-down-apple"'
               restoreKeys: |
-                "2313-down-apple"
+                "2338-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2313-bin-osx" | "$(vcpkg.default.triplet)"'
+              key: '"2338-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2313-bin-osx" | "$(vcpkg.default.triplet)"
+                "2338-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -479,15 +433,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"2313-down-apple"'
+              key: '"2338-down-apple"'
               restoreKeys: |
-                "2313-down-apple"
+                "2338-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"2313-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"2338-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "2313-bin-ios" | "$(vcpkg.default.triplet)"
+                "2338-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "arm64-ios"
