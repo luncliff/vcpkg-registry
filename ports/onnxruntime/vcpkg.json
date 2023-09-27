@@ -38,10 +38,6 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
-    {
-      "name": "vcpkg-get-python-packages",
-      "host": true
-    },
     "wil",
     "zlib"
   ],
@@ -68,7 +64,13 @@
       "supports": "osx | ios"
     },
     "python": {
-      "description": "Enable python buildings"
+      "description": "Enable python buildings",
+      "dependencies": [
+        {
+          "name": "vcpkg-get-python-packages",
+          "host": true
+        }
+      ]
     },
     "tensorrt": {
       "description": "Build with NVIDIA TensorRT support"

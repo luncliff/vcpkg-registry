@@ -555,3 +555,61 @@ index 695e218..008bdf3 100644
    endif()
    if(NOT WIN32)
      target_link_libraries(onnxruntime_mlas_test PRIVATE nsync::nsync_cpp ${CMAKE_DL_LIBS})
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index ab5ed03..8cf6dd1 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -861,7 +861,7 @@ function(onnxruntime_set_compile_flags target_name)
+     if (onnxruntime_ENABLE_ATEN)
+       target_compile_definitions(${target_name} PRIVATE ENABLE_ATEN)
+     endif()
+-    set_target_properties(${target_name} PROPERTIES COMPILE_WARNING_AS_ERROR ON)
++    set_target_properties(${target_name} PROPERTIES COMPILE_WARNING_AS_ERROR OFF)
+     if (onnxruntime_USE_CUDA)
+       # Suppress a "conversion_function_not_usable" warning in gsl/span
+       target_compile_options(${target_name} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe \"--diag_suppress=conversion_function_not_usable\">")
+diff --git a/cmake/onnxruntime.cmake b/cmake/onnxruntime.cmake
+index c83e6a2..d2d43ed 100644
+--- a/cmake/onnxruntime.cmake
++++ b/cmake/onnxruntime.cmake
+@@ -305,6 +305,9 @@ if(onnxruntime_BUILD_APPLE_FRAMEWORK)
+ 
+   # Go through all the static libraries, and create symbolic links
+   foreach(_LIB ${onnxruntime_INTERNAL_LIBRARIES} ${onnxruntime_EXTERNAL_LIBRARIES})
++    if(NOT TARGET ${_LIB})
++      continue()
++    endif()
+     GET_TARGET_PROPERTY(_LIB_TYPE ${_LIB} TYPE)
+     if(_LIB_TYPE STREQUAL "STATIC_LIBRARY")
+       add_custom_command(TARGET onnxruntime POST_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:${_LIB}> ${STATIC_LIB_DIR}/$<TARGET_LINKER_FILE_NAME:${_LIB}>)
+diff --git a/cmake/onnxruntime_unittests.cmake b/cmake/onnxruntime_unittests.cmake
+index 067b5ce..f02412f 100644
+--- a/cmake/onnxruntime_unittests.cmake
++++ b/cmake/onnxruntime_unittests.cmake
+@@ -662,6 +662,7 @@ if(onnxruntime_USE_COREML)
+ endif()
+ 
+ if(onnxruntime_USE_XNNPACK)
++  find_package(xnnpack CONFIG REQUIRED)
+   list(APPEND onnxruntime_test_framework_src_patterns  ${TEST_SRC_DIR}/providers/xnnpack/*)
+   list(APPEND onnxruntime_test_framework_libs onnxruntime_providers_xnnpack)
+   list(APPEND onnxruntime_test_providers_dependencies onnxruntime_providers_xnnpack)
+@@ -698,6 +699,7 @@ else()
+   target_compile_definitions(onnxruntime_test_utils PUBLIC -DNSYNC_ATOMIC_CPP11)
+   target_include_directories(onnxruntime_test_utils PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${ONNXRUNTIME_ROOT})
+   onnxruntime_add_include_to_target(onnxruntime_test_utils nsync::nsync_cpp)
++  target_link_libraries(onnxruntime_test_utils PUBLIC nsync::nsync_cpp)
+ endif()
+ if (onnxruntime_USE_NCCL)
+   target_include_directories(onnxruntime_test_utils PRIVATE ${NCCL_INCLUDE_DIRS})
+@@ -706,7 +708,9 @@ if (onnxruntime_USE_ROCM)
+   target_include_directories(onnxruntime_test_utils PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/amdgpu/onnxruntime ${CMAKE_CURRENT_BINARY_DIR}/amdgpu/orttraining)
+ endif()
+ onnxruntime_add_include_to_target(onnxruntime_test_utils onnxruntime_common onnxruntime_framework onnxruntime_session GTest::gtest GTest::gmock onnx onnx_proto flatbuffers::flatbuffers nlohmann_json::nlohmann_json Boost::mp11 safeint_interface)
+-
++if(NOT WIN32)
++  target_link_libraries(onnxruntime_test_utils PUBLIC GTest::gtest_main)
++endif()
+ 
+ 
+ if (onnxruntime_USE_DML)

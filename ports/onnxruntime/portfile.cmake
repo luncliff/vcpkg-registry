@@ -1,6 +1,9 @@
 if(NOT VCPKG_TARGET_IS_IOS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
+if(VCPKG_TARGET_IS_OSX AND ("framework" IN_LIST FEATURES))
+    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
+endif()
 vcpkg_find_acquire_program(NUGET)
 
 vcpkg_from_github(
@@ -41,7 +44,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         cuda      onnxruntime_USE_CUDA
         cuda      onnxruntime_USE_NCCL
         tensorrt  onnxruntime_USE_TENSORRT
-        tensorrt  onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
+        tensorrt  onnxruntime_USE_TENSORRT_BUILTIN_PARSER
         directml  onnxruntime_USE_DML
         directml  onnxruntime_USE_CUSTOM_DIRECTML
         winml     onnxruntime_USE_WINML
@@ -54,6 +57,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         llvm      onnxruntime_USE_LLVM
         test      onnxruntime_BUILD_UNIT_TESTS
         test      onnxruntime_BUILD_BENCHMARKS
+        test      onnxruntime_RUN_ONNX_TESTS
         framework onnxruntime_BUILD_APPLE_FRAMEWORK
         framework onnxruntime_BUILD_OBJC
     INVERTED_FEATURES
@@ -86,15 +90,18 @@ endif()
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
-x_vcpkg_get_python_packages(
-    PYTHON_VERSION 3
-    PACKAGES numpy pybind11
-    OUT_PYTHON_VAR PYTHON3
-)
+if("python" IN_LIST FEATURES)
+    x_vcpkg_get_python_packages(
+        PYTHON_VERSION 3
+        PACKAGES numpy sympy # flatbuffers protobuf
+        OUT_PYTHON_VAR PYTHON3
+    )
+    get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
+else()
+    vcpkg_find_acquire_program(PYTHON3)
+    get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
+endif()
 message(STATUS "Using python3: ${PYTHON3}")
-get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
-get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
-# PATH for .bat scripts so it can find 'python'
 vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
 
 vcpkg_cmake_configure(
@@ -106,7 +113,6 @@ vcpkg_cmake_configure(
         -DNUGET_EXE:FILEPATH:=${NUGET}
         -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
-        -DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         # -DProtobuf_USE_STATIC_LIBS=OFF
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
@@ -132,7 +138,6 @@ vcpkg_cmake_configure(
         -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=ON
     MAYBE_UNUSED_VARIABLES
         NUGET_EXE
-        ONNX_CUSTOM_PROTOC_EXECUTABLE
         onnxruntime_BUILD_WEBASSEMBLY
         onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         onnxruntime_USE_CUSTOM_DIRECTML
