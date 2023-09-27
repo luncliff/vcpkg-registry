@@ -11,3 +11,10 @@ zstd:x64-windows
 draco:x64-windows
 civetweb:x64-windows
 cgltf:x64-windows
+protobuf[zlib]:x64-windows
+grpc[codegen]:x64-windows
+flatbuffers:x64-windows
+opencl:x64-windows
+egl-registry:x64-windows
+opengl-registry:x64-windows
+vulkan-headers:x64-windows
