@@ -38,7 +38,7 @@ add_library(fft2d_alloc
   "${FFT2D_SOURCE_DIR}/alloc.c"
   "${FFT2D_SOURCE_DIR}/alloc.h"
 )
-target_include_directories(fft2d_alloc PUBLIC "${FFT2D_SOURCE_DIR}")
+target_include_directories(fft2d_alloc PRIVATE "${FFT2D_SOURCE_DIR}")
 
 # Requires implementation of fft2d_alloc.
 add_library(fft2d_fft4f2d "${FFT2D_SOURCE_DIR}/fft4f2d.c")
@@ -62,10 +62,15 @@ add_library(fft2d ALIAS fft2d_fftsg2d)
 
 include(GNUInstallDirs)
 install(TARGETS fft2d_alloc fft2d_fft4f2d fft2d_fftsg fft2d_fftsg2d fft2d_fftsg3d fft2d_shrtdct
+        EXPORT fft2d-config
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 install(FILES  ${FFT2D_SOURCE_DIR}/alloc.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fft2d
+)
+
+install(EXPORT fft2d-config
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fft2d
 )

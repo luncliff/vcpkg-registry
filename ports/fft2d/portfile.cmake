@@ -6,12 +6,11 @@ vcpkg_from_github(
     REF v1.0
     SHA512 89c6e8fd57abf26351b3efb792008a1bbe62d404a4225dcae8aa666b3782a421be071bdc9760ebb0c95b5336ee5ea517d2fa43ab915045f7cf6fd76e73578079
 )
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt DESTINATION ${SOURCE_PATH})
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")
 
-vcpkg_cmake_configure(
-    SOURCE_PATH ${SOURCE_PATH}
-)
+vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}")
 vcpkg_cmake_install()
+vcpkg_cmake_config_fixup(CONFIG_PATH "share/${PORT}")
 
 vcpkg_download_distfile(FFT2D_HEADER_1
     URLS "https://raw.githubusercontent.com/tensorflow/tensorflow/v2.7.0/third_party/fft2d/fft.h"
@@ -29,7 +28,7 @@ vcpkg_download_distfile(FFT2D_HEADER_2
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/include/fft2d/fft2d.h")
 file(INSTALL "${FFT2D_HEADER_2}" DESTINATION "${CURRENT_PACKAGES_DIR}/include/fft2d" RENAME "fft2d.h")
 
-file(INSTALL ${SOURCE_PATH}/readme2d.txt DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
-file(INSTALL ${SOURCE_PATH}/readme.txt   DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT})
-
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+
+file(INSTALL "${SOURCE_PATH}/readme.txt"   DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/readme2d.txt")
