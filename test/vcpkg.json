@@ -1,0 +1,14 @@
+{
+  "name": "test-registry-ports",
+  "version-date": "2023-09-27",
+  "description": "vcpkg registry maintained by @luncliff",
+  "homepage": "https://github.com/luncliff/vcpkg-registry",
+  "supports": "windows | osx",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    "openssl3"
+  ]
+}
