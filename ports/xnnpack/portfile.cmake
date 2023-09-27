@@ -2,11 +2,13 @@ if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 endif()
 
+# for onnxruntime, using just before https://github.com/google/XNNPACK/commit/142aceb06d509b57d02ddc2a9558ab35eacbb6fb
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/XNNPACK
-    REF bad81856dce9fea265866c87ea524afbbdd69012 # 2023-03-19
-    SHA512 eed30cc207639a32fe247f979de33c3600abbd46f98b367eaf88e4f17453ce30464cafff237eb742832411502f068af7a79f12c547ad00bc179f2972444da0d0
+    REF db68602a37353f3050c1835d5609a1ce1a3f3d2a # 2023-04-13
+    SHA512 66d8546678fb268e75b318cff997d24748db49447df2ec0c2fec7a4c6a0bdb3d985d25df18c6eb85aec8a66627b62e41c02c584c3b7ee7d631fb95b42aee074b
     HEAD_REF master
     PATCHES
         fix-cmake.patch

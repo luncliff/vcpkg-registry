@@ -17,7 +17,7 @@
       "port-version": 2
     },
     "cpuinfo": {
-      "baseline": "2023-03-19",
+      "baseline": "2023-09-12",
       "port-version": 0
     },
     "directml": {
@@ -84,6 +84,10 @@
       "baseline": "3.1.2",
       "port-version": 0
     },
+    "pthreadpool": {
+      "baseline": "2023-09-12",
+      "port-version": 0
+    },
     "ruy": {
       "baseline": "2022-09-12",
       "port-version": 0
@@ -105,8 +109,8 @@
       "port-version": 0
     },
     "xnnpack": {
-      "baseline": "2023-03-19",
-      "port-version": 1
+      "baseline": "2023-04-13",
+      "port-version": 0
     },
     "xnvctrl": {
       "baseline": "515.43.04",
