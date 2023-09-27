@@ -610,3 +610,30 @@ index 68bcb4f..c1b7a5a 100644
  
  # Disable fast-math for Intel oneAPI compiler
  if("${CMAKE_CXX_COMPILER_ID}" MATCHES "IntelLLVM")
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index c1b7a5a..58ebb88 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -862,7 +862,7 @@ function(onnxruntime_set_compile_flags target_name)
+     if (onnxruntime_ENABLE_ATEN)
+       target_compile_definitions(${target_name} PRIVATE ENABLE_ATEN)
+     endif()
+-    set_target_properties(${target_name} PROPERTIES COMPILE_WARNING_AS_ERROR ON)
++    set_target_properties(${target_name} PROPERTIES COMPILE_WARNING_AS_ERROR OFF)
+     if (onnxruntime_USE_CUDA)
+       # Suppress a "conversion_function_not_usable" warning in gsl/span
+       target_compile_options(${target_name} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe \"--diag_suppress=conversion_function_not_usable\">")
+diff --git a/cmake/onnxruntime.cmake b/cmake/onnxruntime.cmake
+index 89c7546..26d9ed7 100644
+--- a/cmake/onnxruntime.cmake
++++ b/cmake/onnxruntime.cmake
+@@ -305,6 +305,9 @@ if(onnxruntime_BUILD_APPLE_FRAMEWORK)
+ 
+   # Go through all the static libraries, and create symbolic links
+   foreach(_LIB ${onnxruntime_INTERNAL_LIBRARIES} ${onnxruntime_EXTERNAL_LIBRARIES})
++    if(NOT TARGET ${_LIB})
++      continue()
++    endif()
+     GET_TARGET_PROPERTY(_LIB_TYPE ${_LIB} TYPE)
+     if(_LIB_TYPE STREQUAL "STATIC_LIBRARY")
+       add_custom_command(TARGET onnxruntime POST_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:${_LIB}> ${STATIC_LIB_DIR}/$<TARGET_LINKER_FILE_NAME:${_LIB}>)
