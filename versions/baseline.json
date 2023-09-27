@@ -17,7 +17,7 @@
       "port-version": 2
     },
     "cpuinfo": {
-      "baseline": "2023-03-19",
+      "baseline": "2023-09-12",
       "port-version": 0
     },
     "directml": {
