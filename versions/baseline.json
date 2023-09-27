@@ -64,6 +64,10 @@
       "baseline": "0.3.0",
       "port-version": 0
     },
+    "nsync": {
+      "baseline": "1.26.0",
+      "port-version": 0
+    },
     "onnx": {
       "baseline": "1.12.0",
       "port-version": 0
