@@ -5,8 +5,9 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggerganov/llama.cpp
-    REF b1213
-    SHA512 b39736ece0ee701ac355f5115b0d7cefd5a9723bb2cec6b895181a7764bd0f23b3d14cd5b1c175dccd1ad5e9219d2f7500b2c5c840a504abbd2e50ed62965c3e
+    REF b1273 # commit 99115f3fa654b593099c6719ad30e3f54ce231e1
+    SHA512 2b3e8fd9673647f59a4fa96621afe2f77ab10a2bee88a96b662b493beb2b66f17c854c1077f01f8ea8998d0296f92225d3033aae0adc756810f80caf45b9a456
+    HEAD_REF master
 )
 
 vcpkg_find_acquire_program(PKGCONFIG)
@@ -35,22 +36,31 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC)
 
+if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+    set(TARGET_IS_APPLE ON)
+else()
+    set(TARGET_IS_APPLE OFF)
+endif()
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${ARCH_OPTIONS}
         ${FEATURE_OPTIONS}
-        -DLLAMA_ACCELERATE=${VCPKG_TARGET_IS_OSX}
-        -DLLAMA_METAL=${VCPKG_TARGET_IS_OSX} # todo: support VCPKG_TARGET_IS_IOS
+        -DLLAMA_ACCELERATE=${TARGET_IS_APPLE}
+        -DLLAMA_METAL=${TARGET_IS_APPLE}
         -DLLAMA_STATIC=${USE_STATIC}
         -DLLAMA_BLAS=ON
         ${BLAS_OPTIONS}
-        -DPKG_CONFIG_EXECUTABLE:FILEPATH=${PKGCONFIG}
+        -DPKG_CONFIG_EXECUTABLE:FILEPATH="${PKGCONFIG}"
+        -DBUILD_COMMIT:STRING="99115f3fa654b593099c6719ad30e3f54ce231e1"
+        -DBUILD_NUMBER:STRING="1273"
     OPTIONS_RELEASE
         -DLLAMA_METAL_NDEBUG=ON
 )
 vcpkg_cmake_build(TARGET "llama" LOGFILE_BASE build-llama)
 vcpkg_cmake_install()
+vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/Llama" PACKAGE_NAME "Llama")
 vcpkg_copy_pdbs()
 
 vcpkg_copy_tools(TOOL_NAMES
@@ -61,7 +71,7 @@ vcpkg_copy_tools(TOOL_NAMES
 if("test" IN_LIST FEATURES)
     vcpkg_copy_tools(TOOL_NAMES
         test-grad0 test-grammar-parser test-llama-grammar test-quantize-fns test-quantize-perf
-        test-sampling test-tokenizer-0-falcon test-tokenizer-0-llama test-tokenizer-1
+        test-sampling test-tokenizer-0-falcon test-tokenizer-0-llama test-tokenizer-1-llama
         AUTO_CLEAN
     )
 endif()
@@ -70,9 +80,12 @@ file(INSTALL "${SOURCE_PATH}/llama.h" DESTINATION "${CURRENT_PACKAGES_DIR}/inclu
 
 file(INSTALL    "${CURRENT_PACKAGES_DIR}/bin/convert.py"
                 "${CURRENT_PACKAGES_DIR}/bin/convert-lora-to-ggml.py"
-    DESTINATION "${CURRENT_PACKAGES_DIR}/tools"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}"
 )
 
+file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/debug/include"
+)
 file(REMOVE
     "${CURRENT_PACKAGES_DIR}/bin/convert.py"
     "${CURRENT_PACKAGES_DIR}/debug/bin/convert.py"
@@ -80,4 +93,4 @@ file(REMOVE
     "${CURRENT_PACKAGES_DIR}/debug/bin/convert-lora-to-ggml.py"
 )
 
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME "copyright")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
