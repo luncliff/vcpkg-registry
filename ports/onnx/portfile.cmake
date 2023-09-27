@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO onnx/onnx
-    REF v1.12.0
-    SHA512 ab0c4f92358e904c2f28d98b35eab2d6eac22dd0a270e4f45ee590aa1ad22d09e92b32225efd7e98edb1531743f150526d26e0cbdc537757784bef2bc93efa8e
+    REF v1.14.1
+    SHA512 f846fffb286c4aeadc01462f220515f0a5c2ce1cbec849da7092a08c2676f8308af7315318a2866e9182f9aed719984ef95a9ddc69ffe0e62e40664395df5efd
     PATCHES
         fix-cmakelists.patch
 )
@@ -13,30 +13,41 @@ string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
 
 # ONNX_USE_PROTOBUF_SHARED_LIBS: find the library and check its file extension
 find_library(PROTOBUF_LIBPATH NAMES protobuf PATHS "${CURRENT_INSTALLED_DIR}/bin" "${CURRENT_INSTALLED_DIR}/lib" REQUIRED)
+message(STATUS "Found protobuf: ${PROTOBUF_LIBPATH}")
+
 get_filename_component(PROTOBUF_LIBNAME "${PROTOBUF_LIBPATH}" NAME)
 if(PROTOBUF_LIBNAME MATCHES "${CMAKE_SHARED_LIBRARY_SUFFIX}")
     set(USE_PROTOBUF_SHARED ON)
 else()
     set(USE_PROTOBUF_SHARED OFF)
 endif()
-find_program(PROTOC_EXECUTABLE NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED)
+
+find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED)
+message(STATUS "Using protoc: ${PROTOC}")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        pybind11 BUILD_ONNX_PYTHON
+        python BUILD_ONNX_PYTHON
+        protobuf-lite ONNX_USE_LITE_PROTO
 )
 
 # Like protoc, python is required for codegen.
-vcpkg_find_acquire_program(PYTHON3)
-
+x_vcpkg_get_python_packages(
+    PYTHON_VERSION 3
+    PACKAGES numpy pybind11
+    OUT_PYTHON_VAR PYTHON3
+)
+message(STATUS "Using python3: ${PYTHON3}")
+get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
+get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
 # PATH for .bat scripts so it can find 'python'
-get_filename_component(PYTHON_DIR "${PYTHON3}" PATH)
-vcpkg_add_to_path(PREPEND "${PYTHON_DIR}")
+vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
 
-if("pybind11" IN_LIST FEATURES)
-    # When BUILD_ONNX_PYTHON, we need Development component. Give a hint for FindPython3
+if("python" IN_LIST FEATURES)
+    find_path(pybind11_DIR NAMES pybind11Targets.cmake PATHS "${PYTHON_ROOT}/Lib/site-packages/pybind11/share/cmake/pybind11" REQUIRED)
+    message(STATUS "Using pybind11: ${pybind11_DIR}")
     list(APPEND FEATURE_OPTIONS
-        "-DPython3_ROOT_DIR=${CURRENT_INSTALLED_DIR}"
+        -Dpybind11_DIR:PATH=${pybind11_DIR}
     )
 endif()
 
@@ -44,13 +55,14 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
-        -DPYTHON_EXECUTABLE=${PYTHON3}
-        -DProtobuf_PROTOC_EXECUTABLE=${PROTOC_EXECUTABLE}
-        -DONNX_CUSTOM_PROTOC_EXECUTABLE=${PROTOC_EXECUTABLE}
+        -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON3}
+        -DPython3_EXECUTABLE:FILEPATH=${PYTHON3}
+        -DPython3_ROOT_DIR=${PYTHON_ROOT}
+        -DProtobuf_PROTOC_EXECUTABLE=${PROTOC}
+        -DONNX_CUSTOM_PROTOC_EXECUTABLE=${PROTOC}
         -DONNX_ML=ON
         -DONNX_GEN_PB_TYPE_STUBS=ON
         -DONNX_USE_PROTOBUF_SHARED_LIBS=${USE_PROTOBUF_SHARED}
-        -DONNX_USE_LITE_PROTO=OFF
         -DONNX_USE_MSVC_STATIC_RUNTIME=${USE_STATIC_RUNTIME}
         -DONNX_BUILD_TESTS=OFF
         -DONNX_BUILD_BENCHMARKS=OFF
@@ -67,6 +79,7 @@ file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
+    "${CURRENT_PACKAGES_DIR}/include/onnx/reference"
     # the others are empty
     "${CURRENT_PACKAGES_DIR}/include/onnx/backend"
     "${CURRENT_PACKAGES_DIR}/include/onnx/bin"
