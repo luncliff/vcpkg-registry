@@ -2,10 +2,12 @@
 
 [![Build Status](https://dev.azure.com/luncliff/personal/_apis/build/status/luncliff.vcpkg-registry?branchName=main)](https://dev.azure.com/luncliff/personal/_build/latest?definitionId=52&branchName=main)
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/luncliff/vcpkg-registry/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/luncliff/vcpkg-registry/tree/main)
+[![Windows](https://github.com/luncliff/vcpkg-registry/actions/workflows/build-windows.yml/badge.svg?branch=main)](https://github.com/luncliff/vcpkg-registry/actions/workflows/build-windows.yml)
+[![macOS](https://github.com/luncliff/vcpkg-registry/actions/workflows/build-macos.yml/badge.svg?branch=main)](https://github.com/luncliff/vcpkg-registry/actions/workflows/build-macos.yml)
 
 Targets...
 
-* [vcpkg](https://github.com/microsoft/vcpkg): recommend [2022.11.14](https://github.com/microsoft/vcpkg/releases/tag/2022.11.14) or later
+* [vcpkg](https://github.com/microsoft/vcpkg): recommend [2023.06.20](https://github.com/microsoft/vcpkg/releases/tag/2023.06.20) or later
 * [vcpkg-tool](https://github.com/microsoft/vcpkg-tool) follows the vcpkg
 
 ### References
