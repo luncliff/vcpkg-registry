@@ -1,6 +1,6 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.15.1",
+  "version-semver": "1.16.0",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://www.onnxruntime.ai",
   "dependencies": [

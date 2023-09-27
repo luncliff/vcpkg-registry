@@ -6,8 +6,8 @@ vcpkg_find_acquire_program(NUGET)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF efd416b71f0925108ff7cb0e83e99beabe7c05cd # todo: v1.15.2+
-    SHA512 5e35899e6fa347e72732fc8ad264a9d1ca7b0a6d4f1439bcdfb3a0fb30eb27a9f9d4220cb610a840f1493d85777ff7bf46bc9e7cf430dcd4ff3313a374d5ee7a
+    REF v1.16.0 # e7a0495a874251e9747b2ce0683e0580282c54df
+    SHA512 ff448f7bcd0d91f129ff7d5bf54ab0ed8f4aed79c79a6e52043138d5cba180099fce5aaf00e7f959e2b3e9a3376bf4ec933428c076b097a2e4a96e1adfd9b05f
     PATCHES
         fix-cmake.patch
         fix-source-flatbuffers.patch
@@ -32,13 +32,6 @@ vcpkg_execute_required_process(
     WORKING_DIRECTORY "${SCHEMA_DIR}"
 )
 
-# if("xnnpack" IN_LIST FEATURES)
-#     # see https://github.com/microsoft/onnxruntime/pull/11798
-#     set(PROVIDERS_DIR "${SOURCE_PATH}/include/onnxruntime/core/providers")
-#     file(MAKE_DIRECTORY "${PROVIDERS_DIR}/xnnpack")
-#     file(WRITE "${PROVIDERS_DIR}/xnnpack/xnnpack_provider_factory.h" "#pragma once")
-# endif()
-
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         python    onnxruntime_ENABLE_PYTHON
@@ -60,7 +53,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         azure     onnxruntime_USE_AZURE
         llvm      onnxruntime_USE_LLVM
         test      onnxruntime_BUILD_UNIT_TESTS
-        # test      onnxruntime_BUILD_BENCHMARKS
+        test      onnxruntime_BUILD_BENCHMARKS
         framework onnxruntime_BUILD_APPLE_FRAMEWORK
         framework onnxruntime_BUILD_OBJC
     INVERTED_FEATURES
@@ -71,6 +64,8 @@ if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
+else()
+    set(GENERATOR_OPTIONS GENERATOR Ninja)
 endif()
 
 if(VCPKG_TARGET_IS_WINDOWS)
@@ -102,13 +97,6 @@ get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
 # PATH for .bat scripts so it can find 'python'
 vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
 
-# if("training" IN_LIST FEATURES)
-#     # todo: dlpack in onnxruntime_provider. see `onnxruntime_ENABLE_ATEN`, https://github.com/dmlc/dlpack
-#     list(APPEND FEATURE_OPTIONS
-#         -DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}
-#     )
-# endif()
-
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
     ${GENERATOR_OPTIONS}
@@ -134,6 +122,9 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_PYTHON=OFF
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
         -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
+        # for ORT_BUILD_INFO
+        -DORT_GIT_COMMIT:STRING="e7a0495a874251e9747b2ce0683e0580282c54df"
+        -DORT_GIT_BRANCH:STRING="v1.16.0"
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
@@ -141,6 +132,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=ON
     MAYBE_UNUSED_VARIABLES
         NUGET_EXE
+        ONNX_CUSTOM_PROTOC_EXECUTABLE
         onnxruntime_BUILD_WEBASSEMBLY
         onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         onnxruntime_USE_CUSTOM_DIRECTML
@@ -150,11 +142,13 @@ if("training" IN_LIST FEATURES)
 endif()
 vcpkg_cmake_build(TARGET onnxruntime LOGFILE_BASE build-onnxruntime)
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime)
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxruntime)
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
 
-
+if("test" IN_LIST FEATURES)
+    vcpkg_copy_tools(TOOL_NAMES onnx_test_runner AUTO_CLEAN)
+endif()
 if("framework" IN_LIST FEATURES)
     set(FRAMEWORK_NAME "onnxruntime.framework")
     file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/${FRAMEWORK_NAME}"
