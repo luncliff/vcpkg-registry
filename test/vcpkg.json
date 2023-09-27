@@ -9,6 +9,13 @@
       "name": "vcpkg-cmake",
       "host": true
     },
-    "openssl3"
+    "openssl3",
+    {
+      "name": "llama-cpp",
+      "features": [
+        "test"
+      ],
+      "platform": "windows | osx"
+    }
   ]
 }
