@@ -47,10 +47,12 @@ jobs:
           keys:
             - v2338-downs-{{ .Branch }}
             - v2338-downs-{{ checksum ".circleci/config.yml" }}
+            - v2338-downs-main
       - restore_cache:
           keys:
             - v2338-bins-{{ .Branch }}
             - v2338-bins-{{ checksum ".circleci/config.yml" }}
+            - v2338-bins-main
       - run:
           name: "Install: port-setup.txt"
           command: |
@@ -96,10 +98,12 @@ jobs:
           keys:
             - v2338-downs-{{ .Branch }}
             - v2338-downs-{{ checksum ".circleci/config.yml" }}
+            - v2338-downs-main
       - restore_cache:
           keys:
             - v2338-bins-{{ .Branch }}
             - v2338-bins-{{ checksum ".circleci/config.yml" }}
+            - v2338-bins-main
       - run:
           name: "Install: port-windows.txt"
           command: |
