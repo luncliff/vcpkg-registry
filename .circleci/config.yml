@@ -118,7 +118,7 @@ jobs:
       - save_cache:
           key: v2338-downs-{{ .Branch }}
           paths:
-            - C:/vcpkg-bins
+            - C:/vcpkg-downs
       - save_cache:
           key: v2338-bins-{{ .Branch }}
           paths:
