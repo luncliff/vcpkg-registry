@@ -1,1 +1,2 @@
-google-filament[gles3,test]:x64-windows
+grpc[codegen]:x64-windows
+onnxruntime[directml,xnnpack,test]:x64-windows

@@ -45,10 +45,10 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - 2326-downs-{{ checksum ".circleci/config.yml" }}
+            - v2338-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
-            - 2326-bins-{{ checksum ".circleci/config.yml" }}
+            - v2338-bins-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Install: port-setup.txt"
           command: |
@@ -59,12 +59,12 @@ jobs:
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-setup.txt")
           working_directory: vcpkg
       - save_cache:
-          key: 2326-downs-{{ checksum ".circleci/config.yml" }}
+          key: v2338-downs-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-downs
           when: always
       - save_cache:
-          key: 2326-bins-{{ checksum ".circleci/config.yml" }}
+          key: v2338-bins-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-bins
           when: always
@@ -91,16 +91,12 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - 2326-downs-{{ checksum ".circleci/config.yml" }}
+            - v2338-downs-{{ .Branch }}
+            - v2338-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
-            - 2326-bins-{{ checksum ".circleci/config.yml" }}
-      - restore_cache:
-          keys:
-            - 2338-downs-{{ checksum ".circleci/config.yml" }}
-      - restore_cache:
-          keys:
-            - 2338-bins-{{ checksum ".circleci/config.yml" }}
+            - v2338-bins-{{ .Branch }}
+            - v2338-bins-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Install: port-windows.txt"
           command: |
@@ -116,19 +112,17 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: 2338-bins-{{ .Branch }}
+              key: v2338-bins-{{ .Branch }}
               paths:
                 - C:/vcpkg-bins
       - save_cache:
-          key: 2338-downs-{{ checksum ".circleci/config.yml" }}
+          key: v2338-downs-{{ .Branch }}
           paths:
             - C:/vcpkg-downs
-          when: always
       - save_cache:
-          key: 2338-bins-{{ checksum ".circleci/config.yml" }}
+          key: v2338-bins-{{ .Branch }}
           paths:
             - C:/vcpkg-bins
-          when: always
       - store_artifacts:
           name: "Upload buildtrees log"
           path: vcpkg/buildtrees/ # buildtrees-log

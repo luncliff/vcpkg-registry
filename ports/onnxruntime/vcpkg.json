@@ -1,9 +1,8 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.12.1",
-  "port-version": 2,
+  "version-semver": "1.16.0",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
-  "homepage": "www.onnxruntime.ai",
+  "homepage": "https://www.onnxruntime.ai",
   "dependencies": [
     "boost-config",
     "boost-mp11",
@@ -16,6 +15,7 @@
       "name": "flatbuffers",
       "host": true
     },
+    "ms-gsl",
     "nlohmann-json",
     {
       "name": "nsync",
@@ -24,6 +24,10 @@
     "onnx",
     "optional-lite",
     "protobuf",
+    {
+      "name": "protobuf",
+      "host": true
+    },
     "re2",
     "safeint",
     {
@@ -31,17 +35,22 @@
       "host": true
     },
     {
-      "name": "wil",
-      "platform": "windows"
+      "name": "vcpkg-cmake-config",
+      "host": true
     },
+    "wil",
     "zlib"
   ],
   "features": {
     "coreml": {
-      "description": "Build with CoreML support"
+      "description": "Build with CoreML support",
+      "supports": "osx | ios"
     },
     "cuda": {
-      "description": "Build with CUDA/NCCL support"
+      "description": "Build with CUDA/NCCL support",
+      "dependencies": [
+        "cuda"
+      ]
     },
     "directml": {
       "description": "Build with DirectML support",
@@ -50,11 +59,31 @@
         "directml"
       ]
     },
+    "framework": {
+      "description": "Artifact will be Apple framework",
+      "supports": "osx | ios"
+    },
+    "python": {
+      "description": "Enable python buildings",
+      "dependencies": [
+        {
+          "name": "vcpkg-get-python-packages",
+          "host": true
+        }
+      ]
+    },
     "tensorrt": {
       "description": "Build with NVIDIA TensorRT support"
     },
-    "training": {
-      "description": "Turn on build options for ML training"
+    "test": {
+      "description": "Build ONNXRuntime unit tests",
+      "dependencies": [
+        "benchmark",
+        "gtest"
+      ]
+    },
+    "winml": {
+      "description": "Build with WinML support"
     },
     "xnnpack": {
       "description": "Build with XNNPack support",

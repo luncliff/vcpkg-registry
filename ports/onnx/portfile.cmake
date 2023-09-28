@@ -31,19 +31,22 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         protobuf-lite ONNX_USE_LITE_PROTO
 )
 
-# Like protoc, python is required for codegen.
-x_vcpkg_get_python_packages(
-    PYTHON_VERSION 3
-    PACKAGES numpy pybind11
-    OUT_PYTHON_VAR PYTHON3
-)
+if("python" IN_LIST FEATURES)
+    x_vcpkg_get_python_packages(
+        PYTHON_VERSION 3
+        PACKAGES numpy pybind11
+        OUT_PYTHON_VAR PYTHON3
+    )
+    get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
+else()
+    vcpkg_find_acquire_program(PYTHON3)
+    get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
+endif()
 message(STATUS "Using python3: ${PYTHON3}")
-get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
-get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
-# PATH for .bat scripts so it can find 'python'
 vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
 
 if("python" IN_LIST FEATURES)
+    get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
     find_path(pybind11_DIR NAMES pybind11Targets.cmake PATHS "${PYTHON_ROOT}/Lib/site-packages/pybind11/share/cmake/pybind11" REQUIRED)
     message(STATUS "Using pybind11: ${pybind11_DIR}")
     list(APPEND FEATURE_OPTIONS
@@ -74,8 +77,6 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/ONNX)
 
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
-
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
@@ -105,3 +106,4 @@ file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/include/onnx/onnx_data"
     "${CURRENT_PACKAGES_DIR}/include/onnx/onnx_operators_ml"
 )
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

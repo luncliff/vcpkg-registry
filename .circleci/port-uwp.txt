@@ -1,2 +1,1 @@
 onnxruntime[xnnpack]:x64-uwp
-onnxruntime[directml,xnnpack]:x64-windows
