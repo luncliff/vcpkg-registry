@@ -91,9 +91,11 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
+            - v2338-downs-{{ .Branch }}
             - v2338-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
+            - v2338-bins-{{ .Branch }}
             - v2338-bins-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Install: port-windows.txt"
@@ -114,15 +116,13 @@ jobs:
               paths:
                 - C:/vcpkg-bins
       - save_cache:
-          key: v2338-downs-{{ checksum ".circleci/config.yml" }}
-          paths:
-            - C:/vcpkg-downs
-          when: always
-      - save_cache:
-          key: v2338-bins-{{ checksum ".circleci/config.yml" }}
+          key: v2338-downs-{{ .Branch }}
           paths:
             - C:/vcpkg-bins
-          when: always
+      - save_cache:
+          key: v2338-bins-{{ .Branch }}
+          paths:
+            - C:/vcpkg-bins
       - store_artifacts:
           name: "Upload buildtrees log"
           path: vcpkg/buildtrees/ # buildtrees-log

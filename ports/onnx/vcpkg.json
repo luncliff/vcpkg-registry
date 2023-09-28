@@ -1,6 +1,7 @@
 {
   "name": "onnx",
   "version-semver": "1.14.1",
+  "port-version": 1,
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://onnx.ai",
   "license": "Apache-2.0",
@@ -17,16 +18,18 @@
     {
       "name": "vcpkg-cmake-config",
       "host": true
-    },
-    {
-      "name": "vcpkg-get-python-packages",
-      "host": true
     }
   ],
   "features": {
     "python": {
       "description": "Build Python binaries",
-      "supports": "x64"
+      "supports": "x64",
+      "dependencies": [
+        {
+          "name": "vcpkg-get-python-packages",
+          "host": true
+        }
+      ]
     }
   }
 }
