@@ -1,7 +1,7 @@
 {
   "default": {
     "apple-crypto": {
-      "baseline": "2.2.4",
+      "baseline": "3.0.0",
       "port-version": 0
     },
     "apple-nio-ssl": {
