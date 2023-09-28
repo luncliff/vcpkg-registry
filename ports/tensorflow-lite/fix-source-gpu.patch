@@ -146,3 +146,16 @@ index b615a9b6..e61432a5 100644
  
      default:
        return absl::StrCat("Unknown OpenCL error code - ", error_code);
+diff --git a/tensorflow/tsl/platform/float8.h b/tensorflow/tsl/platform/float8.h
+index 4ea4ff1f..0df70cb7 100644
+--- a/tensorflow/tsl/platform/float8.h
++++ b/tensorflow/tsl/platform/float8.h
+@@ -16,7 +16,7 @@ limitations under the License.
+ #ifndef TENSORFLOW_TSL_PLATFORM_FLOAT8_H_
+ #define TENSORFLOW_TSL_PLATFORM_FLOAT8_H_
+ 
+-#include "include/float8.h"  // from @ml_dtypes
++#include "ml_dtypes/float8.h"  // from @ml_dtypes
+ 
+ namespace tsl {
+ using float8_e4m3fn = ml_dtypes::float8_e4m3fn;

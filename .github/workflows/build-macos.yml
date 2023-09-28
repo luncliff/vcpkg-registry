@@ -13,7 +13,7 @@ jobs:
         triplet: [x64-osx, arm64-ios]
     env:
       VCPKG_DOWNLOADS: "/usr/local/share/vcpkg-downloads"
-      VCPKG_DEFAULT_BINARY_CACHE: "/usr/local/share/vcpkg-downloads"
+      VCPKG_DEFAULT_BINARY_CACHE: "/usr/local/share/vcpkg-archives"
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
     steps:
@@ -24,9 +24,10 @@ jobs:
           mkdir -p ${VCPKG_DEFAULT_BINARY_CACHE}
       - uses: actions/cache@v3
         with:
-          key: "vcpkg-2023.08-${{ runner.os }}"
+          key: "v2338-${{ runner.os }}"
           path: |
             /usr/local/share/vcpkg-downloads
+            /usr/local/share/vcpkg-archives
       - uses: ConorMacBride/install-package@v1
         with:
           brew: ninja autoconf automake libtool

@@ -1,0 +1,43 @@
+diff --git a/tensorflow/lite/delegates/gpu/gl/runtime.cc b/tensorflow/lite/delegates/gpu/gl/runtime.cc
+index fe3db954..edee334b 100644
+--- a/tensorflow/lite/delegates/gpu/gl/runtime.cc
++++ b/tensorflow/lite/delegates/gpu/gl/runtime.cc
+@@ -90,27 +90,22 @@ absl::Status MakeGlTexture(const Object& object, const ObjectData& data,
+       if (data.size() % 2 != 0) {
+         return absl::InvalidArgumentError("Texture size is not aligned");
+       }
+-      return std::visit(
+-          TextureF16Maker{
+-              .data = absl::MakeConstSpan(
+-                  reinterpret_cast<const uint16_t*>(data.data()),
+-                  data.size() / 2),
+-              .gl_texture = gl_texture,
+-          },
+-          object.size);
++      TextureF16Maker marker{};
++      marker.data = absl::MakeConstSpan(
++          reinterpret_cast<const uint16_t*>(data.data()), data.size() / 2);
++      marker.gl_texture = gl_texture;
++      return std::visit(marker, object.size);
+     }
+     case DataType::FLOAT32: {
+       if (data.size() % sizeof(float) != 0) {
+         return absl::InvalidArgumentError("Texture size is not aligned");
+       }
+-      return std::visit(
+-          TextureF32Maker{
+-              .data = absl::MakeConstSpan(
+-                  reinterpret_cast<const float*>(data.data()),
+-                  data.size() / sizeof(float)),
+-              .gl_texture = gl_texture,
+-          },
+-          object.size);
++      TextureF32Maker marker{};
++      marker.data =
++          absl::MakeConstSpan(reinterpret_cast<const float*>(data.data()),
++                              data.size() / sizeof(float));
++      marker.gl_texture = gl_texture;
++      return std::visit(marker, object.size);
+     }
+     default:
+       return absl::InvalidArgumentError("Unsupported textures data type.");

@@ -1,7 +1,6 @@
 {
   "name": "tensorflow-lite",
-  "version-semver": "2.11.1",
-  "port-version": 1,
+  "version-semver": "2.14.0",
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://www.tensorflow.org/",
   "license": "Apache-2.0",
@@ -16,6 +15,7 @@
       "host": true
     },
     "gemmlowp",
+    "ml-dtypes",
     "neon2sse",
     {
       "name": "nsync",
@@ -60,9 +60,6 @@
         },
         "vulkan-headers"
       ]
-    },
-    "mediapipe": {
-      "description": "Build with sources of Google/MediaPipe"
     }
   }
 }

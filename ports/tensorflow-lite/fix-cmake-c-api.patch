@@ -1,0 +1,50 @@
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index f8709c6a..161e3421 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -640,6 +640,7 @@ if(TFLITE_ENABLE_INSTALL)
+     EXPORT ${PROJECT_NAME}Targets
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+   )
+ 
+   foreach(hdr ${_ALL_TFLITE_HDRS})
+@@ -671,6 +672,37 @@ if(TFLITE_ENABLE_INSTALL)
+     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+   )
+ endif()
++
++# see tensorflow/lite/c/CMakeLists.txt
++target_sources(tensorflow-lite PRIVATE
++  ${TFLITE_SOURCE_DIR}/core/c/c_api.cc
++  ${TFLITE_SOURCE_DIR}/core/c/c_api_experimental.cc
++  ${TFLITE_SOURCE_DIR}/core/c/common.cc
++  ${TFLITE_SOURCE_DIR}/core/c/registration_external.cc
++  c/builtin_op_data.h
++  c/c_api.h
++  c/c_api_experimental.h
++  c/c_api_internal.h
++  c/c_api_types.h
++  c/common.h
++)
++target_include_directories(tensorflow-lite PRIVATE
++  c
++)
++# set_target_properties(tensorflow-lite PROPERTEIS
++#   OUTPUT_NAME tensorflowlite_c
++# )
++
++if (BUILD_SHARED_LIBS)
++  if (WIN32)
++    target_compile_definitions(tensorflow-lite PRIVATE TFL_COMPILE_LIBRARY)
++  elseif (APPLE)
++    target_link_options(tensorflow-lite PRIVATE "-Wl,-exported_symbols_list,${TFLITE_SOURCE_DIR}/c/exported_symbols.lds")
++  else ()
++    target_link_options(tensorflow-lite PRIVATE "-Wl,--version-script,${TFLITE_SOURCE_DIR}/c/version_script.lds")
++  endif()
++endif()
++
+ return() # drop following targets
+ # The kernel tests.
+ if(TFLITE_KERNEL_TEST)

@@ -12,7 +12,7 @@ jobs:
       matrix:
         triplet: [x64-windows]
     env:
-      VCPKG_DOWNLOADS: "C:/vcpkg/archives"
+      VCPKG_DOWNLOADS: "C:/vcpkg/downloads"
       VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg/archives"
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
@@ -24,8 +24,9 @@ jobs:
           New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
       - uses: actions/cache@v3
         with:
-          key: "vcpkg-2023.08-${{ runner.os }}"
+          key: "v2338-${{ runner.os }}"
           path: |
+            C:/vcpkg/downloads
             C:/vcpkg/archives
       - uses: microsoft/setup-msbuild@v1.1
         with:

@@ -2,31 +2,20 @@ if(NOT VCPKG_TARGET_IS_IOS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
 
-# vcpkg_download_distfile(MP_PATCH_1
-#     URLS "https://raw.githubusercontent.com/google/mediapipe/v0.9.2.1/third_party/org_tensorflow_compatibility_fixes.diff"
-#     FILENAME org_tensorflow_compatibility_fixes.diff
-#     SHA512 4f30038f78e2cc8991a7ec173f6b081ba8bd151163569e840fa34d091ece0ec61eeebde18210a2f11b9bc21a5d8a0bde29a9c0a3638a4d7936b99de8781b7df1
-# )
-# vcpkg_download_distfile(MP_PATCH_2
-#     URLS "https://raw.githubusercontent.com/google/mediapipe/v0.9.2.1/third_party/org_tensorflow_custom_ops.diff"
-#     FILENAME org_tensorflow_custom_ops.diff
-#     SHA512 11fb8f48e39ef30328af0a216c3ea6bcbbbf68980dbbb5b6a9e4a1f11586f5f7836caf8ab6357785c624c3c6d10f516b185a504ea1bbcdaa69ce84522c8df60a
-# )
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.11.1
-    SHA512 2ca39d005efa129b5bebd3729f2550d8de659acd57b797f501307c28eb3d0d482703abe4d7364d5572fa600287505f4ed3b4f78eaae6867dc85b4a7d53d4b60b
+    REF v2.14.0
+    SHA512 ae39fd8049f9cd3118c1f10285d5272531380bbe0506dc7fb14c8e9da34a578284af486795abdae0f82ef0b84d14896564386595669ef303a1b8dbfa06b88f7a
     PATCHES
-        fix-cmake.patch
-        fix-source.patch
-        fix-absl.patch
-        fix-opencl-extension.patch
-        org_tensorflow_compatibility_fixes.diff # ${MP_PATCH_1}
-        org_tensorflow_custom_ops.diff # ${MP_PATCH_2}
+        fix-cmake-use-vcpkg.patch   # use packages from vcpkg
+        fix-cmake-c-api.patch       # includ C API sources
+        fix-cmake-gpu.patch         # build settings for GPU features
+        fix-cmake-nnapi.patch       # Android NNAPI
+        fix-source-abseil.patch     # replace std:: to absl::
+        fix-source-cpp20.patch      # use C++17 syntax
+        fix-source-gpu.patch        # source changes for GPU features
 )
-
 file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
 file(COPY "${CURRENT_INSTALLED_DIR}/include/eigen3" DESTINATION "${SOURCE_PATH}/third_party")
 
@@ -34,39 +23,49 @@ find_program(FLATC NAMES flatc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers"
     REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
 )
+# see https://flatbuffers.dev/flatbuffers_guide_using_schema_compiler.html
 message(STATUS "Using flatc: ${FLATC}")
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
     REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
 )
+# see https://protobuf.dev/overview/#syntax
 message(STATUS "Using protoc: ${PROTOC}")
 
 # Run codegen with existing .fbs, .proto files
 set(TENSORFLOW_SOURCE_DIR "${SOURCE_PATH}")
 set(TFLITE_SOURCE_DIR "${SOURCE_PATH}/tensorflow/lite")
 
-set(EXPERIMANTAL_ACC_CONFIG_PATH "${TFLITE_SOURCE_DIR}/experimental/acceleration/configuration")
+set(ACCELERATION_CONFIGURATION_PATH "${TFLITE_SOURCE_DIR}/acceleration/configuration")
 vcpkg_execute_required_process(
     COMMAND ${FLATC} --proto configuration.proto
     LOGNAME codegen-flatc-configuration
-    WORKING_DIRECTORY "${EXPERIMANTAL_ACC_CONFIG_PATH}"
+    WORKING_DIRECTORY "${ACCELERATION_CONFIGURATION_PATH}"
 )
+# see ${ACCELERATION_CONFIGURATION_PATH}/BUILD
+vcpkg_replace_string("${ACCELERATION_CONFIGURATION_PATH}/configuration.fbs" "tflite.proto" "tflite")
+
 vcpkg_execute_required_process(
-    COMMAND ${PROTOC} --cpp_out=. configuration.proto
+    COMMAND ${PROTOC} --cpp_out . configuration.proto
     LOGNAME codegen-protoc-configuration
-    WORKING_DIRECTORY "${EXPERIMANTAL_ACC_CONFIG_PATH}"
+    WORKING_DIRECTORY "${ACCELERATION_CONFIGURATION_PATH}"
 )
 vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --scoped-enums configuration.fbs
+    COMMAND ${FLATC} --cpp --gen-compare configuration.fbs
     LOGNAME codegen-flatc-cpp-configuration
-    WORKING_DIRECTORY "${EXPERIMANTAL_ACC_CONFIG_PATH}"
+    WORKING_DIRECTORY "${ACCELERATION_CONFIGURATION_PATH}"
 )
 
 set(SCHEMA_PATH "${TFLITE_SOURCE_DIR}/schema")
 vcpkg_execute_required_process(
-    COMMAND ${FLATC} -c --gen-object-api --gen-mutable schema.fbs
-    LOGNAME codegen-flatc-c-schema
+    COMMAND ${FLATC} --cpp --gen-mutable --gen-object-api schema.fbs
+    LOGNAME codegen-flatc-schema
+    WORKING_DIRECTORY "${SCHEMA_PATH}"
+)
+vcpkg_execute_required_process(
+    COMMAND ${FLATC} --cpp conversion_metadata.fbs
+    LOGNAME codegen-flatc-conversion_metadata
     WORKING_DIRECTORY "${SCHEMA_PATH}"
 )
 
@@ -94,17 +93,17 @@ if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
 else()
     set(DELEGATES_GPU_GL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/gl")
     vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp --scoped-enums common.fbs
+        COMMAND ${FLATC} --cpp common.fbs
         LOGNAME codegen-flatc-cpp-gl-common
         WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
     )
     vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp --scoped-enums metadata.fbs
+        COMMAND ${FLATC} --cpp metadata.fbs
         LOGNAME codegen-flatc-cpp-gl-metadata
         WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
     )
     vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp --scoped-enums workgroups.fbs
+        COMMAND ${FLATC} --cpp workgroups.fbs
         LOGNAME codegen-flatc-cpp-gl-workgroups
         WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
     )
@@ -131,14 +130,21 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gpu     TFLITE_ENABLE_GPU
         gpu     TFLITE_ENABLE_METAL
-        mmap    TFLITE_ENABLE_MMAP
-        mediapipe WITH_MEDIAPIPE
 )
+
+if(VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_ANDROID)
+    list(APPEND FEATURE_OPTIONS -DTFLITE_ENABLE_MMAP=ON)
+endif()
+if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+    list(APPEND GENERATOR_OPTIONS GENERATOR Xcode)
+endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/tensorflow/lite"
+    ${GENERATOR_OPTIONS}
     OPTIONS
         ${FEATURE_OPTIONS}
+        -DSYSTEM_PTHREADPOOL=ON
         -DTFLITE_ENABLE_RESOURCE=ON
         -DTFLITE_ENABLE_RUY=ON
         -DTFLITE_ENABLE_XNNPACK=ON
@@ -146,15 +152,17 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_EXTERNAL_DELEGATE=ON
         -DTFLITE_ENABLE_INSTALL=ON
         -DTENSORFLOW_SOURCE_DIR:PATH="${SOURCE_PATH}"
+        -DFLATBUFFERS_FLATC_EXECUTABLE:FILEPATH="${FLATC}"
     OPTIONS_DEBUG
         -DTFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION=${VCPKG_TARGET_IS_ANDROID}
+    MAYBE_UNUSED_VARIABLES
+        FLATBUFFERS_FLATC_EXECUTABLE
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/${PORT}")
 
 file(INSTALL "${SOURCE_PATH}/tensorflow/core/public/version.h" DESTINATION "${CURRENT_PACKAGES_DIR}/include/tensorflow/core/public")
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
                     "${CURRENT_PACKAGES_DIR}/debug/share"
@@ -176,3 +184,5 @@ else()
         )
     endif()
 endif()
+
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

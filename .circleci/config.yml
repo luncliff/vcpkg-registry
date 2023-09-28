@@ -45,9 +45,11 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
+            - v2338-downs-{{ .Branch }}
             - v2338-downs-{{ checksum ".circleci/config.yml" }}
       - restore_cache:
           keys:
+            - v2338-bins-{{ .Branch }}
             - v2338-bins-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Install: port-setup.txt"
@@ -58,6 +60,7 @@ jobs:
               --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-setup.txt")
           working_directory: vcpkg
+          no_output_timeout: 1h
       - save_cache:
           key: v2338-downs-{{ checksum ".circleci/config.yml" }}
           paths:
@@ -112,13 +115,13 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: v2338-bins-{{ .Branch }}
+              key: v2338-bins-{{ checksum ".circleci/config.yml" }}
               paths:
                 - C:/vcpkg-bins
       - save_cache:
           key: v2338-downs-{{ .Branch }}
           paths:
-            - C:/vcpkg-bins
+            - C:/vcpkg-downs
       - save_cache:
           key: v2338-bins-{{ .Branch }}
           paths:
