@@ -13,8 +13,14 @@ vcpkg_from_github(
 vcpkg_find_acquire_program(PKGCONFIG)
 message(STATUS "Using pkgconfig: ${PKGCONFIG}")
 
+# check https://cmake.org/cmake/help/latest/module/FindBLAS.html#blas-lapack-vendors
 if(VCPKG_TARGET_IS_WINDOWS)
     list(APPEND BLAS_OPTIONS -DLLAMA_BLAS_VENDOR=OpenBLAS)
+elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+    list(APPEND BLAS_OPTIONS -DLLAMA_BLAS_VENDOR=Apple)
+else()
+    # todo: Intel MKL, ARM, ACML, etc...
+    list(APPEND BLAS_OPTIONS -DLLAMA_BLAS_VENDOR=Generic)
 endif()
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
