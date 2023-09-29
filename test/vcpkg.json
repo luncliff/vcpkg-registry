@@ -20,10 +20,15 @@
       ],
       "platform": "windows | osx"
     },
+    {
+      "name": "metal-cpp",
+      "platform": "osx | ios"
+    },
     "openssl3",
     {
       "name": "vcpkg-cmake",
       "host": true
-    }
+    },
+    "zlib-ng"
   ]
 }

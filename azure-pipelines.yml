@@ -75,9 +75,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2338-bin-mac-host"'
+              key: '"v2339-bin-mac-host"'
               restoreKeys: |
-                "v2338-bin-mac-host"
+                "v2339-bin-mac-host"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "coreml-tools"
@@ -124,20 +124,16 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2338-down-windows"'
+              key: '"v2339-down-windows"'
               restoreKeys: |
-                "v2338-down-windows"
+                "v2339-down-windows"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2338-bin-windows" | "$(vcpkg.default.triplet)"'
+              key: '"v2339-bin-windows" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2338-bin-windows" | "$(vcpkg.default.triplet)"
+                "v2339-bin-windows" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
-          - task: run-vcpkg@0
-            inputs:
-              vcpkgArguments: "zlib-ng openssl3 onnx"
-              vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "libdispatch"
             inputs:
@@ -186,20 +182,16 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2338-down-uwp"'
+              key: '"v2339-down-uwp"'
               restoreKeys: |
-                "v2338-down-uwp"
+                "v2339-down-uwp"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2338-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"v2339-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2338-bin-uwp" | "$(vcpkg.default.triplet)"
+                "v2339-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
-          - task: run-vcpkg@0
-            inputs:
-              vcpkgArguments: "zlib-ng openssl3"
-              vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "libdispatch"
             inputs:
@@ -253,15 +245,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2338-down-ubuntu"'
+              key: '"v2339-down-ubuntu"'
               restoreKeys: |
-                "v2338-down-ubuntu"
+                "v2339-down-ubuntu"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2338-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"v2339-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
-                "v2338-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
+                "v2339-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "tensorflow-lite"
@@ -311,19 +303,19 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2338-down-android"'
+              key: '"v2339-down-android"'
               restoreKeys: |
-                "v2338-down-android"
+                "v2339-down-android"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2338-bin-android" | "$(vcpkg.default.triplet)"'
+              key: '"v2339-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2338-bin-android" | "$(vcpkg.default.triplet)"
+                "v2339-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
-              vcpkgArguments: "openssl3 zlib-ng libdispatch fft2d farmhash ruy eigen3 google-jni-bind"
+              vcpkgArguments: "libdispatch fft2d farmhash ruy eigen3 google-jni-bind"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
@@ -373,19 +365,19 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2338-down-apple"'
+              key: '"v2339-down-apple"'
               restoreKeys: |
-                "v2338-down-apple"
+                "v2339-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2338-bin-osx" | "$(vcpkg.default.triplet)"'
+              key: '"v2339-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2338-bin-osx" | "$(vcpkg.default.triplet)"
+                "v2339-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
-              vcpkgArguments: "zlib-ng openssl3 metal-cpp"
+              vcpkgArguments: "metal-cpp"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: run-vcpkg@0
             displayName: "tensorflow-lite"
@@ -433,34 +425,34 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2338-down-apple"'
+              key: '"v2339-down-apple"'
               restoreKeys: |
-                "v2338-down-apple"
+                "v2339-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2338-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"v2339-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2338-bin-ios" | "$(vcpkg.default.triplet)"
+                "v2339-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
-              vcpkgArguments: "coreml-tools tensorflow-lite openssl3 metal-cpp zlib-ng"
+              vcpkgArguments: "coreml-tools tensorflow-lite metal-cpp"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
           - task: run-vcpkg@0
             displayName: "arm64-ios-simulator"
             inputs:
-              vcpkgArguments: "coreml-tools tensorflow-lite openssl3"
+              vcpkgArguments: "coreml-tools tensorflow-lite"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
           - task: run-vcpkg@0
             displayName: "x64-ios-simulator"
             inputs:
-              vcpkgArguments: "openssl3 xnnpack"
+              vcpkgArguments: "xnnpack"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator

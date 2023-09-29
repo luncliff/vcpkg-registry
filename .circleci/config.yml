@@ -45,13 +45,15 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - v2338-downs-{{ .Branch }}
-            - v2338-downs-{{ checksum ".circleci/config.yml" }}
+            - v2339-downs-{{ .Branch }}
+            - v2339-downs-{{ checksum ".circleci/config.yml" }}
+            - v2339-downs-main
             - v2338-downs-main
       - restore_cache:
           keys:
-            - v2338-bins-{{ .Branch }}
-            - v2338-bins-{{ checksum ".circleci/config.yml" }}
+            - v2339-bins-{{ .Branch }}
+            - v2339-bins-{{ checksum ".circleci/config.yml" }}
+            - v2339-bins-main
             - v2338-bins-main
       - run:
           name: "Install: port-setup.txt"
@@ -64,12 +66,12 @@ jobs:
           working_directory: vcpkg
           no_output_timeout: 1h
       - save_cache:
-          key: v2338-downs-{{ checksum ".circleci/config.yml" }}
+          key: v2339-downs-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-downs
           when: always
       - save_cache:
-          key: v2338-bins-{{ checksum ".circleci/config.yml" }}
+          key: v2339-bins-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-bins
           when: always
@@ -96,13 +98,15 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - v2338-downs-{{ .Branch }}
-            - v2338-downs-{{ checksum ".circleci/config.yml" }}
+            - v2339-downs-{{ .Branch }}
+            - v2339-downs-{{ checksum ".circleci/config.yml" }}
+            - v2339-downs-main
             - v2338-downs-main
       - restore_cache:
           keys:
-            - v2338-bins-{{ .Branch }}
-            - v2338-bins-{{ checksum ".circleci/config.yml" }}
+            - v2339-bins-{{ .Branch }}
+            - v2339-bins-{{ checksum ".circleci/config.yml" }}
+            - v2339-bins-main
             - v2338-bins-main
       - run:
           name: "Install: port-windows.txt"
@@ -119,15 +123,15 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: v2338-bins-{{ checksum ".circleci/config.yml" }}
+              key: v2339-bins-{{ .Branch }}
               paths:
                 - C:/vcpkg-bins
       - save_cache:
-          key: v2338-downs-{{ .Branch }}
+          key: v2339-downs-{{ .Branch }}
           paths:
             - C:/vcpkg-downs
       - save_cache:
-          key: v2338-bins-{{ .Branch }}
+          key: v2339-bins-{{ .Branch }}
           paths:
             - C:/vcpkg-bins
       - store_artifacts:
