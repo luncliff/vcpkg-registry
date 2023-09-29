@@ -13,6 +13,13 @@
       "name": "apple-nio-ssl",
       "platform": "osx | ios"
     },
+    {
+      "name": "llama-cpp",
+      "features": [
+        "test"
+      ],
+      "platform": "windows | osx"
+    },
     "openssl3",
     {
       "name": "vcpkg-cmake",
