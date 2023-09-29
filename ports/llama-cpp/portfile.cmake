@@ -8,6 +8,9 @@ vcpkg_from_github(
     REF b1273 # commit 99115f3fa654b593099c6719ad30e3f54ce231e1
     SHA512 2b3e8fd9673647f59a4fa96621afe2f77ab10a2bee88a96b662b493beb2b66f17c854c1077f01f8ea8998d0296f92225d3033aae0adc756810f80caf45b9a456
     HEAD_REF master
+    PATCHES
+        # fix-openblas.patch
+        fix-cmake.patch
 )
 
 vcpkg_find_acquire_program(PKGCONFIG)
