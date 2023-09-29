@@ -1,21 +1,29 @@
 {
-  "name": "test-registry-ports",
+  "name": "test",
   "version-date": "2023-09-27",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
-  "supports": "windows | osx",
+  "supports": "windows | osx | ios",
   "dependencies": [
     {
-      "name": "vcpkg-cmake",
-      "host": true
+      "name": "apple-crypto",
+      "platform": "osx | ios"
     },
-    "openssl3",
+    {
+      "name": "apple-nio-ssl",
+      "platform": "osx | ios"
+    },
     {
       "name": "llama-cpp",
       "features": [
         "test"
       ],
       "platform": "windows | osx"
+    },
+    "openssl3",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
     }
   ]
 }
