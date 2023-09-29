@@ -60,6 +60,10 @@
       "baseline": "2023-04-05",
       "port-version": 0
     },
+    "miniaudio": {
+      "baseline": "0.11.17",
+      "port-version": 0
+    },
     "ml-dtypes": {
       "baseline": "0.3.0",
       "port-version": 0
