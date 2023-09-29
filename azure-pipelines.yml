@@ -315,7 +315,7 @@ stages:
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
-              vcpkgArguments: "libdispatch fft2d farmhash ruy eigen3 google-jni-bind"
+              vcpkgArguments: "openssl3 libdispatch fft2d farmhash ruy eigen3 google-jni-bind"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets

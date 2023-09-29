@@ -25,7 +25,7 @@ jobs:
           mkdir -p ${VCPKG_DEFAULT_BINARY_CACHE}
       - uses: actions/cache@v3
         with:
-          key: "v2339-${{ runner.os }}"
+          key: "v2339-${{ runner.os }}-${{ matrix.triplet }}"
           path: |
             /usr/local/share/vcpkg-downloads
             /usr/local/share/vcpkg-archives

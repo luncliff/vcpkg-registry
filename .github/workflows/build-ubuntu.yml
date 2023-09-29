@@ -1,4 +1,4 @@
-name: "Windows"
+name: "macOS"
 
 on: [push, workflow_dispatch]
 
@@ -6,34 +6,35 @@ env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
 
 jobs:
-  windows2022:
-    runs-on: "windows-2022"
+  ubuntu22:
+    runs-on: "ubuntu-22.04"
     strategy:
+      fail-fast: false
       matrix:
-        triplet: [x64-windows]
+        triplet: [x64-linux]
     env:
-      VCPKG_DOWNLOADS: "C:/vcpkg/downloads"
-      VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg/archives"
+      VCPKG_DOWNLOADS: "/usr/local/share/vcpkg-downloads"
+      VCPKG_DEFAULT_BINARY_CACHE: "/usr/local/share/vcpkg-archives"
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
     steps:
       - uses: actions/checkout@v3
       - name: "create cache folders"
         run: |
-          New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
-          New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
+          mkdir -p ${VCPKG_DOWNLOADS}
+          mkdir -p ${VCPKG_DEFAULT_BINARY_CACHE}
       - uses: actions/cache@v3
         with:
           key: "v2339-${{ runner.os }}-${{ matrix.triplet }}"
           path: |
-            C:/vcpkg/downloads
-            C:/vcpkg/archives
-      - uses: microsoft/setup-msbuild@v1.1
+            /usr/local/share/vcpkg-downloads
+            /usr/local/share/vcpkg-archives
+      - uses: ConorMacBride/install-package@v1
         with:
-          msbuild-architecture: x64
+          brew: ninja autoconf automake libtool
       - uses: lukka/run-vcpkg@v11
         with:
-          vcpkgDirectory: "C:/vcpkg"
+          vcpkgDirectory: "/usr/local/share/vcpkg" # see VCPKG_INSTALLATION_ROOT
           vcpkgGitCommitId: 9edb1b8e590cc086563301d735cae4b6e732d2d2 # 2023.08.09
           vcpkgJsonGlob: "test/vcpkg.json"
           runVcpkgInstall: true
