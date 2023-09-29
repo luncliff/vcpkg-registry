@@ -1,0 +1,13 @@
+{
+  "name": "miniaudio",
+  "version": "0.11.17",
+  "description": "Audio playback and capture library written in C, in a single source file",
+  "homepage": "https://github.com/mackron/miniaudio",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}
