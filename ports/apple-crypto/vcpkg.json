@@ -1,17 +1,13 @@
 {
   "name": "apple-crypto",
-  "version": "2.2.4",
+  "version": "3.0.0",
   "description": "Open-source implementation of a substantial portion of the API of Apple CryptoKit suitable for use on Linux platforms",
-  "homepage": "https://apple.github.io/swift-crypto",
+  "homepage": "https://github.com/apple/swift-crypto",
   "license": "Apache-2.0",
   "supports": "osx | ios",
   "dependencies": [
     {
       "name": "vcpkg-cmake",
-      "host": true
-    },
-    {
-      "name": "vcpkg-cmake-config",
       "host": true
     }
   ]

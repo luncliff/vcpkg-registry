@@ -1,13 +1,17 @@
 {
-  "name": "test-registry-ports",
+  "name": "test",
   "version-date": "2023-09-27",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
-  "supports": "windows | osx",
+  "supports": "windows | osx | ios",
   "dependencies": [
     {
+      "name": "apple-crypto",
+      "platform": "osx | ios"
+    },
+    {
       "name": "apple-nio-ssl",
-      "platform": "osx"
+      "platform": "osx | ios"
     },
     "openssl3",
     {
