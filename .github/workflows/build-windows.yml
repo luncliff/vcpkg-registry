@@ -24,7 +24,7 @@ jobs:
           New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
       - uses: actions/cache@v3
         with:
-          key: "v2339-${{ runner.os }}"
+          key: "v2339-${{ runner.os }}-${{ matrix.triplet }}"
           path: |
             C:/vcpkg/downloads
             C:/vcpkg/archives

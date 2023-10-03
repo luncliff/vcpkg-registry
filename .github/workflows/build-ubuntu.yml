@@ -1,4 +1,4 @@
-name: "macOS"
+name: "Ubuntu"
 
 on: [push, workflow_dispatch]
 
@@ -6,15 +6,13 @@ env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
 
 jobs:
-  macos12:
-    runs-on: "macos-12"
+  ubuntu22:
+    runs-on: "ubuntu-22.04"
     strategy:
       fail-fast: false
       matrix:
-        triplet: [x64-osx, arm64-ios]
+        triplet: [x64-linux]
     env:
-      VCPKG_DOWNLOADS: "/usr/local/share/vcpkg-downloads"
-      VCPKG_DEFAULT_BINARY_CACHE: "/usr/local/share/vcpkg-archives"
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
     steps:
@@ -23,21 +21,27 @@ jobs:
         run: |
           mkdir -p ${VCPKG_DOWNLOADS}
           mkdir -p ${VCPKG_DEFAULT_BINARY_CACHE}
+        env:
+          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
+          VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"
       - uses: actions/cache@v3
         with:
           key: "v2339-${{ runner.os }}-${{ matrix.triplet }}"
           path: |
-            /usr/local/share/vcpkg-downloads
-            /usr/local/share/vcpkg-archives
+            ${{ runner.temp }}/vcpkg-downloads
+            ${{ runner.temp }}/vcpkg-archives
       - uses: ConorMacBride/install-package@v1
         with:
-          brew: ninja autoconf automake libtool
+          apt: nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
       - uses: lukka/run-vcpkg@v11
         with:
           vcpkgDirectory: "/usr/local/share/vcpkg" # see VCPKG_INSTALLATION_ROOT
-          vcpkgGitCommitId: 9edb1b8e590cc086563301d735cae4b6e732d2d2 # 2023.08.09
+          doNotUpdateVcpkg: true
+          vcpkgGitCommitId: 5a38b5ec0eee3d1a1a6faab5e944617fee2697cf # check https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2204-Readme.md
           vcpkgJsonGlob: "test/vcpkg.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
+          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
+          VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"
