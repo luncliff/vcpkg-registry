@@ -85,7 +85,7 @@
       "port-version": 0
     },
     "openssl1": {
-      "baseline": "1.1.1u",
+      "baseline": "1.1.1w",
       "port-version": 0
     },
     "openssl3": {
