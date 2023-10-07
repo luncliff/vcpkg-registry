@@ -80,6 +80,10 @@
       "baseline": "1.16.0",
       "port-version": 0
     },
+    "openssl": {
+      "baseline": "3.1.3",
+      "port-version": 0
+    },
     "openssl1": {
       "baseline": "1.1.1u",
       "port-version": 0
