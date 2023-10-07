@@ -172,6 +172,46 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
                 "${CURRENT_PACKAGES_DIR}/lib/libcrypto.a"
                 "${CURRENT_PACKAGES_DIR}/lib/libssl.a"
     )
+    # see https://github.com/microsoft/vcpkg/issues/30805
+    if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+        find_program(INSTALL_NAME_TOOL install_name_tool
+            HINTS /usr/bin /Library/Developer/CommandLineTools/usr/bin/
+            REQUIRED
+        )
+        message(STATUS "Using install_name_tool: ${INSTALL_NAME_TOOL}")
+        # ${CURRENT_PACKAGES_DIR}/debug/lib -> @rpath
+        vcpkg_execute_build_process(
+            COMMAND "${INSTALL_NAME_TOOL}" -id "@rpath/libcrypto.3.dylib" "libcrypto.3.dylib"
+            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/lib"
+            LOGNAME "fix-rpath-dbg"
+        )
+        vcpkg_execute_build_process(
+            COMMAND "${INSTALL_NAME_TOOL}" -change "${CURRENT_PACKAGES_DIR}/debug/lib/libcrypto.3.dylib" "@rpath/libcrypto.3.dylib" "libssl.3.dylib"
+            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/lib"
+            LOGNAME "fix-rpath-dbg"
+        )
+        vcpkg_execute_build_process(
+            COMMAND "${INSTALL_NAME_TOOL}" -id "@rpath/libssl.3.dylib" "libssl.3.dylib"
+            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/lib"
+            LOGNAME "fix-rpath-dbg"
+        )
+        # ${CURRENT_PACKAGES_DIR}/lib -> @rpath
+        vcpkg_execute_build_process(
+            COMMAND "${INSTALL_NAME_TOOL}" -id "@rpath/libcrypto.3.dylib" "libcrypto.3.dylib"
+            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/lib"
+            LOGNAME "fix-rpath-rel"
+        )
+        vcpkg_execute_build_process(
+            COMMAND "${INSTALL_NAME_TOOL}" -change "${CURRENT_PACKAGES_DIR}/lib/libcrypto.3.dylib" "@rpath/libcrypto.3.dylib" "libssl.3.dylib"
+            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/lib"
+            LOGNAME "fix-rpath-rel"
+        )
+        vcpkg_execute_build_process(
+            COMMAND "${INSTALL_NAME_TOOL}" -id "@rpath/libssl.3.dylib" "libssl.3.dylib"
+            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/lib"
+            LOGNAME "fix-rpath-rel"
+        )
+    endif()
 else()
     file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin"
                         "${CURRENT_PACKAGES_DIR}/bin"
