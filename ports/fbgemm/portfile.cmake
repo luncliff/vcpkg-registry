@@ -4,26 +4,41 @@ vcpkg_find_acquire_program(PYTHON3)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/fbgemm
-    REF 8ed5c4e3fc1a704e57d642f8d217facd9e96af30
-    SHA512 3213947606068ddf11c2be2e4230b8925c5fb3b4442b644ed46e3dc1df4a8642a006fa9a6a2d6e4d03787a35e7717ef0fdeae1e27ffbb99ea80be79f1fbe6ead
+    REF v0.5.0
+    SHA512 b200a174b493cf2540ca993f42405ed9c7af00a56788af3b5e1a3c1b1a27fb0f3b2189f809c6e7a8322e39e56fe74f249e4e93aa672d643df83b0e8d55339c35
     PATCHES
         fix-cmakelists.patch
+)
+
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+        gpu FBGEMM_BUILD_FBGEMM_GPU
+    INVERTED_FEATURES
+        gpu FBGEMM_CPU_ONLY
+        gpu USE_ROCM
 )
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
+        ${FEATURE_OPTIONS}
         -DUSE_SANITIZER=OFF
         -DFBGEMM_BUILD_TESTS=OFF
         -DFBGEMM_BUILD_BENCHMARKS=OFF
+        -DFBGEMM_BUILD_DOCS=OFF
+        -DFBGEMM_LIBRARY_TYPE:STRING="default"
         -DPYTHON_EXECUTABLE=${PYTHON3} # inject the path instead of find_package(Python)
+    MAYBE_UNUSED_VARIABLES
+        FBGEMM_CPU_ONLY
+        USE_ROCM
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
-vcpkg_cmake_config_fixup(PACKAGE_NAME fbgemmLibrary CONFIG_PATH share/cmake/${PORT})
+vcpkg_cmake_config_fixup(PACKAGE_NAME fbgemmLibrary CONFIG_PATH "share/cmake/${PORT}")
 
 # this internal header is required by pytorch
 file(INSTALL     "${SOURCE_PATH}/src/RefImplementations.h"
      DESTINATION "${CURRENT_PACKAGES_DIR}/include/fbgemm/src")
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME "copyright")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
