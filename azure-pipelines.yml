@@ -99,6 +99,39 @@ stages:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
               ArtifactName: "$(Agent.JobName)"
             condition: always()
+      - job: "windows_host_tools"
+        displayName: "WindowsTools"
+        pool:
+          vmImage: windows-latest
+        timeoutInMinutes: "120"
+        steps:
+          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
+          - task: Cache@2
+            inputs:
+              key: '"v2339-bin-windows-host"'
+              restoreKeys: |
+                "v2339-bin-windows-host"
+              path: $(vcpkg.default.binary.cache)
+          - task: run-vcpkg@0
+            displayName: "godot"
+            inputs:
+              vcpkgArguments: "godot"
+              vcpkgGitCommitId: $(vcpkg.commit)
+          - task: CopyFiles@2
+            displayName: "Copy logs in buildtrees"
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              Contents: |
+                **/?(*.log|*.txt|*.cmake)
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish logs"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
 
   - stage: "Ports"
     dependsOn: "Triplets"

@@ -1,9 +1,11 @@
+# see https://github.com/godotengine/godot/blob/master/.github/workflows/
 if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 else()
     message(FATAL_ERROR "Work in progress")
 endif()
 
+# todo: replace ${SOURCE_PATH}/thirdparty to vcpkg installed libraries
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO godotengine/godot
@@ -12,48 +14,78 @@ vcpkg_from_github(
     HEAD_REF master
 )
 
+# 1. Prepare required tools: https://scons.org/
 # vcpkg_find_acquire_program(PYTHON3)
 x_vcpkg_get_python_packages(
-      PYTHON_VERSION 3
-      PACKAGES scons
-      OUT_PYTHON_VAR PYTHON3
+    PYTHON_VERSION 3
+    PACKAGES scons
+    OUT_PYTHON_VAR PYTHON3
 )
-message(STATUS "Using python3: ${PYTHON3}")
-
 get_filename_component(PYTHON_PATH "${PYTHON3}" DIRECTORY)
 vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
+message(STATUS "Using python3: ${PYTHON3}")
 
 find_program(SCONS_EXE NAMES scons PATHS "${PYTHON_PATH}" REQUIRED )
 message(STATUS "Using scons: ${SCONS_EXE}")
 
-# see https://github.com/godotengine/godot/blob/master/.github/workflows/
-set(ENV{SCONS_CACHE_MSVC_CONFIG} "false")
+# 2. Run build of targets
+# set(ENV{SCONS_FLAGS} "--tree=all")
+list(APPEND SCONS_ARGS verbose=yes)
+if(VCPKG_TARGET_IS_WINDOWS)
+    set(ENV{SCONS_CACHE_MSVC_CONFIG} "false")
+    list(APPEND SCONS_ARGS platform=windows vsproj=yes windows_subsystem=console)
+endif()
 
-# scons platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }}
-message(STATUS "Building ${TARGET_TRIPLET}-dbg")
+message(STATUS "Building template_debug")
 set(BUILDTREES_DIR_DBG "${SOURCE_PATH}")
 vcpkg_execute_required_process(
-    COMMAND ${SCONS_EXE} -j ${VCPKG_CONCURRENCY} verbose=yes target=template_debug debug_symbols=yes
-        platform=windows vsproj=yes windows_subsystem=console
-        module_text_server_fb_enabled=yes
+    COMMAND "${SCONS_EXE}" -j ${VCPKG_CONCURRENCY} debug_symbols=yes target=template_debug
+        ${SCONS_ARGS} module_text_server_fb_enabled=yes
     WORKING_DIRECTORY "${BUILDTREES_DIR_DBG}"
-    LOGNAME "install-${TARGET_TRIPLET}-dbg"
+    LOGNAME "template-${TARGET_TRIPLET}-dbg"
 )
 
-message(STATUS "Building ${TARGET_TRIPLET}-rel")
+message(STATUS "Building template_release")
 set(BUILDTREES_DIR_REL "${SOURCE_PATH}")
 vcpkg_execute_required_process(
-    COMMAND ${SCONS_EXE} -j ${VCPKG_CONCURRENCY} verbose=yes target=template_release debug_symbols=no
-        platform=windows vsproj=yes windows_subsystem=console
-        module_text_server_fb_enabled=yes
+    COMMAND "${SCONS_EXE}" -j ${VCPKG_CONCURRENCY} debug_symbols=no target=template_release
+        ${SCONS_ARGS} module_text_server_fb_enabled=yes
     WORKING_DIRECTORY "${BUILDTREES_DIR_REL}"
-    LOGNAME "install-${TARGET_TRIPLET}-rel"
+    LOGNAME "template-${TARGET_TRIPLET}-rel"
 )
 
-vcpkg_copy_pdbs()
-file(REMOVE_RECURSE
-    "${CURRENT_PACKAGES_DIR}/debug/include"
-    "${CURRENT_PACKAGES_DIR}/debug/share"
+message(STATUS "Building editor")
+vcpkg_execute_required_process(
+    COMMAND "${SCONS_EXE}" -j ${VCPKG_CONCURRENCY} debug_symbols=no target=editor
+        ${SCONS_ARGS} module_text_server_fb_enabled=yes
+    WORKING_DIRECTORY "${BUILDTREES_DIR_REL}"
+    LOGNAME "editor-${TARGET_TRIPLET}-rel"
 )
+
+# 3. Installation
+if(VCPKG_TARGET_IS_WINDOWS)
+    file(GLOB GODOT_BIN_DBG "${BUILDTREES_DIR_DBG}/bin/godot.*.template_debug.*.exe"
+                            "${BUILDTREES_DIR_DBG}/bin/godot.*.template_debug.*.pdb"
+    )
+    file(INSTALL ${GODOT_BIN_DBG} DESTINATION "${CURRENT_PACKAGES_DIR}/debug/bin")
+    vcpkg_copy_tools(
+        TOOL_NAMES "godot.windows.template_debug.x86_64"
+        SEARCH_DIR "${CURRENT_PACKAGES_DIR}/debug/bin"
+        AUTO_CLEAN
+    )
+
+    file(GLOB GODOT_BIN_REL "${BUILDTREES_DIR_REL}/bin/godot.*.template_release.*.exe"
+                            "${BUILDTREES_DIR_REL}/bin/godot.*.template_release.*.pdb"
+                            "${BUILDTREES_DIR_REL}/bin/godot.*.editor.*.exe"
+    )
+    file(INSTALL ${GODOT_BIN_REL} DESTINATION "${CURRENT_PACKAGES_DIR}/bin")
+    vcpkg_copy_tools(
+        TOOL_NAMES "godot.windows.template_release.x86_64" "godot.windows.editor.x86_64"
+        SEARCH_DIR "${CURRENT_PACKAGES_DIR}/bin"
+        AUTO_CLEAN
+    )
+
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
+endif()
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")
