@@ -23,6 +23,13 @@
       "platform": "windows | android"
     },
     {
+      "name": "godot",
+      "features": [
+        "test"
+      ],
+      "platform": "windows"
+    },
+    {
       "name": "llama-cpp",
       "features": [
         "test"

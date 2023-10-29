@@ -1,0 +1,65 @@
+{
+  "name": "godot",
+  "version": "4.1.2",
+  "description": "Godot Engine – Multi-platform 2D and 3D game engine",
+  "homepage": "https://github.com/godotengine/godot",
+  "license": "MIT",
+  "supports": "windows | osx | linux",
+  "dependencies": [
+    {
+      "name": "angle",
+      "platform": "windows"
+    },
+    "basisu",
+    "brotli",
+    "enet",
+    "freetype",
+    {
+      "name": "glad",
+      "features": [
+        "gles2-api-30",
+        "gles2-api-31",
+        "gles2-api-latest",
+        "loader"
+      ],
+      "platform": "windows"
+    },
+    "glslang",
+    "harfbuzz",
+    "icu",
+    "libogg",
+    "libpng",
+    "libvorbis",
+    "libwebp",
+    "mbedtls",
+    "meshoptimizer",
+    "minimp3",
+    "minizip",
+    "msdfgen",
+    "pcre2",
+    "tinyexr",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    {
+      "name": "vcpkg-get-python-packages",
+      "host": true
+    },
+    "vulkan",
+    "zlib",
+    "zstd"
+  ],
+  "features": {
+    "test": {
+      "description": "Build test programs",
+      "dependencies": [
+        "doctest"
+      ]
+    }
+  }
+}
