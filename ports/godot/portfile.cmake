@@ -33,7 +33,7 @@ set(ENV{SCONS_CACHE_MSVC_CONFIG} "false")
 message(STATUS "Building ${TARGET_TRIPLET}-dbg")
 set(BUILDTREES_DIR_DBG "${SOURCE_PATH}")
 vcpkg_execute_required_process(
-    COMMAND ${SCONS_EXE} verbose=yes target=template_debug debug_symbols=yes
+    COMMAND ${SCONS_EXE} -j ${VCPKG_CONCURRENCY} verbose=yes target=template_debug debug_symbols=yes
         platform=windows vsproj=yes windows_subsystem=console
         module_text_server_fb_enabled=yes
     WORKING_DIRECTORY "${BUILDTREES_DIR_DBG}"
@@ -43,7 +43,7 @@ vcpkg_execute_required_process(
 message(STATUS "Building ${TARGET_TRIPLET}-rel")
 set(BUILDTREES_DIR_REL "${SOURCE_PATH}")
 vcpkg_execute_required_process(
-    COMMAND ${SCONS_EXE} verbose=yes target=template_release
+    COMMAND ${SCONS_EXE} -j ${VCPKG_CONCURRENCY} verbose=yes target=template_release debug_symbols=no
         platform=windows vsproj=yes windows_subsystem=console
         module_text_server_fb_enabled=yes
     WORKING_DIRECTORY "${BUILDTREES_DIR_REL}"

@@ -50,7 +50,6 @@
       "name": "vcpkg-get-python-packages",
       "host": true
     },
-    "vulkan",
     "zlib",
     "zstd"
   ],
@@ -59,6 +58,12 @@
       "description": "Build test programs",
       "dependencies": [
         "doctest"
+      ]
+    },
+    "vulkan": {
+      "description": "Build with Vulkan SDK",
+      "dependencies": [
+        "vulkan"
       ]
     }
   }
