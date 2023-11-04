@@ -13,8 +13,14 @@ vcpkg_from_github(
     SHA512 691a225fbcd5fc242a20b4e49394728ab7db58669e1badfb81d36bad2d4bee3f85d4e99805332d6e97aca48c3f592b1c36bbfc18a3a5a40fb5809f8d8b0f42c7
     HEAD_REF master
 )
+# file(REMOVE_RECURSE "${SOURCE_PATH}/thirdparty")
 
 # 1. Prepare required tools: https://scons.org/
+vcpkg_find_acquire_program(PKGCONFIG)
+get_filename_component(PKGCONFIG_PATH "${PKGCONFIG}" DIRECTORY)
+vcpkg_add_to_path(PREPEND "${PKGCONFIG_PATH}")
+message(STATUS "Using pkg-config: ${PKGCONFIG}")
+
 # vcpkg_find_acquire_program(PYTHON3)
 x_vcpkg_get_python_packages(
     PYTHON_VERSION 3
@@ -29,35 +35,74 @@ find_program(SCONS_EXE NAMES scons PATHS "${PYTHON_PATH}" REQUIRED )
 message(STATUS "Using scons: ${SCONS_EXE}")
 
 # 2. Run build of targets
+# Check "${SOURCE_PATH}/SConstruct" for detailed options
+set(ENV{VCPKG_INSTALLED_DIR} "${CURRENT_INSTALLED_DIR}")
+
 # set(ENV{SCONS_FLAGS} "--tree=all")
-list(APPEND SCONS_ARGS verbose=yes)
+list(APPEND SCONS_ARGS verbose=true
+    module_text_server_fb_enabled=true
+    builtin_brotli=false
+    builtin_certs=false
+    builtin_embree=false
+    builtin_enet=false
+    builtin_freetype=false
+    builtin_msdfgen=false
+    builtin_glslang=false
+    builtin_graphite=false
+    builtin_harfbuzz=false
+    builtin_icu4c=false
+    builtin_libogg=false
+    builtin_libpng=false
+    builtin_libtheora=false
+    builtin_libvorbis=false
+    builtin_libwebp=false
+    builtin_wslay=false
+    builtin_mbedtls=false
+    builtin_miniupnpc=false
+    builtin_openxr=false
+    builtin_pcre2=false
+    builtin_pcre2_with_jit=false
+    builtin_recastnavigation=false
+    builtin_rvo2_2d=false
+    builtin_rvo2_3d=false
+    builtin_squish=false
+    builtin_xatlas=false
+    builtin_zlib=false
+    builtin_zstd=false
+)
+if ("test" IN_LIST FEATURES)
+    list(APPEND SCONS_ARGS tests=true)
+endif()
+
 if(VCPKG_TARGET_IS_WINDOWS)
     set(ENV{SCONS_CACHE_MSVC_CONFIG} "false")
-    list(APPEND SCONS_ARGS platform=windows vsproj=yes windows_subsystem=console)
+    list(APPEND SCONS_ARGS platform=windows vsproj=true windows_subsystem=console)
 endif()
 
 message(STATUS "Building template_debug")
 set(BUILDTREES_DIR_DBG "${SOURCE_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${CURRENT_INSTALLED_DIR}/debug/lib/pkgconfig")
 vcpkg_execute_required_process(
-    COMMAND "${SCONS_EXE}" -j ${VCPKG_CONCURRENCY} debug_symbols=yes target=template_debug
-        ${SCONS_ARGS} module_text_server_fb_enabled=yes
+    COMMAND "${SCONS_EXE}" -j ${VCPKG_CONCURRENCY} debug_symbols=true target=template_debug
+        ${SCONS_ARGS}
     WORKING_DIRECTORY "${BUILDTREES_DIR_DBG}"
     LOGNAME "template-${TARGET_TRIPLET}-dbg"
 )
 
 message(STATUS "Building template_release")
 set(BUILDTREES_DIR_REL "${SOURCE_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${CURRENT_INSTALLED_DIR}/lib/pkgconfig")
 vcpkg_execute_required_process(
-    COMMAND "${SCONS_EXE}" -j ${VCPKG_CONCURRENCY} debug_symbols=no target=template_release
-        ${SCONS_ARGS} module_text_server_fb_enabled=yes
+    COMMAND "${SCONS_EXE}" -j ${VCPKG_CONCURRENCY} debug_symbols=false target=template_release
+        ${SCONS_ARGS}
     WORKING_DIRECTORY "${BUILDTREES_DIR_REL}"
     LOGNAME "template-${TARGET_TRIPLET}-rel"
 )
 
 message(STATUS "Building editor")
 vcpkg_execute_required_process(
-    COMMAND "${SCONS_EXE}" -j ${VCPKG_CONCURRENCY} debug_symbols=no target=editor
-        ${SCONS_ARGS} module_text_server_fb_enabled=yes
+    COMMAND "${SCONS_EXE}" -j ${VCPKG_CONCURRENCY} debug_symbols=false target=editor
+        ${SCONS_ARGS}
     WORKING_DIRECTORY "${BUILDTREES_DIR_REL}"
     LOGNAME "editor-${TARGET_TRIPLET}-rel"
 )

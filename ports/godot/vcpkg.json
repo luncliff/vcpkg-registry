@@ -6,36 +6,45 @@
   "license": "MIT",
   "supports": "windows | osx | linux",
   "dependencies": [
-    {
-      "name": "angle",
-      "platform": "windows"
-    },
     "basisu",
     "brotli",
+    "embree3",
     "enet",
-    "freetype",
+    {
+      "name": "freetype",
+      "features": [
+        "brotli",
+        "zlib"
+      ]
+    },
     {
       "name": "glad",
       "features": [
-        "gles2-api-30",
-        "gles2-api-31",
-        "gles2-api-latest",
         "loader"
-      ],
-      "platform": "windows"
+      ]
     },
     "glslang",
-    "harfbuzz",
+    {
+      "name": "harfbuzz",
+      "features": [
+        "graphite2",
+        "icu"
+      ]
+    },
     "icu",
     "libogg",
     "libpng",
+    "libsquish",
+    "libtheora",
     "libvorbis",
     "libwebp",
     "mbedtls",
     "meshoptimizer",
     "minimp3",
+    "miniupnpc",
     "minizip",
     "msdfgen",
+    "openxr-loader",
     "pcre2",
     "tinyexr",
     {
@@ -54,6 +63,25 @@
     "zstd"
   ],
   "features": {
+    "gles3": {
+      "description": "Build with OpenGL ES",
+      "supports": "windows",
+      "dependencies": [
+        {
+          "name": "angle",
+          "platform": "windows"
+        },
+        {
+          "name": "glad",
+          "features": [
+            "gles2-api-30",
+            "gles2-api-31",
+            "gles2-api-latest"
+          ],
+          "platform": "windows"
+        }
+      ]
+    },
     "test": {
       "description": "Build test programs",
       "dependencies": [
@@ -63,6 +91,12 @@
     "vulkan": {
       "description": "Build with Vulkan SDK",
       "dependencies": [
+        {
+          "name": "openxr-loader",
+          "features": [
+            "vulkan"
+          ]
+        },
         "vulkan"
       ]
     }
