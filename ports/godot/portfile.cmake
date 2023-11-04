@@ -1,3 +1,4 @@
+# see https://docs.godotengine.org/en/latest/contributing/development/compiling/index.html
 # see https://github.com/godotengine/godot/blob/master/.github/workflows/
 if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
@@ -12,8 +13,20 @@ vcpkg_from_github(
     REF 4.1.2-stable
     SHA512 691a225fbcd5fc242a20b4e49394728ab7db58669e1badfb81d36bad2d4bee3f85d4e99805332d6e97aca48c3f592b1c36bbfc18a3a5a40fb5809f8d8b0f42c7
     HEAD_REF master
+    # PATCHES
+    #     fix-scons.patch
 )
-# file(REMOVE_RECURSE "${SOURCE_PATH}/thirdparty")
+
+# todo: move thirdparty to ports
+# file(GLOB_RECURSE THIRD_SOURCES
+#     "${SOURCE_PATH}/thirdparty/*.h"
+#     "${SOURCE_PATH}/thirdparty/*.c"
+#     "${SOURCE_PATH}/thirdparty/*.hpp"
+#     "${SOURCE_PATH}/thirdparty/*.cpp"
+# )
+# if(THIRD_SOURCES)
+#     file(REMOVE ${THIRD_SOURCES})
+# endif()
 
 # 1. Prepare required tools: https://scons.org/
 vcpkg_find_acquire_program(PKGCONFIG)
