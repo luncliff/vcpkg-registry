@@ -1,6 +1,6 @@
 {
   "name": "xatlas",
-  "version-date": "2021-11-27",
+  "version-date": "2023-11-07",
   "description": "Mesh parameterization / UV unwrapping library",
   "homepage": "https://github.com/jpcy/xatlas",
   "dependencies": [
