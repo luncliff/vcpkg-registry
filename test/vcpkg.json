@@ -25,6 +25,8 @@
       "platform": "osx | ios"
     },
     "openssl3",
+    "rvo2",
+    "rvo2-3d",
     {
       "name": "vcpkg-cmake",
       "host": true
