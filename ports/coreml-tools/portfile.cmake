@@ -32,6 +32,8 @@ find_path(SITE_PACKAGES_DIR
     PATHS "${PYTHON_ROOT}/lib/python3.9/site-packages"
           "${PYTHON_ROOT}/lib/python3.10/site-packages"
           "${PYTHON_ROOT}/lib/python3.11/site-packages"
+          "${PYTHON_ROOT}/lib/python3.12/site-packages"
+          "${PYTHON_ROOT}/Lib/site-packages"
     REQUIRED
 )
 message(STATUS "  site-packages: ${SITE_PACKAGES_DIR}")
