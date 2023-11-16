@@ -31,6 +31,7 @@
       "name": "vcpkg-cmake",
       "host": true
     },
+    "xatlas",
     "zlib-ng"
   ]
 }

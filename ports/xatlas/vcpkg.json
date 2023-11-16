@@ -1,0 +1,16 @@
+{
+  "name": "xatlas",
+  "version-date": "2023-11-07",
+  "description": "Mesh parameterization / UV unwrapping library",
+  "homepage": "https://github.com/jpcy/xatlas",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
