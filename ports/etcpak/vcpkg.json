@@ -1,0 +1,12 @@
+{
+  "name": "etcpak",
+  "version-date": "2023-11-07",
+  "description": "The fastest ETC compressor on the planet",
+  "homepage": "https://github.com/wolfpld/etcpak",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}

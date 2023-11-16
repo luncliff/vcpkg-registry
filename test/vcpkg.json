@@ -13,6 +13,7 @@
       "name": "apple-nio-ssl",
       "platform": "osx | ios"
     },
+    "etcpak",
     {
       "name": "llama-cpp",
       "features": [
