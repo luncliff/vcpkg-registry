@@ -10,6 +10,7 @@
     "brotli",
     "embree3",
     "enet",
+    "etcpak",
     {
       "name": "freetype",
       "features": [
@@ -45,7 +46,10 @@
     "minizip",
     "msdfgen",
     "openxr-loader",
+    "pcg",
     "pcre2",
+    "rvo2",
+    "rvo2-3d",
     "tinyexr",
     {
       "name": "vcpkg-cmake",
@@ -59,8 +63,8 @@
       "name": "vcpkg-get-python-packages",
       "host": true
     },
+    "xatlas",
     "zlib",
-    "pcg",
     "zstd"
   ],
   "features": {
