@@ -35,7 +35,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11
         with:
           vcpkgDirectory: "/usr/local/share/vcpkg" # see VCPKG_INSTALLATION_ROOT
-          vcpkgGitCommitId: 9edb1b8e590cc086563301d735cae4b6e732d2d2 # 2023.08.09
+          vcpkgGitCommitId: "a42af01b72c28a8e1d7b48107b33e4f286a55ef6" # 2023.11.20
           vcpkgJsonGlob: "test/vcpkg.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
