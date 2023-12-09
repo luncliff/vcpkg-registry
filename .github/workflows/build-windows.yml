@@ -31,7 +31,7 @@ jobs:
       - uses: microsoft/setup-msbuild@v1.1
         with:
           msbuild-architecture: x64
-      - uses: lukka/run-vcpkg@v11
+      - uses: lukka/run-vcpkg@v11.3
         with:
           vcpkgDirectory: "C:/vcpkg"
           vcpkgGitCommitId: "a42af01b72c28a8e1d7b48107b33e4f286a55ef6" # 2023.11.20
@@ -56,10 +56,11 @@ jobs:
         run: |
           New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
           New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
+          Move-Item -Path "test/self-hosted-cuda.json" -Destination "test/vcpkg.json" -Force
       - uses: microsoft/setup-msbuild@v1.1
         with:
           msbuild-architecture: x64
-      - uses: lukka/run-vcpkg@v11
+      - uses: lukka/run-vcpkg@v11.3
         with:
           vcpkgDirectory: "C:/vcpkg"
           vcpkgGitCommitId: "a42af01b72c28a8e1d7b48107b33e4f286a55ef6" # 2023.11.20
@@ -68,3 +69,7 @@ jobs:
           runVcpkgFormatString: '[`install`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
+
+      - uses: yumis-coconudge/clean-workspace-action@v1
+        with:
+          additional-path: "C:/vcpkg/installed"
