@@ -82,7 +82,7 @@
     },
     "onnxruntime": {
       "baseline": "1.16.0",
-      "port-version": 0
+      "port-version": 1
     },
     "openssl": {
       "baseline": "3.1.3",
