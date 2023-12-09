@@ -65,7 +65,8 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 )
 
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
-    set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+    # For some reason CUDA compiler detection is not working in WINDOWS_USE_MSBUILD
+    # set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
 else()
@@ -103,6 +104,10 @@ else()
 endif()
 message(STATUS "Using python3: ${PYTHON3}")
 vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
+
+if("cuda" IN_LIST FEATURES)
+    message(STATUS "Using CUDA: $ENV{CUDA_PATH}")
+endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
