@@ -32,3 +32,16 @@ index 8cf6dd1..0119493 100644
      endif()
      if (MSVC)
        foreach(CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORY ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index d3e9c36..3a4d34c 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -1039,7 +1039,7 @@ function(onnxruntime_add_shared_library_module target_name)
+     add_library(${target_name} SHARED ${ARGN})
+   else()
+     #On Windows, this target shouldn't generate an import lib, but I don't know how to disable it.
+-    add_library(${target_name} MODULE ${ARGN})
++    add_library(${target_name} SHARED ${ARGN})
+   endif()
+ 
+   onnxruntime_configure_target(${target_name})
