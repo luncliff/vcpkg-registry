@@ -9,13 +9,15 @@
       "name": "onnxruntime",
       "features": [
         "cuda"
-      ]
+      ],
+      "platform": "x64 & windows"
     },
     {
       "name": "opencv4",
       "features": [
         "cudnn"
-      ]
+      ],
+      "platform": "x64 & windows"
     }
   ]
 }
