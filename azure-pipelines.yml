@@ -75,9 +75,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2348-bin-mac-host"'
+              key: '"v2349-bin-mac-host"'
               restoreKeys: |
-                "v2348-bin-mac-host"
+                "v2349-bin-mac-host"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "coreml-tools"
@@ -124,15 +124,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2348-down-windows"'
+              key: '"v2349-down-windows"'
               restoreKeys: |
-                "v2348-down-windows"
+                "v2349-down-windows"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2348-bin-windows" | "$(vcpkg.default.triplet)"'
+              key: '"v2349-bin-windows" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2348-bin-windows" | "$(vcpkg.default.triplet)"
+                "v2349-bin-windows" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "libdispatch"
@@ -182,15 +182,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2348-down-uwp"'
+              key: '"v2349-down-uwp"'
               restoreKeys: |
-                "v2348-down-uwp"
+                "v2349-down-uwp"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2348-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"v2349-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2348-bin-uwp" | "$(vcpkg.default.triplet)"
+                "v2349-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "libdispatch"
@@ -245,15 +245,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2348-down-ubuntu"'
+              key: '"v2349-down-ubuntu"'
               restoreKeys: |
-                "v2348-down-ubuntu"
+                "v2349-down-ubuntu"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2348-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"v2349-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
-                "v2348-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
+                "v2349-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "tensorflow-lite"
@@ -303,15 +303,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2348-down-android"'
+              key: '"v2349-down-android"'
               restoreKeys: |
-                "v2348-down-android"
+                "v2349-down-android"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2348-bin-android" | "$(vcpkg.default.triplet)"'
+              key: '"v2349-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2348-bin-android" | "$(vcpkg.default.triplet)"
+                "v2349-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -365,15 +365,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2348-down-apple"'
+              key: '"v2349-down-apple"'
               restoreKeys: |
-                "v2348-down-apple"
+                "v2349-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2348-bin-osx" | "$(vcpkg.default.triplet)"'
+              key: '"v2349-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2348-bin-osx" | "$(vcpkg.default.triplet)"
+                "v2349-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -425,15 +425,15 @@ stages:
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: Cache@2
             inputs:
-              key: '"v2348-down-apple"'
+              key: '"v2349-down-apple"'
               restoreKeys: |
-                "v2348-down-apple"
+                "v2349-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2348-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"v2349-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2348-bin-ios" | "$(vcpkg.default.triplet)"
+                "v2349-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "arm64-ios"

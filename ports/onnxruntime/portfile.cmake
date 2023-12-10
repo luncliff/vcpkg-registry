@@ -14,6 +14,7 @@ vcpkg_from_github(
     PATCHES
         fix-cmake.patch
         fix-source-flatbuffers.patch
+        fix-cuda.patch
 )
 
 find_program(PROTOC NAMES protoc
@@ -62,10 +63,12 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         framework onnxruntime_BUILD_OBJC
     INVERTED_FEATURES
         abseil   onnxruntime_DISABLE_ABSEIL
+        cuda     onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
 
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
-    set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+    # For some reason CUDA compiler detection is not working in WINDOWS_USE_MSBUILD
+    # set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
 else()
@@ -103,6 +106,17 @@ else()
 endif()
 message(STATUS "Using python3: ${PYTHON3}")
 vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
+
+if("cuda" IN_LIST FEATURES)
+    # https://cmake.org/cmake/help/latest/module/FindCUDAToolkit.html
+    if(NOT DEFINED ENV{CUDA_PATH})
+        message(FATAL_ERROR "ENV{CUDA_PATH} is required. Please check the environment variable")
+    endif()
+    message(STATUS "Using CUDA: $ENV{CUDA_PATH}")
+    get_filename_component(CUDA_VERSION "$ENV{CUDA_PATH}" NAME)
+    string(REPLACE "v" "" CUDA_VERSION "${CUDA_VERSION}") # "v12.0" -> "12.0"
+    message(STATUS "  version: ${CUDA_VERSION}")
+endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
