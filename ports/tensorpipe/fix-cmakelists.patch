@@ -25,8 +25,8 @@ index 5c36064..cfaf0bc 100644
 -find_package(uv REQUIRED)
 -list(APPEND TP_LINK_LIBRARIES uv::uv)
 +# `libuv` in vcpkg
-+find_package(unofficial-libuv CONFIG REQUIRED) 
-+list(APPEND TP_LINK_LIBRARIES unofficial::libuv::libuv)
++find_package(libuv CONFIG REQUIRED) 
++list(APPEND TP_LINK_LIBRARIES libuv::uv)
  
  ### shm
  

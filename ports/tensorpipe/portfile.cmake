@@ -1,11 +1,10 @@
-vcpkg_fail_port_install(ON_TARGET "windows" "uwp")
 vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/tensorpipe
-    REF d2aa3485e8229c98891dfd604b514a39d45a5c99
-    SHA512 fbefc18792458ac2234045df8e3cce8dbb17a5e719258f020c2c1d388092358bd2562e53a0377ca18f40bcfbeae4367c277a74c31c5e45296b891453a962e460
+    REF bb1473a4b38b18268e8693044afdb8635bc8351b
+    SHA512 cf0334f81affb2d844bc8b63c533a749753e36ee096f841641716a3bf044b17580262a2e9056d8d1351228e323c4f75401a2a120a5de397e80ec21a33fe56d2b
     PATCHES
         fix-cmakelists.patch
 )
