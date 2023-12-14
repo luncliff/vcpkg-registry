@@ -1,6 +1,6 @@
 {
   "name": "tensorpipe",
-  "version-date": "2021-11-13",
+  "version-date": "2022-05-14",
   "description": "A tensor-aware point-to-point communication primitive for machine learning",
   "homepage": "https://github.com/pytorch/tensorpipe",
   "supports": "linux | osx",
