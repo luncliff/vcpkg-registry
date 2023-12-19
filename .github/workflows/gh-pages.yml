@@ -22,8 +22,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-python@v5.0.0
         with:
           python-version: 3.11
           architecture: x64
@@ -35,8 +35,8 @@ jobs:
         run: >
           python3 -m mkdocs build --site-dir _site
 
-      - uses: actions/configure-pages@v3
-      - uses: actions/upload-pages-artifact@v2
+      - uses: actions/configure-pages@v4.0.0
+      - uses: actions/upload-pages-artifact@v3.0.0
         with:
           path: '_site'
-      - uses: actions/deploy-pages@v2
+      - uses: actions/deploy-pages@v4.0.0

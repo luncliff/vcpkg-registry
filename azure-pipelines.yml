@@ -1,7 +1,7 @@
 #
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
-# https://github.com/actions/virtual-environments/tree/main/images
+# https://github.com/actions/runner-images/tree/main/images
 # https://github.com/lukka/CppBuildTasks
 #
 
@@ -38,7 +38,7 @@ stages:
       - job: "triplet_ios_simulator"
         displayName: "iOS Simulator"
         pool:
-          vmImage: macOS-12
+          vmImage: macOS-13
         variables:
           - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
             value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
@@ -47,16 +47,16 @@ stages:
             displayName: "Install HomeBrew packages"
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: run-vcpkg@0
-            displayName: "arm64-ios-simulator: zlib-ng"
+            displayName: "arm64-ios-simulator"
             inputs:
-              vcpkgArguments: "zlib-ng --debug"
+              vcpkgArguments: "zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
           - task: run-vcpkg@0
-            displayName: "x64-ios-simulator: zlib-ng"
+            displayName: "x64-ios-simulator"
             inputs:
-              vcpkgArguments: "zlib-ng --debug"
+              vcpkgArguments: "zlib-ng"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
@@ -67,7 +67,7 @@ stages:
       - job: "osx_host_tools"
         displayName: "MacTools"
         pool:
-          vmImage: macOS-12
+          vmImage: macOS-13
         timeoutInMinutes: "120"
         steps:
           - powershell: brew install autoconf automake libtool pkg-config
@@ -75,9 +75,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2349-bin-mac-host"'
+              key: '"v2351-bin-mac-host"'
               restoreKeys: |
-                "v2349-bin-mac-host"
+                "v2351-bin-mac-host"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "coreml-tools"
@@ -103,65 +103,6 @@ stages:
   - stage: "Ports"
     dependsOn: "Triplets"
     jobs:
-      - job: "port_windows"
-        displayName: "Windows"
-        pool:
-          vmImage: windows-2022
-        strategy:
-          matrix:
-            x64_windows:
-              vcpkg.default.triplet: "x64-windows"
-            x86_windows:
-              vcpkg.default.triplet: "x86-windows"
-            x64_uwp:
-              vcpkg.default.triplet: "x64-uwp"
-        steps:
-          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
-          - task: Cache@2
-            inputs:
-              key: '"v2349-down-windows"'
-              restoreKeys: |
-                "v2349-down-windows"
-              path: $(Build.BinariesDirectory)/vcpkg/downloads
-          - task: Cache@2
-            inputs:
-              key: '"v2349-bin-windows" | "$(vcpkg.default.triplet)"'
-              restoreKeys: |
-                "v2349-bin-windows" | "$(vcpkg.default.triplet)"
-              path: $(vcpkg.default.binary.cache)
-          - task: run-vcpkg@0
-            displayName: "libdispatch"
-            inputs:
-              vcpkgArguments: "libdispatch"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            condition: ne(variables['vcpkg.default.triplet'], 'x64-uwp')
-          - task: run-vcpkg@0
-            displayName: "tensorflow-lite"
-            inputs:
-              vcpkgArguments: "tensorflow-lite[google-angle,gpu]"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            condition: ne(variables['vcpkg.default.triplet'], 'x64-uwp')
-          - task: run-vcpkg@0
-            inputs:
-              vcpkgArguments: "cpuinfo"
-              vcpkgGitCommitId: $(vcpkg.commit)
-          - task: CopyFiles@2
-            displayName: "Copy logs in buildtrees"
-            inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
-              Contents: |
-                **/?(*.log|*.txt|*.cmake)
-              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
-              OverWrite: true
-            condition: always()
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish logs"
-            inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
-              ArtifactName: "$(Agent.JobName)"
-            condition: always()
-        timeoutInMinutes: "500"
-
       - job: "port_windows_arm"
         displayName: "Windows(ARM)"
         pool:
@@ -176,24 +117,22 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2349-down-uwp"'
+              key: '"v2351-down-uwp"'
               restoreKeys: |
-                "v2349-down-uwp"
+                "v2351-down-uwp"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2349-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"v2351-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2349-bin-uwp" | "$(vcpkg.default.triplet)"
+                "v2351-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
-            displayName: "libdispatch"
             inputs:
               vcpkgArguments: "libdispatch"
               vcpkgGitCommitId: $(vcpkg.commit)
             condition: ne(variables['vcpkg.default.triplet'], 'arm64-uwp')
           - task: run-vcpkg@0
-            displayName: "tensorflow-lite"
             inputs:
               vcpkgArguments: "tensorflow-lite"
               vcpkgGitCommitId: $(vcpkg.commit)
@@ -220,39 +159,33 @@ stages:
           vmImage: ubuntu-22.04
         strategy:
           matrix:
-            x64_clang14:
+            x64_clang15:
               vcpkg.default.triplet: "x64-linux"
-              cc: clang-14
-              cxx: clang++-14
-            x64_gcc11:
+              cc: clang-15
+              cxx: clang++-15
+            x64_gcc13:
               vcpkg.default.triplet: "x64-linux"
-              cc: gcc-11
-              cxx: g++-11
+              cc: gcc-13
+              cxx: g++-13
         steps:
           - powershell: sudo apt-get install -y nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
             displayName: "Install APT packages"
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2349-down-ubuntu"'
+              key: '"v2351-down-ubuntu"'
               restoreKeys: |
-                "v2349-down-ubuntu"
+                "v2351-down-ubuntu"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2349-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"v2351-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
-                "v2349-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
+                "v2351-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
-            displayName: "tensorflow-lite"
             inputs:
-              vcpkgArguments: "tensorflow-lite[gpu]"
-              vcpkgGitCommitId: $(vcpkg.commit)
-          - task: run-vcpkg@0
-            displayName: "onnxruntime"
-            inputs:
-              vcpkgArguments: "onnxruntime[xnnpack]"
+              vcpkgArguments: "tensorflow-lite[gpu] onnxruntime[xnnpack]"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: CopyFiles@2
             displayName: "Copy logs in buildtrees"
@@ -277,29 +210,29 @@ stages:
           vmImage: ubuntu-22.04
         strategy:
           matrix:
-            arm64_ndk25:
+            arm64_ndk26:
               vcpkg.default.triplet: "arm64-android"
-              android.ndk.home: "/usr/local/lib/android/sdk/ndk/25.2.9519653"
-            x64_ndk25:
+              android.ndk.home: "/usr/local/lib/android/sdk/ndk/26.1.10909125"
+            x64_ndk26:
               vcpkg.default.triplet: "x64-android"
-              android.ndk.home: "/usr/local/lib/android/sdk/ndk/25.2.9519653"
+              android.ndk.home: "/usr/local/lib/android/sdk/ndk/26.1.10909125"
         steps:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2349-down-android"'
+              key: '"v2351-down-android"'
               restoreKeys: |
-                "v2349-down-android"
+                "v2351-down-android"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2349-bin-android" | "$(vcpkg.default.triplet)"'
+              key: '"v2351-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2349-bin-android" | "$(vcpkg.default.triplet)"
+                "v2351-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
-              vcpkgArguments: "openssl3 libdispatch fft2d farmhash ruy eigen3 google-jni-bind"
+              vcpkgArguments: "openssl3 libdispatch google-jni-bind tensorflow-lite[gpu]"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
@@ -323,7 +256,7 @@ stages:
       - job: "port_osx"
         displayName: "Mac"
         pool:
-          vmImage: macOS-12
+          vmImage: macOS-13
         strategy:
           matrix:
             arm64_osx:
@@ -344,29 +277,19 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2349-down-apple"'
+              key: '"v2351-down-apple"'
               restoreKeys: |
-                "v2349-down-apple"
+                "v2351-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2349-bin-osx" | "$(vcpkg.default.triplet)"'
+              key: '"v2351-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2349-bin-osx" | "$(vcpkg.default.triplet)"
+                "v2351-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
-              vcpkgArguments: "metal-cpp"
-              vcpkgGitCommitId: $(vcpkg.commit)
-          - task: run-vcpkg@0
-            displayName: "tensorflow-lite"
-            inputs:
-              vcpkgArguments: "tensorflow-lite[gpu]"
-              vcpkgGitCommitId: $(vcpkg.commit)
-          - task: run-vcpkg@0
-            displayName: "onnxruntime"
-            inputs:
-              vcpkgArguments: "onnxruntime[xnnpack,coreml]"
+              vcpkgArguments: "tensorflow-lite[gpu] onnxruntime[xnnpack,coreml]"
               vcpkgGitCommitId: $(vcpkg.commit)
           - task: CopyFiles@2
             displayName: "Copy logs in buildtrees"
@@ -388,7 +311,7 @@ stages:
       - job: "port_ios"
         displayName: "iOS"
         pool:
-          vmImage: macOS-12
+          vmImage: macOS-13
         strategy:
           matrix:
             arm64_ios:
@@ -399,34 +322,34 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2349-down-apple"'
+              key: '"v2351-down-apple"'
               restoreKeys: |
-                "v2349-down-apple"
+                "v2351-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2349-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"v2351-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2349-bin-ios" | "$(vcpkg.default.triplet)"
+                "v2351-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "arm64-ios"
             inputs:
-              vcpkgArguments: "coreml-tools tensorflow-lite metal-cpp"
+              vcpkgArguments: "tensorflow-lite"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
           - task: run-vcpkg@0
             displayName: "arm64-ios-simulator"
             inputs:
-              vcpkgArguments: "coreml-tools tensorflow-lite"
+              vcpkgArguments: "tensorflow-lite"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
           - task: run-vcpkg@0
             displayName: "x64-ios-simulator"
             inputs:
-              vcpkgArguments: "xnnpack"
+              vcpkgArguments: "tensorflow-lite"
               vcpkgGitCommitId: $(vcpkg.commit)
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator

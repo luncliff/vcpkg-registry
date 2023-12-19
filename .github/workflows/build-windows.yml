@@ -22,13 +22,13 @@ jobs:
         run: |
           New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
           New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v3.3.2
         with:
-          key: "v2339-${{ runner.os }}-${{ matrix.triplet }}"
+          key: "v2351-${{ runner.os }}-${{ matrix.triplet }}"
           path: |
             C:/vcpkg/downloads
             C:/vcpkg/archives
-      - uses: microsoft/setup-msbuild@v1.1
+      - uses: microsoft/setup-msbuild@v1.3.1
         with:
           msbuild-architecture: x64
       - uses: lukka/run-vcpkg@v11.3
@@ -44,7 +44,7 @@ jobs:
   cuda_x64:
     runs-on: ["self-hosted", "Windows", "CUDA"]
     continue-on-error: true
-    timeout-minutes: 60
+    timeout-minutes: 180
     env:
       VCPKG_DOWNLOADS: "C:/vcpkg/downloads"
       VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg/archives"
@@ -57,7 +57,7 @@ jobs:
           New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
           New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
           Move-Item -Path "test/self-hosted-cuda.json" -Destination "test/vcpkg.json" -Force
-      - uses: microsoft/setup-msbuild@v1.1
+      - uses: microsoft/setup-msbuild@v1.3.1
         with:
           msbuild-architecture: x64
       - uses: lukka/run-vcpkg@v11.3
@@ -70,6 +70,6 @@ jobs:
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
 
-      - uses: yumis-coconudge/clean-workspace-action@v1
+      - uses: yumis-coconudge/clean-workspace-action@v1.0.5
         with:
           additional-path: "C:/vcpkg/installed"
