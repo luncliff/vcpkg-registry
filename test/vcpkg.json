@@ -14,21 +14,24 @@
       "platform": "osx | ios"
     },
     {
-      "name": "metal-cpp",
-      "platform": "osx | ios"
-    },
-    {
       "name": "coreml-tools",
       "platform": "osx | ios"
     },
     "etcpak",
-    "libdispatch",
+    {
+      "name": "libdispatch",
+      "platform": "windows | android"
+    },
     {
       "name": "llama-cpp",
       "features": [
         "test"
       ],
       "platform": "windows | osx"
+    },
+    {
+      "name": "metal-cpp",
+      "platform": "osx | ios"
     },
     {
       "name": "metal-cpp",
