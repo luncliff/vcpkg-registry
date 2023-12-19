@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO onnx/onnx
-    REF v1.14.1
-    SHA512 f846fffb286c4aeadc01462f220515f0a5c2ce1cbec849da7092a08c2676f8308af7315318a2866e9182f9aed719984ef95a9ddc69ffe0e62e40664395df5efd
+    REF v1.15.0
+    SHA512 b46a4ab70af88053318eba45251c1f71528f15e45a33042877570e8d857febd3ec66e2e811fcda2105a4f17b84c9a1c6a0aaa22756c3287321b3ea29e83127fd
     PATCHES
         fix-cmakelists.patch
 )
@@ -77,7 +77,7 @@ vcpkg_cmake_configure(
 )
 
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/ONNX)
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/ONNX PACKAGE_NAME ONNX)
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
@@ -99,6 +99,8 @@ file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/include/onnx/defs/sequence"
     "${CURRENT_PACKAGES_DIR}/include/onnx/defs/traditionalml"
     "${CURRENT_PACKAGES_DIR}/include/onnx/defs/training"
+    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/image"
+    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/text"
     "${CURRENT_PACKAGES_DIR}/include/onnx/examples"
     "${CURRENT_PACKAGES_DIR}/include/onnx/frontend"
     "${CURRENT_PACKAGES_DIR}/include/onnx/onnx_cpp2py_export"
