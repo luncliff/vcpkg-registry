@@ -18,21 +18,21 @@ jobs:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.1.1
       - name: "create cache folders"
         run: |
           mkdir -p ${VCPKG_DOWNLOADS}
           mkdir -p ${VCPKG_DEFAULT_BINARY_CACHE}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v3.3.2
         with:
-          key: "v2339-${{ runner.os }}-${{ matrix.triplet }}"
+          key: "v2351-${{ runner.os }}-${{ matrix.triplet }}"
           path: |
             /usr/local/share/vcpkg-downloads
             /usr/local/share/vcpkg-archives
-      - uses: ConorMacBride/install-package@v1
+      - uses: ConorMacBride/install-package@v1.1.0
         with:
           brew: ninja autoconf automake libtool
-      - uses: lukka/run-vcpkg@v11
+      - uses: lukka/run-vcpkg@v11.3
         with:
           vcpkgDirectory: "/usr/local/share/vcpkg" # see VCPKG_INSTALLATION_ROOT
           vcpkgGitCommitId: "a42af01b72c28a8e1d7b48107b33e4f286a55ef6" # 2023.11.20

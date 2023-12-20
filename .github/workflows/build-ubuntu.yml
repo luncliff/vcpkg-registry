@@ -17,7 +17,7 @@ jobs:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.1.1
       - name: "create cache folders"
         run: |
           mkdir -p ${VCPKG_DOWNLOADS}
@@ -25,16 +25,16 @@ jobs:
         env:
           VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
           VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"
-      - uses: actions/cache@v3
+      - uses: actions/cache@v3.3.2
         with:
-          key: "v2339-${{ runner.os }}-${{ matrix.triplet }}"
+          key: "v2351-${{ runner.os }}-${{ matrix.triplet }}"
           path: |
             ${{ runner.temp }}/vcpkg-downloads
             ${{ runner.temp }}/vcpkg-archives
-      - uses: ConorMacBride/install-package@v1
+      - uses: ConorMacBride/install-package@v1.1.0
         with:
           apt: nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
-      - uses: lukka/run-vcpkg@v11
+      - uses: lukka/run-vcpkg@v11.3
         with:
           vcpkgDirectory: "/usr/local/share/vcpkg" # see VCPKG_INSTALLATION_ROOT
           doNotUpdateVcpkg: true

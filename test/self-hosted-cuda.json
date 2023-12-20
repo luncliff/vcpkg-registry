@@ -1,6 +1,6 @@
 {
   "name": "test",
-  "version-date": "2023-12-09",
+  "version-date": "2023-12-20",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows",
@@ -8,14 +8,10 @@
     {
       "name": "onnxruntime",
       "features": [
-        "cuda"
-      ],
-      "platform": "x64 & windows"
-    },
-    {
-      "name": "opencv4",
-      "features": [
-        "cudnn"
+        "cuda",
+        "directml",
+        "python",
+        "xnnpack"
       ],
       "platform": "x64 & windows"
     }
