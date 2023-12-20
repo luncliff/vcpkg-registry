@@ -3,11 +3,9 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/ruy
-    REF c04e5e52ae6b144f74ac032652e3c538bda15c9b
-    SHA512 e25779a43ee5830d1294bcccbe1f8b3057971944820c050a51b55e4a46abada3800d6ea7fa8ad94e291f6f8de7179db2e75d2d1c23da5221ffd8d1cf1b463964
+    REF cd7b92695b5d3f0c9ff65b865c2a1e19b99d766d
+    SHA512 01bf5b33cfa68e3643aa7ad8adcd392df692235bd11ffb8f1f073f5e67f5985d8abf814895406757f13f309de09cf42c54c3dc66591e5f79df4937399f343599
     HEAD_REF master
-    PATCHES
-        fix-cmake.patch
 )
 
 vcpkg_cmake_configure(
@@ -18,11 +16,10 @@ vcpkg_cmake_configure(
         -DRUY_FIND_CPUINFO=ON
 )
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/${PORT})
+vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/${PORT}")
 
-file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include 
-                    ${CURRENT_PACKAGES_DIR}/debug/share
+file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/debug/include"
+    "${CURRENT_PACKAGES_DIR}/debug/share"
 )
-file(INSTALL ${SOURCE_PATH}/LICENSE
-     DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright
-)
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

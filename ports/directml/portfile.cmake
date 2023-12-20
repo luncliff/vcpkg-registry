@@ -5,7 +5,7 @@ set(ENV{NUGET_PACKAGES} "${BUILDTREES_DIR}/nuget")
 
 # see https://www.nuget.org/packages/Microsoft.AI.DirectML/
 set(PACKAGE_NAME    "Microsoft.AI.DirectML")
-set(PACKAGE_VERSION "1.12.1")
+set(PACKAGE_VERSION "1.13.0")
 
 file(REMOVE_RECURSE "${CURRENT_BUILDTREES_DIR}/${PACKAGE_NAME}")
 vcpkg_execute_required_process(

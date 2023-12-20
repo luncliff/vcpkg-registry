@@ -21,7 +21,7 @@
       "port-version": 0
     },
     "directml": {
-      "baseline": "1.12.1",
+      "baseline": "1.13.0",
       "port-version": 0
     },
     "eigen3": {
@@ -101,7 +101,7 @@
       "port-version": 0
     },
     "ruy": {
-      "baseline": "2023-07-26",
+      "baseline": "2023-12-20",
       "port-version": 0
     },
     "rvo2": {
