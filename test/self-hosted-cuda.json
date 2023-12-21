@@ -13,6 +13,14 @@
       ],
       "platform": "x64 & windows"
     },
+    {
+      "name": "libtorch",
+      "features": [
+        "cuda",
+        "opencv"
+      ],
+      "platform": "x64 & windows"
+    },
     "nvidia-cnmem",
     "nvidia-cutlass",
     "nvidia-tools-extension-sdk",

@@ -26,7 +26,14 @@ jobs:
       - uses: actions/checkout@v4.1.1
       - uses: ConorMacBride/install-package@v1.1.0
         with:
-          apt: nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
+          apt: nuget nasm curl zip unzip tar bison pkg-config autopoint libnuma-dev libopenmpi-dev libxi-dev libdbus-1-dev libx11-dev libx11-xcb-dev libxft-dev libxext-dev libxtst-dev libxrandr-dev
+
+      - uses: actions/setup-python@v5.0.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: "Run pip install"
+        run: pip install typing-extensions pyyaml numpy sympy jinja2
 
       - name: "create cache folders"
         run: |

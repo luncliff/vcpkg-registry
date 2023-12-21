@@ -7,6 +7,15 @@
   "supports": "windows | linux | osx | ios",
   "dependencies": [
     {
+      "name": "libtorch",
+      "features": [
+        "leveldb",
+        "opencv",
+        "zstd"
+      ],
+      "platform": "linux | osx"
+    },
+    {
       "name": "apple-crypto",
       "platform": "osx | ios"
     },
