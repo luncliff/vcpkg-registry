@@ -72,12 +72,14 @@ vcpkg_copy_pdbs()
 vcpkg_copy_tools(TOOL_NAMES
     baby-llama beam-search benchmark convert-llama2c-to-ggml embedding llama-bench
     main perplexity quantize-stats quantize save-load-state server simple speculative train-text-from-scratch    
+    batched-bench batched export-lora finetune infill llava-cli lookahead lookup parallel tokenize
     AUTO_CLEAN
 )
 if("test" IN_LIST FEATURES)
     vcpkg_copy_tools(TOOL_NAMES
         test-grad0 test-grammar-parser test-llama-grammar test-quantize-fns test-quantize-perf
         test-sampling test-tokenizer-0-falcon test-tokenizer-0-llama test-tokenizer-1-llama
+        test-backend-ops test-rope test-tokenizer-1-bpe
         AUTO_CLEAN
     )
 endif()
