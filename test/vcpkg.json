@@ -3,7 +3,7 @@
   "version-date": "2023-12-20",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
-  "supports": "windows | osx | ios",
+  "supports": "windows | linux | osx | ios",
   "dependencies": [
     {
       "name": "apple-crypto",
@@ -27,7 +27,7 @@
       "features": [
         "test"
       ],
-      "platform": "windows | osx"
+      "platform": "windows | osx | linux"
     },
     {
       "name": "metal-cpp",
