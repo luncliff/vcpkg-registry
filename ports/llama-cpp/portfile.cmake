@@ -5,12 +5,9 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggerganov/llama.cpp
-    REF b1273 # commit 99115f3fa654b593099c6719ad30e3f54ce231e1
-    SHA512 2b3e8fd9673647f59a4fa96621afe2f77ab10a2bee88a96b662b493beb2b66f17c854c1077f01f8ea8998d0296f92225d3033aae0adc756810f80caf45b9a456
+    REF b1695 # commit 925e5584a058afb612f9c20bc472c130f5d0f891
+    SHA512 3f50216030fe022dbfdcdb7c96765bdf2f1995a4672e7ffbca672fc5f502149d47146428e3f5cdd4799724011b29941826cf66b9178337cce05b8aa0b5292f1c
     HEAD_REF master
-    PATCHES
-        # fix-openblas.patch
-        fix-cmake.patch
 )
 
 vcpkg_find_acquire_program(PKGCONFIG)
@@ -63,7 +60,7 @@ vcpkg_cmake_configure(
         ${BLAS_OPTIONS}
         -DPKG_CONFIG_EXECUTABLE:FILEPATH="${PKGCONFIG}"
         -DBUILD_COMMIT:STRING="99115f3fa654b593099c6719ad30e3f54ce231e1"
-        -DBUILD_NUMBER:STRING="1273"
+        -DBUILD_NUMBER:STRING="1695"
     OPTIONS_RELEASE
         -DLLAMA_METAL_NDEBUG=ON
 )
@@ -73,14 +70,16 @@ vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/Llama" PACKAGE_NAME "Llama")
 vcpkg_copy_pdbs()
 
 vcpkg_copy_tools(TOOL_NAMES
-    baby-llama beam-search benchmark convert-llama2c-to-ggml embd-input-test embedding llama-bench
+    baby-llama beam-search benchmark convert-llama2c-to-ggml embedding llama-bench
     main perplexity quantize-stats quantize save-load-state server simple speculative train-text-from-scratch    
+    batched-bench batched export-lora finetune infill llava-cli lookahead lookup parallel tokenize
     AUTO_CLEAN
 )
 if("test" IN_LIST FEATURES)
     vcpkg_copy_tools(TOOL_NAMES
         test-grad0 test-grammar-parser test-llama-grammar test-quantize-fns test-quantize-perf
         test-sampling test-tokenizer-0-falcon test-tokenizer-0-llama test-tokenizer-1-llama
+        test-backend-ops test-rope test-tokenizer-1-bpe
         AUTO_CLEAN
     )
 endif()

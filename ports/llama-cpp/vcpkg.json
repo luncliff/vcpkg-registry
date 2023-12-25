@@ -1,6 +1,6 @@
 {
   "name": "llama-cpp",
-  "version-string": "b1273",
+  "version-string": "b1695",
   "description": "Port of Facebook's LLaMA model in C/C++",
   "homepage": "https://github.com/ggerganov/llama.cpp",
   "supports": "windows | linux | osx",

@@ -60,6 +60,10 @@
       "baseline": "swift-5.5",
       "port-version": 4
     },
+    "llama-cpp": {
+      "baseline": "b1695",
+      "port-version": 0
+    },
     "metal-cpp": {
       "baseline": "2023-04-05",
       "port-version": 0

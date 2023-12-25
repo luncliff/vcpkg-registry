@@ -6,6 +6,13 @@
   "supports": "windows",
   "dependencies": [
     {
+      "name": "llama-cpp",
+      "features": [
+        "cublas"
+      ],
+      "platform": "x64 & windows"
+    },
+    {
       "name": "onnxruntime",
       "features": [
         "cuda",
