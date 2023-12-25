@@ -6,43 +6,48 @@ env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
 
 jobs:
-  ubuntu22:
+  manifest:
     # check https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2204-Readme.md
     runs-on: "ubuntu-22.04"
     strategy:
-      fail-fast: false
       matrix:
-        triplet: [x64-linux]
+        include:
+          # - vcpkg_tag: "2023.11.20"
+          #   vcpkg_commit: "a42af01b72c28a8e1d7b48107b33e4f286a55ef6"
+          - vcpkg_tag: "2023.12.12"
+            vcpkg_commit: "c8696863d371ab7f46e213d8f5ca923c4aef2a00"
+      fail-fast: false
     env:
+      VCPKG_DOWNLOADS: "/usr/local/share/vcpkg-downloads"
+      VCPKG_DEFAULT_BINARY_CACHE: "/usr/local/share/vcpkg-archives"
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
     steps:
       - uses: actions/checkout@v4.1.1
+      - uses: ConorMacBride/install-package@v1.1.0
+        with:
+          apt: nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
+
       - name: "create cache folders"
         run: |
           mkdir -p ${VCPKG_DOWNLOADS}
           mkdir -p ${VCPKG_DEFAULT_BINARY_CACHE}
-        env:
-          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
-          VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"
+
       - uses: actions/cache@v3.3.2
         with:
-          key: "v2351-${{ runner.os }}-${{ matrix.triplet }}"
+          key: "v2351-x64-linux-${{ matrix.vcpkg_tag }}"
           path: |
-            ${{ runner.temp }}/vcpkg-downloads
-            ${{ runner.temp }}/vcpkg-archives
-      - uses: ConorMacBride/install-package@v1.1.0
-        with:
-          apt: nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
+            /usr/local/share/vcpkg-downloads
+            /usr/local/share/vcpkg-archives
+
       - uses: lukka/run-vcpkg@v11.3
         with:
           vcpkgDirectory: "/usr/local/share/vcpkg" # see VCPKG_INSTALLATION_ROOT
           doNotUpdateVcpkg: true
-          vcpkgGitCommitId: "a42af01b72c28a8e1d7b48107b33e4f286a55ef6" # 2023.11.20
+          vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
           vcpkgJsonGlob: "test/vcpkg.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:
-          VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
-          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
-          VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"
+          VCPKG_DEFAULT_TRIPLET: "x64-linux"
+          VCPKG_BINARY_SOURCES: "default"
