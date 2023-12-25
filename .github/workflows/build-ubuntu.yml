@@ -18,8 +18,6 @@ jobs:
             vcpkg_commit: "c8696863d371ab7f46e213d8f5ca923c4aef2a00"
       fail-fast: false
     env:
-      VCPKG_DOWNLOADS: "/usr/local/share/vcpkg-downloads"
-      VCPKG_DEFAULT_BINARY_CACHE: "/usr/local/share/vcpkg-archives"
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
     steps:
@@ -32,13 +30,16 @@ jobs:
         run: |
           mkdir -p ${VCPKG_DOWNLOADS}
           mkdir -p ${VCPKG_DEFAULT_BINARY_CACHE}
+        env:
+          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
+          VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"
 
       - uses: actions/cache@v3.3.2
         with:
           key: "v2351-x64-linux-${{ matrix.vcpkg_tag }}"
           path: |
-            /usr/local/share/vcpkg-downloads
-            /usr/local/share/vcpkg-archives
+            ${{ runner.temp }}/vcpkg-downloads
+            ${{ runner.temp }}/vcpkg-archives
 
       - uses: lukka/run-vcpkg@v11.3
         with:
@@ -51,3 +52,5 @@ jobs:
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-linux"
           VCPKG_BINARY_SOURCES: "default"
+          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
+          VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"
