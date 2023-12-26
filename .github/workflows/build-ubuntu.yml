@@ -6,7 +6,7 @@ env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
 
 jobs:
-  manifest:
+  overlay:
     # check https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2204-Readme.md
     runs-on: "ubuntu-22.04"
     strategy:
@@ -36,7 +36,7 @@ jobs:
 
       - uses: actions/cache@v3.3.2
         with:
-          key: "v2351-x64-linux-${{ matrix.vcpkg_tag }}"
+          key: "v2352-x64-linux-${{ matrix.vcpkg_tag }}"
           path: |
             ${{ runner.temp }}/vcpkg-downloads
             ${{ runner.temp }}/vcpkg-archives

@@ -6,7 +6,7 @@ env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
 
 jobs:
-  manifest:
+  overlay:
     runs-on: "windows-2022"
     strategy:
       matrix:
@@ -36,7 +36,7 @@ jobs:
 
       - uses: actions/cache@v3.3.2
         with:
-          key: "v2351-x64-windows-${{ matrix.vcpkg_tag }}"
+          key: "v2352-x64-windows-${{ matrix.vcpkg_tag }}"
           path: |
             C:/vcpkg/downloads
             C:/vcpkg/archives
@@ -76,7 +76,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.3
         with:
           vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "a42af01b72c28a8e1d7b48107b33e4f286a55ef6" # 2023.11.20
+          vcpkgGitCommitId: "c8696863d371ab7f46e213d8f5ca923c4aef2a00" # 2023.12.12
           vcpkgJsonGlob: "test/vcpkg.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'

@@ -1,1 +1,0 @@
-onnxruntime[xnnpack]:x64-uwp

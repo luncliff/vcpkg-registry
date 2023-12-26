@@ -53,7 +53,7 @@ user@host:~/vcpkg$ tree -L 2 ./registry/
 └── triplets
     ├── arm64-android.cmake
     ├── x64-android.cmake
-    ├── arm-android.cmake
+    ├── x64-linux.cmake
     ├── arm64-ios-simulator.cmake
     └── x64-ios-simulator.cmake
 ```
@@ -77,7 +77,7 @@ The `ports/` folder contains `openssl3` and `tensorflow-lite`. Put them in the "
     "default-registry": {
         "kind": "git",
         "repository": "https://github.com/Microsoft/vcpkg",
-        "baseline": "6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2"
+        "baseline": "0000..."
     },
     "registries": [
         {

@@ -1,2 +1,1 @@
-grpc[codegen]:x64-windows
-onnxruntime[directml,xnnpack,test]:x64-windows
+onnxruntime[directml,xnnpack]:x64-windows

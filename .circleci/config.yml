@@ -35,27 +35,27 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Setup: microsoft/vcpkg(2023.11.20)"
+          name: "Setup: microsoft/vcpkg(2023.12.12)"
           command: |
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2023.11.20 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2023.12.12 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
             Pop-Location
       - restore_cache:
           keys:
-            - v2351-downs-{{ .Branch }}
-            - v2351-downs-{{ checksum ".circleci/config.yml" }}
-            - v2351-downs-main
-            - v2351-downs-main
+            - v2352-downs-{{ .Branch }}
+            - v2352-downs-{{ checksum ".circleci/config.yml" }}
+            - v2352-downs-main
+            - v2352-downs-main
       - restore_cache:
           keys:
-            - v2351-bins-{{ .Branch }}
-            - v2351-bins-{{ checksum ".circleci/config.yml" }}
-            - v2351-bins-main
-            - v2351-bins-main
+            - v2352-bins-{{ .Branch }}
+            - v2352-bins-{{ checksum ".circleci/config.yml" }}
+            - v2352-bins-main
+            - v2352-bins-main
       - run:
           name: "Install: port-setup.txt"
           command: |
@@ -65,14 +65,14 @@ jobs:
               --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-setup.txt")
           working_directory: vcpkg
-          no_output_timeout: 1h
+          no_output_timeout: 3h
       - save_cache:
-          key: v2351-downs-{{ checksum ".circleci/config.yml" }}
+          key: v2352-downs-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-downs
           when: always
       - save_cache:
-          key: v2351-bins-{{ checksum ".circleci/config.yml" }}
+          key: v2352-bins-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-bins
           when: always
@@ -88,51 +88,52 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Setup: microsoft/vcpkg(2023.11.20)"
+          name: "Setup: microsoft/vcpkg(2023.12.12)"
           command: |
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2023.11.20 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2023.12.12 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
             Pop-Location
       - restore_cache:
           keys:
-            - v2351-downs-{{ .Branch }}
-            - v2351-downs-{{ checksum ".circleci/config.yml" }}
-            - v2351-downs-main
-            - v2351-downs-main
+            - v2352-downs-{{ .Branch }}
+            - v2352-downs-{{ checksum ".circleci/config.yml" }}
+            - v2352-downs-main
+            - v2352-downs-main
       - restore_cache:
           keys:
-            - v2351-bins-{{ .Branch }}
-            - v2351-bins-{{ checksum ".circleci/config.yml" }}
-            - v2351-bins-main
-            - v2351-bins-main
+            - v2352-bins-{{ .Branch }}
+            - v2352-bins-{{ checksum ".circleci/config.yml" }}
+            - v2352-bins-main
+            - v2352-bins-main
       - run:
           name: "Install: port-windows.txt"
           command: |
             ./vcpkg.exe install `
+              --recurse `
               --clean-buildtrees-after-build `
               --clean-packages-after-build `
               --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-windows.txt")
           working_directory: vcpkg
-          no_output_timeout: 1h
+          no_output_timeout: 5h
       - when:
           condition:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: v2351-bins-{{ .Branch }}
+              key: v2352-bins-{{ .Branch }}
               paths:
                 - C:/vcpkg-bins
       - save_cache:
-          key: v2351-downs-{{ .Branch }}
+          key: v2352-downs-{{ .Branch }}
           paths:
             - C:/vcpkg-downs
       - save_cache:
-          key: v2351-bins-{{ .Branch }}
+          key: v2352-bins-{{ .Branch }}
           paths:
             - C:/vcpkg-bins
       - store_artifacts:
