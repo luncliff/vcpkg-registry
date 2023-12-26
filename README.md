@@ -12,11 +12,16 @@ Targets...
 
 ### References
 
-* https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/
-* https://github.com/microsoft/vcpkg/blob/master/docs/specifications/ports-overlay.md
-* https://github.com/microsoft/vcpkg/blob/master/docs/specifications/registries.md
-* https://github.com/northwindtraders/vcpkg-registry
-* https://github.com/microsoft/vcpkg-tool
+* Microsoft C++ Team Blog: https://devblogs.microsoft.com/cppblog/
+    * https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/
+    * https://github.com/northwindtraders/vcpkg-registry
+* GitHub Topics `vcpkg-registry`: https://github.com/topics/vcpkg-registry
+    * Discussions https://github.com/microsoft/vcpkg/discussions
+* Vcpkg documentation: https://learn.microsoft.com/en-us/vcpkg/
+    * https://learn.microsoft.com/en-us/vcpkg/consume/git-registries
+    * https://learn.microsoft.com/en-us/vcpkg/maintainers/registries
+* Vcpkg mainstream: https://github.com/microsoft/vcpkg
+    * https://github.com/microsoft/vcpkg-tool/releases
 
 ## How To
 
