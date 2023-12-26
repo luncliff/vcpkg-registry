@@ -6,11 +6,18 @@ env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
 
 jobs:
-  windows2022:
+  manifest:
     runs-on: "windows-2022"
     strategy:
       matrix:
-        triplet: [x64-windows]
+        include:
+          # - vcpkg_tag: "2023.10.19"
+          #   vcpkg_commit: "8eb57355a4ffb410a2e94c07b4dca2dffbee8e50"
+          # - vcpkg_tag: "2023.11.20"
+          #   vcpkg_commit: "a42af01b72c28a8e1d7b48107b33e4f286a55ef6"
+          - vcpkg_tag: "2023.12.12"
+            vcpkg_commit: "c8696863d371ab7f46e213d8f5ca923c4aef2a00"
+      fail-fast: false
     env:
       VCPKG_DOWNLOADS: "C:/vcpkg/downloads"
       VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg/archives"
@@ -18,28 +25,32 @@ jobs:
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
       - uses: actions/checkout@v4.1.1
+      - uses: microsoft/setup-msbuild@v1.3.1
+        with:
+          msbuild-architecture: x64
+
       - name: "create cache folders"
         run: |
           New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
           New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
+
       - uses: actions/cache@v3.3.2
         with:
-          key: "v2351-${{ runner.os }}-${{ matrix.triplet }}"
+          key: "v2351-x64-windows-${{ matrix.vcpkg_tag }}"
           path: |
             C:/vcpkg/downloads
             C:/vcpkg/archives
-      - uses: microsoft/setup-msbuild@v1.3.1
-        with:
-          msbuild-architecture: x64
+
       - uses: lukka/run-vcpkg@v11.3
         with:
           vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "a42af01b72c28a8e1d7b48107b33e4f286a55ef6" # 2023.11.20
+          vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
           vcpkgJsonGlob: "test/vcpkg.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:
-          VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
+          VCPKG_DEFAULT_TRIPLET: "x64-windows"
+          VCPKG_BINARY_SOURCES: "default"
 
   cuda_x64:
     runs-on: ["self-hosted", "Windows", "CUDA"]
@@ -52,14 +63,16 @@ jobs:
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
       - uses: actions/checkout@v4.1.1
+      - uses: microsoft/setup-msbuild@v1.3.1
+        with:
+          msbuild-architecture: x64
+
       - name: "create cache folders"
         run: |
           New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
           New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
           Move-Item -Path "test/self-hosted-cuda.json" -Destination "test/vcpkg.json" -Force
-      - uses: microsoft/setup-msbuild@v1.3.1
-        with:
-          msbuild-architecture: x64
+
       - uses: lukka/run-vcpkg@v11.3
         with:
           vcpkgDirectory: "C:/vcpkg"
