@@ -2,21 +2,30 @@ if(NOT VCPKG_TARGET_IS_IOS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
 
+# vcpkg_download_distfile(TENSORFLOW_PR_62705_PATCH
+#     URLS "https://patch-diff.githubusercontent.com/raw/tensorflow/tensorflow/pull/62705.diff"
+#     FILENAME tensorflow-pr-62705.patch
+#     SHA512 0
+# )
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
     REF v2.14.1
     SHA512 c5e9a176027a00b5efb1343bee000330f56229a1a8559db2fb9e2c9388afaf8420d69b6fd6e7b85811272c110245315935232a859e9fd4106b29b226780c447e
     PATCHES
+        tensorflow-pr-62705.patch
         fix-cmake-use-vcpkg.patch   # use packages from vcpkg
         fix-cmake-c-api.patch       # includ C API sources
         fix-cmake-gpu.patch         # build settings for GPU features
         fix-cmake-nnapi.patch       # Android NNAPI
         fix-source-abseil.patch     # replace std:: to absl::
-        fix-source-cpp20.patch      # use C++17 syntax
-        fix-source-gpu.patch        # source changes for GPU features
+        fix-source-apple-opencl.patch
 )
-file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
+file(REMOVE_RECURSE
+    "${SOURCE_PATH}/third_party/eigen3"
+    "${SOURCE_PATH}/third_party/xla"
+)
 file(COPY "${CURRENT_INSTALLED_DIR}/include/eigen3" DESTINATION "${SOURCE_PATH}/third_party")
 
 find_program(FLATC NAMES flatc

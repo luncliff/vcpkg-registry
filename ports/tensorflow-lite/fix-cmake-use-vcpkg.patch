@@ -1,5 +1,5 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index b7f24472..ab25a8df 100644
+index 78657b58..c629111a 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
 @@ -50,14 +50,7 @@ if(NOT TENSORFLOW_SOURCE_DIR)
@@ -92,7 +92,23 @@ index b7f24472..ab25a8df 100644
    populate_tflite_source_vars("delegates/nnapi"
      TFLITE_DELEGATES_NNAPI_SRCS
      FILTER "(_test_list|_disabled)\\.(cc|h)$"
-@@ -556,14 +555,14 @@ else()
+@@ -543,9 +542,12 @@ if(_TFLITE_ENABLE_NNAPI)
+   list(APPEND TFLITE_NNAPI_SRCS
+     "${TFLITE_SOURCE_DIR}/nnapi/sl/SupportLibrary.cc"
+   )
+-
+-  if(${TFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION})
+-    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DNNAPI_VERBOSE_VALIDATION")
++  # disable ml_dtypes/float8.h which requries libeigen3 master branch ...
++  set_source_files_properties(${TFLITE_NNAPI_SRCS} PROPERTIES
++    COMPILE_DEFINITIONS "TENSORFLOW_TSL_PLATFORM_FLOAT8_H_;TENSORFLOW_CORE_PLATFORM_FLOAT8_H_;TENSORFLOW_TSL_PLATFORM_ML_DTYPES_H_"
++  )
++  if(TFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION)
++    list(APPEND TFLITE_TARGET_PRIVATE_DEFINITIONS "NNAPI_VERBOSE_VALIDATION")
+   endif()
+ else()
+   set(TFLITE_DELEGATES_NNAPI_SRCS
+@@ -556,14 +558,14 @@ else()
    )
  endif()
  if(TFLITE_ENABLE_XNNPACK)
@@ -110,7 +126,7 @@ index b7f24472..ab25a8df 100644
    )
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
  endif()
-@@ -697,9 +696,10 @@ set(_ALL_TFLITE_HDRS ${_ALL_TFLITE_SRCS})
+@@ -697,9 +699,10 @@ set(_ALL_TFLITE_HDRS ${_ALL_TFLITE_SRCS})
  list(FILTER _ALL_TFLITE_HDRS INCLUDE REGEX ".*\\.h$")
  target_include_directories(tensorflow-lite
    PUBLIC $<BUILD_INTERFACE:${TENSORFLOW_SOURCE_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -122,7 +138,7 @@ index b7f24472..ab25a8df 100644
      Eigen3::Eigen
      absl::flags
      absl::hash
-@@ -713,7 +713,7 @@ target_link_libraries(tensorflow-lite
+@@ -713,7 +716,7 @@ target_link_libraries(tensorflow-lite
      gemmlowp::gemmlowp
      ml_dtypes
      ruy::ruy
@@ -131,7 +147,7 @@ index b7f24472..ab25a8df 100644
      ${CMAKE_DL_LIBS}
      ${TFLITE_TARGET_DEPENDENCIES}
  )
-@@ -738,6 +738,7 @@ if(TFLITE_ENABLE_INSTALL)
+@@ -738,6 +741,7 @@ if(TFLITE_ENABLE_INSTALL)
      EXPORT ${PROJECT_NAME}Targets
      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -139,7 +155,7 @@ index b7f24472..ab25a8df 100644
    )
  
    foreach(hdr ${_ALL_TFLITE_HDRS})
-@@ -770,6 +771,7 @@ if(TFLITE_ENABLE_INSTALL)
+@@ -770,6 +774,7 @@ if(TFLITE_ENABLE_INSTALL)
    )
  endif()
 -
@@ -147,3 +163,31 @@ index b7f24472..ab25a8df 100644
  # The kernel tests.
  if(TFLITE_KERNEL_TEST)
    enable_testing()
+diff --git a/third_party/xla/third_party/tsl/tsl/platform/ml_dtypes.h b/third_party/xla/third_party/tsl/tsl/platform/ml_dtypes.h
+index c25efc2f..23a04428 100644
+--- a/third_party/xla/third_party/tsl/tsl/platform/ml_dtypes.h
++++ b/third_party/xla/third_party/tsl/tsl/platform/ml_dtypes.h
+@@ -16,8 +16,8 @@ limitations under the License.
+ #ifndef TENSORFLOW_TSL_PLATFORM_ML_DTYPES_H_
+ #define TENSORFLOW_TSL_PLATFORM_ML_DTYPES_H_
+ 
+-#include "ml_dtypes/include/float8.h"  // from @ml_dtypes
+-#include "ml_dtypes/include/int4.h"  // from @ml_dtypes
++#include "ml_dtypes/float8.h"  // from @ml_dtypes
++#include "ml_dtypes/int4.h"  // from @ml_dtypes
+ 
+ namespace tsl {
+ using float8_e4m3fn = ml_dtypes::float8_e4m3fn;
+diff --git a/third_party/xla/xla/types.h b/third_party/xla/xla/types.h
+index 1910ea89..8f765a37 100644
+--- a/third_party/xla/xla/types.h
++++ b/third_party/xla/xla/types.h
+@@ -23,7 +23,7 @@ limitations under the License.
+ 
+ #include "absl/strings/str_format.h"
+ #include "Eigen/Core"  // from @eigen_archive
+-#include "ml_dtypes/include/int4.h"  // from @ml_dtypes
++#include "ml_dtypes/int4.h"  // from @ml_dtypes
+ 
+ namespace xla {
+ 
