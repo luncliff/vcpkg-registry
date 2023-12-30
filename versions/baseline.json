@@ -137,7 +137,7 @@
       "port-version": 0
     },
     "xnnpack": {
-      "baseline": "2023-04-13",
+      "baseline": "2023-11-16",
       "port-version": 0
     },
     "xnvctrl": {
