@@ -1,7 +1,6 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.16.0",
-  "port-version": 1,
+  "version-date": "2024-01-04",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://www.onnxruntime.ai",
   "dependencies": [
@@ -10,6 +9,7 @@
     "cpuinfo",
     "cxxopts",
     "date",
+    "dlpack",
     "eigen3",
     "flatbuffers",
     {
@@ -50,7 +50,8 @@
     "cuda": {
       "description": "Build with CUDA/NCCL support",
       "dependencies": [
-        "cuda"
+        "cuda",
+        "cudnn"
       ]
     },
     "directml": {

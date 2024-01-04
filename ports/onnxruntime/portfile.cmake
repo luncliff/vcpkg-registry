@@ -6,16 +6,17 @@ if(VCPKG_TARGET_IS_OSX AND ("framework" IN_LIST FEATURES))
 endif()
 vcpkg_find_acquire_program(NUGET)
 
+# requires https://github.com/microsoft/onnxruntime/pull/18038 for later version of XNNPACK
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF v1.16.0 # e7a0495a874251e9747b2ce0683e0580282c54df
-    SHA512 ff448f7bcd0d91f129ff7d5bf54ab0ed8f4aed79c79a6e52043138d5cba180099fce5aaf00e7f959e2b3e9a3376bf4ec933428c076b097a2e4a96e1adfd9b05f
+    REF 5fade70b5052efae1553e8e3ac0b06a527877ef0
+    SHA512 84dcb491cf44093934bef4139cbcf227200d2a16aaeb49c6ab6b9aa35023fb4583190974422f49ac81b91c2c5eae16d577f46000b9cfcdf390bc4fbdc3b64288
     PATCHES
         fix-cmake.patch
         fix-source-flatbuffers.patch
-        fix-cuda.patch
 )
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_vcpkg_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
