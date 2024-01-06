@@ -64,3 +64,21 @@ index c900f4d..35c18e1 100644
      GET_TARGET_PROPERTY(_LIB_TYPE ${_LIB} TYPE)
      if(_LIB_TYPE STREQUAL "STATIC_LIBRARY")
        set(CUR_STATIC_LIB_OBJ_DIR ${STATIC_LIB_TEMP_DIR}/$<TARGET_LINKER_FILE_BASE_NAME:${_LIB}>)
+diff --git a/cmake/tensorboard/compat/proto/CMakeLists.txt b/cmake/tensorboard/compat/proto/CMakeLists.txt
+index ad31e40..e6254ff 100644
+--- a/cmake/tensorboard/compat/proto/CMakeLists.txt
++++ b/cmake/tensorboard/compat/proto/CMakeLists.txt
+@@ -1,13 +1,6 @@
+ # Copyright (c) Microsoft Corporation. All rights reserved.
+ # Licensed under the MIT License.
+ 
+-FetchContent_Declare(
+-  tensorboard
+-  URL ${DEP_URL_tensorboard}
+-  URL_HASH SHA1=${DEP_SHA1_tensorboard}
+-)
+-FetchContent_MakeAvailable(tensorboard)
+-
+ set(TENSORBOARD_ROOT ${tensorboard_SOURCE_DIR})
+ 
+ # tensorboard protos

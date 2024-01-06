@@ -74,8 +74,26 @@
         }
       ]
     },
+    "openvino": {
+      "description": "Build with OpenVINO support",
+      "dependencies": [
+        "openvino"
+      ]
+    },
+    "training": {
+      "description": "Build with NCCL support"
+    },
     "tensorrt": {
       "description": "Build with NVIDIA TensorRT support"
+    },
+    "nccl": {
+      "description": "Build with NCCL support"
+    },
+    "mpi": {
+      "description": "Build with MPI support",
+      "dependencies": [
+        "mpi"
+      ]
     },
     "test": {
       "description": "Build ONNXRuntime unit tests",
