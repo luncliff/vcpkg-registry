@@ -39,6 +39,7 @@ if ($RegistryExists -eq $false) {
 
 function RunAddVersion([String]$PortName, [String]$PortRoot, [String]$VersionRoot) {
     vcpkg x-add-version $PortName `
+        --overwrite-version `
         --vcpkg-root="$VcpkgRoot" `
         --x-builtin-ports-root="$PortRoot" `
         --x-builtin-registry-versions-dir="$VersionRoot"
