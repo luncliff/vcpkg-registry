@@ -65,6 +65,21 @@
       "description": "Artifact will be Apple framework",
       "supports": "osx | ios"
     },
+    "mpi": {
+      "description": "Build with MPI support",
+      "dependencies": [
+        "mpi"
+      ]
+    },
+    "nccl": {
+      "description": "Build with NCCL support"
+    },
+    "openvino": {
+      "description": "Build with OpenVINO support",
+      "dependencies": [
+        "openvino"
+      ]
+    },
     "python": {
       "description": "Enable python buildings",
       "dependencies": [
@@ -74,26 +89,8 @@
         }
       ]
     },
-    "openvino": {
-      "description": "Build with OpenVINO support",
-      "dependencies": [
-        "openvino"
-      ]
-    },
-    "training": {
-      "description": "Build with NCCL support"
-    },
     "tensorrt": {
       "description": "Build with NVIDIA TensorRT support"
-    },
-    "nccl": {
-      "description": "Build with NCCL support"
-    },
-    "mpi": {
-      "description": "Build with MPI support",
-      "dependencies": [
-        "mpi"
-      ]
     },
     "test": {
       "description": "Build ONNXRuntime unit tests",
@@ -101,6 +98,9 @@
         "benchmark",
         "gtest"
       ]
+    },
+    "training": {
+      "description": "Build with NCCL support"
     },
     "winml": {
       "description": "Build with WinML support"

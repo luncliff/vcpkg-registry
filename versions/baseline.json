@@ -85,8 +85,8 @@
       "port-version": 0
     },
     "onnxruntime": {
-      "baseline": "1.16.0",
-      "port-version": 1
+      "baseline": "2024-01-04",
+      "port-version": 0
     },
     "openssl": {
       "baseline": "3.1.3",

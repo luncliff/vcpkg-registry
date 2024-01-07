@@ -7,7 +7,7 @@ index 34355fb..8b69561 100644
  include(CheckLanguage)
  include(CMakeDependentOption)
 -include(FetchContent)
-+# include(FetchContent) # Using vcpkg. See external/onnxruntime_vcpkg_deps.cmake
++include(GNUInstallDirs) # Using vcpkg. See external/onnxruntime_vcpkg_deps.cmake
  include(CheckFunctionExists)
  
  # TODO: update this once all system adapt c++20

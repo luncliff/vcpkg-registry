@@ -53,7 +53,7 @@ endif()
 
 if (NOT WIN32)
   find_package(nsync CONFIG REQUIRED)
-  list(APPEND onnxruntime_EXTERNAL_DEPENDENCIES nsync::nsync_cpp)
+  list(APPEND onnxruntime_EXTERNAL_LIBRARIES nsync::nsync_cpp)
 endif()
 
 find_package(Microsoft.GSL CONFIG REQUIRED)
@@ -80,9 +80,10 @@ if (onnxruntime_USE_XNNPACK)
     message(FATAL_ERROR "XNNPACK EP requires the internal NHWC contrib ops to be available "
                          "but onnxruntime_DISABLE_CONTRIB_OPS is ON")
   endif()
-  find_package(xnnpack CONFIG REQUIRED) # xnnpack
+  find_package(cpuinfo CONFIG REQUIRED)
   find_library(PTHREADPOOL_LIBRARY NAMES pthreadpool REQUIRED)
-  list(APPEND onnxruntime_EXTERNAL_LIBRARIES xnnpack ${PTHREADPOOL_LIBRARY})
+  find_package(xnnpack CONFIG REQUIRED) # xnnpack
+  list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo::cpuinfo ${PTHREADPOOL_LIBRARY} xnnpack)
 endif()
 
 if (onnxruntime_USE_MIMALLOC)
