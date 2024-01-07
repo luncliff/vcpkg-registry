@@ -85,10 +85,6 @@ if("training" IN_LIST FEATURES)
     list(APPEND FEATURE_OPTIONS "-Dtensorboard_SOURCE_DIR:PATH=${TENSORBOARD_SOURCE_PATH}")
 endif()
 
-if("cuda" IN_LIST FEATURES)
-    list(APPEND FEATURE_OPTIONS -DCMAKE_CUDA_FLAGS="-diag-suppress 2803")
-endif()
-
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     # For some reason CUDA compiler detection is not working in WINDOWS_USE_MSBUILD
     if(NOT ("cuda" IN_LIST FEATURES))
