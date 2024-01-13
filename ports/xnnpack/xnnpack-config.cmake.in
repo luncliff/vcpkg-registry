@@ -4,15 +4,29 @@ if(Z_XNNPACK_CONFIG_GUARD)
 endif()
 set(Z_XNNPACK_CONFIG_GUARD ON CACHE INTERNAL "Guard variable for 'xnnpack-config.cmake'")
 
+# from vcpkg, luncliff/vcpkg-registry
+if(NOT DEFINED PTHREADPOOL_LIBRARY)
+  find_library(PTHREADPOOL_LIBRARY NAMES pthreadpool REQUIRED)
+endif()
+if(NOT TARGET cpuinfo::cpuinfo)
+  find_package(cpuinfo CONFIG REQUIRED) # cpuinfo::cpuinfo
+endif()
+
 find_path(XNNPACK_INCLUDE_DIR NAMES xnnpack.h REQUIRED)
 find_library(XNNPACK_LIBRARY NAMES XNNPACK REQUIRED)
 
-add_library(xnnpack STATIC IMPORTED)
+set(XNNPACK_IMPORT_TYPE STATIC)
+if(XNNPACK_LIBRARY MATCHES "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  set(XNNPACK_IMPORT_TYPE SHARED)
+endif()
+add_library(xnnpack ${XNNPACK_IMPORT_TYPE} IMPORTED)
 
 set_target_properties(xnnpack
 PROPERTIES
   C_STANDARD 11
   CXX_STANDARD 14
+  INTERFACE_COMPILE_FEATURES "cxx_std_14"
   INTERFACE_INCLUDE_DIRECTORIES "${XNNPACK_INCLUDE_DIR}"
+  INTERFACE_LINK_LIBRARIES "${PTHREADPOOL_LIBRARY};cpuinfo::cpuinfo"
   IMPORTED_LOCATION "${XNNPACK_LIBRARY}"
 )
