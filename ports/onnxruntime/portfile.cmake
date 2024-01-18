@@ -15,6 +15,7 @@ vcpkg_from_github(
     PATCHES
         fix-cmake.patch
         fix-source-flatbuffers.patch
+        fix-sources.patch
 )
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_vcpkg_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
 
@@ -32,7 +33,7 @@ message(STATUS "Using flatc: ${FLATC}")
 
 set(SCHEMA_DIR "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema")
 vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --scoped-enums --filename-suffix ".fbs" ort.fbs
+    COMMAND ${FLATC} --cpp --scoped-enums --filename-suffix ".fbs" ort.fbs ort_training_checkpoint.fbs
     LOGNAME codegen-flatc-cpp
     WORKING_DIRECTORY "${SCHEMA_DIR}"
 )
@@ -69,6 +70,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         mpi       onnxruntime_USE_MPI
     INVERTED_FEATURES
         abseil    onnxruntime_DISABLE_ABSEIL
+        training  onnxruntime_DISABLE_RTTI
         cuda      onnxruntime_USE_CUTLASS
         cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
@@ -154,7 +156,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
         -Donnxruntime_BUILD_WEBASSEMBLY=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
-        -Donnxruntime_USE_FULL_PROTOBUF=ON
+        -Donnxruntime_USE_FULL_PROTOBUF=OFF # minimalize protoc execution
         -Donnxruntime_USE_PREINSTALLED_EIGEN=ON
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_NNAPI_BUILTIN=${VCPKG_TARGET_IS_ANDROID}
