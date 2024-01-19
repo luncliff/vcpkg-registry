@@ -6,16 +6,18 @@ if(VCPKG_TARGET_IS_OSX AND ("framework" IN_LIST FEATURES))
 endif()
 vcpkg_find_acquire_program(NUGET)
 
+# requires https://github.com/microsoft/onnxruntime/pull/18038 for later version of XNNPACK
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF v1.16.0 # e7a0495a874251e9747b2ce0683e0580282c54df
-    SHA512 ff448f7bcd0d91f129ff7d5bf54ab0ed8f4aed79c79a6e52043138d5cba180099fce5aaf00e7f959e2b3e9a3376bf4ec933428c076b097a2e4a96e1adfd9b05f
+    REF 5fade70b5052efae1553e8e3ac0b06a527877ef0
+    SHA512 84dcb491cf44093934bef4139cbcf227200d2a16aaeb49c6ab6b9aa35023fb4583190974422f49ac81b91c2c5eae16d577f46000b9cfcdf390bc4fbdc3b64288
     PATCHES
         fix-cmake.patch
         fix-source-flatbuffers.patch
-        fix-cuda.patch
+        fix-sources.patch
 )
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_vcpkg_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
@@ -31,7 +33,7 @@ message(STATUS "Using flatc: ${FLATC}")
 
 set(SCHEMA_DIR "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema")
 vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --scoped-enums --filename-suffix ".fbs" ort.fbs
+    COMMAND ${FLATC} --cpp --scoped-enums --filename-suffix ".fbs" ort.fbs ort_training_checkpoint.fbs
     LOGNAME codegen-flatc-cpp
     WORKING_DIRECTORY "${SCHEMA_DIR}"
 )
@@ -41,9 +43,12 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         python    onnxruntime_ENABLE_PYTHON
         python    onnxruntime_ENABLE_LANGUAGE_INTEROP_OPS
         training  onnxruntime_ENABLE_TRAINING
-        training  onnxruntime_ENABLE_TRAINING_OPS # todo: port `tensorboard`
+        training  onnxruntime_ENABLE_TRAINING_APIS
+        # training  onnxruntime_ENABLE_TRAINING_OPS
         cuda      onnxruntime_USE_CUDA
-        cuda      onnxruntime_USE_NCCL
+        cuda      onnxruntime_USE_CUDA_NHWC_OPS
+        # cuda      onnxruntime_USE_CUTLASS
+        openvino  onnxruntime_USE_OPENVINO
         tensorrt  onnxruntime_USE_TENSORRT
         tensorrt  onnxruntime_USE_TENSORRT_BUILTIN_PARSER
         directml  onnxruntime_USE_DML
@@ -61,20 +66,39 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         test      onnxruntime_RUN_ONNX_TESTS
         framework onnxruntime_BUILD_APPLE_FRAMEWORK
         framework onnxruntime_BUILD_OBJC
+        nccl      onnxruntime_USE_NCCL
+        mpi       onnxruntime_USE_MPI
     INVERTED_FEATURES
-        abseil   onnxruntime_DISABLE_ABSEIL
-        cuda     onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
+        abseil    onnxruntime_DISABLE_ABSEIL
+        training  onnxruntime_DISABLE_RTTI
+        cuda      onnxruntime_USE_CUTLASS
+        cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
+
+
+if("training" IN_LIST FEATURES)
+    # check cmake/deps.txt
+    vcpkg_from_github(
+        OUT_SOURCE_PATH TENSORBOARD_SOURCE_PATH
+        REPO tensorflow/tensorboard
+        REF 373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81
+        SHA512 7f76af0ee40eba93aca58178315a2e6bb7b85eefe8721567ed77aeeece13190e28202fc067e9f84f84fab21d8ac7dfcbd00c75e6e0771ed9992ff6ac6bba67c7
+    )
+    list(APPEND FEATURE_OPTIONS "-Dtensorboard_SOURCE_DIR:PATH=${TENSORBOARD_SOURCE_PATH}")
+endif()
 
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     # For some reason CUDA compiler detection is not working in WINDOWS_USE_MSBUILD
-    # set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+    if(NOT ("cuda" IN_LIST FEATURES))
+        set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+    endif()
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
 else()
     set(GENERATOR_OPTIONS GENERATOR Ninja)
 endif()
 
+# todo: provide options for SIMD
 if(VCPKG_TARGET_IS_WINDOWS)
     # target platform should be informed to activate SIMD properly
     if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
@@ -132,29 +156,30 @@ vcpkg_cmake_configure(
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
         -Donnxruntime_BUILD_WEBASSEMBLY=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
-        -Donnxruntime_USE_FULL_PROTOBUF=ON
+        -Donnxruntime_USE_FULL_PROTOBUF=OFF # minimalize protoc execution
         -Donnxruntime_USE_PREINSTALLED_EIGEN=ON
         -Donnxruntime_USE_EXTENSIONS=OFF
-        -Donnxruntime_USE_MPI=OFF # ${VCPKG_TARGET_IS_LINUX}
+        -Donnxruntime_USE_NNAPI_BUILTIN=${VCPKG_TARGET_IS_ANDROID}
         -Donnxruntime_ENABLE_CPUINFO=ON
         -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=OFF
         -Donnxruntime_ENABLE_BITCODE=${VCPKG_TARGET_IS_IOS}
         -Donnxruntime_ENABLE_PYTHON=OFF
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
         -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
+        -Donnxruntime_NVCC_THREADS=1 # parallel compilation
         # for ORT_BUILD_INFO
-        -DORT_GIT_COMMIT:STRING="e7a0495a874251e9747b2ce0683e0580282c54df"
-        -DORT_GIT_BRANCH:STRING="v1.16.0"
+        -DORT_GIT_COMMIT:STRING="5fade70b5052efae1553e8e3ac0b06a527877ef0"
+        -DORT_GIT_BRANCH:STRING="main"
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
-        -Donnxruntime_ENABLE_CUDA_PROFILING=ON
-        -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=ON
+        -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=1
     MAYBE_UNUSED_VARIABLES
         NUGET_EXE
         onnxruntime_BUILD_WEBASSEMBLY
         onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         onnxruntime_USE_CUSTOM_DIRECTML
+        onnxruntime_NVCC_THREADS
 )
 if("training" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_training LOGFILE_BASE build-training)

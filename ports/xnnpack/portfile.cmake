@@ -7,8 +7,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/XNNPACK
-    REF db68602a37353f3050c1835d5609a1ce1a3f3d2a # 2023-04-13
-    SHA512 66d8546678fb268e75b318cff997d24748db49447df2ec0c2fec7a4c6a0bdb3d985d25df18c6eb85aec8a66627b62e41c02c584c3b7ee7d631fb95b42aee074b
+    REF 0ec73cadf48e65152e25e56b1d19add9ced75e57 # 2023-11-17
+    SHA512 926b18aa253c2b656ff25cf23bc7646229cbd1c0a522b0e1367b377876899f60e9322416e02b9d543e8426d44a1143ee8f4b7dc2d4bce47a6f3a7a3ca7b4f86c
     HEAD_REF master
     PATCHES
         fix-cmake.patch
@@ -80,9 +80,11 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH share)
 
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/bin"
     "${CURRENT_PACKAGES_DIR}/debug/share"
 )
+file(INSTALL "${SOURCE_PATH}/include/" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
+
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
