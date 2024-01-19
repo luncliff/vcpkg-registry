@@ -11,15 +11,16 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.14.1
-    SHA512 c5e9a176027a00b5efb1343bee000330f56229a1a8559db2fb9e2c9388afaf8420d69b6fd6e7b85811272c110245315935232a859e9fd4106b29b226780c447e
+    REF v2.15.0
+    SHA512 51976c7255ffbdb98fe67a28f6ae1c3b9a073e49fe6b44187a53d99654e4af753de53bfa7229cdd1997ac71e8ddecbc15e4759d46c6d24b55eb84c5d31523dfe
     PATCHES
         tensorflow-pr-62705.patch
-        fix-cmake-use-vcpkg.patch   # use packages from vcpkg
-        fix-cmake-c-api.patch       # includ C API sources
-        fix-cmake-gpu.patch         # build settings for GPU features
-        fix-cmake-nnapi.patch       # Android NNAPI
-        fix-source-abseil.patch     # replace std:: to absl::
+        fix-cmake-c-api.patch
+        fix-cmake-vcpkg.patch
+        # fix-cmake-gpu.patch         # build settings for GPU features
+        # fix-cmake-nnapi.patch       # Android NNAPI
+        fix-source-abseil.patch     # replace std:: and absl::
+        fix-source-cpp20.patch
         fix-source-apple-opencl.patch
 )
 file(REMOVE_RECURSE
@@ -139,6 +140,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gpu     TFLITE_ENABLE_GPU
         gpu     TFLITE_ENABLE_METAL
+        gpu     TFLITE_ENABLE_GLES3
 )
 
 if(VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_ANDROID)

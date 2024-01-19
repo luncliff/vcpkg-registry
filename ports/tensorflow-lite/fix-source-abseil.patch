@@ -1,55 +1,5 @@
-diff --git a/tensorflow/compiler/xla/runtime/custom_call.h b/tensorflow/compiler/xla/runtime/custom_call.h
-index 400edef0..f01508ff 100644
---- a/tensorflow/compiler/xla/runtime/custom_call.h
-+++ b/tensorflow/compiler/xla/runtime/custom_call.h
-@@ -834,7 +834,7 @@ template <typename T, CustomCall::RuntimeChecks checks>
- struct Decode<internal::Value<T>, checks> {
-   ABSL_ATTRIBUTE_ALWAYS_INLINE static FailureOr<T> call(
-       DecodingOffsets& offsets, DecodingContext& ctx) {
--    return std::any_cast<T>(ctx.values[offsets.values++]);
-+    return absl::any_cast<T>(ctx.values[offsets.values++]);
-   }
- };
- 
-diff --git a/tensorflow/compiler/xla/service/gpu/gpu_compiler.cc b/tensorflow/compiler/xla/service/gpu/gpu_compiler.cc
-index 7681cba5..5bd5ff4d 100644
---- a/tensorflow/compiler/xla/service/gpu/gpu_compiler.cc
-+++ b/tensorflow/compiler/xla/service/gpu/gpu_compiler.cc
-@@ -1526,7 +1526,7 @@ GpuCompiler::CompileAheadOfTime(std::unique_ptr<HloModuleGroup> module_group,
-   std::vector<std::unique_ptr<AotCompilationResult>> results;
- 
-   std::any target_config = options.target_config();
--  auto* gpu_target_config = std::any_cast<GpuTargetConfig>(&target_config);
-+  auto* gpu_target_config = absl::any_cast<GpuTargetConfig>(&target_config);
-   CHECK(gpu_target_config != nullptr || options.executor() != nullptr);
- 
-   for (const auto& module : modules) {
-@@ -1536,7 +1536,7 @@ GpuCompiler::CompileAheadOfTime(std::unique_ptr<HloModuleGroup> module_group,
-     CompileModuleResults compile_module_results;
- 
-     const std::any& target_config = options.target_config();
--    auto* gpu_target_config = std::any_cast<GpuTargetConfig>(&target_config);
-+    auto* gpu_target_config = absl::any_cast<GpuTargetConfig>(&target_config);
- 
-     if (gpu_target_config) {
-       // CUDA "CC" major value, -1 if not available.
-diff --git a/tensorflow/lite/delegates/gpu/common/operations.h b/tensorflow/lite/delegates/gpu/common/operations.h
-index 37d8dfa0..588d2fc2 100644
---- a/tensorflow/lite/delegates/gpu/common/operations.h
-+++ b/tensorflow/lite/delegates/gpu/common/operations.h
-@@ -119,8 +119,8 @@ std::string ToString(enum OperationType op);
- OperationType OperationTypeFromString(const std::string& name);
- 
- template <DataType DataTypeT, typename t>
--using TensorOrScalarBase = std::variant<std::monostate, Tensor<HWC, DataTypeT>,
--                                        Tensor<Linear, DataTypeT>, t>;
-+using TensorOrScalarBase = absl::variant<std::monostate, Tensor<HWC, DataTypeT>,
-+                                         Tensor<Linear, DataTypeT>, t>;
- 
- using TensorOrScalar = TensorOrScalarBase<DataType::FLOAT32, float>;
- 
 diff --git a/tensorflow/lite/delegates/gpu/common/selectors/operation_selector.cc b/tensorflow/lite/delegates/gpu/common/selectors/operation_selector.cc
-index 655c7bba..88027ae6 100644
+index fc5730b2..1a8f79a0 100644
 --- a/tensorflow/lite/delegates/gpu/common/selectors/operation_selector.cc
 +++ b/tensorflow/lite/delegates/gpu/common/selectors/operation_selector.cc
 @@ -310,7 +310,7 @@ absl::Status CreateElementwiseTwoInputWithOneConstant(
@@ -61,25 +11,19 @@ index 655c7bba..88027ae6 100644
        node.operation.attributes);
    GPUOperation operation;
    if (input->tensor.shape != output->tensor.shape) {
-diff --git a/tensorflow/lite/delegates/gpu/common/tasks/elementwise.cc b/tensorflow/lite/delegates/gpu/common/tasks/elementwise.cc
-index ff8cf35f..615827e5 100644
---- a/tensorflow/lite/delegates/gpu/common/tasks/elementwise.cc
-+++ b/tensorflow/lite/delegates/gpu/common/tasks/elementwise.cc
-@@ -340,11 +340,11 @@ ElementwiseDescriptor CreateElementwiseDesc(
-     const GpuInfo& gpu_info, const OperationDef& definition,
-     const OperationType& op_type,
-     const ElementwiseAttributesBase<DataTypeT, T>& attr) {
--  const T* scalar = std::get_if<T>(&attr.param);
-+  const T* scalar = absl::get_if<T>(&attr.param);
-   const auto* linear_tensor =
--      std::get_if<tflite::gpu::Tensor<Linear, DataTypeT>>(&attr.param);
-+      absl::get_if<tflite::gpu::Tensor<Linear, DataTypeT>>(&attr.param);
-   const auto* hwc_tensor =
--      std::get_if<tflite::gpu::Tensor<HWC, DataTypeT>>(&attr.param);
-+      absl::get_if<tflite::gpu::Tensor<HWC, DataTypeT>>(&attr.param);
+diff --git a/tensorflow/lite/delegates/gpu/common/tasks/mean_stddev_normalization.cc b/tensorflow/lite/delegates/gpu/common/tasks/mean_stddev_normalization.cc
+index f45a58c7..ff1aedec 100644
+--- a/tensorflow/lite/delegates/gpu/common/tasks/mean_stddev_normalization.cc
++++ b/tensorflow/lite/delegates/gpu/common/tasks/mean_stddev_normalization.cc
+@@ -44,7 +44,7 @@ absl::Status CheckIfValidNodeOfType(const Node* node,
  
-   if (scalar) {
-     return CreateElementwiseOneRuntimeOneScalar(definition, op_type, *scalar,
+ absl::Status GetElementwiseScalarValue(const Node* node, float* result) {
+   auto attr = absl::any_cast<ElementwiseAttributes>(node->operation.attributes);
+-  const float* value = absl::get_if<float>(&attr.param);
++  const float* value = std::get_if<float>(&attr.param);
+   if (!value) {
+     return absl::NotFoundError("Not a scalar value inside attributes.");
+   }
 diff --git a/tensorflow/lite/delegates/gpu/common/tasks/special/conv_pointwise.cc b/tensorflow/lite/delegates/gpu/common/tasks/special/conv_pointwise.cc
 index b8c4d05c..bee97ac8 100644
 --- a/tensorflow/lite/delegates/gpu/common/tasks/special/conv_pointwise.cc
@@ -93,6 +37,210 @@ index b8c4d05c..bee97ac8 100644
    if (reduce_attr.dims != std::set<Axis>{Axis::CHANNELS}) {
      return absl::InternalError(
          "Expected reduce_sum node with channels reduction.");
+diff --git a/tensorflow/lite/delegates/gpu/common/transformations/fuse_add_to_conv.cc b/tensorflow/lite/delegates/gpu/common/transformations/fuse_add_to_conv.cc
+index 673502f2..400d1f74 100644
+--- a/tensorflow/lite/delegates/gpu/common/transformations/fuse_add_to_conv.cc
++++ b/tensorflow/lite/delegates/gpu/common/transformations/fuse_add_to_conv.cc
+@@ -37,8 +37,8 @@ namespace {
+ void FuseBiasWithAddAttributes(const ElementwiseAttributes& add_attr,
+                                const int channels,
+                                Tensor<Linear, DataType::FLOAT32>* bias) {
+-  auto add = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&add_attr.param);
+-  auto add_scalar = absl::get_if<float>(&add_attr.param);
++  auto add = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&add_attr.param);
++  auto add_scalar = std::get_if<float>(&add_attr.param);
+   if (bias->data.empty()) {
+     *bias = MakeZeroTensor<Linear, DataType::FLOAT32>(Linear(channels));
+   }
+@@ -64,9 +64,9 @@ class MergeConvolutionWithAdd : public SequenceTransformation {
+     }
+     ElementwiseAttributes add_attr =
+         absl::any_cast<ElementwiseAttributes>(add_node.operation.attributes);
+-    if (!absl::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
++    if (!std::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
+             add_attr.param) &&
+-        !absl::holds_alternative<float>(add_attr.param)) {
++        !std::holds_alternative<float>(add_attr.param)) {
+       return {TransformStatus::DECLINED,
+               "This fuse applicable only for broadcast or scalar addition."};
+     }
+@@ -110,8 +110,8 @@ class MergeConvolutionWithAdd : public SequenceTransformation {
+ 
+ void FuseAddWithConvolution2D(const ElementwiseAttributes& add_attr,
+                               Convolution2DAttributes* attr) {
+-  auto add = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&add_attr.param);
+-  auto add_scalar = absl::get_if<float>(&add_attr.param);
++  auto add = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&add_attr.param);
++  auto add_scalar = std::get_if<float>(&add_attr.param);
+   if (attr->bias.data.empty()) {
+     attr->bias = MakeZeroTensor<Linear, DataType::FLOAT32>(
+         Linear(attr->weights.shape.o));
+@@ -148,9 +148,9 @@ class MergeAddWithConvolution : public SequenceTransformation {
+     }
+     ElementwiseAttributes add_attr =
+         absl::any_cast<ElementwiseAttributes>(add_node.operation.attributes);
+-    if (!absl::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
++    if (!std::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
+             add_attr.param) &&
+-        !absl::holds_alternative<float>(add_attr.param)) {
++        !std::holds_alternative<float>(add_attr.param)) {
+       return {TransformStatus::DECLINED,
+               "This fuse applicable only for broadcast or scalar addition."};
+     }
+diff --git a/tensorflow/lite/delegates/gpu/common/transformations/fuse_mul_to_conv.cc b/tensorflow/lite/delegates/gpu/common/transformations/fuse_mul_to_conv.cc
+index 41bd485a..8d087100 100644
+--- a/tensorflow/lite/delegates/gpu/common/transformations/fuse_mul_to_conv.cc
++++ b/tensorflow/lite/delegates/gpu/common/transformations/fuse_mul_to_conv.cc
+@@ -54,9 +54,9 @@ class MergeConvolutionWithMul : public SequenceTransformation {
+ 
+     ElementwiseAttributes mul_attr =
+         absl::any_cast<ElementwiseAttributes>(mul_node.operation.attributes);
+-    if (!absl::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
++    if (!std::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
+             mul_attr.param) &&
+-        !absl::holds_alternative<float>(mul_attr.param)) {
++        !std::holds_alternative<float>(mul_attr.param)) {
+       return {
+           TransformStatus::DECLINED,
+           "This fuse applicable only for broadcast or scalar multiplication."};
+@@ -118,9 +118,9 @@ class MergeMulWithConvolution : public SequenceTransformation {
+ 
+     ElementwiseAttributes mul_attr =
+         absl::any_cast<ElementwiseAttributes>(mul_node.operation.attributes);
+-    if (!absl::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
++    if (!std::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
+             mul_attr.param) &&
+-        !absl::holds_alternative<float>(mul_attr.param)) {
++        !std::holds_alternative<float>(mul_attr.param)) {
+       return {
+           TransformStatus::DECLINED,
+           "This fuse applicable only for broadcast or scalar multiplication."};
+@@ -175,8 +175,8 @@ std::unique_ptr<SequenceTransformation> NewMergeMulWithConvolution() {
+ 
+ void FuseConvolution2DWithMultiply(const ElementwiseAttributes& mul_attr,
+                                    Convolution2DAttributes* attr) {
+-  auto mul = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
+-  auto mul_scalar = absl::get_if<float>(&mul_attr.param);
++  auto mul = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
++  auto mul_scalar = std::get_if<float>(&mul_attr.param);
+   for (int d = 0; d < attr->weights.shape.o; ++d) {
+     const float multiplier = mul ? mul->data[d] : *mul_scalar;
+     for (int s = 0; s < attr->weights.shape.i; ++s) {
+@@ -196,8 +196,8 @@ void FuseConvolution2DWithMultiply(const ElementwiseAttributes& mul_attr,
+ void FuseDepthwiseConvolution2DWithMultiply(
+     const ElementwiseAttributes& mul_attr,
+     DepthwiseConvolution2DAttributes* attr) {
+-  auto mul = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
+-  auto mul_scalar = absl::get_if<float>(&mul_attr.param);
++  auto mul = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
++  auto mul_scalar = std::get_if<float>(&mul_attr.param);
+   for (int g = 0; g < attr->weights.shape.o; ++g) {
+     for (int s = 0; s < attr->weights.shape.i; ++s) {
+       const int d = s * attr->weights.shape.o + g;
+@@ -218,8 +218,8 @@ void FuseDepthwiseConvolution2DWithMultiply(
+ void FuseConvolutionTransposedWithMultiply(
+     const ElementwiseAttributes& mul_attr,
+     ConvolutionTransposedAttributes* attr) {
+-  auto mul = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
+-  auto mul_scalar = absl::get_if<float>(&mul_attr.param);
++  auto mul = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
++  auto mul_scalar = std::get_if<float>(&mul_attr.param);
+   for (int d = 0; d < attr->weights.shape.o; ++d) {
+     const float multiplier = mul ? mul->data[d] : *mul_scalar;
+     for (int s = 0; s < attr->weights.shape.i; ++s) {
+@@ -238,8 +238,8 @@ void FuseConvolutionTransposedWithMultiply(
+ 
+ void FuseFullyConnectedWithMultiply(const ElementwiseAttributes& mul_attr,
+                                     FullyConnectedAttributes* attr) {
+-  auto mul = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
+-  auto mul_scalar = absl::get_if<float>(&mul_attr.param);
++  auto mul = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
++  auto mul_scalar = std::get_if<float>(&mul_attr.param);
+   for (int d = 0; d < attr->weights.shape.o; ++d) {
+     const float multiplier = mul ? mul->data[d] : *mul_scalar;
+     for (int s = 0; s < attr->weights.shape.i; ++s) {
+@@ -254,8 +254,8 @@ void FuseFullyConnectedWithMultiply(const ElementwiseAttributes& mul_attr,
+ 
+ void FuseMultiplyWithConvolution2D(const ElementwiseAttributes& mul_attr,
+                                    Convolution2DAttributes* attr) {
+-  auto mul = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
+-  auto mul_scalar = absl::get_if<float>(&mul_attr.param);
++  auto mul = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
++  auto mul_scalar = std::get_if<float>(&mul_attr.param);
+   for (int s = 0; s < attr->weights.shape.i; ++s) {
+     const float multiplier = mul ? mul->data[s] : *mul_scalar;
+     for (int d = 0; d < attr->weights.shape.o; ++d) {
+@@ -272,8 +272,8 @@ void FuseMultiplyWithConvolution2D(const ElementwiseAttributes& mul_attr,
+ void FuseMultiplyWithDepthwiseConvolution2D(
+     const ElementwiseAttributes& mul_attr,
+     DepthwiseConvolution2DAttributes* attr) {
+-  auto mul = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
+-  auto mul_scalar = absl::get_if<float>(&mul_attr.param);
++  auto mul = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
++  auto mul_scalar = std::get_if<float>(&mul_attr.param);
+   for (int s = 0; s < attr->weights.shape.i; ++s) {
+     const float multiplier = mul ? mul->data[s] : *mul_scalar;
+     for (int g = 0; g < attr->weights.shape.o; ++g) {
+@@ -290,8 +290,8 @@ void FuseMultiplyWithDepthwiseConvolution2D(
+ void FuseMultiplyWithConvolutionTransposed(
+     const ElementwiseAttributes& mul_attr,
+     ConvolutionTransposedAttributes* attr) {
+-  auto mul = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
+-  auto mul_scalar = absl::get_if<float>(&mul_attr.param);
++  auto mul = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
++  auto mul_scalar = std::get_if<float>(&mul_attr.param);
+   for (int s = 0; s < attr->weights.shape.i; ++s) {
+     const float multiplier = mul ? mul->data[s] : *mul_scalar;
+     for (int d = 0; d < attr->weights.shape.o; ++d) {
+@@ -307,8 +307,8 @@ void FuseMultiplyWithConvolutionTransposed(
+ 
+ void FuseMultiplyWithFullyConnected(const ElementwiseAttributes& mul_attr,
+                                     FullyConnectedAttributes* attr) {
+-  auto mul = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
+-  auto mul_scalar = absl::get_if<float>(&mul_attr.param);
++  auto mul = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&mul_attr.param);
++  auto mul_scalar = std::get_if<float>(&mul_attr.param);
+   for (int s = 0; s < attr->weights.shape.i; ++s) {
+     const float multiplier = mul ? mul->data[s] : *mul_scalar;
+     for (int d = 0; d < attr->weights.shape.o; ++d) {
+diff --git a/tensorflow/lite/delegates/gpu/common/transformations/merge_padding_with.cc b/tensorflow/lite/delegates/gpu/common/transformations/merge_padding_with.cc
+index 509d715f..5e0bf1a9 100644
+--- a/tensorflow/lite/delegates/gpu/common/transformations/merge_padding_with.cc
++++ b/tensorflow/lite/delegates/gpu/common/transformations/merge_padding_with.cc
+@@ -153,11 +153,11 @@ class MergePaddingWithAddOperation : public NodeTransformation {
+     ElementwiseAttributes add_attr =
+         absl::any_cast<ElementwiseAttributes>(add_node->operation.attributes);
+     const bool is_add_hwc =
+-        absl::holds_alternative<Tensor<HWC, DataType::FLOAT32>>(add_attr.param);
++        std::holds_alternative<Tensor<HWC, DataType::FLOAT32>>(add_attr.param);
+     const bool is_add_linear =
+-        absl::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
++        std::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
+             add_attr.param);
+-    const bool is_add_scalar = absl::holds_alternative<float>(add_attr.param);
++    const bool is_add_scalar = std::holds_alternative<float>(add_attr.param);
+     if (is_add_hwc || is_add_linear || is_add_scalar) {
+       return {TransformStatus::SKIPPED,
+               "Cannot remove padding when ADD has constant argument."};
+diff --git a/tensorflow/lite/delegates/gpu/common/transformations/remove_noop.cc b/tensorflow/lite/delegates/gpu/common/transformations/remove_noop.cc
+index ceb66dd5..a0d60ee2 100644
+--- a/tensorflow/lite/delegates/gpu/common/transformations/remove_noop.cc
++++ b/tensorflow/lite/delegates/gpu/common/transformations/remove_noop.cc
+@@ -88,11 +88,11 @@ std::unique_ptr<SequenceTransformation> NewRemoveSingleInputAdd() {
+         }
+         auto& attr = absl::any_cast<const ElementwiseAttributes&>(
+             node->operation.attributes);
+-        return !absl::holds_alternative<Tensor<HWC, DataType::FLOAT32>>(
++        return !std::holds_alternative<Tensor<HWC, DataType::FLOAT32>>(
+                    attr.param) &&
+-               !absl::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
++               !std::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(
+                    attr.param) &&
+-               !absl::holds_alternative<float>(attr.param);
++               !std::holds_alternative<float>(attr.param);
+       });
+ }
+ 
 diff --git a/tensorflow/lite/delegates/gpu/gl/compiler.cc b/tensorflow/lite/delegates/gpu/gl/compiler.cc
 index d6e670e0..bafa99fb 100644
 --- a/tensorflow/lite/delegates/gpu/gl/compiler.cc
@@ -187,36 +335,32 @@ index 1e27404b..b7719c49 100644
  
    if (graph->FindInputs(node2->id).size() != 1 ||
        graph->FindOutputs(node2->id).size() != 1 ||
+diff --git a/tensorflow/lite/delegates/gpu/gl/compiler/object_accessor_test.cc b/tensorflow/lite/delegates/gpu/gl/compiler/object_accessor_test.cc
+index 4bf94824..27462048 100644
+--- a/tensorflow/lite/delegates/gpu/gl/compiler/object_accessor_test.cc
++++ b/tensorflow/lite/delegates/gpu/gl/compiler/object_accessor_test.cc
+@@ -33,7 +33,7 @@ namespace gl {
+ struct ParameterComparator {
+   template <typename T>
+   bool operator()(const T& t) const {
+-    const T* v = std::get_if<T>(&p.value);
++    const T* v = absl::get_if<T>(&p.value);
+     return v && t == *v;
+   }
+   const Variable& p;
 diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/add.cc b/tensorflow/lite/delegates/gpu/gl/kernels/add.cc
-index a14d7f24..0a01997c 100644
+index a14d7f24..7eba06b3 100644
 --- a/tensorflow/lite/delegates/gpu/gl/kernels/add.cc
 +++ b/tensorflow/lite/delegates/gpu/gl/kernels/add.cc
-@@ -41,12 +41,12 @@ class Add : public NodeShader {
+@@ -41,7 +41,7 @@ class Add : public NodeShader {
   public:
    absl::Status GenerateCode(const GenerationContext& ctx,
                              GeneratedCode* generated_code) const final {
 -    const auto& attr = std::any_cast<const ElementwiseAttributes&>(ctx.op_attr);
--    auto adds = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.param);
--    auto scalar = std::get_if<float>(&attr.param);
 +    const auto& attr = absl::any_cast<const ElementwiseAttributes&>(ctx.op_attr);
-+    auto adds = absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.param);
-+    auto scalar = absl::get_if<float>(&attr.param);
+     auto adds = std::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.param);
+     auto scalar = std::get_if<float>(&attr.param);
  
-     const auto* hwc_tensor =
--        std::get_if<Tensor<HWC, DataType::FLOAT32>>(&attr.param);
-+        absl::get_if<Tensor<HWC, DataType::FLOAT32>>(&attr.param);
- 
-     if (hwc_tensor) {
-       std::string code;
-@@ -69,7 +69,7 @@ class Add : public NodeShader {
-                 uint3(hwc_tensor->shape.w, hwc_tensor->shape.h,
-                       DivideRoundUp(hwc_tensor->shape.c, 4)),
-                 ConvertToPHWC4(
--                    std::get<Tensor<HWC, DataType::FLOAT32>>(attr.param)))}},
-+                    absl::get<Tensor<HWC, DataType::FLOAT32>>(attr.param)))}},
-           /*shared_variables=*/{},
-           // Declare workload explicitly because shader depends on gid.z.
-           /*workload=*/
 diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/concat.cc b/tensorflow/lite/delegates/gpu/gl/kernels/concat.cc
 index 0513c8ec..c737b490 100644
 --- a/tensorflow/lite/delegates/gpu/gl/kernels/concat.cc
@@ -293,23 +437,18 @@ index 627aeeec..b86eefff 100644
      const int offsets_count = weights.h * weights.w;
      const bool offsets_count_too_large = offsets_count > kMaxConstArraySize;
 diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/elementwise.cc b/tensorflow/lite/delegates/gpu/gl/kernels/elementwise.cc
-index db6714b0..e65ea47e 100644
+index db6714b0..13804859 100644
 --- a/tensorflow/lite/delegates/gpu/gl/kernels/elementwise.cc
 +++ b/tensorflow/lite/delegates/gpu/gl/kernels/elementwise.cc
-@@ -168,10 +168,10 @@ class ElementwiseTwoArguments : public NodeShader {
+@@ -168,7 +168,7 @@ class ElementwiseTwoArguments : public NodeShader {
        argument1 = "$input_data_1[0, 0, gid.z]$";
      } else {  // Scalar of const vector case
        const auto& attr =
 -          std::any_cast<const ElementwiseAttributes&>(ctx.op_attr);
 +          absl::any_cast<const ElementwiseAttributes&>(ctx.op_attr);
        const auto* tensor =
--          std::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.param);
--      const auto* scalar = std::get_if<float>(&attr.param);
-+          absl::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.param);
-+      const auto* scalar = absl::get_if<float>(&attr.param);
-       if (!tensor && !scalar) {
-         return absl::InvalidArgumentError(
-             "Couldn't read scalar of const vector data from the attributes.");
+           std::get_if<Tensor<Linear, DataType::FLOAT32>>(&attr.param);
+       const auto* scalar = std::get_if<float>(&attr.param);
 diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/fully_connected.cc b/tensorflow/lite/delegates/gpu/gl/kernels/fully_connected.cc
 index 7dacd3e6..256a16b6 100644
 --- a/tensorflow/lite/delegates/gpu/gl/kernels/fully_connected.cc
@@ -337,7 +476,7 @@ index d59a3e7f..d993a8fc 100644
          {"stride", int2(attr.strides.w, attr.strides.h)},
          {"offset", int2(attr.padding.prepended.w, attr.padding.prepended.h)},
 diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/mean.cc b/tensorflow/lite/delegates/gpu/gl/kernels/mean.cc
-index fbb37e0e..ea3edd01 100644
+index 9b0a1df1..6a25e65e 100644
 --- a/tensorflow/lite/delegates/gpu/gl/kernels/mean.cc
 +++ b/tensorflow/lite/delegates/gpu/gl/kernels/mean.cc
 @@ -242,7 +242,7 @@ class Mean : public NodeShader {
@@ -350,61 +489,18 @@ index fbb37e0e..ea3edd01 100644
        return absl::InvalidArgumentError(
            "Mean calculation is supported only for height and width.");
 diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/mul.cc b/tensorflow/lite/delegates/gpu/gl/kernels/mul.cc
-index fb309862..d6a3fe7e 100644
+index b00e0f4a..54cb6111 100644
 --- a/tensorflow/lite/delegates/gpu/gl/kernels/mul.cc
 +++ b/tensorflow/lite/delegates/gpu/gl/kernels/mul.cc
-@@ -90,11 +90,11 @@ absl::Status GenerateMultiplyRuntimeTensorCode(
+@@ -95,7 +95,7 @@ absl::Status GenerateMultiplyRuntimeTensorCode(
  
  absl::Status GenerateMultiplyConstantTensorCode(
      const NodeShader::GenerationContext& ctx, GeneratedCode* generated_code) {
 -  const auto& attr = std::any_cast<const ElementwiseAttributes&>(ctx.op_attr);
 +  const auto& attr = absl::any_cast<const ElementwiseAttributes&>(ctx.op_attr);
  
--  if (std::holds_alternative<float>(attr.param)) {
-+  if (absl::holds_alternative<float>(attr.param)) {
+   if (std::holds_alternative<float>(attr.param)) {
      *generated_code = {
--        /*parameters=*/{{"scalar", std::get<float>(attr.param)}},
-+        /*parameters=*/{{"scalar", absl::get<float>(attr.param)}},
-         /*objects=*/{},
-         /*shared_variables=*/{},
-         /*workload=*/uint3(),
-@@ -106,13 +106,13 @@ absl::Status GenerateMultiplyConstantTensorCode(
-     return absl::OkStatus();
-   }
- 
--  if (std::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(attr.param)) {
-+  if (absl::holds_alternative<Tensor<Linear, DataType::FLOAT32>>(attr.param)) {
-     *generated_code = {
-         /*parameters=*/{},
-         /*objects=*/
-         {{"mul_buffer",
-           MakeReadonlyObject(
--              std::get<Tensor<Linear, DataType::FLOAT32>>(attr.param).data)}},
-+              absl::get<Tensor<Linear, DataType::FLOAT32>>(attr.param).data)}},
-         /*shared_variables=*/{},
-         // Declare workload explicitly because shader depends on gid.z.
-         /*workload=*/
-@@ -127,9 +127,9 @@ absl::Status GenerateMultiplyConstantTensorCode(
-     return absl::OkStatus();
-   }
- 
--  if (std::holds_alternative<Tensor<HWC, DataType::FLOAT32>>(attr.param)) {
-+  if (absl::holds_alternative<Tensor<HWC, DataType::FLOAT32>>(attr.param)) {
-     bool single_channel_mask =
--        std::get<Tensor<HWC, DataType::FLOAT32>>(attr.param).shape.c == 1;
-+        absl::get<Tensor<HWC, DataType::FLOAT32>>(attr.param).shape.c == 1;
-     std::string source;
-     if (single_channel_mask) {
-       source = "vec4 const_val = $hwc_buffer[gid.x, gid.y, 0]$;";
-@@ -157,7 +157,7 @@ absl::Status GenerateMultiplyConstantTensorCode(
-                     static_cast<int>(ctx.input_shapes[0][1]),
-                     DivideRoundUp(static_cast<int>(ctx.input_shapes[0][3]), 4)),
-               ConvertToPHWC4(
--                  std::get<Tensor<HWC, DataType::FLOAT32>>(attr.param)))}},
-+                  absl::get<Tensor<HWC, DataType::FLOAT32>>(attr.param)))}},
-         /*shared_variables=*/{},
-         // Declare workload explicitly because shader depends on gid.z.
-         /*workload=*/
 diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/pad.cc b/tensorflow/lite/delegates/gpu/gl/kernels/pad.cc
 index 537da8c9..66eeb2ae 100644
 --- a/tensorflow/lite/delegates/gpu/gl/kernels/pad.cc
@@ -482,7 +578,7 @@ index 80f03dde..3af047a0 100644
          /*parameters=*/{{"quant_min", attr.min},
                          {"quant_max", attr.max},
 diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/relu.cc b/tensorflow/lite/delegates/gpu/gl/kernels/relu.cc
-index 6d05ea89..2ba5f107 100644
+index 5bfd0517..12772739 100644
 --- a/tensorflow/lite/delegates/gpu/gl/kernels/relu.cc
 +++ b/tensorflow/lite/delegates/gpu/gl/kernels/relu.cc
 @@ -38,7 +38,7 @@ class ReLU : public NodeShader {
@@ -491,7 +587,7 @@ index 6d05ea89..2ba5f107 100644
                              GeneratedCode* generated_code) const final {
 -    const auto& attr = std::any_cast<const ReLUAttributes&>(ctx.op_attr);
 +    const auto& attr = absl::any_cast<const ReLUAttributes&>(ctx.op_attr);
-     // clamp(value, min(0, alpha * value), clip)
+     // clamp(value, min(0, alpha * value), activation_max)
      std::vector<Variable> params;
      std::string min;
 diff --git a/tensorflow/lite/delegates/gpu/gl/kernels/reshape.cc b/tensorflow/lite/delegates/gpu/gl/kernels/reshape.cc
