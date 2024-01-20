@@ -3,37 +3,39 @@ version: 2.1
 
 orbs:
   win: circleci/windows@5.0
-  # python: circleci/python@2.1.1
+  aws-cli: circleci/aws-cli@4.1.2 # https://circleci.com/developer/orbs/orb/circleci/aws-cli
+  aws-s3: circleci/aws-s3@4.0
 
 workflows:
   windows_ports:
     jobs:
-      - setup_cache:
-          filters:
-            branches:
-              ignore:
-                - gh-pages
-                - docs
+      # - setup_cache:
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - gh-pages
+      #           - docs
       - x64_windows:
           filters:
             branches:
               ignore:
                 - gh-pages
                 - docs
-          requires:
-            - setup_cache
+          # requires:
+          #   - setup_cache
 
 jobs:
-  setup_cache:
+  x64_windows:
     executor:
       name: win/server-2022
       size: large
     environment:
-      VCPKG_DOWNLOADS: C:/vcpkg-downs
-      VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
+      VCPKG_DOWNLOADS: C:/vcpkg-caches
+      VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-caches
       VCPKG_DEFAULT_TRIPLET: x64-windows
     steps:
       - checkout
+      - aws-cli/setup
       - run:
           name: "Setup: microsoft/vcpkg(2023.12.12)"
           command: |
@@ -46,69 +48,9 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - v2352-downs-{{ .Branch }}
-            - v2352-downs-{{ checksum ".circleci/config.yml" }}
-            - v2352-downs-main
-            - v2352-downs-main
-      - restore_cache:
-          keys:
-            - v2352-bins-{{ .Branch }}
-            - v2352-bins-{{ checksum ".circleci/config.yml" }}
-            - v2352-bins-main
-            - v2352-bins-main
-      - run:
-          name: "Install: port-setup.txt"
-          command: |
-            ./vcpkg.exe install `
-              --clean-buildtrees-after-build `
-              --clean-packages-after-build `
-              --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
-              $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-setup.txt")
-          working_directory: vcpkg
-          no_output_timeout: 3h
-      - save_cache:
-          key: v2352-downs-{{ checksum ".circleci/config.yml" }}
-          paths:
-            - C:/vcpkg-downs
-          when: always
-      - save_cache:
-          key: v2352-bins-{{ checksum ".circleci/config.yml" }}
-          paths:
-            - C:/vcpkg-bins
-          when: always
-
-  x64_windows:
-    executor:
-      name: win/server-2022 # the Orbs
-      size: large
-    environment:
-      VCPKG_DOWNLOADS: C:/vcpkg-downs
-      VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-bins
-      VCPKG_DEFAULT_TRIPLET: x64-windows
-    steps:
-      - checkout
-      - run:
-          name: "Setup: microsoft/vcpkg(2023.12.12)"
-          command: |
-            New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
-            New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2023.12.12 --depth=1 https://github.com/microsoft/vcpkg
-            Push-Location vcpkg
-              ./bootstrap-vcpkg.bat
-              ./vcpkg.exe --version
-            Pop-Location
-      - restore_cache:
-          keys:
-            - v2352-downs-{{ .Branch }}
-            - v2352-downs-{{ checksum ".circleci/config.yml" }}
-            - v2352-downs-main
-            - v2352-downs-main
-      - restore_cache:
-          keys:
-            - v2352-bins-{{ .Branch }}
-            - v2352-bins-{{ checksum ".circleci/config.yml" }}
-            - v2352-bins-main
-            - v2352-bins-main
+            - v2352-caches-{{ .Branch }}
+            - v2352-caches-{{ checksum ".circleci/config.yml" }}
+            - v2352-caches-main
       - run:
           name: "Install: port-windows.txt"
           command: |
@@ -117,6 +59,7 @@ jobs:
               --clean-buildtrees-after-build `
               --clean-packages-after-build `
               --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
+              $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-setup.txt") `
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-windows.txt")
           working_directory: vcpkg
           no_output_timeout: 5h
@@ -125,18 +68,14 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: v2352-bins-{{ .Branch }}
+              key: v2352-caches-{{ .Branch }}
               paths:
-                - C:/vcpkg-bins
+                - C:/vcpkg-caches
       - save_cache:
-          key: v2352-downs-{{ .Branch }}
+          key: v2352-caches-{{ .Branch }}
           paths:
-            - C:/vcpkg-downs
-      - save_cache:
-          key: v2352-bins-{{ .Branch }}
-          paths:
-            - C:/vcpkg-bins
+            - C:/vcpkg-caches
       - store_artifacts:
-          name: "Upload buildtrees log"
-          path: vcpkg/buildtrees/ # buildtrees-log
+          name: "Upload: buildtrees log"
+          path: vcpkg/buildtrees/
           destination: "build-logs"
