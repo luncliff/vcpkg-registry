@@ -13,7 +13,7 @@ vcpkg_from_github(
     PATCHES
         fix-cmake.patch
 )
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/xnnpack-config.cmake.in" DESTINATION "${SOURCE_PATH}/cmake")
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/xnnpack-config.template.cmake" DESTINATION "${SOURCE_PATH}/cmake")
 
 if(VCPKG_TARGET_IS_WINDOWS)
     # Visual Studio generator may required for CMake to detect ASM compiler

@@ -7,6 +7,7 @@ set(Z_XNNPACK_CONFIG_GUARD ON CACHE INTERNAL "Guard variable for 'xnnpack-config
 # from vcpkg, luncliff/vcpkg-registry
 if(NOT DEFINED PTHREADPOOL_LIBRARY)
   find_library(PTHREADPOOL_LIBRARY NAMES pthreadpool REQUIRED)
+  get_filename_component(PTHREADPOOL_LIBRARY_DIR "${PTHREADPOOL_LIBRARY}" PATH)
 endif()
 if(NOT TARGET cpuinfo::cpuinfo)
   find_package(cpuinfo CONFIG REQUIRED) # cpuinfo::cpuinfo
@@ -30,3 +31,10 @@ PROPERTIES
   INTERFACE_LINK_LIBRARIES "${PTHREADPOOL_LIBRARY};cpuinfo::cpuinfo"
   IMPORTED_LOCATION "${XNNPACK_LIBRARY}"
 )
+
+if(DEFINED PTHREADPOOL_LIBRARY_DIR)
+  set_target_properties(xnnpack
+  PROPERTIES
+    INTERFACE_LINK_DIRECTORIES "${PTHREADPOOL_LIBRARY_DIR}"
+  )
+endif()
