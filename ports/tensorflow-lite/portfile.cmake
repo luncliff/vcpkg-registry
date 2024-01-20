@@ -25,7 +25,7 @@ vcpkg_from_github(
 )
 file(REMOVE_RECURSE
     "${SOURCE_PATH}/third_party/eigen3"
-    "${SOURCE_PATH}/third_party/xla"
+    # "${SOURCE_PATH}/third_party/xla"
 )
 file(COPY "${CURRENT_INSTALLED_DIR}/include/eigen3" DESTINATION "${SOURCE_PATH}/third_party")
 
