@@ -17,15 +17,14 @@ vcpkg_from_github(
         tensorflow-pr-62705.patch
         fix-cmake-c-api.patch
         fix-cmake-vcpkg.patch
-        # fix-cmake-gpu.patch         # build settings for GPU features
-        # fix-cmake-nnapi.patch       # Android NNAPI
-        fix-source-abseil.patch     # replace std:: and absl::
-        fix-source-cpp20.patch
+        fix-source-abseil.patch
+        fix-source.patch
         fix-source-apple-opencl.patch
 )
+
 file(REMOVE_RECURSE
     "${SOURCE_PATH}/third_party/eigen3"
-    # "${SOURCE_PATH}/third_party/xla"
+    # "${SOURCE_PATH}/third_party/xla" # create openxla-xla in future?
 )
 file(COPY "${CURRENT_INSTALLED_DIR}/include/eigen3" DESTINATION "${SOURCE_PATH}/third_party")
 
@@ -103,23 +102,8 @@ if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
 else()
     set(DELEGATES_GPU_GL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/gl")
     vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp common.fbs
+        COMMAND ${FLATC} --cpp --scoped-enums common.fbs metadata.fbs workgroups.fbs compiled_model.fbs
         LOGNAME codegen-flatc-cpp-gl-common
-        WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
-    )
-    vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp metadata.fbs
-        LOGNAME codegen-flatc-cpp-gl-metadata
-        WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
-    )
-    vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp workgroups.fbs
-        LOGNAME codegen-flatc-cpp-gl-workgroups
-        WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
-    )
-    vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp --scoped-enums compiled_model.fbs
-        LOGNAME codegen-flatc-cpp-gl-compiled_model
         WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
     )
 endif()
