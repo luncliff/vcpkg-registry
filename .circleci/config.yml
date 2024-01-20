@@ -29,6 +29,7 @@ jobs:
     executor:
       name: win/server-2022
       size: large
+      shell: "bash.exe"
     environment:
       VCPKG_DOWNLOADS: C:/vcpkg-caches
       VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-caches
@@ -38,6 +39,7 @@ jobs:
       - aws-cli/setup
       - run:
           name: "Setup: microsoft/vcpkg(2023.12.12)"
+          shell: "powershell.exe"
           command: |
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
@@ -53,6 +55,7 @@ jobs:
             - v2352-caches-main
       - run:
           name: "Install: port-windows.txt"
+          shell: "powershell.exe"
           command: |
             ./vcpkg.exe install `
               --recurse `
@@ -62,7 +65,7 @@ jobs:
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-setup.txt") `
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-windows.txt")
           working_directory: vcpkg
-          no_output_timeout: 5h
+          no_output_timeout: 1h
       - when:
           condition:
             equal: [ main, << pipeline.git.branch >> ]
