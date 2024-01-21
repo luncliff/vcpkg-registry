@@ -71,11 +71,15 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: v2352-caches-{{ .Branch }}
+              key: v2352-caches-main
               paths:
                 - C:/vcpkg-caches
       - save_cache:
           key: v2352-caches-{{ .Branch }}
+          paths:
+            - C:/vcpkg-caches
+      - save_cache:
+          key: v2352-caches-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-caches
       - store_artifacts:
