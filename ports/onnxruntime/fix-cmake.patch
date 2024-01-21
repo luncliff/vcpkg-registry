@@ -95,3 +95,15 @@ index 9c00703..eca3845 100644
      flatbuffers::flatbuffers Boost::mp11 safeint_interface
    )
  
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index fa936c2..48bd0fb 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -959,6 +959,7 @@ function(onnxruntime_set_compile_flags target_name)
+       endif()
+       target_compile_definitions(${target_name} PUBLIC -DNSYNC_ATOMIC_CPP11)
+       onnxruntime_add_include_to_target(${target_name} nsync::nsync_cpp)
++      onnxruntime_add_include_to_target(${target_name} Eigen3::Eigen)
+     endif()
+     foreach(ORT_FLAG ${ORT_PROVIDER_FLAGS})
+       target_compile_definitions(${target_name} PRIVATE ${ORT_FLAG})

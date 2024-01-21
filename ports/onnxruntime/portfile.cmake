@@ -4,7 +4,6 @@ endif()
 if(VCPKG_TARGET_IS_OSX AND ("framework" IN_LIST FEATURES))
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
-vcpkg_find_acquire_program(NUGET)
 
 # requires https://github.com/microsoft/onnxruntime/pull/18038 for later version of XNNPACK
 vcpkg_from_github(
@@ -90,7 +89,7 @@ endif()
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     # For some reason CUDA compiler detection is not working in WINDOWS_USE_MSBUILD
     if(NOT ("cuda" IN_LIST FEATURES))
-        set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+        # set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
     endif()
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
@@ -148,7 +147,6 @@ vcpkg_cmake_configure(
     OPTIONS
         ${ARCH_OPTIONS}
         ${FEATURE_OPTIONS}
-        -DNUGET_EXE:FILEPATH:=${NUGET}
         -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         # -DProtobuf_USE_STATIC_LIBS=OFF
@@ -175,15 +173,11 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
         -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=1
     MAYBE_UNUSED_VARIABLES
-        NUGET_EXE
         onnxruntime_BUILD_WEBASSEMBLY
         onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         onnxruntime_USE_CUSTOM_DIRECTML
         onnxruntime_NVCC_THREADS
 )
-if("training" IN_LIST FEATURES)
-    vcpkg_cmake_build(TARGET onnxruntime_training LOGFILE_BASE build-training)
-endif()
 vcpkg_cmake_build(TARGET onnxruntime LOGFILE_BASE build-onnxruntime)
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxruntime)
