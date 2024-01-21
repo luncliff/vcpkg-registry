@@ -89,7 +89,7 @@ endif()
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     # For some reason CUDA compiler detection is not working in WINDOWS_USE_MSBUILD
     if(NOT ("cuda" IN_LIST FEATURES))
-        set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+        # set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
     endif()
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
@@ -178,9 +178,6 @@ vcpkg_cmake_configure(
         onnxruntime_USE_CUSTOM_DIRECTML
         onnxruntime_NVCC_THREADS
 )
-if("training" IN_LIST FEATURES)
-    vcpkg_cmake_build(TARGET onnxruntime_training LOGFILE_BASE build-training)
-endif()
 vcpkg_cmake_build(TARGET onnxruntime LOGFILE_BASE build-onnxruntime)
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxruntime)
