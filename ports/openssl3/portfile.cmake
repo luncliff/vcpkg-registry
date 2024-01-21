@@ -59,11 +59,13 @@ file(RENAME      "${CURRENT_BUILDTREES_DIR}/${SOURCE_DIR_NAME}"
 vcpkg_find_acquire_program(PERL)
 get_filename_component(PERL_EXE_PATH "${PERL}" DIRECTORY)
 vcpkg_add_to_path("${PERL_EXE_PATH}")
+message(STATUS "Using perl: ${PERL}")
 
 if(NOT VCPKG_HOST_IS_WINDOWS)
     # see ${SOURCE_PATH}/NOTES-UNIX.md
     find_program(MAKE make REQUIRED)
     get_filename_component(MAKE_EXE_PATH "${MAKE}" DIRECTORY)
+    message(STATUS "Using make: ${MAKE}")
 endif()
 
 if(VCPKG_TARGET_IS_WINDOWS)
@@ -73,6 +75,7 @@ if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_add_to_path(PREPEND "${NASM_EXE_PATH}")
     # note: jom is not for `vcpkg_add_to_path`
     vcpkg_find_acquire_program(JOM)
+    message(STATUS "Using jom: ${JOM}")
 
 elseif(VCPKG_TARGET_IS_ANDROID)
     # see ${SOURCE_PATH}/NOTES-ANDROID.md
@@ -116,6 +119,10 @@ vcpkg_execute_required_process(
     LOGNAME "configure-perl-${TARGET_TRIPLET}-rel"
 )
 
+if("tools" IN_LIST FEATURES)
+    list(APPEND TARGETS install_runtime)
+endif()
+
 if(VCPKG_TARGET_IS_UWP OR VCPKG_TARGET_IS_WINDOWS)
     message(STATUS "Building ${TARGET_TRIPLET}-dbg")
     vcpkg_execute_required_process(
@@ -125,7 +132,7 @@ if(VCPKG_TARGET_IS_UWP OR VCPKG_TARGET_IS_WINDOWS)
     )
     message(STATUS "Building ${TARGET_TRIPLET}-rel")
     vcpkg_execute_required_process(
-        COMMAND ${JOM} /K /J ${VCPKG_CONCURRENCY} /F makefile install_dev
+        COMMAND ${JOM} /K /J ${VCPKG_CONCURRENCY} /F makefile install_dev ${TARGETS}
         WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel"
         LOGNAME "install-${TARGET_TRIPLET}-rel"
     )
@@ -140,7 +147,7 @@ else()
     )
     message(STATUS "Building ${TARGET_TRIPLET}-rel")
     vcpkg_execute_required_process(
-        COMMAND ${MAKE} -j ${VCPKG_CONCURRENCY} install_dev
+        COMMAND ${MAKE} -j ${VCPKG_CONCURRENCY} install_dev ${TARGETS}
         WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel"
         LOGNAME "install-${TARGET_TRIPLET}-rel"
     )
@@ -164,6 +171,10 @@ else()
     endif()
     vcpkg_fixup_pkgconfig()
 
+endif()
+
+if("tools" IN_LIST FEATURES)
+    vcpkg_copy_tools(TOOL_NAMES openssl AUTO_CLEAN)
 endif()
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
