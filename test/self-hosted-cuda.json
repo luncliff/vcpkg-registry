@@ -18,6 +18,7 @@
         "cuda",
         "directml",
         "python",
+        "training",
         "xnnpack"
       ],
       "platform": "x64 & windows"
