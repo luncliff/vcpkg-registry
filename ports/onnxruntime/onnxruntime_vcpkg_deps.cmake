@@ -19,6 +19,7 @@ endif()
 # Flatbuffers
 find_package(flatbuffers CONFIG REQUIRED) # flatbuffers::flatbuffers
 list(APPEND onnxruntime_EXTERNAL_DEPENDENCIES flatbuffers::flatbuffers)
+list(APPEND onnxruntime_EXTERNAL_LIBRARIES flatbuffers::flatbuffers)
 
 find_package(Protobuf CONFIG REQUIRED) # protobuf::libprotobuf protobuf::libprotobuf-lite
 if (onnxruntime_USE_FULL_PROTOBUF)
@@ -35,7 +36,7 @@ get_filename_component(ONNX_CUSTOM_PROTOC_EXECUTABLE "${Protobuf_PROTOC_EXECUTAB
 include(external/protobuf_function.cmake)
 
 find_package(date CONFIG REQUIRED)
-list(APPEND onnxruntime_EXTERNAL_DEPENDENCIES date::date)
+list(APPEND onnxruntime_EXTERNAL_LIBRARIES date::date)
 
 find_package(Boost REQUIRED)
 find_path(BOOST_INCLUDEDIR "boost/mp11.hpp" REQUIRED)
