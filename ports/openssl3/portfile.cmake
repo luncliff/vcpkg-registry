@@ -5,8 +5,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO openssl/openssl
-    REF openssl-3.1.4
-    SHA512 04349ba554ddc5a9c26ff44714c1adca3c6431e98d11af5e7b6a5f58ed44e016da68c09cc53415716ab1936c6aaac04887ced470707dbc3f7816c04e06be69c1
+    REF openssl-3.2.0
+    SHA512 aaf4f13b7b8020be37837f8084ab7aa3db64e6eb1ecabf04473ed5bd09bcabb8790f0dc1f7604febbbf974702b1fbe41795a7b575e7f88b07cbe094493926a6b
 )
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
