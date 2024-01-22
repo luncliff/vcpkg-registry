@@ -1,0 +1,40 @@
+{
+  "name": "nvidia-triton-client",
+  "version-date": "2023-01-23",
+  "description": "Triton Python, C++ and Java client libraries, and GRPC-generated client examples for go, java and scala.",
+  "homepage": "https://github.com/triton-inference-server/client",
+  "license": "BSD-3-Clause",
+  "dependencies": [
+    "curl",
+    {
+      "name": "grpc",
+      "host": true,
+      "features": [
+        "codegen"
+      ]
+    },
+    "nvidia-triton-common",
+    "nvidia-triton-core",
+    {
+      "name": "protobuf",
+      "host": true
+    },
+    "rapidjson",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "gpu": {
+      "description": "Enable GPU support in libraries",
+      "dependencies": [
+        "cuda"
+      ]
+    }
+  }
+}
