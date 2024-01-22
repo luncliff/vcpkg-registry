@@ -88,6 +88,10 @@
       "baseline": "2018-11-28",
       "port-version": 0
     },
+    "nvidia-tools-extension-sdk": {
+      "baseline": "3.1.0",
+      "port-version": 0
+    },
     "onnx": {
       "baseline": "1.15.0",
       "port-version": 0
