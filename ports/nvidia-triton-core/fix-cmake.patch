@@ -1,0 +1,66 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 4a3d692..afe7c02 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -38,17 +38,7 @@ endif()
+ # We must include the transitive closure of all repos so that we can
+ # override the tag.
+ #
+-include(FetchContent)
+-
+-FetchContent_Declare(
+-  repo-common
+-  GIT_REPOSITORY https://github.com/triton-inference-server/common.git
+-  GIT_TAG ${TRITON_COMMON_REPO_TAG}
+-)
+-
+-set(TRITON_COMMON_ENABLE_PROTOBUF ON)
+-
+-FetchContent_MakeAvailable(repo-common)
++find_package(TritonCommon CONFIG REQUIRED)
+ 
+ #
+ # CUDA
+@@ -253,6 +243,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+     PRIVATE
+       /W1 /D_WIN32_WINNT=0x0A00 /EHsc /Zc:preprocessor
+   )
++  target_compile_definitions(
++    triton-core
++    PRIVATE
++      NOMINMAX
++  )
+ else()
+   target_compile_options(
+     triton-core
+@@ -452,14 +447,14 @@ find_package(re2 REQUIRED)
+ target_link_libraries(
+   triton-core
+   PRIVATE
+-    proto-library                    # from repo-common
+-    triton-common-async-work-queue   # from repo-common
+-    triton-common-thread-pool        # from repo-common
+-    triton-common-error              # from repo-common
+-    triton-common-model-config       # from repo-common
+-    triton-common-logging            # from repo-common
+-    triton-common-json               # from repo-common
+-    triton-common-table-printer      # from repo-common
++    TritonCommon::proto-library                    # from repo-common
++    TritonCommon::triton-common-async-work-queue   # from repo-common
++    TritonCommon::triton-common-thread-pool        # from repo-common
++    TritonCommon::triton-common-error              # from repo-common
++    TritonCommon::triton-common-model-config       # from repo-common
++    TritonCommon::triton-common-logging            # from repo-common
++    TritonCommon::triton-common-json               # from repo-common
++    TritonCommon::triton-common-table-printer      # from repo-common
+     protobuf::libprotobuf
+     re2::re2
+ )
+@@ -522,6 +517,7 @@ if(${TRITON_ENABLE_METRICS_GPU})
+   )
+ endif() # TRITON_ENABLE_METRICS_GPU
+ 
++install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/ DESTINATION include)
+ install(
+   TARGETS
+     triton-core

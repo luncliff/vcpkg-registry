@@ -1,0 +1,68 @@
+{
+  "name": "nvidia-triton-core",
+  "version-date": "2023-01-23",
+  "description": "The core library and APIs implementing the Triton Inference Server.",
+  "homepage": "https://github.com/triton-inference-server/core",
+  "license": "BSD-3-Clause",
+  "dependencies": [
+    "boost-core",
+    "boost-functional",
+    "boost-interprocess",
+    {
+      "name": "libevhtp",
+      "platform": "!windows"
+    },
+    "nlohmann-json",
+    "nvidia-cnmem",
+    "nvidia-tools-extension-sdk",
+    "nvidia-triton-common",
+    {
+      "name": "opentelemetry-cpp",
+      "features": [
+        "prometheus"
+      ]
+    },
+    "prometheus-cpp",
+    "protobuf",
+    "re2",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "aws-s3": {
+      "description": "Include S3 Filesystem support",
+      "dependencies": [
+        {
+          "name": "aws-sdk-cpp",
+          "features": [
+            "s3"
+          ]
+        }
+      ]
+    },
+    "azure-storage": {
+      "description": "Include Azure Storage Filesystem support",
+      "dependencies": [
+        "azure-storage-blobs-cpp",
+        "azure-storage-common-cpp"
+      ]
+    },
+    "google-cloud-storage": {
+      "description": "Include Azure Storage Filesystem support",
+      "dependencies": [
+        {
+          "name": "google-cloud-cpp",
+          "features": [
+            "storage"
+          ]
+        }
+      ]
+    }
+  }
+}
