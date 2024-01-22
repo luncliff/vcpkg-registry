@@ -1,0 +1,29 @@
+{
+  "name": "nvidia-triton-common",
+  "version-date": "2023-01-23",
+  "description": "Common source, scripts and utilities shared across all Triton repositories.",
+  "homepage": "https://github.com/triton-inference-server/common",
+  "license": "BSD-3-Clause",
+  "dependencies": [
+    {
+      "name": "grpc",
+      "host": true,
+      "features": [
+        "codegen"
+      ]
+    },
+    {
+      "name": "protobuf",
+      "host": true
+    },
+    "rapidjson",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
