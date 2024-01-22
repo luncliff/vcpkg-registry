@@ -92,6 +92,10 @@
       "baseline": "3.1.0",
       "port-version": 0
     },
+    "nvidia-triton-client": {
+      "baseline": "2023-01-23",
+      "port-version": 0
+    },
     "nvidia-triton-common": {
       "baseline": "2023-01-23",
       "port-version": 0
