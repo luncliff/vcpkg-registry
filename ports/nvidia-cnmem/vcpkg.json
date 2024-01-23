@@ -1,0 +1,18 @@
+{
+  "name": "nvidia-cnmem",
+  "version-date": "2018-11-28",
+  "description": "A simple memory manager for CUDA designed to help Deep Learning frameworks manage memory",
+  "homepage": "https://github.com/NVIDIA/cnmem",
+  "license": "BSD-3-Clause",
+  "dependencies": [
+    "cuda",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

@@ -12,6 +12,7 @@
       ],
       "platform": "x64 & windows"
     },
+    "nvidia-tools-extension-sdk",
     {
       "name": "onnxruntime",
       "features": [
