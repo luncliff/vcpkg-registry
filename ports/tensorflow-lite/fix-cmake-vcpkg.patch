@@ -1,5 +1,5 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index bcfb44f7..c17aa5be 100644
+index 8a95d535..72155e4c 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
 @@ -51,14 +51,6 @@ endif()
@@ -79,7 +79,7 @@ index bcfb44f7..c17aa5be 100644
      list(APPEND TFLITE_DELEGATES_METAL_SRCS
        ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate.mm
        ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/buffer.cc
-@@ -469,11 +466,12 @@ if(TFLITE_ENABLE_GPU)
+@@ -469,11 +466,11 @@ if(TFLITE_ENABLE_GPU)
      add_library(metal_delegate STATIC
        ${TFLITE_DELEGATES_METAL_SRCS}
      )
@@ -92,12 +92,11 @@ index bcfb44f7..c17aa5be 100644
 +    target_link_libraries(metal_delegate PUBLIC
 +      absl::status flatbuffers::flatbuffers
 +      "-framework Foundation" "-framework Metal")
-+    # todo: prevent LINK_ONLY in install(EXPORT...)
-+    list(APPEND TFLITE_TARGET_DEPENDENCIES $<TARGET_OBJECTS:metal_delegate>)
++    list(APPEND TFLITE_TARGET_DEPENDENCIES metal_delegate)
      #
      # generate flatbuffers header for inference_context
      #
-@@ -510,12 +507,10 @@ if(TFLITE_ENABLE_GPU)
+@@ -510,12 +507,9 @@ if(TFLITE_ENABLE_GPU)
     foreach(lib_name ${CC_SRCS})
       set_source_files_properties(${METAL_DELEGATE_PATH}${lib_name}.cc  PROPERTIES LANGUAGE OBJCXX)
       add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.cc)
@@ -109,11 +108,10 @@ index bcfb44f7..c17aa5be 100644
       set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE OBJCXX)
 -     target_link_libraries(${lib_name})
 +     target_link_libraries(${lib_name} PUBLIC absl::status flatbuffers::flatbuffers)
-+     list(APPEND TFLITE_TARGET_DEPENDENCIES $<TARGET_OBJECTS:${lib_name}>)
     endforeach()
  
     list(APPEND MM_SRCS
-@@ -524,21 +519,22 @@ if(TFLITE_ENABLE_GPU)
+@@ -524,21 +518,21 @@ if(TFLITE_ENABLE_GPU)
     )
     foreach(lib_name ${MM_SRCS})
       add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.mm)
@@ -124,7 +122,6 @@ index bcfb44f7..c17aa5be 100644
 -     target_link_libraries(${lib_name})
 +     target_include_directories("${lib_name}" PRIVATE ${TENSORFLOW_SOURCE_DIR})
 +     target_link_libraries(${lib_name} PUBLIC absl::status flatbuffers::flatbuffers)
-+     list(APPEND TFLITE_TARGET_DEPENDENCIES $<TARGET_OBJECTS:${lib_name}>)
     endforeach()
  endif()
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
@@ -143,12 +140,12 @@ index bcfb44f7..c17aa5be 100644
    populate_tflite_source_vars("delegates/nnapi"
      TFLITE_DELEGATES_NNAPI_SRCS
      FILTER "(_test_list|_disabled)\\.(cc|h)$"
-@@ -548,9 +544,18 @@ if(_TFLITE_ENABLE_NNAPI)
+@@ -548,9 +542,18 @@ if(_TFLITE_ENABLE_NNAPI)
    )
  
    list(APPEND TFLITE_NNAPI_SRCS
 +    "${TSL_SOURCE_DIR}/tsl/platform/default/logging.cc"
-+    "${TSL_SOURCE_DIR}/tsl/platform/default/mutex.cc"  
++    "${TSL_SOURCE_DIR}/tsl/platform/default/mutex.cc"
      "${TFLITE_SOURCE_DIR}/nnapi/sl/SupportLibrary.cc"
    )
  
@@ -162,7 +159,7 @@ index bcfb44f7..c17aa5be 100644
    if(${TFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION})
      list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DNNAPI_VERBOSE_VALIDATION")
    endif()
-@@ -563,14 +568,14 @@ else()
+@@ -563,14 +566,14 @@ else()
    )
  endif()
  if(TFLITE_ENABLE_XNNPACK)
@@ -180,7 +177,7 @@ index bcfb44f7..c17aa5be 100644
    )
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
  endif()
-@@ -709,7 +714,7 @@ target_include_directories(tensorflow-lite
+@@ -709,7 +712,7 @@ target_include_directories(tensorflow-lite
    PUBLIC $<BUILD_INTERFACE:${TENSORFLOW_SOURCE_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
  )
  target_link_libraries(tensorflow-lite
@@ -189,7 +186,7 @@ index bcfb44f7..c17aa5be 100644
      Eigen3::Eigen
      absl::flags
      absl::hash
-@@ -723,7 +728,7 @@ target_link_libraries(tensorflow-lite
+@@ -723,7 +726,7 @@ target_link_libraries(tensorflow-lite
      gemmlowp::gemmlowp
      ml_dtypes
      ruy::ruy
@@ -198,7 +195,21 @@ index bcfb44f7..c17aa5be 100644
      ${CMAKE_DL_LIBS}
      ${TFLITE_TARGET_DEPENDENCIES}
  )
-@@ -809,6 +814,7 @@ if(TFLITE_ENABLE_INSTALL)
+@@ -778,6 +781,13 @@ if(TFLITE_ENABLE_INSTALL)
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+   )
++  if(NOT BUILD_SHARED_LIBS AND TFLITE_ENABLE_METAL AND APPLE)
++    install(
++      TARGETS metal_delegate
++      EXPORT ${PROJECT_NAME}Targets
++      DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    )
++  endif()
+ 
+   foreach(hdr ${_ALL_TFLITE_HDRS})
+     get_filename_component(dir ${hdr} DIRECTORY)
+@@ -809,6 +819,7 @@ if(TFLITE_ENABLE_INSTALL)
    )
  endif()
  
