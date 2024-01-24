@@ -1,0 +1,83 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 85ebda6..43f6040 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -200,4 +200,3 @@ set_target_properties(
+     OUTPUT_NAME tritontableprinter
+ )
+ 
+-add_subdirectory(test)
+diff --git a/protobuf/CMakeLists.txt b/protobuf/CMakeLists.txt
+index 5a9677b..7e70a93 100644
+--- a/protobuf/CMakeLists.txt
++++ b/protobuf/CMakeLists.txt
+@@ -157,7 +157,6 @@ if(${TRITON_COMMON_ENABLE_GRPC})
+     FILES
+       ${CMAKE_CURRENT_BINARY_DIR}/grpc_service.grpc.pb.h
+     DESTINATION include
+-    OPTIONAL
+   )
+ endif()
+ 
+@@ -210,6 +209,5 @@ if(${TRITON_COMMON_ENABLE_GRPC})
+     FILES
+       ${CMAKE_CURRENT_BINARY_DIR}/health.grpc.pb.h
+     DESTINATION include
+-    OPTIONAL
+   )
+ endif()
+diff --git a/protobuf/CMakeLists.txt b/protobuf/CMakeLists.txt
+index 7e70a93..875896c 100644
+--- a/protobuf/CMakeLists.txt
++++ b/protobuf/CMakeLists.txt
+@@ -53,7 +53,7 @@ if(${TRITON_COMMON_ENABLE_PROTOBUF})
+   endif()
+ 
+   add_library(
+-    proto-library EXCLUDE_FROM_ALL OBJECT
++    proto-library STATIC
+     ${PROTO_SRCS} ${PROTO_HDRS}
+   )
+ 
+@@ -61,6 +61,7 @@ if(${TRITON_COMMON_ENABLE_PROTOBUF})
+     proto-library
+     PUBLIC
+       $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
++      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+   )
+ 
+   target_compile_options(
+@@ -126,7 +127,7 @@ if(${TRITON_COMMON_ENABLE_GRPC})
+   endif()
+ 
+   add_library(
+-    grpc-service-library EXCLUDE_FROM_ALL OBJECT
++    grpc-service-library STATIC
+     ${GRPC_SRCS} ${GRPC_HDRS}
+   )
+ 
+@@ -134,6 +135,7 @@ if(${TRITON_COMMON_ENABLE_GRPC})
+     grpc-service-library
+     PUBLIC
+       $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
++      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+   )
+ 
+   target_compile_options(
+@@ -182,7 +184,7 @@ if(${TRITON_COMMON_ENABLE_GRPC})
+   )
+ 
+   add_library(
+-    grpc-health-library EXCLUDE_FROM_ALL OBJECT
++    grpc-health-library STATIC
+     ${HEALTH_SRCS} ${HEALTH_HDRS}
+   )
+ 
+@@ -190,6 +192,7 @@ if(${TRITON_COMMON_ENABLE_GRPC})
+     grpc-health-library
+     PUBLIC
+       $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
++      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+   )
+ 
+   target_compile_options(
