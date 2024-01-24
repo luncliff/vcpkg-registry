@@ -217,3 +217,18 @@ index 8a95d535..72155e4c 100644
  # The kernel tests.
  if(TFLITE_KERNEL_TEST)
    enable_testing()
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 72155e4c..2ef58374 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -278,7 +278,9 @@ populate_tflite_source_vars("core/tools" TFLITE_CORE_TOOLS_SRCS)
+ populate_tflite_source_vars("c" TFLITE_C_SRCS)
+ populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
+ populate_tflite_source_vars("core/async/interop/c" TFLITE_CORE_ASYNC_INTEROP_C_SRCS)
+-populate_tflite_source_vars("delegates/utils" TFLITE_DELEGATES_UTILS_SRCS)
++if(NOT (CMAKE_SYSTEM_NAME MATCHES "WindowsStore")) # requires "poll.h"
++  populate_tflite_source_vars("delegates/utils" TFLITE_DELEGATES_UTILS_SRCS)
++endif()
+ populate_tflite_source_vars("async" TFLITE_ASYNC_SRCS)
+ if(TFLITE_ENABLE_GPU)
+   find_package(OpenCL REQUIRED) # OpenCL::OpenCL
