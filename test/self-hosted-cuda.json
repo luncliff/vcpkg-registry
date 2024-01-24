@@ -13,6 +13,7 @@
       "platform": "x64 & windows"
     },
     "nvidia-cnmem",
+    "nvidia-tools-extension-sdk",
     {
       "name": "onnxruntime",
       "features": [
