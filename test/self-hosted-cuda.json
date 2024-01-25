@@ -15,6 +15,7 @@
     "nvidia-cnmem",
     "nvidia-tools-extension-sdk",
     "nvidia-triton-common",
+    "nvidia-triton-core",
     {
       "name": "onnxruntime",
       "features": [
