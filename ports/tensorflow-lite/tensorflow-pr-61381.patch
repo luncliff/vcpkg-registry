@@ -29,8 +29,8 @@ index bc97bac8a1b10..d618f61c88061 100644
    ${TFLITE_SRCS}
    ${TFLITE_PROFILER_SRCS}
 +  ${TFLITE_CORE_ASYNC_INTEROP_C_SRCS}
-+  ${TFLITE_DELEGATES_UTILS_SRCS}
-+  ${TFLITE_ASYNC_SRCS}
++  # ${TFLITE_DELEGATES_UTILS_SRCS} # the sources will be added in PR 62705
++  # ${TFLITE_ASYNC_SRCS}
    ${TFLITE_SOURCE_DIR}/internal/signature_def.h
    ${TFLITE_SOURCE_DIR}/kernels/internal/utils/sparsity_format_converter.cc
    ${TFLITE_SOURCE_DIR}/schema/conversion_metadata_generated.h
