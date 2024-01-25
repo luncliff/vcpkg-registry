@@ -96,6 +96,10 @@
       "baseline": "2023-01-23",
       "port-version": 0
     },
+    "nvidia-triton-core": {
+      "baseline": "2023-01-23",
+      "port-version": 0
+    },
     "onnx": {
       "baseline": "1.15.0",
       "port-version": 0
