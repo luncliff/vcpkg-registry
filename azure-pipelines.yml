@@ -74,8 +74,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2403-bin-mac-host"'
+              key: '"v2404-bin-mac-host"'
               restoreKeys: |
+                "v2404-bin-mac-host"
                 "v2403-bin-mac-host"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
@@ -116,14 +117,16 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2403-down-uwp"'
+              key: '"v2404-down-uwp"'
               restoreKeys: |
+                "v2404-down-uwp"
                 "v2403-down-uwp"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2403-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"v2404-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2404-bin-uwp" | "$(vcpkg.default.triplet)"
                 "v2403-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
@@ -172,14 +175,16 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2403-down-ubuntu"'
+              key: '"v2404-down-ubuntu"'
               restoreKeys: |
+                "v2404-down-ubuntu"
                 "v2403-down-ubuntu"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2403-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"v2404-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
+                "v2404-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
                 "v2403-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
@@ -219,14 +224,16 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2403-down-android"'
+              key: '"v2404-down-android"'
               restoreKeys: |
+                "v2404-down-android"
                 "v2403-down-android"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2403-bin-android" | "$(vcpkg.default.triplet)"'
+              key: '"v2404-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2404-bin-android" | "$(vcpkg.default.triplet)"
                 "v2403-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
@@ -276,14 +283,16 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2403-down-apple"'
+              key: '"v2404-down-apple"'
               restoreKeys: |
+                "v2404-down-apple"
                 "v2403-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2403-bin-osx" | "$(vcpkg.default.triplet)"'
+              key: '"v2404-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2404-bin-osx" | "$(vcpkg.default.triplet)"
                 "v2403-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
@@ -321,14 +330,16 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2403-down-apple"'
+              key: '"v2404-down-apple"'
               restoreKeys: |
+                "v2404-down-apple"
                 "v2403-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2403-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"v2404-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2404-bin-ios" | "$(vcpkg.default.triplet)"
                 "v2403-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0

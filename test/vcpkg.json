@@ -37,7 +37,13 @@
       "name": "metal-cpp",
       "platform": "osx | ios"
     },
-    "openssl3",
+    {
+      "name": "openssl3",
+      "features": [
+        "tools"
+      ],
+      "platform": "windows | linux"
+    },
     "rvo2",
     "rvo2-3d",
     {

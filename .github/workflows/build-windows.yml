@@ -36,7 +36,7 @@ jobs:
 
       - uses: actions/cache@v3.3.2
         with:
-          key: "v2352-x64-windows-${{ matrix.vcpkg_tag }}"
+          key: "v2404-x64-windows-${{ matrix.vcpkg_tag }}"
           path: |
             C:/vcpkg/downloads
             C:/vcpkg/archives

@@ -36,7 +36,7 @@ jobs:
 
       - uses: actions/cache@v3.3.2
         with:
-          key: "v2352-x64-linux-${{ matrix.vcpkg_tag }}"
+          key: "v2404-x64-linux-${{ matrix.vcpkg_tag }}"
           path: |
             ${{ runner.temp }}/vcpkg-downloads
             ${{ runner.temp }}/vcpkg-archives
