@@ -1,20 +1,11 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index f8709c6a..161e3421 100644
+index 78657b58..7ee0d64e 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -640,6 +640,7 @@ if(TFLITE_ENABLE_INSTALL)
-     EXPORT ${PROJECT_NAME}Targets
-     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-   )
+@@ -731,6 +731,34 @@ target_compile_definitions(tensorflow-lite
+ )
+ add_library(${PROJECT_NAME}::tensorflowlite ALIAS tensorflow-lite)
  
-   foreach(hdr ${_ALL_TFLITE_HDRS})
-@@ -671,6 +672,37 @@ if(TFLITE_ENABLE_INSTALL)
-     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-   )
- endif()
-+
 +# see tensorflow/lite/c/CMakeLists.txt
 +target_sources(tensorflow-lite PRIVATE
 +  ${TFLITE_SOURCE_DIR}/core/c/c_api.cc
@@ -28,9 +19,7 @@ index f8709c6a..161e3421 100644
 +  c/c_api_types.h
 +  c/common.h
 +)
-+target_include_directories(tensorflow-lite PRIVATE
-+  c
-+)
++target_include_directories(tensorflow-lite PRIVATE c)
 +# set_target_properties(tensorflow-lite PROPERTEIS
 +#   OUTPUT_NAME tensorflowlite_c
 +# )
@@ -45,6 +34,14 @@ index f8709c6a..161e3421 100644
 +  endif()
 +endif()
 +
- return() # drop following targets
- # The kernel tests.
- if(TFLITE_KERNEL_TEST)
+ # The install targets.
+ if(TFLITE_ENABLE_INSTALL)
+   install(
+@@ -738,6 +766,7 @@ if(TFLITE_ENABLE_INSTALL)
+     EXPORT ${PROJECT_NAME}Targets
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+   )
+ 
+   foreach(hdr ${_ALL_TFLITE_HDRS})

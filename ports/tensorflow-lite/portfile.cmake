@@ -2,21 +2,44 @@ if(NOT VCPKG_TARGET_IS_IOS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
 
+# check https://github.com/tensorflow/tensorflow/pull/61381
+# vcpkg_download_distfile(TENSORFLOW_PR_61381_PATCH
+#     URLS "https://patch-diff.githubusercontent.com/raw/tensorflow/tensorflow/pull/61381.diff"
+#     FILENAME tensorflow-pr-61381.patch  SHA512 4308c6f1b2f100689be5829ce770294a85489137b85cfd670df04f503b7a14683d42d798eb24e7679b56d99825257192065fedce9f6d0746a2e776c27e6e89d1
+# )
+
+# check https://github.com/tensorflow/tensorflow/pull/62037
+# vcpkg_download_distfile(TENSORFLOW_PR_62037_PATCH
+#     URLS "https://patch-diff.githubusercontent.com/raw/tensorflow/tensorflow/pull/62037.diff"
+#     FILENAME tensorflow-pr-62037.patch  SHA512 e33edae25e1ff9a95e0465a8cf26b7e592a1beb0466e180014ee7b1d7ab2792b04f58c5fb875ed40eae26d3986ac1e2cfa1dbdff14b5c8eaf99655cb697ed6b5
+# )
+
+# check https://github.com/tensorflow/tensorflow/pull/62705
+# vcpkg_download_distfile(TENSORFLOW_PR_62705_PATCH
+#     URLS "https://patch-diff.githubusercontent.com/raw/tensorflow/tensorflow/pull/62705.diff"
+#     FILENAME tensorflow-pr-62705.patch  SHA512 0
+# )
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.14.1
-    SHA512 c5e9a176027a00b5efb1343bee000330f56229a1a8559db2fb9e2c9388afaf8420d69b6fd6e7b85811272c110245315935232a859e9fd4106b29b226780c447e
+    REF v2.15.0
+    SHA512 51976c7255ffbdb98fe67a28f6ae1c3b9a073e49fe6b44187a53d99654e4af753de53bfa7229cdd1997ac71e8ddecbc15e4759d46c6d24b55eb84c5d31523dfe
     PATCHES
-        fix-cmake-use-vcpkg.patch   # use packages from vcpkg
-        fix-cmake-c-api.patch       # includ C API sources
-        fix-cmake-gpu.patch         # build settings for GPU features
-        fix-cmake-nnapi.patch       # Android NNAPI
-        fix-source-abseil.patch     # replace std:: to absl::
-        fix-source-cpp20.patch      # use C++17 syntax
-        fix-source-gpu.patch        # source changes for GPU features
+        tensorflow-pr-61381.patch
+        tensorflow-pr-62037.patch
+        tensorflow-pr-62705.patch
+        fix-cmake-c-api.patch
+        fix-cmake-vcpkg.patch
+        fix-sources.patch
+        fix-source-abseil.patch
+        fix-source-apple-opencl.patch
 )
-file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/eigen3")
+
+file(REMOVE_RECURSE
+    "${SOURCE_PATH}/third_party/eigen3"
+    # "${SOURCE_PATH}/third_party/xla" # create openxla-xla in future?
+)
 file(COPY "${CURRENT_INSTALLED_DIR}/include/eigen3" DESTINATION "${SOURCE_PATH}/third_party")
 
 find_program(FLATC NAMES flatc
@@ -93,23 +116,8 @@ if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
 else()
     set(DELEGATES_GPU_GL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/gl")
     vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp common.fbs
+        COMMAND ${FLATC} --cpp --scoped-enums common.fbs metadata.fbs workgroups.fbs compiled_model.fbs
         LOGNAME codegen-flatc-cpp-gl-common
-        WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
-    )
-    vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp metadata.fbs
-        LOGNAME codegen-flatc-cpp-gl-metadata
-        WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
-    )
-    vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp workgroups.fbs
-        LOGNAME codegen-flatc-cpp-gl-workgroups
-        WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
-    )
-    vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp --scoped-enums compiled_model.fbs
-        LOGNAME codegen-flatc-cpp-gl-compiled_model
         WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
     )
 endif()
@@ -130,11 +138,22 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gpu     TFLITE_ENABLE_GPU
         gpu     TFLITE_ENABLE_METAL
+        # gpu     TFLITE_ENABLE_GLES3
 )
 
 if(VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_ANDROID)
     list(APPEND FEATURE_OPTIONS -DTFLITE_ENABLE_MMAP=ON)
+else()
+    list(APPEND FEATURE_OPTIONS -DTFLITE_ENABLE_MMAP=OFF)
 endif()
+if(VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_WINDOWS)
+    if("gpu" IN_LIST FEATURES)
+        list(APPEND FEATURE_OPTIONS -DTFLITE_ENABLE_GLES3=ON)
+    endif()
+else()
+    list(APPEND FEATURE_OPTIONS -DTFLITE_ENABLE_GLES3=OFF)
+endif()
+
 if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     list(APPEND GENERATOR_OPTIONS GENERATOR Xcode)
 endif()

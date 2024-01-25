@@ -1,0 +1,219 @@
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 8a95d535..72155e4c 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -51,14 +51,6 @@ endif()
+ set(TF_SOURCE_DIR "${TENSORFLOW_SOURCE_DIR}/tensorflow")
+ set(TSL_SOURCE_DIR "${TENSORFLOW_SOURCE_DIR}/third_party/xla/third_party/tsl")
+ set(TFLITE_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+-set(CMAKE_MODULE_PATH
+-  "${TFLITE_SOURCE_DIR}/tools/cmake/modules"
+-  ${CMAKE_MODULE_PATH}
+-)
+-set(CMAKE_PREFIX_PATH
+-  "${TFLITE_SOURCE_DIR}/tools/cmake/modules"
+-  ${CMAKE_PREFIX_PATH}
+-)
+ include(GNUInstallDirs)
+ include(CMakeDependentOption)
+ option(TFLITE_ENABLE_INSTALL "Enable install rule" OFF)
+@@ -83,7 +75,7 @@ if(TFLITE_KERNEL_TEST AND ${CMAKE_CROSSCOMPILING})
+   endif()
+ endif()
+ 
+-set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD 20)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(_TFLITE_ENABLE_RUY "${TFLITE_ENABLE_RUY}")
+ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
+@@ -289,9 +281,11 @@ populate_tflite_source_vars("core/async/interop/c" TFLITE_CORE_ASYNC_INTEROP_C_S
+ populate_tflite_source_vars("delegates/utils" TFLITE_DELEGATES_UTILS_SRCS)
+ populate_tflite_source_vars("async" TFLITE_ASYNC_SRCS)
+ if(TFLITE_ENABLE_GPU)
+-  find_package(opencl_headers REQUIRED)
+-  find_package(vulkan_headers REQUIRED)
+-  find_package(fp16_headers REQUIRED)
++  find_package(OpenCL REQUIRED) # OpenCL::OpenCL
++  find_package(Vulkan COMPONENTS Headers) # Vulkan::Headers Vulkan::Vulkan
++  if(Vulkan_FOUND)
++    list(APPEND TFLITE_TARGET_DEPENDENCIES Vulkan::Headers)
++  endif()
+   # Android NDK already has OpenGL, EGL headers.
+   if(TFLITE_ENABLE_GLES3)
+     find_path(OPENGL_EGL_INCLUDE_DIRS "EGL/egl.h" REQUIRED)
+@@ -303,9 +297,6 @@ if(TFLITE_ENABLE_GPU)
+     # OpenGL::GLES3 requires CMake 3.27
+     find_package(OpenGL REQUIRED COMPONENTS GLES3)
+     list(APPEND TFLITE_TARGET_DEPENDENCIES OpenGL::GLES3 ${OPENGL_egl_LIBRARY})
+-  else()
+-    find_package(opengl_headers REQUIRED)
+-    find_package(egl_headers REQUIRED)
+   endif()
+   # see delegates/gpu/BUILD and search with //tensorflow:android
+   if(ANDROID)
+@@ -339,7 +330,11 @@ if(TFLITE_ENABLE_GPU)
+       COMMAND ${FLATC} --cpp --scoped-enums -I ${TENSORFLOW_SOURCE_DIR} workgroups.fbs
+       COMMAND ${FLATC} --cpp --scoped-enums -I ${TENSORFLOW_SOURCE_DIR} compiled_model.fbs
+     )
+-    populate_tflite_source_vars("delegates/gpu/gl" TFLITE_DELEGATES_GPU_GL_SRCS FILTER "(_test)\\.(cc|h)$")
++    if(ANDROID)
++      populate_tflite_source_vars("delegates/gpu/gl" TFLITE_DELEGATES_GPU_GL_SRCS FILTER "(_test)\\.(cc|h)$")
++    else()
++      populate_tflite_source_vars("delegates/gpu/gl" TFLITE_DELEGATES_GPU_GL_SRCS FILTER "(android_sync|_test)\\.(cc|h)$")
++    endif()
+     populate_tflite_source_vars("delegates/gpu/gl/compiler" TFLITE_DELEGATES_GPU_GL_COMPILER_SRCS FILTER "(_test)\\.(cc|h)$")
+     populate_tflite_source_vars("delegates/gpu/gl/converters" TFLITE_DELEGATES_GPU_GL_CONVERTERS_SRCS FILTER "(_test)\\.(cc|h)$")
+     populate_tflite_source_vars("delegates/gpu/gl/kernels" TFLITE_DELEGATES_GPU_GL_KERNELS_SRCS FILTER "(_test)\\.(cc|h)$")
+@@ -450,11 +445,13 @@ if(TFLITE_ENABLE_GPU)
+     ${TFLITE_SOURCE_DIR}/delegates/gpu/common
+     ${TFLITE_SOURCE_DIR}/delegates/gpu/common/task
+   )
+-  if(TFLITE_ENABLE_METAL AND "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
++  if(TFLITE_ENABLE_METAL AND APPLE)
+     #
+     # libmetal_delegate library
+     #
+     enable_language(OBJCXX)
++    # Xcode will apply -fobjc-arc
++    set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES")
+     list(APPEND TFLITE_DELEGATES_METAL_SRCS
+       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate.mm
+       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/buffer.cc
+@@ -469,11 +466,11 @@ if(TFLITE_ENABLE_GPU)
+     add_library(metal_delegate STATIC
+       ${TFLITE_DELEGATES_METAL_SRCS}
+     )
+-    target_include_directories(metal_delegate PUBLIC
+-      ${CMAKE_BINARY_DIR}/abseil-cpp
+-      ${CMAKE_BINARY_DIR}/flatbuffers/include
+-      PRIVATE ${TENSORFLOW_SOURCE_DIR}
+-    )
++    target_include_directories(metal_delegate PRIVATE ${TENSORFLOW_SOURCE_DIR})
++    target_link_libraries(metal_delegate PUBLIC
++      absl::status flatbuffers::flatbuffers
++      "-framework Foundation" "-framework Metal")
++    list(APPEND TFLITE_TARGET_DEPENDENCIES metal_delegate)
+     #
+     # generate flatbuffers header for inference_context
+     #
+@@ -510,12 +507,9 @@ if(TFLITE_ENABLE_GPU)
+    foreach(lib_name ${CC_SRCS})
+      set_source_files_properties(${METAL_DELEGATE_PATH}${lib_name}.cc  PROPERTIES LANGUAGE OBJCXX)
+      add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.cc)
+-     target_include_directories("${lib_name}" PUBLIC
+-       ${CMAKE_BINARY_DIR}/abseil-cpp
+-       ${CMAKE_BINARY_DIR}/flatbuffers/include
+-     )
++     target_include_directories("${lib_name}" PRIVATE ${TENSORFLOW_SOURCE_DIR})
+      set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE OBJCXX)
+-     target_link_libraries(${lib_name})
++     target_link_libraries(${lib_name} PUBLIC absl::status flatbuffers::flatbuffers)
+    endforeach()
+ 
+    list(APPEND MM_SRCS
+@@ -524,21 +518,21 @@ if(TFLITE_ENABLE_GPU)
+    )
+    foreach(lib_name ${MM_SRCS})
+      add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.mm)
+-     target_include_directories("${lib_name}" PUBLIC
+-       ${CMAKE_BINARY_DIR}/abseil-cpp
+-       ${CMAKE_BINARY_DIR}/flatbuffers/include
+-     )
+-     target_link_libraries(${lib_name})
++     target_include_directories("${lib_name}" PRIVATE ${TENSORFLOW_SOURCE_DIR})
++     target_link_libraries(${lib_name} PUBLIC absl::status flatbuffers::flatbuffers)
+    endforeach()
+ endif()
+   list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
+-  list(APPEND TFLITE_TARGET_DEPENDENCIES
++  list(APPEND TFLITE_TARGET_PRIVATE_DEFINITION
++    CL_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0
++  )
++  list(APPEND TFLITE_TARGET_DEPENDENCIES OpenCL::OpenCL
+     absl::any
+     absl::flat_hash_map
+   )
+ endif()
+ if(_TFLITE_ENABLE_NNAPI)
+-  find_package(fp16_headers REQUIRED)
++  find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
+   populate_tflite_source_vars("delegates/nnapi"
+     TFLITE_DELEGATES_NNAPI_SRCS
+     FILTER "(_test_list|_disabled)\\.(cc|h)$"
+@@ -548,9 +542,18 @@ if(_TFLITE_ENABLE_NNAPI)
+   )
+ 
+   list(APPEND TFLITE_NNAPI_SRCS
++    "${TSL_SOURCE_DIR}/tsl/platform/default/logging.cc"
++    "${TSL_SOURCE_DIR}/tsl/platform/default/mutex.cc"
+     "${TFLITE_SOURCE_DIR}/nnapi/sl/SupportLibrary.cc"
+   )
+ 
++  # tsl::mutex requires nsync_cpp
++  find_library(NSYNC_LIBRARY NAMES nsync_cpp REQUIRED)
++  list(APPEND TFLITE_TARGET_DEPENDENCIES ${NSYNC_LIBRARY})
++  # disable ml_dtypes/float8.h which requries libeigen3 master branch ...
++  set_source_files_properties(${TFLITE_NNAPI_SRCS} PROPERTIES
++    COMPILE_DEFINITIONS "TENSORFLOW_TSL_PLATFORM_FLOAT8_H_;TENSORFLOW_CORE_PLATFORM_FLOAT8_H_"
++  )
+   if(${TFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION})
+     list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DNNAPI_VERBOSE_VALIDATION")
+   endif()
+@@ -563,14 +566,14 @@ else()
+   )
+ endif()
+ if(TFLITE_ENABLE_XNNPACK)
+-  find_package(fp16_headers REQUIRED)
+-  find_package(XNNPACK REQUIRED)
++  find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
++  find_package(xnnpack CONFIG REQUIRED) # xnnpack
+   populate_tflite_source_vars("delegates/xnnpack"
+     TFLITE_DELEGATES_XNNPACK_SRCS
+     FILTER ".*(_test|_tester)\\.(cc|h)"
+   )
+   list(APPEND TFLITE_TARGET_DEPENDENCIES
+-    XNNPACK
++    xnnpack
+   )
+   list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
+ endif()
+@@ -709,7 +712,7 @@ target_include_directories(tensorflow-lite
+   PUBLIC $<BUILD_INTERFACE:${TENSORFLOW_SOURCE_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+ )
+ target_link_libraries(tensorflow-lite
+-  PUBLIC
++  PRIVATE
+     Eigen3::Eigen
+     absl::flags
+     absl::hash
+@@ -723,7 +726,7 @@ target_link_libraries(tensorflow-lite
+     gemmlowp::gemmlowp
+     ml_dtypes
+     ruy::ruy
+-    pthreadpool
++    ${PTHREADPOOL_LIB}
+     ${CMAKE_DL_LIBS}
+     ${TFLITE_TARGET_DEPENDENCIES}
+ )
+@@ -778,6 +781,13 @@ if(TFLITE_ENABLE_INSTALL)
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+   )
++  if(NOT BUILD_SHARED_LIBS AND TFLITE_ENABLE_METAL AND APPLE)
++    install(
++      TARGETS metal_delegate
++      EXPORT ${PROJECT_NAME}Targets
++      DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    )
++  endif()
+ 
+   foreach(hdr ${_ALL_TFLITE_HDRS})
+     get_filename_component(dir ${hdr} DIRECTORY)
+@@ -809,6 +819,7 @@ if(TFLITE_ENABLE_INSTALL)
+   )
+ endif()
+ 
++return()
+ # The kernel tests.
+ if(TFLITE_KERNEL_TEST)
+   enable_testing()

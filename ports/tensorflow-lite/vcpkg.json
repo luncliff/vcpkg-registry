@@ -1,6 +1,6 @@
 {
   "name": "tensorflow-lite",
-  "version-semver": "2.14.1",
+  "version-semver": "2.15.0",
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://www.tensorflow.org/",
   "license": "Apache-2.0",
@@ -37,6 +37,22 @@
     "xnnpack"
   ],
   "features": {
+    "gles3": {
+      "description": "Enable OpenGL ES 3 delegate",
+      "supports": "windows | android",
+      "dependencies": [
+        "egl-registry",
+        "opengl-registry",
+        {
+          "name": "tensorflow-lite",
+          "default-features": false,
+          "features": [
+            "google-angle"
+          ],
+          "platform": "windows"
+        }
+      ]
+    },
     "google-angle": {
       "description": "Link EGL, OpenGL ES code with Google/ANGLE",
       "dependencies": [
@@ -46,19 +62,37 @@
     "gpu": {
       "description": "Enable GPU delegates",
       "dependencies": [
-        {
-          "name": "coreml-tools",
-          "platform": "osx | ios"
-        },
-        "egl-registry",
         "fp16",
         "opencl",
         "opengl-registry",
         {
-          "name": "protobuf",
+          "name": "tensorflow-lite",
+          "default-features": false,
+          "features": [
+            "metal"
+          ],
           "platform": "osx | ios"
         },
+        {
+          "name": "tensorflow-lite",
+          "default-features": false,
+          "features": [
+            "gles3"
+          ],
+          "platform": "windows | android"
+        },
         "vulkan-headers"
+      ]
+    },
+    "metal": {
+      "description": "Enable Metal delegate",
+      "supports": "osx | ios",
+      "dependencies": [
+        {
+          "name": "coreml-tools",
+          "platform": "osx | ios"
+        },
+        "protobuf"
       ]
     }
   }
