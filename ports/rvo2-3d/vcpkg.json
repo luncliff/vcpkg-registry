@@ -1,6 +1,7 @@
 {
   "name": "rvo2-3d",
   "version-date": "2023-11-06",
+  "port-version": 1,
   "description": "Optimal Reciprocal Collision Avoidance (C++)",
   "homepage": "https://gamma.cs.unc.edu/RVO2/",
   "license": "Apache-2.0",
