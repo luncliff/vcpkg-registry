@@ -10,11 +10,11 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO godotengine/godot
-    REF 4.1.2-stable
-    SHA512 691a225fbcd5fc242a20b4e49394728ab7db58669e1badfb81d36bad2d4bee3f85d4e99805332d6e97aca48c3f592b1c36bbfc18a3a5a40fb5809f8d8b0f42c7
+    REF "${VERSION}-stable"
+    SHA512 23d7a1c1f1d26266313b4abdb113854efd2567c5c210445c9b544e10289906494eb33a6169c0d48f71436bad5a7a55cc4ed98b8842b39d41969274ea3ab67cd0
     HEAD_REF master
-    # PATCHES
-    #     fix-scons.patch
+    PATCHES
+        fix-scons.patch
 )
 
 # todo: move thirdparty to ports
