@@ -1,0 +1,28 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 727a2d2..1e918c7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -62,7 +62,7 @@ endif()
+ include(GNUInstallDirs)
+ 
+ set(RVO_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+-set(RVO_INCLUDE_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
++set(RVO_INCLUDE_DIR ${CMAKE_INSTALL_INCLUDEDIR}/RVO2D)
+ set(RVO_LIBRARY_DIR ${CMAKE_INSTALL_LIBDIR})
+ set(RVO_LIBRARY RVO)
+ 
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 871941b..99521ad 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -35,7 +35,10 @@
+ #
+ 
+ set(RVO_HEADERS
++  Agent.h
++  KdTree.h
+   Line.h
++  Obstacle.h
+   RVO.h
+   RVOSimulator.h
+   Vector2.h)

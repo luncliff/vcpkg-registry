@@ -1,0 +1,244 @@
+diff --git a/src/Agent.cc b/src/Agent.cc
+index 92c41b4..a725df0 100644
+--- a/src/Agent.cc
++++ b/src/Agent.cc
+@@ -45,7 +45,7 @@
+ #include "KdTree.h"
+ #include "Obstacle.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ namespace {
+ /**
+  * @relates        Agent
+@@ -676,4 +676,4 @@ void Agent::update(float timeStep) {
+   velocity_ = newVelocity_;
+   position_ += velocity_ * timeStep;
+ }
+-} /* namespace RVO */
++} /* namespace RVO2D */
+diff --git a/src/Agent.h b/src/Agent.h
+index 987afdf..b12f0b1 100644
+--- a/src/Agent.h
++++ b/src/Agent.h
+@@ -46,7 +46,7 @@
+ #include "Line.h"
+ #include "Vector2.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ class KdTree;
+ class Obstacle;
+ 
+@@ -126,6 +126,6 @@ class Agent {
+   friend class KdTree;
+   friend class RVOSimulator;
+ };
+-} /* namespace RVO */
++} /* namespace RVO2D */
+ 
+ #endif /* RVO_AGENT_H_ */
+diff --git a/src/KdTree.cc b/src/KdTree.cc
+index d1d4f01..7bf4e01 100644
+--- a/src/KdTree.cc
++++ b/src/KdTree.cc
+@@ -46,7 +46,7 @@
+ #include "RVOSimulator.h"
+ #include "Vector2.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ namespace {
+ /**
+  * @relates KdTree
+@@ -520,4 +520,4 @@ bool KdTree::queryVisibilityRecursive(const Vector2 &vector1,
+ 
+   return true;
+ }
+-} /* namespace RVO */
++} /* namespace RVO2D */
+diff --git a/src/KdTree.h b/src/KdTree.h
+index e50b289..b4205d2 100644
+--- a/src/KdTree.h
++++ b/src/KdTree.h
+@@ -42,7 +42,7 @@
+ #include <cstddef>
+ #include <vector>
+ 
+-namespace RVO {
++namespace RVO2D {
+ class Agent;
+ class Obstacle;
+ class RVOSimulator;
+@@ -184,6 +184,6 @@ class KdTree {
+   friend class Agent;
+   friend class RVOSimulator;
+ };
+-} /* namespace RVO */
++} /* namespace RVO2D */
+ 
+ #endif /* RVO_KD_TREE_H_ */
+diff --git a/src/Line.cc b/src/Line.cc
+index 4ec209a..3baf841 100644
+--- a/src/Line.cc
++++ b/src/Line.cc
+@@ -38,6 +38,6 @@
+ 
+ #include "Line.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ Line::Line() {}
+-} /* namespace RVO */
++} /* namespace RVO2D */
+diff --git a/src/Line.h b/src/Line.h
+index a8d50b7..20f72c3 100644
+--- a/src/Line.h
++++ b/src/Line.h
+@@ -42,7 +42,7 @@
+ #include "Export.h"
+ #include "Vector2.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ /**
+  * @brief Defines a directed line.
+  */
+@@ -63,6 +63,6 @@ class RVO_EXPORT Line {
+    */
+   Vector2 point;
+ };
+-} /* namespace RVO */
++} /* namespace RVO2D */
+ 
+ #endif /* RVO_LINE_H_ */
+diff --git a/src/Obstacle.cc b/src/Obstacle.cc
+index f7f54d4..7a2c75e 100644
+--- a/src/Obstacle.cc
++++ b/src/Obstacle.cc
+@@ -38,9 +38,9 @@
+ 
+ #include "Obstacle.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ Obstacle::Obstacle()
+     : next_(NULL), previous_(NULL), id_(0U), isConvex_(false) {}
+ 
+ Obstacle::~Obstacle() {}
+-} /* namespace RVO */
++} /* namespace RVO2D */
+diff --git a/src/Obstacle.h b/src/Obstacle.h
+index e2008a7..036f4fd 100644
+--- a/src/Obstacle.h
++++ b/src/Obstacle.h
+@@ -43,7 +43,7 @@
+ 
+ #include "Vector2.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ /**
+  * @brief Defines static obstacles in the simulation.
+  */
+@@ -76,6 +76,6 @@ class Obstacle {
+   friend class KdTree;
+   friend class RVOSimulator;
+ };
+-} /* namespace RVO */
++} /* namespace RVO2D */
+ 
+ #endif /* RVO_OBSTACLE_H_ */
+diff --git a/src/RVO.h b/src/RVO.h
+index 76f96de..8699f88 100644
+--- a/src/RVO.h
++++ b/src/RVO.h
+@@ -40,7 +40,7 @@
+  */
+ 
+ /**
+- * @namespace RVO
++ * @namespace RVO2D
+  * @brief     Contains all classes, functions, and constants used in the
+  *            library.
+  */
+diff --git a/src/RVOSimulator.cc b/src/RVOSimulator.cc
+index 1ecf171..74f7d70 100644
+--- a/src/RVOSimulator.cc
++++ b/src/RVOSimulator.cc
+@@ -51,7 +51,7 @@
+ #include <omp.h>
+ #endif /* _OPENMP */
+ 
+-namespace RVO {
++namespace RVO2D {
+ const std::size_t RVO_ERROR = std::numeric_limits<std::size_t>::max();
+ 
+ RVOSimulator::RVOSimulator()
+@@ -368,4 +368,4 @@ void RVOSimulator::setAgentVelocity(std::size_t agentNo,
+                                     const Vector2 &velocity) {
+   agents_[agentNo]->velocity_ = velocity;
+ }
+-} /* namespace RVO */
++} /* namespace RVO2D */
+diff --git a/src/RVOSimulator.h b/src/RVOSimulator.h
+index 46e3414..07c6ede 100644
+--- a/src/RVOSimulator.h
++++ b/src/RVOSimulator.h
+@@ -44,7 +44,7 @@
+ 
+ #include "Export.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ class Agent;
+ class KdTree;
+ class Line;
+@@ -661,6 +661,6 @@ class RVO_EXPORT RVOSimulator {
+ 
+   friend class KdTree;
+ };
+-} /* namespace RVO */
++} /* namespace RVO2D */
+ 
+ #endif /* RVO_RVO_SIMULATOR_H_ */
+diff --git a/src/Vector2.cc b/src/Vector2.cc
+index 8056eeb..45c5796 100644
+--- a/src/Vector2.cc
++++ b/src/Vector2.cc
+@@ -41,7 +41,7 @@
+ #include <cmath>
+ #include <ostream>
+ 
+-namespace RVO {
++namespace RVO2D {
+ const float RVO_EPSILON = 0.00001F;
+ 
+ Vector2::Vector2() : x_(0.0F), y_(0.0F) {}
+@@ -133,4 +133,4 @@ float leftOf(const Vector2 &vector1, const Vector2 &vector2,
+ }
+ 
+ Vector2 normalize(const Vector2 &vector) { return vector / abs(vector); }
+-} /* namespace RVO */
++} /* namespace RVO2D */
+diff --git a/src/Vector2.h b/src/Vector2.h
+index ae55801..c4dd4cf 100644
+--- a/src/Vector2.h
++++ b/src/Vector2.h
+@@ -43,7 +43,7 @@
+ 
+ #include "Export.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ /**
+  * @brief A sufficiently small positive number.
+  */
+@@ -270,6 +270,6 @@ RVO_EXPORT float leftOf(const Vector2 &vector1, const Vector2 &vector2,
+  * @return    The normalization of the two-dimensional vector.
+  */
+ RVO_EXPORT Vector2 normalize(const Vector2 &vector);
+-} /* namespace RVO */
++} /* namespace RVO2D */
+ 
+ #endif /* RVO_VECTOR2_H_ */

@@ -1,0 +1,13 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 262b21c..8c75fb1 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -35,6 +35,8 @@
+ #
+ 
+ set(RVO3D_HEADERS
++  Agent.h
++  KdTree.h
+   Plane.h
+   RVO.h
+   RVOSimulator.h
