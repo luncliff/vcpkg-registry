@@ -54,29 +54,10 @@
       "name": "metal-cpp",
       "platform": "osx | ios"
     },
-    "miniaudio",
-    {
-      "name": "onnx",
-      "features": [
-        "disable-static-registration",
-        "test"
-      ]
-    },
-    {
-      "name": "opencl",
-      "platform": "windows | linux"
-    },
-    {
-      "name": "opencl-on-dx12",
-      "platform": "windows"
-    },
     "openssl3",
     {
-      "name": "openssl3",
-      "features": [
-        "tools"
-      ],
-      "platform": "windows"
+      "name": "libiconv",
+      "platform": "windows | linux"
     },
     {
       "name": "tensorflow-lite",
