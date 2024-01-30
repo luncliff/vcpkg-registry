@@ -1,0 +1,13 @@
+{
+  "name": "libiconv",
+  "version": "1.17",
+  "description": "GNU Unicode text conversion",
+  "homepage": "https://www.gnu.org/software/libiconv/",
+  "license": "LGPL-2.1-only",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}
