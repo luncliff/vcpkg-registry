@@ -11,6 +11,7 @@
     "embree3",
     "enet",
     "etcpak",
+    "ktx",
     {
       "name": "freetype",
       "features": [
@@ -48,8 +49,6 @@
     "openxr-loader",
     "pcg",
     "pcre2",
-    "rvo2",
-    "rvo2-3d",
     "tinyexr",
     {
       "name": "vcpkg-cmake",
@@ -102,6 +101,13 @@
             "vulkan"
           ]
         },
+        {
+          "name": "ktx",
+          "features": [
+            "vulkan"
+          ]
+        },
+        "volk",
         "vulkan"
       ]
     }

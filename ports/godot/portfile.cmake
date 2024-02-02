@@ -18,15 +18,63 @@ vcpkg_from_github(
 )
 
 # todo: move thirdparty to ports
-# file(GLOB_RECURSE THIRD_SOURCES
-#     "${SOURCE_PATH}/thirdparty/*.h"
-#     "${SOURCE_PATH}/thirdparty/*.c"
-#     "${SOURCE_PATH}/thirdparty/*.hpp"
-#     "${SOURCE_PATH}/thirdparty/*.cpp"
-# )
-# if(THIRD_SOURCES)
-#     file(REMOVE ${THIRD_SOURCES})
-# endif()
+if(FALSE)
+file(REMOVE_RECURSE
+    # ${SOURCE_PATH}/thirdparty/amd-fsr
+    # ${SOURCE_PATH}/thirdparty/amd-fsr2
+    ${SOURCE_PATH}/thirdparty/angle
+    # ${SOURCE_PATH}/thirdparty/astcenc
+    ${SOURCE_PATH}/thirdparty/basis_universal
+    ${SOURCE_PATH}/thirdparty/brotli
+    ${SOURCE_PATH}/thirdparty/certs
+    ${SOURCE_PATH}/thirdparty/clipper2
+    # ${SOURCE_PATH}/thirdparty/cvtt
+    ${SOURCE_PATH}/thirdparty/doctest
+    ${SOURCE_PATH}/thirdparty/embree
+    ${SOURCE_PATH}/thirdparty/enet
+    ${SOURCE_PATH}/thirdparty/etcpak
+    ${SOURCE_PATH}/thirdparty/fonts
+    ${SOURCE_PATH}/thirdparty/freetype
+    ${SOURCE_PATH}/thirdparty/glad
+    ${SOURCE_PATH}/thirdparty/glslang
+    ${SOURCE_PATH}/thirdparty/graphite
+    ${SOURCE_PATH}/thirdparty/harfbuzz
+    ${SOURCE_PATH}/thirdparty/icu4c
+    # ${SOURCE_PATH}/thirdparty/jpeg-compressor
+    ${SOURCE_PATH}/thirdparty/libktx
+    ${SOURCE_PATH}/thirdparty/libogg
+    ${SOURCE_PATH}/thirdparty/libpng
+    ${SOURCE_PATH}/thirdparty/libtheora
+    ${SOURCE_PATH}/thirdparty/libvorbis
+    ${SOURCE_PATH}/thirdparty/libwebp
+    # ${SOURCE_PATH}/thirdparty/linuxbsd_headers
+    ${SOURCE_PATH}/thirdparty/mbedtls
+    ${SOURCE_PATH}/thirdparty/meshoptimizer
+    ${SOURCE_PATH}/thirdparty/mingw-std-threads
+    ${SOURCE_PATH}/thirdparty/minimp3
+    ${SOURCE_PATH}/thirdparty/miniupnpc
+    ${SOURCE_PATH}/thirdparty/minizip
+    # ${SOURCE_PATH}/thirdparty/misc
+    ${SOURCE_PATH}/thirdparty/msdfgen
+    ${SOURCE_PATH}/thirdparty/noise
+    # ${SOURCE_PATH}/thirdparty/nvapi
+    ${SOURCE_PATH}/thirdparty/openxr
+    ${SOURCE_PATH}/thirdparty/pcre2
+    ${SOURCE_PATH}/thirdparty/recastnavigation
+    ${SOURCE_PATH}/thirdparty/rvo2
+    ${SOURCE_PATH}/thirdparty/spirv-reflect
+    ${SOURCE_PATH}/thirdparty/squish
+    ${SOURCE_PATH}/thirdparty/thorvg
+    ${SOURCE_PATH}/thirdparty/tinyexr
+    # ${SOURCE_PATH}/thirdparty/vhacd
+    ${SOURCE_PATH}/thirdparty/volk
+    ${SOURCE_PATH}/thirdparty/vulkan
+    # ${SOURCE_PATH}/thirdparty/wslay
+    ${SOURCE_PATH}/thirdparty/xatlas
+    ${SOURCE_PATH}/thirdparty/zlib
+    ${SOURCE_PATH}/thirdparty/zstd
+)
+endif()
 
 # 1. Prepare required tools: https://scons.org/
 vcpkg_find_acquire_program(PKGCONFIG)
