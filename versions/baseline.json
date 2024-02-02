@@ -113,7 +113,7 @@
       "port-version": 1
     },
     "opencl-headers": {
-      "baseline": "2023-02-06",
+      "baseline": "2023-12-13",
       "port-version": 0
     },
     "openssl": {
