@@ -49,3 +49,32 @@ index bee83ff07c..04b4cf42b7 100644
      endif()
    else()
      target_sources(onnxruntime_mlas PRIVATE
+diff --git a/cmake/onnxruntime_mlas.cmake b/cmake/onnxruntime_mlas.cmake
+index 5c294b5..a466c77 100644
+--- a/cmake/onnxruntime_mlas.cmake
++++ b/cmake/onnxruntime_mlas.cmake
+@@ -169,6 +169,9 @@ function(setup_mlas_source_for_windows)
+     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+       set_source_files_properties(${mlas_platform_srcs_avx512} PROPERTIES COMPILE_FLAGS "/arch:AVX512")
+       set_source_files_properties(${mlas_platform_srcs_amx} PROPERTIES COMPILE_FLAGS "/arch:AVX512 -mamx-tile -mamx-int8")
++      # https://clang.llvm.org/docs/UsersManual.html#cpu-architectures-features-and-limitations
++      set_source_files_properties(${MLAS_SRC_DIR}/qgemm_kernel_sse.cpp PROPERTIES COMPILE_FLAGS "-march=x86-64")
++      set_source_files_properties(${MLAS_SRC_DIR}/qgemm_kernel_sse41.cpp PROPERTIES COMPILE_FLAGS "-march=x86-64-v2")
+     endif()
+ 
+     target_sources(onnxruntime_mlas PRIVATE
+diff --git a/onnxruntime/core/mlas/lib/qgemm_kernel_sse41.cpp b/onnxruntime/core/mlas/lib/qgemm_kernel_sse41.cpp
+index 68931c5..6c095bd 100644
+--- a/onnxruntime/core/mlas/lib/qgemm_kernel_sse41.cpp
++++ b/onnxruntime/core/mlas/lib/qgemm_kernel_sse41.cpp
+@@ -16,6 +16,10 @@ Abstract:
+ 
+ #include "mlasi.h"
+ #include "qgemm.h"
++#if defined(__clang__)
++#include <smmintrin.h>
++#include <tmmintrin.h>
++#endif
+ 
+ // N.B. MSVC does not require turning on SSE 4.1 intrinsics and the current use
+ // for this code is Windows only, so restrict this kernel to that environment.
