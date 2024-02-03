@@ -17,6 +17,10 @@
       "name": "coreml-tools",
       "platform": "osx | ios"
     },
+    {
+      "name": "d3d12-transition-layer",
+      "platform": "windows"
+    },
     "etcpak",
     {
       "name": "libdispatch",
