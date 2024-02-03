@@ -15,6 +15,8 @@ vcpkg_from_github(
         fix-cmake.patch
         fix-source-flatbuffers.patch
         fix-sources.patch
+        fix-clang-cl-simd-compile.patch
+        fix-llvm-rc-unicode.patch
 )
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_vcpkg_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
 
