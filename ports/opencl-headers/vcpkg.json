@@ -1,0 +1,6 @@
+{
+  "name": "opencl-headers",
+  "version-date": "2023-12-13",
+  "description": "Khronos OpenCL-Headers",
+  "homepage": "https://github.com/KhronosGroup/OpenCL-Headers"
+}
