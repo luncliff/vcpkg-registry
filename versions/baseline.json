@@ -20,6 +20,10 @@
       "baseline": "2023-11-29",
       "port-version": 0
     },
+    "d3d12-transition-layer": {
+      "baseline": "2023-12-13",
+      "port-version": 0
+    },
     "directml": {
       "baseline": "1.13.0",
       "port-version": 0
