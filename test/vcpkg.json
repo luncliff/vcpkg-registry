@@ -21,6 +21,10 @@
       "name": "d3d12-transition-layer",
       "platform": "windows"
     },
+    {
+      "name": "opencl-on-dx12",
+      "platform": "windows"
+    },
     "etcpak",
     {
       "name": "libdispatch",
