@@ -37,7 +37,6 @@
       "name": "metal-cpp",
       "platform": "osx | ios"
     },
-    "opencl-headers",
     "openssl3",
     {
       "name": "openssl3",
