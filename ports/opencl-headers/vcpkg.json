@@ -3,6 +3,7 @@
   "version-date": "2023-12-14",
   "description": "Khronos OpenCL-Headers",
   "homepage": "https://github.com/KhronosGroup/OpenCL-Headers",
+  "supports": "!uwp",
   "dependencies": [
     {
       "name": "vcpkg-cmake",
