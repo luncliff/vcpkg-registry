@@ -1,6 +1,16 @@
 {
   "name": "opencl-headers",
-  "version-date": "2023-12-13",
+  "version-date": "2023-12-14",
   "description": "Khronos OpenCL-Headers",
-  "homepage": "https://github.com/KhronosGroup/OpenCL-Headers"
+  "homepage": "https://github.com/KhronosGroup/OpenCL-Headers",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
 }
