@@ -1,6 +1,10 @@
 .vscode
 vcpkg-configuration.json
 
+buildtrees
+installed
+packages
+
 # Created by https://www.toptal.com/developers/gitignore/api/cmake,c++,visualstudiocode,powershell
 # Edit at https://www.toptal.com/developers/gitignore?templates=cmake,c++,visualstudiocode,powershell
 

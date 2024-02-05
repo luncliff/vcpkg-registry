@@ -1,5 +1,6 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 
+# note: The URL is using 'master' branch. This is intended, so the port can detect some changes...
 vcpkg_download_distfile(MS_TELEMETRY_H_PATH
     URLS "https://raw.githubusercontent.com/microsoft/winget-cli/master/src/AppInstallerSharedLib/Public/Telemetry/MicrosoftTelemetry.h"
     FILENAME MicrosoftTelemetry.h
@@ -31,5 +32,5 @@ file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
 )
-
+file(INSTALL "${SOURCE_PATH}/README.md" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
