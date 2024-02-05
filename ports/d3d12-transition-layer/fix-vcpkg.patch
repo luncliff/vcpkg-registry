@@ -1,0 +1,71 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 03a0c2a..c428d45 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -6,13 +6,8 @@ project(d3d12translationlayer)
+ set(CMAKE_CXX_STANDARD 17)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 
+-include(FetchContent)
+-FetchContent_Declare(
+-    DirectX-Headers
+-    GIT_REPOSITORY https://github.com/Microsoft/DirectX-Headers.git
+-    GIT_TAG v1.610.0
+-)
+-FetchContent_MakeAvailable(DirectX-Headers)
++include(GNUInstallDirs)
++find_package(directx-headers CONFIG REQUIRED)
+ 
+ option(USE_PIX "Enable the use of PIX markers" ON)
+ 
+diff --git a/include/D3D12TranslationLayerIncludes.h b/include/D3D12TranslationLayerIncludes.h
+index 48d9fc4..780c531 100644
+--- a/include/D3D12TranslationLayerIncludes.h
++++ b/include/D3D12TranslationLayerIncludes.h
+@@ -17,14 +17,14 @@
+ #include "Util.hpp"
+ #include "DeviceChild.hpp"
+ 
+-#include <BlockAllocators.h>
++#include "BlockAllocators.h"
+ #include "Allocator.h"
+ #include "XPlatHelpers.h"
+ 
+-#include <ThreadPool.hpp>
+-#include <segmented_stack.h>
+-#include <formatdesc.hpp>
+-#include <dxgiColorSpaceHelper.h>
++#include "ThreadPool.hpp"
++#include "segmented_stack.h"
++#include "FormatDesc.hpp"
++#include "DXGIColorSpaceHelper.h"
+ 
+ #include "MaxFrameLatencyHelper.hpp"
+ #include "Shader.hpp"
+@@ -58,7 +58,7 @@
+ #include "Shader.inl"
+ #include "ImmediateContext.inl"
+ #include "CommandListManager.inl"
+-#include <BlockAllocators.inl>
++#include "BlockAllocators.inl"
+ 
+ #ifndef MICROSOFT_TELEMETRY_ASSERT
+ #define MICROSOFT_TELEMETRY_ASSERT(x) assert(x)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index e9d9537..8180fe1 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -158,7 +158,12 @@ if (HAS_WDK)
+ 		../include/ShaderBinary.h
+         ../include/SharedResourceHelpers.hpp)
+ 	target_link_libraries(d3d12translationlayer_wdk d3d12translationlayer)
+-
++	install(TARGETS d3d12translationlayer_wdk LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ else()
+     message(WARNING "Only adding SDK-dependent projects.")
+ endif()
++
++install(TARGETS d3d12translationlayer LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
++install(FILES ${INC} ${INL} ../include/XPlatHelpers.h
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/D3D12TranslationLayer
++)
