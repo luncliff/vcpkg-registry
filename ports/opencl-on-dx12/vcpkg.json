@@ -1,0 +1,21 @@
+{
+  "name": "opencl-on-dx12",
+  "version-date": "2023-12-08",
+  "description": "The OpenCL-on-D3D12 mapping layer",
+  "homepage": "https://github.com/microsoft/OpenCLOn12",
+  "license": "MIT",
+  "supports": "windows",
+  "dependencies": [
+    "d3d12-transition-layer",
+    {
+      "name": "directx-headers",
+      "version>=": "1.610.0"
+    },
+    "opencl-headers",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    "wil"
+  ]
+}
