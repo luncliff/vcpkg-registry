@@ -1,0 +1,4 @@
+openssl3
+libdispatch
+google-jni-bind
+tensorflow-lite[gpu]

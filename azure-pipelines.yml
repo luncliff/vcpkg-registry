@@ -4,7 +4,6 @@
 # https://learn.microsoft.com/en-us/azure/devops/pipelines/scripts/cli/pipeline-variable-group-secret-nonsecret-variables
 # https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/?view=azure-pipelines
 # https://github.com/actions/runner-images/tree/main/images
-# https://github.com/lukka/CppBuildTasks
 #
 
 trigger:
@@ -28,7 +27,6 @@ variables:
   - name: vcpkg.commit
     value: "c8696863d371ab7f46e213d8f5ca923c4aef2a00" # 2023.12.12
 
-  # todo: $(Build.BinariesDirectory)/vcpkg/downloads
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
   - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
@@ -56,7 +54,6 @@ stages:
           - task: PowerShell@2
             displayName: "Triplet: ios-simulator"
             inputs:
-              targetType: 'inline'
               script: |
                 New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
                 vcpkg --version
@@ -65,54 +62,18 @@ stages:
                   --triplet arm64-ios-simulator --debug
                 vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build `
                   --triplet x64-ios-simulator
+              targetType: 'inline'
 
-  - stage: "HostPorts"
-    dependsOn: "Triplets"
-    jobs:
-      - job: "osx_host_tools"
-        displayName: "MacTools"
-        pool:
-          vmImage: macOS-13
-        timeoutInMinutes: "120"
-        steps:
-          - powershell: brew install $(Get-Content test/packages-homebrew.txt)
-            displayName: "Install HomeBrew packages"
-          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
-          - task: Cache@2
-            inputs:
-              key: '"v2406-bin-mac-host"'
-              restoreKeys: |
-                "v2406-bin-mac-host"
-                "v2404-bin-mac-host"
-              path: $(vcpkg.default.binary.cache)
-          - task: run-vcpkg@0
-            displayName: "coreml-tools"
-            inputs:
-              vcpkgArguments: "coreml-tools"
-              vcpkgGitCommitId: $(vcpkg.commit)
-          - task: CopyFiles@2
-            displayName: "Copy logs in buildtrees"
-            inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
-              Contents: |
-                **/?(*.log|*.txt|*.cmake)
-              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
-              OverWrite: true
-            condition: always()
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish logs"
-            inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
-              ArtifactName: "$(Agent.JobName)"
-            condition: always()
-
-  - stage: "Ports"
+  - stage: "Windows"
     dependsOn: "Triplets"
     jobs:
       - job: "port_windows_arm"
         displayName: "Windows(ARM)"
         pool:
           vmImage: windows-2022
+        variables:
+          - name: vcpkg.root
+            value: "C:/vcpkg" # VCPKG_INSTALLATION_ROOT
         strategy:
           matrix:
             arm64_windows:
@@ -123,48 +84,52 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2406-down-uwp"'
-              restoreKeys: |
-                "v2406-down-uwp"
-                "v2404-down-uwp"
-              path: $(Build.BinariesDirectory)/vcpkg/downloads
-          - task: Cache@2
-            inputs:
               key: '"v2406-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
                 "v2406-bin-uwp" | "$(vcpkg.default.triplet)"
                 "v2404-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
-          - task: run-vcpkg@0
+          - task: PowerShell@2
+            displayName: "Test: arm64-windows"
             inputs:
-              vcpkgArguments: "libdispatch"
-              vcpkgGitCommitId: $(vcpkg.commit)
+              script: |
+                $Ports=$(Get-Content "test/azure-port-arm64-windows.txt")
+                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+              targetType: 'inline'
             condition: ne(variables['vcpkg.default.triplet'], 'arm64-uwp')
-          - task: run-vcpkg@0
+          - task: PowerShell@2
+            displayName: "Test: arm64-uwp"
             inputs:
-              vcpkgArguments: "tensorflow-lite"
-              vcpkgGitCommitId: $(vcpkg.commit)
+              script: |
+                $Ports=$(Get-Content "test/azure-port-arm64-uwp.txt")
+                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+              targetType: 'inline'
+            condition: eq(variables['vcpkg.default.triplet'], 'arm64-uwp')
           - task: CopyFiles@2
-            displayName: "Copy logs in buildtrees"
             inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              SourceFolder: "$(vcpkg.root)/buildtrees/"
               Contents: |
                 **/?(*.log|*.txt|*.cmake)
               TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
               OverWrite: true
             condition: always()
           - task: PublishBuildArtifacts@1
-            displayName: "Publish logs"
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
               ArtifactName: "$(Agent.JobName)"
             condition: always()
         timeoutInMinutes: "500"
 
+  - stage: "Ubuntu"
+    dependsOn: "Triplets"
+    jobs:
       - job: "port_linux"
         displayName: "Linux"
         pool:
           vmImage: ubuntu-22.04
+        variables:
+          - name: vcpkg.root
+            value: "/usr/local/share/vcpkg" # VCPKG_INSTALLATION_ROOT
         strategy:
           matrix:
             x64_clang15:
@@ -181,33 +146,27 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2406-down-ubuntu"'
-              restoreKeys: |
-                "v2406-down-ubuntu"
-                "v2404-down-ubuntu"
-              path: $(Build.BinariesDirectory)/vcpkg/downloads
-          - task: Cache@2
-            inputs:
               key: '"v2406-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
                 "v2406-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
                 "v2404-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
-          - task: run-vcpkg@0
+          - task: PowerShell@2
+            displayName: "Test: $(cxx)"
             inputs:
-              vcpkgArguments: "tensorflow-lite[gpu] onnxruntime[xnnpack,training]"
-              vcpkgGitCommitId: $(vcpkg.commit)
+              script: |
+                $Ports=$(Get-Content "test/azure-port-linux.txt")
+                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+              targetType: 'inline'
           - task: CopyFiles@2
-            displayName: "Copy logs in buildtrees"
             inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              SourceFolder: "$(vcpkg.root)/buildtrees/"
               Contents: |
                 **/?(*.log|*.txt|*.cmake)
               TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
               OverWrite: true
             condition: always()
           - task: PublishBuildArtifacts@1
-            displayName: "Publish logs"
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
               ArtifactName: "$(Agent.JobName)"
@@ -218,6 +177,9 @@ stages:
         displayName: "Android"
         pool:
           vmImage: ubuntu-22.04
+        variables:
+          - name: vcpkg.root
+            value: "/usr/local/share/vcpkg" # VCPKG_INSTALLATION_ROOT
         strategy:
           matrix: # https://github.com/android/ndk/releases
             arm64_ndk26:
@@ -230,45 +192,82 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2406-down-android"'
-              restoreKeys: |
-                "v2406-down-android"
-                "v2404-down-android"
-              path: $(Build.BinariesDirectory)/vcpkg/downloads
-          - task: Cache@2
-            inputs:
               key: '"v2406-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
                 "v2406-bin-android" | "$(vcpkg.default.triplet)"
                 "v2404-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
-          - task: run-vcpkg@0
+          - task: PowerShell@2
+            displayName: "Test: $(vcpkg.default.triplet)"
             inputs:
-              vcpkgArguments: "openssl3 libdispatch google-jni-bind tensorflow-lite[gpu]"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_OVERLAY_TRIPLETS: $(Build.SourcesDirectory)/triplets
+              script: |
+                $Ports=$(Get-Content "test/azure-port-android.txt")
+                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+              targetType: 'inline'
           - task: CopyFiles@2
-            displayName: "Copy logs in buildtrees"
             inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              SourceFolder: "$(vcpkg.root)/buildtrees/"
               Contents: |
                 **/?(*.log|*.txt|*.cmake)
               TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
               OverWrite: true
             condition: always()
           - task: PublishBuildArtifacts@1
-            displayName: "Publish logs"
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
               ArtifactName: "$(Agent.JobName)"
             condition: always()
         timeoutInMinutes: "500"
 
+  - stage: "Apple"
+    dependsOn: "Triplets"
+    jobs:
+      - job: "osx_host_tools"
+        displayName: "Mac(Host)"
+        pool:
+          vmImage: macOS-13
+        variables:
+          - name: vcpkg.root
+            value: "/usr/local/share/vcpkg"
+        steps:
+          - powershell: brew install $(Get-Content test/packages-homebrew.txt)
+            displayName: "Install HomeBrew packages"
+          - task: Cache@2
+            inputs:
+              key: '"v2406-bin-mac-host"'
+              restoreKeys: |
+                "v2406-bin-mac-host"
+                "v2404-bin-mac-host"
+              path: $(vcpkg.default.binary.cache)
+          - task: PowerShell@2
+            displayName: "Test: osx(host)"
+            inputs:
+              script: |
+                $Ports=$(Get-Content "test/azure-port-osx-host.txt")
+                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+              targetType: 'inline'
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "$(vcpkg.root)/buildtrees/"
+              Contents: |
+                **/?(*.log|*.txt|*.cmake)
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
+              OverWrite: true
+            condition: always()
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
+              ArtifactName: "$(Agent.JobName)"
+            condition: always()
+        timeoutInMinutes: "120"
+
       - job: "port_osx"
         displayName: "Mac"
         pool:
           vmImage: macOS-13
+        variables:
+          - name: vcpkg.root
+            value: "/usr/local/share/vcpkg"
         strategy:
           matrix:
             arm64_osx:
@@ -289,33 +288,27 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2406-down-apple"'
-              restoreKeys: |
-                "v2406-down-apple"
-                "v2404-down-apple"
-              path: $(Build.BinariesDirectory)/vcpkg/downloads
-          - task: Cache@2
-            inputs:
               key: '"v2406-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
                 "v2406-bin-osx" | "$(vcpkg.default.triplet)"
                 "v2404-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
-          - task: run-vcpkg@0
+          - task: PowerShell@2
+            displayName: "Test: osx"
             inputs:
-              vcpkgArguments: "tensorflow-lite[gpu] onnxruntime[xnnpack,coreml]"
-              vcpkgGitCommitId: $(vcpkg.commit)
+              script: |
+                $Ports=$(Get-Content "test/azure-port-osx.txt")
+                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+              targetType: 'inline'
           - task: CopyFiles@2
-            displayName: "Copy logs in buildtrees"
             inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              SourceFolder: "$(vcpkg.root)/buildtrees/"
               Contents: |
                 **/?(*.log|*.txt|*.cmake)
               TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
               OverWrite: true
             condition: always()
           - task: PublishBuildArtifacts@1
-            displayName: "Publish logs"
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
               ArtifactName: "$(Agent.JobName)"
@@ -326,6 +319,9 @@ stages:
         displayName: "iOS"
         pool:
           vmImage: macOS-13
+        variables:
+          - name: vcpkg.root
+            value: "/usr/local/share/vcpkg"
         strategy:
           matrix:
             arm64_ios:
@@ -337,50 +333,47 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2406-down-apple"'
-              restoreKeys: |
-                "v2406-down-apple"
-                "v2404-down-apple"
-              path: $(Build.BinariesDirectory)/vcpkg/downloads
-          - task: Cache@2
-            inputs:
               key: '"v2406-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
                 "v2406-bin-ios" | "$(vcpkg.default.triplet)"
                 "v2404-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
-          - task: run-vcpkg@0
-            displayName: "arm64-ios"
+          - task: PowerShell@2
+            displayName: "Test: arm64-ios"
             inputs:
-              vcpkgArguments: "tensorflow-lite"
-              vcpkgGitCommitId: $(vcpkg.commit)
+              script: |
+                $Ports=$(Get-Content "test/azure-port-ios.txt")
+                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+              targetType: 'inline'
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
-          - task: run-vcpkg@0
-            displayName: "arm64-ios-simulator"
+          - task: PowerShell@2
+            displayName: "Test: arm64-ios-simulator"
             inputs:
-              vcpkgArguments: "tensorflow-lite"
-              vcpkgGitCommitId: $(vcpkg.commit)
+              script: |
+                $Ports=$(Get-Content "test/azure-port-ios.txt")
+                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+              targetType: 'inline'
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
-          - task: run-vcpkg@0
-            displayName: "x64-ios-simulator"
+          - task: PowerShell@2
+            displayName: "Test: x64-ios-simulator"
             inputs:
-              vcpkgArguments: "tensorflow-lite"
-              vcpkgGitCommitId: $(vcpkg.commit)
+              script: |
+                $Ports=$(Get-Content "test/azure-port-ios.txt")
+                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+              targetType: 'inline'
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
           - task: CopyFiles@2
-            displayName: "Copy logs in buildtrees"
             inputs:
-              SourceFolder: "$(Build.BinariesDirectory)/vcpkg/buildtrees/"
+              SourceFolder: "$(vcpkg.root)/buildtrees/"
               Contents: |
                 **/?(*.log|*.txt|*.cmake)
               TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
               OverWrite: true
             condition: always()
           - task: PublishBuildArtifacts@1
-            displayName: "Publish logs"
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
               ArtifactName: "$(Agent.JobName)"
