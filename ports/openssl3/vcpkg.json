@@ -1,12 +1,14 @@
 {
   "name": "openssl3",
   "version-semver": "3.2.0",
+  "port-version": 1,
   "description": "TLS/SSL and crypto library",
   "homepage": "https://www.openssl.org/",
   "license": "Apache-2.0",
   "features": {
     "tools": {
-      "description": "Buind/Install OpenSSL CLI tools"
+      "description": "Buind/Install OpenSSL CLI tools",
+      "supports": "windows"
     }
   }
 }
