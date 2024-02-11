@@ -1,1 +1,2 @@
 onnxruntime[training,directml,xnnpack]:x64-windows
+openssl3[tools]:x64-windows
