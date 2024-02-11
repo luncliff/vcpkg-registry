@@ -169,9 +169,13 @@ else()
     if(EXISTS "${CURRENT_PACKAGES_DIR}/lib64")
         file(RENAME "${CURRENT_PACKAGES_DIR}/lib64" "${CURRENT_PACKAGES_DIR}/lib")
     endif()
-    vcpkg_fixup_pkgconfig()
 
 endif()
+
+if(VCPKG_TARGET_IS_WINDOWS)
+    include("${CMAKE_CURRENT_LIST_DIR}/install-pc-files.cmake")
+endif()
+vcpkg_fixup_pkgconfig()
 
 if("tools" IN_LIST FEATURES)
     vcpkg_copy_tools(TOOL_NAMES openssl AUTO_CLEAN)
