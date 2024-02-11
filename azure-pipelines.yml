@@ -1,6 +1,8 @@
 #
-# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
-# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/scripts/cli/pipeline-variable-group-secret-nonsecret-variables
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/?view=azure-pipelines
 # https://github.com/actions/runner-images/tree/main/images
 # https://github.com/lukka/CppBuildTasks
 #
@@ -30,7 +32,13 @@ variables:
     value: "true"
   - name: vcpkg.default.binary.cache
     value: $(Build.ArtifactStagingDirectory)/vcpkg-archives
-  - group: Azure-Blob-Storage
+  - name: vcpkg.binary.sources
+    value: "default"
+  - group: Azure-Blob-Storage # az-*
+  - name: AzureSource
+    value: "x-azblob,https://$(az-storage).blob.core.windows.net/$(az-container),$(az-sas),readwrite"
+  - name: vcpkg.binary.sources # VCPKG_BINARY_SOURCES
+    value: "default;$(AzureSource)"
 
 stages:
   - stage: "Triplets"
@@ -43,23 +51,19 @@ stages:
           - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
             value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
         steps:
-          - powershell: brew install autoconf automake libtool pkg-config
+          - powershell: brew install $(Get-Content test/packages-homebrew.txt)
             displayName: "Install HomeBrew packages"
-          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
-          - task: run-vcpkg@0
-            displayName: "arm64-ios-simulator"
+          - task: PowerShell@2
+            displayName: "Triplet: ios-simulator"
             inputs:
-              vcpkgArguments: "zlib-ng"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
-          - task: run-vcpkg@0
-            displayName: "x64-ios-simulator"
-            inputs:
-              vcpkgArguments: "zlib-ng"
-              vcpkgGitCommitId: $(vcpkg.commit)
-            env:
-              VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
+              targetType: 'inline'
+              script: |
+                New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
+                $Ports=$(Get-Content test/azure-triplet-ios.txt)
+                vcpkg install $Ports --debug `
+                  --triplet arm64-ios-simulator
+                vcpkg install $Ports `
+                  --triplet x64-ios-simulator
 
   - stage: "HostPorts"
     dependsOn: "Triplets"
@@ -75,10 +79,10 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2404-bin-mac-host"'
+              key: '"v2406-bin-mac-host"'
               restoreKeys: |
+                "v2406-bin-mac-host"
                 "v2404-bin-mac-host"
-                "v2403-bin-mac-host"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "coreml-tools"
@@ -118,17 +122,17 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2404-down-uwp"'
+              key: '"v2406-down-uwp"'
               restoreKeys: |
+                "v2406-down-uwp"
                 "v2404-down-uwp"
-                "v2403-down-uwp"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2404-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"v2406-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2406-bin-uwp" | "$(vcpkg.default.triplet)"
                 "v2404-bin-uwp" | "$(vcpkg.default.triplet)"
-                "v2403-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -176,17 +180,17 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2404-down-ubuntu"'
+              key: '"v2406-down-ubuntu"'
               restoreKeys: |
+                "v2406-down-ubuntu"
                 "v2404-down-ubuntu"
-                "v2403-down-ubuntu"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2404-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"v2406-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
+                "v2406-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
                 "v2404-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
-                "v2403-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -214,7 +218,7 @@ stages:
         pool:
           vmImage: ubuntu-22.04
         strategy:
-          matrix:
+          matrix: # https://github.com/android/ndk/releases
             arm64_ndk26:
               vcpkg.default.triplet: "arm64-android"
               android.ndk.home: "/usr/local/lib/android/sdk/ndk/26.1.10909125"
@@ -225,17 +229,17 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2404-down-android"'
+              key: '"v2406-down-android"'
               restoreKeys: |
+                "v2406-down-android"
                 "v2404-down-android"
-                "v2403-down-android"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2404-bin-android" | "$(vcpkg.default.triplet)"'
+              key: '"v2406-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2406-bin-android" | "$(vcpkg.default.triplet)"
                 "v2404-bin-android" | "$(vcpkg.default.triplet)"
-                "v2403-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -284,17 +288,17 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2404-down-apple"'
+              key: '"v2406-down-apple"'
               restoreKeys: |
+                "v2406-down-apple"
                 "v2404-down-apple"
-                "v2403-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2404-bin-osx" | "$(vcpkg.default.triplet)"'
+              key: '"v2406-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2406-bin-osx" | "$(vcpkg.default.triplet)"
                 "v2404-bin-osx" | "$(vcpkg.default.triplet)"
-                "v2403-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             inputs:
@@ -331,17 +335,17 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2404-down-apple"'
+              key: '"v2406-down-apple"'
               restoreKeys: |
+                "v2406-down-apple"
                 "v2404-down-apple"
-                "v2403-down-apple"
               path: $(Build.BinariesDirectory)/vcpkg/downloads
           - task: Cache@2
             inputs:
-              key: '"v2404-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"v2406-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2406-bin-ios" | "$(vcpkg.default.triplet)"
                 "v2404-bin-ios" | "$(vcpkg.default.triplet)"
-                "v2403-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: run-vcpkg@0
             displayName: "arm64-ios"

@@ -50,10 +50,10 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - v2404-caches-{{ .Branch }}
-            - v2404-caches-{{ checksum ".circleci/config.yml" }}
+            - v2406-caches-{{ .Branch }}
+            - v2406-caches-{{ checksum ".circleci/config.yml" }}
+            - v2406-caches-main
             - v2404-caches-main
-            - v2352-caches-main
       - run:
           name: "Install: port-windows.txt"
           shell: "powershell.exe"
@@ -72,15 +72,15 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: v2404-caches-main
+              key: v2406-caches-main
               paths:
                 - C:/vcpkg-caches
       - save_cache:
-          key: v2404-caches-{{ .Branch }}
+          key: v2406-caches-{{ .Branch }}
           paths:
             - C:/vcpkg-caches
       - save_cache:
-          key: v2404-caches-{{ checksum ".circleci/config.yml" }}
+          key: v2406-caches-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-caches
       - store_artifacts:
