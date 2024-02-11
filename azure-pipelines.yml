@@ -30,6 +30,7 @@ variables:
     value: "true"
   - name: vcpkg.default.binary.cache
     value: $(Build.ArtifactStagingDirectory)/vcpkg-archives
+  - group: Azure-Blob-Storage
 
 stages:
   - stage: "Triplets"
