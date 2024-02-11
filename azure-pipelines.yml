@@ -24,21 +24,24 @@ schedules:
         - main
 
 variables:
+  # check https://github.com/microsoft/vcpkg/releases
   - name: vcpkg.commit
     value: "c8696863d371ab7f46e213d8f5ca923c4aef2a00" # 2023.12.12
+
+  # todo: $(Build.BinariesDirectory)/vcpkg/downloads
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
-  - name: vcpkg.disable.metrics
-    value: "true"
-  - name: vcpkg.default.binary.cache
-    value: $(Build.ArtifactStagingDirectory)/vcpkg-archives
-  - name: vcpkg.binary.sources
-    value: "default"
+  - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
+    value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
+
+  # check https://learn.microsoft.com/en-us/vcpkg/users/binarycaching
   - group: Azure-Blob-Storage # az-*
   - name: AzureSource
     value: "x-azblob,https://$(az-storage).blob.core.windows.net/$(az-container),$(az-sas),readwrite"
   - name: vcpkg.binary.sources # VCPKG_BINARY_SOURCES
     value: "default;$(AzureSource)"
+  - name: vcpkg.default.binary.cache
+    value: $(Build.ArtifactStagingDirectory)/vcpkg-archives
 
 stages:
   - stage: "Triplets"
@@ -47,9 +50,6 @@ stages:
         displayName: "iOS Simulator"
         pool:
           vmImage: macOS-13
-        variables:
-          - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
-            value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
         steps:
           - powershell: brew install $(Get-Content test/packages-homebrew.txt)
             displayName: "Install HomeBrew packages"
@@ -59,10 +59,11 @@ stages:
               targetType: 'inline'
               script: |
                 New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
+                vcpkg --version
                 $Ports=$(Get-Content test/azure-triplet-ios.txt)
-                vcpkg install $Ports --debug `
-                  --triplet arm64-ios-simulator
-                vcpkg install $Ports `
+                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build `
+                  --triplet arm64-ios-simulator --debug
+                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build `
                   --triplet x64-ios-simulator
 
   - stage: "HostPorts"
@@ -74,7 +75,7 @@ stages:
           vmImage: macOS-13
         timeoutInMinutes: "120"
         steps:
-          - powershell: brew install autoconf automake libtool pkg-config
+          - powershell: brew install $(Get-Content test/packages-homebrew.txt)
             displayName: "Install HomeBrew packages"
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
@@ -175,7 +176,7 @@ stages:
               cc: gcc-13
               cxx: g++-13
         steps:
-          - powershell: sudo apt-get install -y nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
+          - powershell: sudo apt-get install -y $(Get-Content test/packages-apt.txt)
             displayName: "Install APT packages"
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
@@ -275,7 +276,7 @@ stages:
             x64_osx:
               vcpkg.default.triplet: "x64-osx"
         steps:
-          - powershell: brew install autoconf automake libtool pkg-config
+          - powershell: brew install $(Get-Content test/packages-homebrew.txt)
             displayName: "Install HomeBrew packages"
           - task: UsePythonVersion@0
             displayName: "Setup: Python 3.11"
@@ -331,7 +332,8 @@ stages:
               # vcpkg.default.triplet: "arm64-ios"
               vcpkg.overlay.triplets: "$(Build.SourcesDirectory)/triplets"
         steps:
-          - powershell: brew install autoconf automake libtool pkg-config
+          - powershell: brew install $(Get-Content test/packages-homebrew.txt)
+            displayName: "Install HomeBrew packages"
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:

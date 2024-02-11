@@ -1,0 +1,7 @@
+nasm
+libnuma-dev
+libopenmpi-dev
+libx11-dev
+libxi-dev
+libxext-dev
+libx11-xcb-dev
