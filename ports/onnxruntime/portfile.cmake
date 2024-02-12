@@ -9,8 +9,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF 5fade70b5052efae1553e8e3ac0b06a527877ef0
-    SHA512 84dcb491cf44093934bef4139cbcf227200d2a16aaeb49c6ab6b9aa35023fb4583190974422f49ac81b91c2c5eae16d577f46000b9cfcdf390bc4fbdc3b64288
+    REF v1.17.0
+    SHA512 63f1b8a8ede1d45d68c341c0df60ee360e689d513626ac2ad07b50930651321bd6cf661f628bd6768c10a0b3029ced51ad0df05060be028f0e820512ad4c5bc1
     PATCHES
         fix-cmake.patch
         fix-source-flatbuffers.patch
