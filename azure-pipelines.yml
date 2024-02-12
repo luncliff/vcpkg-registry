@@ -243,6 +243,7 @@ stages:
             displayName: "Test: osx(host)"
             inputs:
               script: |
+                New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
                 $Ports=$(Get-Content "test/azure-port-osx-host.txt")
                 vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
               targetType: 'inline'

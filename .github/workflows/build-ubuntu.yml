@@ -34,17 +34,17 @@ jobs:
           VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
           VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"
 
-      - uses: actions/cache@v3.3.2
+      - uses: actions/cache@v4.0.0
         with:
-          key: "v2404-x64-linux-${{ matrix.vcpkg_tag }}"
+          key: "v2407-x64-linux-${{ matrix.vcpkg_tag }}"
           path: |
             ${{ runner.temp }}/vcpkg-downloads
             ${{ runner.temp }}/vcpkg-archives
 
-      - uses: lukka/run-vcpkg@v11.3
+      - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "/usr/local/share/vcpkg" # see VCPKG_INSTALLATION_ROOT
-          doNotUpdateVcpkg: true
+          doNotUpdateVcpkg: true # no permission
           vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
           vcpkgJsonGlob: "test/vcpkg.json"
           runVcpkgInstall: true

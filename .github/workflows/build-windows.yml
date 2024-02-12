@@ -25,7 +25,7 @@ jobs:
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
       - uses: actions/checkout@v4.1.1
-      - uses: microsoft/setup-msbuild@v1.3.1
+      - uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: x64
 
@@ -34,14 +34,14 @@ jobs:
           New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
           New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
 
-      - uses: actions/cache@v3.3.2
+      - uses: actions/cache@v4.0.0
         with:
-          key: "v2404-x64-windows-${{ matrix.vcpkg_tag }}"
+          key: "v2407-x64-windows-${{ matrix.vcpkg_tag }}"
           path: |
             C:/vcpkg/downloads
             C:/vcpkg/archives
 
-      - uses: lukka/run-vcpkg@v11.3
+      - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "C:/vcpkg"
           vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"

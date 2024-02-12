@@ -30,14 +30,14 @@ jobs:
           mkdir -p ${VCPKG_DOWNLOADS}
           mkdir -p ${VCPKG_DEFAULT_BINARY_CACHE}
 
-      - uses: actions/cache@v3.3.2
+      - uses: actions/cache@v4.0.0
         with:
-          key: "v2404-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
+          key: "v2407-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
           path: |
             /usr/local/share/vcpkg-downloads
             /usr/local/share/vcpkg-archives
 
-      - uses: lukka/run-vcpkg@v11.3
+      - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "/usr/local/share/vcpkg" # see VCPKG_INSTALLATION_ROOT
           vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
@@ -48,7 +48,7 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "x64-osx"
           VCPKG_BINARY_SOURCES: "default"
 
-      - uses: lukka/run-vcpkg@v11.3
+      - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "/usr/local/share/vcpkg" # see VCPKG_INSTALLATION_ROOT
           vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"

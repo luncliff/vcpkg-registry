@@ -17,7 +17,7 @@ jobs:
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
       - uses: actions/checkout@v4.1.1
-      - uses: microsoft/setup-msbuild@v1.3.1
+      - uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: x64
 
@@ -27,7 +27,7 @@ jobs:
           New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
           Move-Item -Path "test/self-hosted-cuda.json" -Destination "test/vcpkg.json" -Force
 
-      - uses: lukka/run-vcpkg@v11.3
+      - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "C:/vcpkg"
           vcpkgGitCommitId: "c8696863d371ab7f46e213d8f5ca923c4aef2a00" # 2023.12.12
