@@ -112,3 +112,9 @@ if (onnxruntime_USE_CUDA)
   find_package(NvidiaCutlass CONFIG REQUIRED)
   list(APPEND onnxruntime_EXTERNAL_LIBRARIES nvidia::cutlass::cutlass)
 endif()
+
+if (onnxruntime_USE_OPENVINO)
+  set(ENV{INTEL_OPENVINO_DIR} "2023.0") # deceive ENV{INTEL_OPENVINO_DIR} usages
+  find_package(OpenVINO REQUIRED)
+  # list(APPEND onnxruntime_EXTERNAL_LIBRARIES openvino::runtime)
+endif()

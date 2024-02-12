@@ -141,6 +141,10 @@ if("cuda" IN_LIST FEATURES)
     message(STATUS "  version: ${CUDA_VERSION}")
 endif()
 
+if("openvino" IN_LIST FEATURES)
+    set(ENV{INTEL_OPENVINO_DIR} "2023.0")
+endif()
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
     ${GENERATOR_OPTIONS}
@@ -149,6 +153,8 @@ vcpkg_cmake_configure(
         ${FEATURE_OPTIONS}
         -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
+        -DInferenceEngine_DIR:PATH=${CURRENT_INSTALLED_DIR}/share/openvino
+        -Dngraph_DIR:PATH=${CURRENT_INSTALLED_DIR}/share/openvino
         # -DProtobuf_USE_STATIC_LIBS=OFF
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}

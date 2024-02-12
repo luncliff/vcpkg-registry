@@ -2,7 +2,7 @@
   "name": "onnxruntime",
   "version-semver": "1.17.0",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
-  "homepage": "https://www.onnxruntime.ai",
+  "homepage": "https://onnxruntime.ai/",
   "dependencies": [
     "boost-config",
     "boost-mp11",
@@ -78,7 +78,13 @@
     "openvino": {
       "description": "Build with OpenVINO support",
       "dependencies": [
-        "openvino"
+        {
+          "name": "openvino",
+          "default-features": false,
+          "features": [
+            "onnx"
+          ]
+        }
       ]
     },
     "python": {
