@@ -50,9 +50,6 @@ if(VCPKG_TARGET_IS_WINDOWS)
     file(INSTALL "${SOURCE_PATH}/bin/${TRIPLE}/DirectML.pdb"        DESTINATION "${CURRENT_PACKAGES_DIR}/bin")
     file(INSTALL "${SOURCE_PATH}/bin/${TRIPLE}/DirectML.Debug.dll"  DESTINATION "${CURRENT_PACKAGES_DIR}/bin")
     file(INSTALL "${SOURCE_PATH}/bin/${TRIPLE}/DirectML.Debug.pdb"  DESTINATION "${CURRENT_PACKAGES_DIR}/bin")
-    # debug/release will use same copy
-    file(INSTALL "${CURRENT_PACKAGES_DIR}/bin/" DESTINATION "${CURRENT_PACKAGES_DIR}/debug/bin")
-    file(INSTALL "${CURRENT_PACKAGES_DIR}/lib/" DESTINATION "${CURRENT_PACKAGES_DIR}/debug/lib")
 elseif(VCPKG_TARGET_IS_LINUX)
     file(INSTALL "${SOURCE_PATH}/bin/${TRIPLE}/libdirectml.so"  DESTINATION "${CURRENT_PACKAGES_DIR}/lib")
 else()
@@ -60,6 +57,7 @@ else()
 endif()
 
 file(INSTALL "${SOURCE_PATH}/include/" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
 
 file(INSTALL "${SOURCE_PATH}/LICENSE-CODE.txt"
              "${SOURCE_PATH}/README.md"
