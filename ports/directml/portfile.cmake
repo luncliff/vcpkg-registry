@@ -5,7 +5,7 @@ set(ENV{NUGET_PACKAGES} "${BUILDTREES_DIR}/nuget")
 
 # see https://www.nuget.org/packages/Microsoft.AI.DirectML/
 set(PACKAGE_NAME    "Microsoft.AI.DirectML")
-set(PACKAGE_VERSION "1.13.0")
+set(PACKAGE_VERSION "1.13.1")
 
 file(REMOVE_RECURSE "${CURRENT_BUILDTREES_DIR}/${PACKAGE_NAME}")
 vcpkg_execute_required_process(
@@ -17,11 +17,16 @@ vcpkg_execute_required_process(
 
 get_filename_component(SOURCE_PATH "${CURRENT_BUILDTREES_DIR}/${PACKAGE_NAME}.${PACKAGE_VERSION}" ABSOLUTE)
 if(VCPKG_TARGET_IS_WINDOWS)
-    # todo: x64-xbox?
     if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
         set(TRIPLE "x64-win")
+        # check community triplets...
+        if(DEFINED VCPKG_XBOX_CONSOLE_TARGET AND (VCPKG_XBOX_CONSOLE_TARGET MATCHES "scarlett"))
+            set(TRIPLE "x64-xbox-scarlett-231000")
+        endif()
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
         set(TRIPLE "x86-win")
+    elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64ec")
+        set(TRIPLE "arm64ec-win")
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
         set(TRIPLE "arm64-win")
     elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
@@ -56,9 +61,9 @@ endif()
 
 file(INSTALL "${SOURCE_PATH}/include/" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
 
-file(INSTALL "${SOURCE_PATH}/LICENSE.txt" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
 file(INSTALL "${SOURCE_PATH}/LICENSE-CODE.txt"
              "${SOURCE_PATH}/README.md"
              "${SOURCE_PATH}/ThirdPartyNotices.txt"
      DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
 )
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")
