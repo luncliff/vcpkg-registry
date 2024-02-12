@@ -1,5 +1,5 @@
 diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
-index 34355fb..8b69561 100644
+index 94d650f..19d8e0c 100644
 --- a/cmake/CMakeLists.txt
 +++ b/cmake/CMakeLists.txt
 @@ -36,7 +36,7 @@ set(CMAKE_C_STANDARD 99)
@@ -11,17 +11,15 @@ index 34355fb..8b69561 100644
  include(CheckFunctionExists)
  
  # TODO: update this once all system adapt c++20
-@@ -365,9 +365,6 @@ endif()
- # Single output director for all binaries
+@@ -360,7 +360,6 @@ endif()
  set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Single output directory for all binaries.")
  
--
+ 
 -include(FetchContent)
--
+ 
  function(set_msvc_c_cpp_compiler_warning_level warning_level)
    if (NOT "${warning_level}" MATCHES "^[0-4]$")
-     message(FATAL_ERROR "Expected warning_level value of 0-4, got '${warning_level}'.")
-@@ -570,7 +567,8 @@ get_filename_component(ORTTRAINING_ROOT "${ORTTRAINING_ROOT}" ABSOLUTE)
+@@ -572,7 +571,8 @@ get_filename_component(ORTTRAINING_ROOT "${ORTTRAINING_ROOT}" ABSOLUTE)
  get_filename_component(REPO_ROOT "${REPO_ROOT}" ABSOLUTE)
  set(ONNXRUNTIME_INCLUDE_DIR ${REPO_ROOT}/include/onnxruntime)
  
@@ -31,8 +29,8 @@ index 34355fb..8b69561 100644
  
  set(ORT_WARNING_FLAGS)
  if (WIN32)
-@@ -897,7 +895,7 @@ function(onnxruntime_set_compile_flags target_name)
-       target_compile_definitions(${target_name} PRIVATE USE_CUTLASS)
+@@ -904,7 +904,7 @@ function(onnxruntime_set_compile_flags target_name)
+       target_compile_definitions(${target_name} PRIVATE ORT_NEURAL_SPEED)
      endif()
  
 -    set_target_properties(${target_name} PROPERTIES COMPILE_WARNING_AS_ERROR ON)
@@ -40,7 +38,15 @@ index 34355fb..8b69561 100644
      if (onnxruntime_USE_CUDA)
        # Suppress a "conversion_function_not_usable" warning in gsl/span
        target_compile_options(${target_name} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe \"--diag_suppress=conversion_function_not_usable\">")
-@@ -1466,7 +1464,8 @@ if (onnxruntime_USE_DML)
+@@ -968,6 +968,7 @@ function(onnxruntime_set_compile_flags target_name)
+       endif()
+       target_compile_definitions(${target_name} PUBLIC -DNSYNC_ATOMIC_CPP11)
+       onnxruntime_add_include_to_target(${target_name} nsync::nsync_cpp)
++      onnxruntime_add_include_to_target(${target_name} Eigen3::Eigen)
+     endif()
+     foreach(ORT_FLAG ${ORT_PROVIDER_FLAGS})
+       target_compile_definitions(${target_name} PRIVATE ${ORT_FLAG})
+@@ -1473,7 +1474,8 @@ if (onnxruntime_USE_DML)
      message(FATAL_ERROR "The DirectML execution provider is only supported when building for Windows.")
    endif()
  
@@ -64,6 +70,19 @@ index c900f4d..35c18e1 100644
      GET_TARGET_PROPERTY(_LIB_TYPE ${_LIB} TYPE)
      if(_LIB_TYPE STREQUAL "STATIC_LIBRARY")
        set(CUR_STATIC_LIB_OBJ_DIR ${STATIC_LIB_TEMP_DIR}/$<TARGET_LINKER_FILE_BASE_NAME:${_LIB}>)
+diff --git a/cmake/onnxruntime_providers_xnnpack.cmake b/cmake/onnxruntime_providers_xnnpack.cmake
+index 9c00703..eca3845 100644
+--- a/cmake/onnxruntime_providers_xnnpack.cmake
++++ b/cmake/onnxruntime_providers_xnnpack.cmake
+@@ -15,7 +15,7 @@
+   source_group(TREE ${REPO_ROOT} FILES ${onnxruntime_providers_xnnpack_cc_srcs})
+   onnxruntime_add_static_library(onnxruntime_providers_xnnpack ${onnxruntime_providers_xnnpack_cc_srcs})
+   onnxruntime_add_include_to_target(onnxruntime_providers_xnnpack
+-    onnxruntime_common onnxruntime_framework onnx onnx_proto ${PROTOBUF_LIB} XNNPACK pthreadpool
++    onnxruntime_common onnxruntime_framework onnx onnx_proto ${PROTOBUF_LIB} xnnpack
+     flatbuffers::flatbuffers Boost::mp11 safeint_interface
+   )
+ 
 diff --git a/cmake/tensorboard/compat/proto/CMakeLists.txt b/cmake/tensorboard/compat/proto/CMakeLists.txt
 index ad31e40..e6254ff 100644
 --- a/cmake/tensorboard/compat/proto/CMakeLists.txt
@@ -82,28 +101,3 @@ index ad31e40..e6254ff 100644
  set(TENSORBOARD_ROOT ${tensorboard_SOURCE_DIR})
  
  # tensorboard protos
-diff --git a/cmake/onnxruntime_providers_xnnpack.cmake b/cmake/onnxruntime_providers_xnnpack.cmake
-index 9c00703..eca3845 100644
---- a/cmake/onnxruntime_providers_xnnpack.cmake
-+++ b/cmake/onnxruntime_providers_xnnpack.cmake
-@@ -15,7 +15,7 @@
-   source_group(TREE ${REPO_ROOT} FILES ${onnxruntime_providers_xnnpack_cc_srcs})
-   onnxruntime_add_static_library(onnxruntime_providers_xnnpack ${onnxruntime_providers_xnnpack_cc_srcs})
-   onnxruntime_add_include_to_target(onnxruntime_providers_xnnpack
--    onnxruntime_common onnxruntime_framework onnx onnx_proto ${PROTOBUF_LIB} XNNPACK pthreadpool
-+    onnxruntime_common onnxruntime_framework onnx onnx_proto ${PROTOBUF_LIB} xnnpack
-     flatbuffers::flatbuffers Boost::mp11 safeint_interface
-   )
- 
-diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
-index fa936c2..48bd0fb 100644
---- a/cmake/CMakeLists.txt
-+++ b/cmake/CMakeLists.txt
-@@ -959,6 +959,7 @@ function(onnxruntime_set_compile_flags target_name)
-       endif()
-       target_compile_definitions(${target_name} PUBLIC -DNSYNC_ATOMIC_CPP11)
-       onnxruntime_add_include_to_target(${target_name} nsync::nsync_cpp)
-+      onnxruntime_add_include_to_target(${target_name} Eigen3::Eigen)
-     endif()
-     foreach(ORT_FLAG ${ORT_PROVIDER_FLAGS})
-       target_compile_definitions(${target_name} PRIVATE ${ORT_FLAG})

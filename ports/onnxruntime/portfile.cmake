@@ -48,7 +48,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         # training  onnxruntime_ENABLE_TRAINING_OPS
         cuda      onnxruntime_USE_CUDA
         cuda      onnxruntime_USE_CUDA_NHWC_OPS
-        # cuda      onnxruntime_USE_CUTLASS
         openvino  onnxruntime_USE_OPENVINO
         tensorrt  onnxruntime_USE_TENSORRT
         tensorrt  onnxruntime_USE_TENSORRT_BUILTIN_PARSER
@@ -72,7 +71,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     INVERTED_FEATURES
         abseil    onnxruntime_DISABLE_ABSEIL
         training  onnxruntime_DISABLE_RTTI
-        cuda      onnxruntime_USE_CUTLASS
         cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
 
@@ -167,9 +165,11 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
         -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
         -Donnxruntime_NVCC_THREADS=1 # parallel compilation
+        -Donnxruntime_USE_NEURAL_SPEED=OFF
+        -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO
-        -DORT_GIT_COMMIT:STRING="5fade70b5052efae1553e8e3ac0b06a527877ef0"
-        -DORT_GIT_BRANCH:STRING="main"
+        -DORT_GIT_COMMIT:STRING="5f0b62cde54f59bdeac7978c9f9c12d0a4bc56db"
+        -DORT_GIT_BRANCH:STRING="v1.17.0"
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF

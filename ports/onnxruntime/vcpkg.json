@@ -51,7 +51,8 @@
       "description": "Build with CUDA/NCCL support",
       "dependencies": [
         "cuda",
-        "cudnn"
+        "cudnn",
+        "nvidia-cutlass"
       ]
     },
     "directml": {
