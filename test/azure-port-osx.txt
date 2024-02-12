@@ -1,0 +1,4 @@
+tensorflow-lite[gpu]
+onnxruntime[xnnpack,coreml]
+metal-cpp
+miniaudio

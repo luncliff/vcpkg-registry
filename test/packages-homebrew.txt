@@ -1,0 +1,4 @@
+autoconf
+automake
+libtool
+pkg-config

@@ -22,6 +22,8 @@ Targets...
     * https://learn.microsoft.com/en-us/vcpkg/maintainers/registries
 * Vcpkg mainstream: https://github.com/microsoft/vcpkg
     * https://github.com/microsoft/vcpkg-tool/releases
+* Vcpkg configuration
+    * https://learn.microsoft.com/en-us/vcpkg/reference/vcpkg-configuration-json
 
 ## How To
 
