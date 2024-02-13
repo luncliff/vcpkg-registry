@@ -1,3 +1,2 @@
 libdispatch
 tensorflow-lite
-onnxruntime[directml]

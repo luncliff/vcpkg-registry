@@ -1,2 +1,2 @@
 tensorflow-lite[gpu]
-onnxruntime[xnnpack,training,directml]
+onnxruntime[xnnpack,training]
