@@ -26,6 +26,13 @@
       "name": "opencl-on-dx12",
       "platform": "windows"
     },
+    {
+      "name": "openvino",
+      "features": [
+        "onnx"
+      ],
+      "platform": "windows | linux"
+    },
     "etcpak",
     {
       "name": "libdispatch",
