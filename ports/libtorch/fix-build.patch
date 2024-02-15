@@ -1,0 +1,300 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3a48eaf..ab58f31 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -21,6 +21,7 @@ cmake_policy(SET CMP0092 NEW)
+ 
+ # ---[ Project and semantic versioning.
+ project(Torch CXX C)
++include(GNUInstallDirs)
+ 
+ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+   set(LINUX TRUE)
+@@ -484,6 +485,12 @@ if(LINUX)
+ endif()
+ 
+ if(MSVC)
++  add_compile_options(
++    /wd4251 # ... needs to have dll-interface to be used by clients of struct ...
++    /wd4275 # non dll-interface class ... used as base for dll-interface class ...
++    /wd4305 # narrowing init
++    /wd4309 # truncation of constant value
++  )
+   set(CMAKE_NINJA_CMCLDEPS_RC OFF)
+   foreach(flag_var
+       CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+@@ -686,7 +693,7 @@ if(NOT CMAKE_BUILD_TYPE)
+ endif()
+ 
+ # The below means we are cross compiling for arm64 or x86_64 on MacOSX
+-if(NOT IOS AND CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND CMAKE_OSX_ARCHITECTURES MATCHES "^(x86_64|arm64)$")
++if(false)
+   set(CROSS_COMPILING_MACOSX TRUE)
+   # We need to compile a universal protoc to not fail protobuf build
+   # We set CMAKE_TRY_COMPILE_TARGET_TYPE to STATIC_LIBRARY (vs executable) to succeed the cmake compiler check for cross-compiling
+@@ -704,6 +711,7 @@ if(NOT IOS AND CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND CMAKE_OSX_ARCHITECTURES M
+   set(PROTOBUF_PROTOC_EXECUTABLE "${PROJECT_SOURCE_DIR}/build_host_protoc/bin/protoc")
+   set(CAFFE2_CUSTOM_PROTOC_EXECUTABLE "${PROJECT_SOURCE_DIR}/build_host_protoc/bin/protoc")
+ endif()
++include(cmake/ProtoBuf.cmake)
+ 
+ # ---[ Misc checks to cope with various compiler modes
+ include(cmake/MiscCheck.cmake)
+@@ -719,7 +727,7 @@ endif()
+ 
+ set(BUILD_ONEDNN_GRAPH OFF)
+ 
+-include(cmake/Dependencies.cmake)
++include(cmake/vcpkg-dependencies.cmake) # see portfile.cmake
+ 
+ # Moved this cmake set option down here because CMAKE_CUDA_COMPILER_VERSION is not avaialble until now
+ cmake_dependent_option(
+@@ -1044,13 +1052,8 @@ include_directories(BEFORE ${PROJECT_SOURCE_DIR}/aten/src/)
+ include_directories(BEFORE ${PROJECT_BINARY_DIR}/aten/src/)
+ 
+ if(USE_MIMALLOC)
+-  set(MI_OVERRIDE OFF)
+-  set(MI_BUILD_SHARED OFF)
+-  set(MI_BUILD_OBJECT OFF)
+-  set(MI_BUILD_TESTS OFF)
+-  add_definitions(-DUSE_MIMALLOC)
+-  add_subdirectory(third_party/mimalloc)
+-  include_directories(third_party/mimalloc/include)
++  add_compile_definitions(USE_MIMALLOC)
++  find_package(mimalloc CONFIG REQUIRED) # mimalloc
+ endif()
+ 
+ # ---[ Main build
+diff --git a/build_variables.bzl b/build_variables.bzl
+index bf9cf2b..48140aa 100644
+--- a/build_variables.bzl
++++ b/build_variables.bzl
+@@ -132,16 +132,16 @@ libtorch_sources_common = sorted(core_sources_common + torch_unpickler_common)
+ # The profilers are not needed in the lite interpreter build.
+ libtorch_profiler_sources = [
+     "torch/csrc/autograd/profiler_legacy.cpp",
+-    "torch/csrc/autograd/profiler_kineto.cpp",
+-    "torch/csrc/profiler/collection.cpp",
+-    "torch/csrc/profiler/data_flow.cpp",
+-    "torch/csrc/profiler/kineto_shim.cpp",
+-    "torch/csrc/profiler/kineto_client_interface.cpp",
++    # "torch/csrc/autograd/profiler_kineto.cpp",
++    # "torch/csrc/profiler/collection.cpp",
++    # "torch/csrc/profiler/data_flow.cpp",
++    # "torch/csrc/profiler/kineto_shim.cpp",
++    # "torch/csrc/profiler/kineto_client_interface.cpp",
+     "torch/csrc/profiler/orchestration/observer.cpp",
+-    "torch/csrc/profiler/orchestration/python_tracer.cpp",
++    # "torch/csrc/profiler/orchestration/python_tracer.cpp",
+     "torch/csrc/profiler/standalone/execution_trace_observer.cpp",
+-    "torch/csrc/profiler/standalone/itt_observer.cpp",
+-    "torch/csrc/profiler/standalone/nvtx_observer.cpp",
++    # "torch/csrc/profiler/standalone/itt_observer.cpp",
++    # "torch/csrc/profiler/standalone/nvtx_observer.cpp",
+     "torch/csrc/profiler/stubs/base.cpp",
+     "torch/csrc/profiler/orchestration/vulkan.cpp",
+     "torch/csrc/profiler/perf.cpp",
+diff --git a/c10/CMakeLists.txt b/c10/CMakeLists.txt
+index feebad7..b5b8cab 100644
+--- a/c10/CMakeLists.txt
++++ b/c10/CMakeLists.txt
+@@ -109,8 +109,8 @@ else()
+ endif()
+ 
+ if(USE_MIMALLOC)
+-  target_link_libraries(c10 PRIVATE "mimalloc-static")
+-  add_dependencies(c10 mimalloc-static)
++  find_package(mimalloc CONFIG REQUIRED) # mimalloc
++  target_link_libraries(c10 PRIVATE mimalloc)
+ endif()
+ 
+ if(ANDROID)
+@@ -140,7 +140,11 @@ endif()
+ # Note: for now, we will put all export path into one single Caffe2Targets group
+ # to deal with the cmake deployment need. Inside the Caffe2Targets set, the
+ # individual libraries like libc10.so and libcaffe2.so are still self-contained.
+-install(TARGETS c10 EXPORT Caffe2Targets DESTINATION lib)
++install(TARGETS c10 EXPORT Caffe2Targets
++  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
+ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+         DESTINATION include
+         FILES_MATCHING PATTERN "*.h")
+@@ -148,5 +152,5 @@ install(FILES ${CMAKE_BINARY_DIR}/c10/macros/cmake_macros.h
+         DESTINATION include/c10/macros)
+ 
+ if(MSVC AND C10_BUILD_SHARED_LIBS)
+-  install(FILES $<TARGET_PDB_FILE:c10> DESTINATION lib OPTIONAL)
++  install(FILES $<TARGET_PDB_FILE:c10> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+ endif()
+diff --git a/caffe2/CMakeLists.txt b/caffe2/CMakeLists.txt
+index 74d0d55..6928192 100644
+--- a/caffe2/CMakeLists.txt
++++ b/caffe2/CMakeLists.txt
+@@ -107,15 +107,6 @@ endif()
+ # Note: the folders that are being commented out have not been properly
+ # addressed yet.
+ 
+-if(NOT MSVC AND USE_XNNPACK)
+-  if(NOT TARGET fxdiv)
+-    set(FXDIV_BUILD_TESTS OFF CACHE BOOL "")
+-    set(FXDIV_BUILD_BENCHMARKS OFF CACHE BOOL "")
+-    add_subdirectory(
+-      "${FXDIV_SOURCE_DIR}"
+-      "${CMAKE_BINARY_DIR}/FXdiv")
+-  endif()
+-endif()
+ 
+ add_subdirectory(core)
+ add_subdirectory(serialize)
+@@ -1022,9 +1013,6 @@ elseif(USE_CUDA)
+   endif()
+ endif()
+ 
+-if(NOT MSVC AND USE_XNNPACK)
+-  TARGET_LINK_LIBRARIES(torch_cpu PRIVATE fxdiv)
+-endif()
+ 
+ # ==========================================================
+ # formerly-libtorch flags
+@@ -1475,7 +1463,11 @@ endif()
+ 
+ caffe2_interface_library(torch torch_library)
+ 
+-install(TARGETS torch_cpu torch_cpu_library EXPORT Caffe2Targets DESTINATION "${TORCH_INSTALL_LIB_DIR}")
++install(TARGETS torch_cpu torch_cpu_library EXPORT Caffe2Targets
++  RUNTIME DESTINATION "${TORCH_INSTALL_BIN_DIR}"
++  LIBRARY DESTINATION "${TORCH_INSTALL_LIB_DIR}"
++  ARCHIVE DESTINATION "${TORCH_INSTALL_LIB_DIR}"
++)
+ 
+ if(USE_CUDA)
+   install(TARGETS torch_cuda torch_cuda_library EXPORT Caffe2Targets DESTINATION "${TORCH_INSTALL_LIB_DIR}")
+@@ -1554,7 +1546,7 @@ target_link_libraries(torch_cpu PRIVATE flatbuffers)
+ # namespaces, so libtorch is loaded with all its dependencies in a local scope.
+ # That usually leads to missing symbol errors at run-time, so to avoid a situation like
+ # this we have to preload those libs in a global namespace.
+-if(BUILD_SHARED_LIBS)
++if(BUILD_SHARED_LIBS AND (NOT WIN32))
+   add_library(torch_global_deps SHARED ${TORCH_SRC_DIR}/csrc/empty.c)
+   if(HAVE_SOVERSION)
+     set_target_properties(torch_global_deps PROPERTIES
+@@ -1577,7 +1569,11 @@ if(BUILD_SHARED_LIBS)
+     target_link_libraries(torch_global_deps TBB::tbb)
+   endif()
+ 
+-  install(TARGETS torch_global_deps DESTINATION "${TORCH_INSTALL_LIB_DIR}")
++  install(TARGETS torch_global_deps
++    RUNTIME DESTINATION "${TORCH_INSTALL_BIN_DIR}"
++    LIBRARY DESTINATION "${TORCH_INSTALL_LIB_DIR}"
++    ARCHIVE DESTINATION "${TORCH_INSTALL_LIB_DIR}"
++  )
+ endif()
+ 
+ # ---[ Caffe2 HIP sources.
+diff --git a/caffe2/CMakeLists.txt b/caffe2/CMakeLists.txt
+index 6928192..44e604f 100644
+--- a/caffe2/CMakeLists.txt
++++ b/caffe2/CMakeLists.txt
+@@ -1470,11 +1470,23 @@ install(TARGETS torch_cpu torch_cpu_library EXPORT Caffe2Targets
+ )
+ 
+ if(USE_CUDA)
+-  install(TARGETS torch_cuda torch_cuda_library EXPORT Caffe2Targets DESTINATION "${TORCH_INSTALL_LIB_DIR}")
++  install(TARGETS torch_cuda torch_cuda_library EXPORT Caffe2Targets
++    RUNTIME DESTINATION "${TORCH_INSTALL_BIN_DIR}"
++    LIBRARY DESTINATION "${TORCH_INSTALL_LIB_DIR}"
++    ARCHIVE DESTINATION "${TORCH_INSTALL_LIB_DIR}"
++  )
+ elseif(USE_ROCM)
+-  install(TARGETS torch_hip torch_hip_library EXPORT Caffe2Targets DESTINATION "${TORCH_INSTALL_LIB_DIR}")
++  install(TARGETS torch_hip torch_hip_library EXPORT Caffe2Targets
++    RUNTIME DESTINATION "${TORCH_INSTALL_BIN_DIR}"
++    LIBRARY DESTINATION "${TORCH_INSTALL_LIB_DIR}"
++    ARCHIVE DESTINATION "${TORCH_INSTALL_LIB_DIR}"
++  )
+ endif()
+-install(TARGETS torch torch_library EXPORT Caffe2Targets DESTINATION "${TORCH_INSTALL_LIB_DIR}")
++install(TARGETS torch torch_library EXPORT Caffe2Targets
++  RUNTIME DESTINATION "${TORCH_INSTALL_BIN_DIR}"
++  LIBRARY DESTINATION "${TORCH_INSTALL_LIB_DIR}"
++  ARCHIVE DESTINATION "${TORCH_INSTALL_LIB_DIR}"
++)
+ 
+ target_link_libraries(torch PUBLIC torch_cpu_library)
+ 
+diff --git a/modules/detectron/CMakeLists.txt b/modules/detectron/CMakeLists.txt
+index 7c9a2d7..e32a7e9 100644
+--- a/modules/detectron/CMakeLists.txt
++++ b/modules/detectron/CMakeLists.txt
+@@ -19,9 +19,14 @@ if(BUILD_CAFFE2_OPS)
+     if(USE_MKLDNN)
+       target_link_libraries(caffe2_detectron_ops_gpu PRIVATE caffe2::mkldnn)
+     endif()
+-    install(TARGETS caffe2_detectron_ops_gpu DESTINATION lib)
++    set_target_properties(caffe2_detectron_ops_gpu PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
++    install(TARGETS caffe2_detectron_ops_gpu EXPORT Caffe2Targets
++      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    )
+     if(MSVC)
+-      install(FILES $<TARGET_PDB_FILE:caffe2_detectron_ops_gpu> DESTINATION lib OPTIONAL)
++      install(FILES $<TARGET_PDB_FILE:caffe2_detectron_ops_gpu> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+     endif()
+   elseif(USE_ROCM)
+     hip_include_directories(${Caffe2_HIP_INCLUDES})
+@@ -35,7 +40,12 @@ if(BUILD_CAFFE2_OPS)
+       target_link_libraries(caffe2_detectron_ops_hip PRIVATE caffe2::mkldnn)
+     endif()
+     target_link_libraries(caffe2_detectron_ops_hip PRIVATE torch)
+-    install(TARGETS caffe2_detectron_ops_hip DESTINATION lib)
++    set_target_properties(caffe2_detectron_ops_hip PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
++    install(TARGETS caffe2_detectron_ops_hip EXPORT Caffe2Targets
++      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    )
+   elseif(NOT IOS_PLATFORM)
+     add_library(caffe2_detectron_ops SHARED ${Detectron_CPU_SRCS})
+     if(HAVE_SOVERSION)
+@@ -49,9 +59,14 @@ if(BUILD_CAFFE2_OPS)
+     if(USE_MKLDNN)
+       target_link_libraries(caffe2_detectron_ops PRIVATE caffe2::mkldnn)
+     endif()
+-    install(TARGETS caffe2_detectron_ops DESTINATION lib)
++    install(TARGETS caffe2_detectron_ops EXPORT Caffe2Targets
++      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    )
+     if(MSVC)
+-      install(FILES $<TARGET_PDB_FILE:caffe2_detectron_ops> DESTINATION lib OPTIONAL)
++      set_target_properties(caffe2_detectron_ops PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
++      install(FILES $<TARGET_PDB_FILE:caffe2_detectron_ops> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+     endif()
+   endif()
+ endif()
+diff --git a/modules/observers/CMakeLists.txt b/modules/observers/CMakeLists.txt
+index 050b8a1..1298f3d 100644
+--- a/modules/observers/CMakeLists.txt
++++ b/modules/observers/CMakeLists.txt
+@@ -21,10 +21,14 @@ endif()
+ target_link_libraries(caffe2_observers PUBLIC torch_library)
+ target_include_directories(caffe2_observers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+ target_compile_options(caffe2_observers PRIVATE "-DCAFFE2_BUILD_OBSERVER_LIB")
+-install(TARGETS caffe2_observers DESTINATION lib)
++install(TARGETS caffe2_observers EXPORT Caffe2Targets
++  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
+ caffe2_interface_library(caffe2_observers caffe2_observers_library)
+ if(MSVC AND BUILD_SHARED_LIBS)
+-  install(FILES $<TARGET_PDB_FILE:caffe2_observers> DESTINATION lib OPTIONAL)
++  install(FILES $<TARGET_PDB_FILE:caffe2_observers> DESTINATION bin OPTIONAL)
+ endif()
+ 
+ if(CAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO)

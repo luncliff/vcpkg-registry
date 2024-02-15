@@ -1,0 +1,111 @@
+diff --git a/aten/src/ATen/Parallel.h b/aten/src/ATen/Parallel.h
+index ff14f56..90ba2f6 100644
+--- a/aten/src/ATen/Parallel.h
++++ b/aten/src/ATen/Parallel.h
+@@ -29,13 +29,7 @@ TORCH_API bool in_parallel_region();
+ namespace internal {
+ 
+ // Initialise num_threads lazily at first parallel call
+-inline void lazy_init_num_threads() {
+-  thread_local bool init = false;
+-  if (C10_UNLIKELY(!init)) {
+-    at::init_num_threads();
+-    init = true;
+-  }
+-}
++TORCH_API void lazy_init_num_threads();
+ 
+ TORCH_API void set_thread_num(int);
+ 
+diff --git a/aten/src/ATen/ParallelNative.cpp b/aten/src/ATen/ParallelNative.cpp
+index 3b9ea48..f0d7329 100644
+--- a/aten/src/ATen/ParallelNative.cpp
++++ b/aten/src/ATen/ParallelNative.cpp
+@@ -123,7 +123,13 @@ struct ParallelRegionGuard {
+ } // namespace
+ 
+ namespace internal {
+-
++void lazy_init_num_threads() {
++  thread_local bool init = false;
++  if (C10_UNLIKELY(!init)) {
++    at::init_num_threads();
++    init = true;
++  }
++}
+ inline std::tuple<size_t, size_t> calc_num_tasks_and_chunk_size(
+     int64_t begin, int64_t end, int64_t grain_size) {
+   if ((end - begin) < grain_size) {
+diff --git a/c10/util/Logging.cpp b/c10/util/Logging.cpp
+index ff8e1d6..ed371ac 100644
+--- a/c10/util/Logging.cpp
++++ b/c10/util/Logging.cpp
+@@ -1,6 +1,7 @@
+ #include <c10/util/Backtrace.h>
+ #include <c10/util/Flags.h>
+ #include <c10/util/Logging.h>
++#include <glog/logging.h>
+ #ifdef FBCODE_CAFFE2
+ #include <folly/synchronization/SanitizeThread.h>
+ #endif
+@@ -180,17 +181,6 @@ void setLogLevelFlagFromEnv();
+ } // namespace detail
+ } // namespace c10
+ 
+-#if defined(C10_USE_GFLAGS) && defined(C10_USE_GLOG)
+-// When GLOG depends on GFLAGS, these variables are being defined in GLOG
+-// directly via the GFLAGS definition, so we will use DECLARE_* to declare
+-// them, and use them in Caffe2.
+-// GLOG's minloglevel
+-DECLARE_int32(minloglevel);
+-// GLOG's verbose log value.
+-DECLARE_int32(v);
+-// GLOG's logtostderr value
+-DECLARE_bool(logtostderr);
+-#endif // defined(C10_USE_GFLAGS) && defined(C10_USE_GLOG)
+ 
+ #if !defined(C10_USE_GLOG)
+ // This backward compatibility flags are in order to deal with cases where
+@@ -218,23 +208,13 @@ C10_DEFINE_int(
+     google::GLOG_WARNING,
+     "The minimum log level that caffe2 will output.");
+ 
+-// Google glog's api does not have an external function that allows one to check
+-// if glog is initialized or not. It does have an internal function - so we are
+-// declaring it here. This is a hack but has been used by a bunch of others too
+-// (e.g. Torch).
+-namespace google {
+-namespace glog_internal_namespace_ {
+-bool IsGoogleLoggingInitialized();
+-} // namespace glog_internal_namespace_
+-} // namespace google
+-
+ namespace c10 {
+ namespace {
+ 
+ void initGoogleLogging(char const* name) {
+ #if !defined(_MSC_VER)
+   // This trick can only be used on UNIX platforms
+-  if (!::google::glog_internal_namespace_::IsGoogleLoggingInitialized())
++  if (!::google::IsGoogleLoggingInitialized())
+ #endif
+   {
+     ::google::InitGoogleLogging(name);
+diff --git a/torch/csrc/profiler/util.cpp b/torch/csrc/profiler/util.cpp
+index 180555f..3c271ee 100644
+--- a/torch/csrc/profiler/util.cpp
++++ b/torch/csrc/profiler/util.cpp
+@@ -1,5 +1,4 @@
+ #include <torch/csrc/autograd/function.h>
+-#include <torch/csrc/profiler/kineto_shim.h>
+ #include <torch/csrc/profiler/util.h>
+ 
+ #include <c10/util/ArrayRef.h>
+@@ -7,6 +6,7 @@
+ #include <fmt/format.h>
+ 
+ #ifdef USE_KINETO
++#include <torch/csrc/profiler/kineto_shim.h>
+ #include <libkineto.h>
+ #endif
+ 
