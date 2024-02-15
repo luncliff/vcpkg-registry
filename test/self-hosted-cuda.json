@@ -22,6 +22,7 @@
     {
       "name": "onnxruntime",
       "features": [
+        "openvino",
         "cuda",
         "directml",
         "python",
