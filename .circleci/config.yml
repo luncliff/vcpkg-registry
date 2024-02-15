@@ -84,8 +84,10 @@ jobs:
           destination: "build-logs"
 
   x64_linux_gcc:
-    docker:
-      - image: gcc:13.2
+    # docker:
+    #   - image: gcc:13.2
+    machine:
+      image: ubuntu-2204:current
     resource_class: large
     environment:
       VCPKG_DOWNLOADS: /tmp/vcpkg-caches
@@ -97,8 +99,8 @@ jobs:
       - run:
           name: "Setup: microsoft/vcpkg(2024.02.14)"
           command: |
-            apt-get update -y -q
-            apt-get install -y -q curl zip unzip tar
+            sudo apt-get update -y -q
+            sudo apt-get install -y -q curl zip unzip tar
             mkdir -p $VCPKG_DOWNLOADS
             mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
             git clone --branch=2024.02.14 --depth=1 https://github.com/microsoft/vcpkg
@@ -114,8 +116,8 @@ jobs:
       - run:
           name: "Install APT packages"
           command: |
-            apt-get install -y --fix-missing \
-              nasm
+            sudo apt-get install -y --fix-missing \
+              g++-12 libstdc++-12-dev ninja-build nasm
       - run:
           name: "Install: port-linux.txt"
           command: |
@@ -123,8 +125,11 @@ jobs:
               --recurse \
               --clean-buildtrees-after-build \
               --clean-packages-after-build \
-              --overlay-ports "/root/project/ports" \
-              $(cat "/root/project/.circleci/port-linux.txt")
+              --overlay-ports "$(pwd)/../ports" \
+              $(cat "$(pwd)/../.circleci/port-linux.txt")
+          environment:
+            CC: gcc-12
+            CXX: g++-12
           working_directory: vcpkg
       - save_cache:
           key: v2407-linux-{{ .Branch }}
