@@ -7,22 +7,20 @@ orbs:
   aws-s3: circleci/aws-s3@4.0
 
 workflows:
-  windows_ports:
+  overlay:
     jobs:
-      # - setup_cache:
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - gh-pages
-      #           - docs
       - x64_windows:
           filters:
             branches:
               ignore:
                 - gh-pages
                 - docs
-          # requires:
-          #   - setup_cache
+      - x64_linux_gcc:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+                - docs
 
 jobs:
   x64_windows:
@@ -84,6 +82,36 @@ jobs:
           paths:
             - C:/vcpkg-caches
       - store_artifacts:
-          name: "Upload: buildtrees log"
+          path: vcpkg/buildtrees/
+          destination: "build-logs"
+
+  x64_linux_gcc:
+    docker:
+      - image: gcc:13.2
+    resource_class: large
+    environment:
+      VCPKG_DEFAULT_TRIPLET: x64-linux
+    steps:
+      - checkout
+      - aws-cli/setup
+      - run:
+          name: "Setup: microsoft/vcpkg(2024.02.14)"
+          command: |
+            git clone --branch=2024.02.14 --depth=1 https://github.com/microsoft/vcpkg
+            pushd vcpkg
+              ./bootstrap-vcpkg.sh
+              ./vcpkg --version
+            popd
+      - run:
+          name: "Install: port-setup.txt"
+          command: |
+            ./vcpkg install \
+              --recurse \
+              --clean-buildtrees-after-build \
+              --clean-packages-after-build \
+              --overlay-ports="$CIRCLE_WORKING_DIRECTORY/ports" \
+              $(cat "$CIRCLE_WORKING_DIRECTORY/.circleci/port-setup.txt")
+          working_directory: vcpkg
+      - store_artifacts:
           path: vcpkg/buildtrees/
           destination: "build-logs"
