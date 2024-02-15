@@ -97,6 +97,8 @@ jobs:
       - run:
           name: "Setup: microsoft/vcpkg(2024.02.14)"
           command: |
+            apt-get update -y -q
+            apt-get install -y -q curl zip unzip tar
             git clone --branch=2024.02.14 --depth=1 https://github.com/microsoft/vcpkg
             pushd vcpkg
               ./bootstrap-vcpkg.sh
