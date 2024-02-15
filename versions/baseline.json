@@ -148,14 +148,6 @@
       "baseline": "2023-12-20",
       "port-version": 0
     },
-    "rvo2": {
-      "baseline": "2023-11-06",
-      "port-version": 0
-    },
-    "rvo2-3d": {
-      "baseline": "2023-11-06",
-      "port-version": 0
-    },
     "system-qt5": {
       "baseline": "2022-10-25",
       "port-version": 0

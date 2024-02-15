@@ -58,8 +58,6 @@
       ],
       "platform": "windows"
     },
-    "rvo2",
-    "rvo2-3d",
     {
       "name": "tensorflow-lite",
       "platform": "windows"
