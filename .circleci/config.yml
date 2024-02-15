@@ -112,7 +112,12 @@ jobs:
             - v2407-linux-{{ .Branch }}
             - v2407-linux-{{ checksum ".circleci/config.yml" }}
       - run:
-          name: "Install: port-setup.txt"
+          name: "Install APT packages"
+          command: |
+            apt-get install -y --fix-missing \
+              nasm
+      - run:
+          name: "Install: port-linux.txt"
           command: |
             ./vcpkg install \
               --recurse \
