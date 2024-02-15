@@ -1,6 +1,1 @@
-protobuf
-grpc[codegen]
-flatbuffers
-abseil
-gtest
-benchmark
+onnxruntime[openvino]
