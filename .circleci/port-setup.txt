@@ -1,6 +1,0 @@
-protobuf:x64-windows
-grpc[codegen]:x64-windows
-flatbuffers:x64-windows
-abseil:x64-windows
-gtest:x64-windows
-benchmark:x64-windows

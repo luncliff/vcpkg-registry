@@ -1,0 +1,6 @@
+protobuf
+grpc[codegen]
+flatbuffers
+abseil
+gtest
+benchmark
