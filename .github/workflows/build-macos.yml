@@ -11,8 +11,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2023.12.12"
-            vcpkg_commit: "c8696863d371ab7f46e213d8f5ca923c4aef2a00"
+          # - vcpkg_tag: "2023.12.12"
+          #   vcpkg_commit: "c8696863d371ab7f46e213d8f5ca923c4aef2a00"
+          # - vcpkg_tag: "2024.01.12"
+          #   vcpkg_commit: "53bef8994c541b6561884a8395ea35715ece75db"
+          - vcpkg_tag: "2024.02.14"
+            vcpkg_commit: "fba75d09065fcc76a25dcf386b1d00d33f5175af"
       fail-fast: false
     env:
       VCPKG_DOWNLOADS: "/usr/local/share/vcpkg-downloads"

@@ -25,7 +25,7 @@ schedules:
 variables:
   # check https://github.com/microsoft/vcpkg/releases
   - name: vcpkg.commit
-    value: "c8696863d371ab7f46e213d8f5ca923c4aef2a00" # 2023.12.12
+    value: "fba75d09065fcc76a25dcf386b1d00d33f5175af" # 2024.02.14
 
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
