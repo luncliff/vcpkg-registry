@@ -48,10 +48,9 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - v2406-caches-{{ .Branch }}
-            - v2406-caches-{{ checksum ".circleci/config.yml" }}
-            - v2406-caches-main
-            - v2404-caches-main
+            - v2407-windows-{{ .Branch }}
+            - v2407-windows-{{ checksum ".circleci/config.yml" }}
+            - v2407-windows-main
       - run:
           name: "Install: port-windows.txt"
           shell: "powershell.exe"
@@ -60,8 +59,7 @@ jobs:
               --recurse `
               --clean-buildtrees-after-build `
               --clean-packages-after-build `
-              --overlay-ports="$env:CIRCLE_WORKING_DIRECTORY/ports" `
-              $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-setup.txt") `
+              --overlay-ports "$env:CIRCLE_WORKING_DIRECTORY/ports" `
               $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-windows.txt")
           working_directory: vcpkg
           no_output_timeout: 1h
@@ -70,15 +68,15 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: v2406-caches-main
+              key: v2407-windows-main
               paths:
                 - C:/vcpkg-caches
       - save_cache:
-          key: v2406-caches-{{ .Branch }}
+          key: v2407-windows-{{ .Branch }}
           paths:
             - C:/vcpkg-caches
       - save_cache:
-          key: v2406-caches-{{ checksum ".circleci/config.yml" }}
+          key: v2407-windows-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-caches
       - store_artifacts:
@@ -90,6 +88,8 @@ jobs:
       - image: gcc:13.2
     resource_class: large
     environment:
+      VCPKG_DOWNLOADS: /tmp/vcpkg-caches
+      VCPKG_DEFAULT_BINARY_CACHE: /tmp/vcpkg-caches
       VCPKG_DEFAULT_TRIPLET: x64-linux
     steps:
       - checkout
@@ -99,11 +99,18 @@ jobs:
           command: |
             apt-get update -y -q
             apt-get install -y -q curl zip unzip tar
+            mkdir -p $VCPKG_DOWNLOADS
+            mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
             git clone --branch=2024.02.14 --depth=1 https://github.com/microsoft/vcpkg
             pushd vcpkg
               ./bootstrap-vcpkg.sh
               ./vcpkg --version
             popd
+            pwd
+      - restore_cache:
+          keys:
+            - v2407-linux-{{ .Branch }}
+            - v2407-linux-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Install: port-setup.txt"
           command: |
@@ -111,9 +118,17 @@ jobs:
               --recurse \
               --clean-buildtrees-after-build \
               --clean-packages-after-build \
-              --overlay-ports="$CIRCLE_WORKING_DIRECTORY/ports" \
-              $(cat "$CIRCLE_WORKING_DIRECTORY/.circleci/port-setup.txt")
+              --overlay-ports "/root/project/ports" \
+              $(cat "/root/project/.circleci/port-linux.txt")
           working_directory: vcpkg
+      - save_cache:
+          key: v2407-linux-{{ .Branch }}
+          paths:
+            - /tmp/vcpkg-caches
+      - save_cache:
+          key: v2407-linux-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - /tmp/vcpkg-caches
       - store_artifacts:
           path: vcpkg/buildtrees/
           destination: "build-logs"
