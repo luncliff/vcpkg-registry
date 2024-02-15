@@ -49,6 +49,8 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         cuda      onnxruntime_USE_CUDA
         cuda      onnxruntime_USE_CUDA_NHWC_OPS
         openvino  onnxruntime_USE_OPENVINO
+        openvino  onnxruntime_USE_OPENVINO_GPU_FP32
+        openvino  onnxruntime_USE_OPENVINO_CPU_FP32
         tensorrt  onnxruntime_USE_TENSORRT
         tensorrt  onnxruntime_USE_TENSORRT_BUILTIN_PARSER
         directml  onnxruntime_USE_DML
@@ -70,7 +72,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         mpi       onnxruntime_USE_MPI
     INVERTED_FEATURES
         abseil    onnxruntime_DISABLE_ABSEIL
-        training  onnxruntime_DISABLE_RTTI
         cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
 
@@ -141,10 +142,7 @@ if("cuda" IN_LIST FEATURES)
     message(STATUS "  version: ${CUDA_VERSION}")
 endif()
 
-if("openvino" IN_LIST FEATURES)
-    set(ENV{INTEL_OPENVINO_DIR} "2023.0")
-endif()
-
+# see tools/ci_build/build.py
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
     ${GENERATOR_OPTIONS}
@@ -171,6 +169,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
         -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
         -Donnxruntime_NVCC_THREADS=1 # parallel compilation
+        -Donnxruntime_DISABLE_RTTI=OFF
         -Donnxruntime_USE_NEURAL_SPEED=OFF
         -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO
