@@ -101,3 +101,30 @@ index ad31e40..e6254ff 100644
  set(TENSORBOARD_ROOT ${tensorboard_SOURCE_DIR})
  
  # tensorboard protos
+diff --git a/cmake/onnxruntime.cmake b/cmake/onnxruntime.cmake
+index 35c18e1..c4e012f 100644
+--- a/cmake/onnxruntime.cmake
++++ b/cmake/onnxruntime.cmake
+@@ -320,6 +320,9 @@ if(onnxruntime_BUILD_APPLE_FRAMEWORK)
+ 
+   # for external libraries we create a symlink to the .a file
+   foreach(_LIB ${onnxruntime_EXTERNAL_LIBRARIES})
++    if(NOT TARGET ${_LIB}) # if we didn't build from source. it may not a target
++      continue()
++    endif()
+     GET_TARGET_PROPERTY(_LIB_TYPE ${_LIB} TYPE)
+     if(_LIB_TYPE STREQUAL "STATIC_LIBRARY")
+       add_custom_command(TARGET onnxruntime POST_BUILD
+diff --git a/cmake/onnxruntime_providers_openvino.cmake b/cmake/onnxruntime_providers_openvino.cmake
+index e26f0bf..5b9a02b 100644
+--- a/cmake/onnxruntime_providers_openvino.cmake
++++ b/cmake/onnxruntime_providers_openvino.cmake
+@@ -45,7 +45,7 @@
+   if(NOT MSVC)
+     target_compile_options(onnxruntime_providers_openvino PRIVATE "-Wno-parentheses")
+   endif()
+-  add_dependencies(onnxruntime_providers_openvino onnxruntime_providers_shared ${onnxruntime_EXTERNAL_DEPENDENCIES})
++  add_dependencies(onnxruntime_providers_openvino ${onnxruntime_EXTERNAL_DEPENDENCIES})
+   target_include_directories(onnxruntime_providers_openvino SYSTEM PUBLIC ${ONNXRUNTIME_ROOT} ${CMAKE_CURRENT_BINARY_DIR} ${eigen_INCLUDE_DIRS} ${OpenVINO_INCLUDE_DIR} ${OPENVINO_INCLUDE_DIR_LIST} ${PYTHON_INCLUDE_DIRS} $ENV{OPENCL_INCS} $ENV{OPENCL_INCS}/../../cl_headers/)
+   target_link_libraries(onnxruntime_providers_openvino ${ONNXRUNTIME_PROVIDERS_SHARED} Boost::mp11 ${OPENVINO_LIB_LIST} ${ABSEIL_LIBS})
+ 

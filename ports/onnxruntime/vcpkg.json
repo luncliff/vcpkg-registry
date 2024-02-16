@@ -100,18 +100,8 @@
     "tensorrt": {
       "description": "Build with NVIDIA TensorRT support"
     },
-    "test": {
-      "description": "Build ONNXRuntime unit tests",
-      "dependencies": [
-        "benchmark",
-        "gtest"
-      ]
-    },
     "training": {
       "description": "Build with NCCL support"
-    },
-    "winml": {
-      "description": "Build with WinML support"
     },
     "xnnpack": {
       "description": "Build with XNNPack support",

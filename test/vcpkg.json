@@ -27,11 +27,12 @@
       "platform": "windows"
     },
     {
-      "name": "openvino",
+      "name": "onnxruntime",
       "features": [
-        "onnx"
+        "openvino",
+        "training"
       ],
-      "platform": "windows | linux"
+      "platform": "windows"
     },
     "etcpak",
     {

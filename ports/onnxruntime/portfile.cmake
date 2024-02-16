@@ -1,7 +1,7 @@
-if(NOT VCPKG_TARGET_IS_IOS)
-    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
+if(VCPKG_TARGET_IS_IOS)
+    vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 endif()
-if(VCPKG_TARGET_IS_OSX AND ("framework" IN_LIST FEATURES))
+if("framework" IN_LIST FEATURES)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
 
@@ -49,8 +49,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         cuda      onnxruntime_USE_CUDA
         cuda      onnxruntime_USE_CUDA_NHWC_OPS
         openvino  onnxruntime_USE_OPENVINO
-        openvino  onnxruntime_USE_OPENVINO_GPU_FP32
-        openvino  onnxruntime_USE_OPENVINO_CPU_FP32
         tensorrt  onnxruntime_USE_TENSORRT
         tensorrt  onnxruntime_USE_TENSORRT_BUILTIN_PARSER
         directml  onnxruntime_USE_DML
@@ -184,6 +182,8 @@ vcpkg_cmake_configure(
         onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         onnxruntime_USE_CUSTOM_DIRECTML
         onnxruntime_NVCC_THREADS
+        InferenceEngine_DIR
+        ngraph_DIR
 )
 vcpkg_cmake_build(TARGET onnxruntime LOGFILE_BASE build-onnxruntime)
 vcpkg_cmake_install()
@@ -191,25 +191,17 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxrunt
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
 
-if("test" IN_LIST FEATURES)
-    vcpkg_copy_tools(TOOL_NAMES onnx_test_runner AUTO_CLEAN)
-endif()
 if("framework" IN_LIST FEATURES)
-    set(FRAMEWORK_NAME "onnxruntime.framework")
-    file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/${FRAMEWORK_NAME}"
-                "${CURRENT_PACKAGES_DIR}/debug/lib/${FRAMEWORK_NAME}"
-    )
-    file(RENAME "${CURRENT_PACKAGES_DIR}/bin/${FRAMEWORK_NAME}"
-                "${CURRENT_PACKAGES_DIR}/lib/${FRAMEWORK_NAME}"
-    )
+    foreach(FRAMEWORK_NAME "onnxruntime.framework" "onnxruntime_objc.framework")
+        file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/${FRAMEWORK_NAME}" "${CURRENT_PACKAGES_DIR}/debug/lib/${FRAMEWORK_NAME}")
+        file(RENAME "${CURRENT_PACKAGES_DIR}/bin/${FRAMEWORK_NAME}" "${CURRENT_PACKAGES_DIR}/lib/${FRAMEWORK_NAME}")
+    endforeach()
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin" "${CURRENT_PACKAGES_DIR}/bin")
 endif()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
-    file(REMOVE_RECURSE
-        "${CURRENT_PACKAGES_DIR}/debug/bin"
-        "${CURRENT_PACKAGES_DIR}/bin"
-    )
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin" "${CURRENT_PACKAGES_DIR}/bin")
 endif()
 
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

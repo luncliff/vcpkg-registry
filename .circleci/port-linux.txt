@@ -1,1 +1,1 @@
-onnxruntime[xnnpack,training,python,mpi]
+onnxruntime[xnnpack,python,mpi]
