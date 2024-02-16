@@ -1,16 +1,19 @@
-if(NOT VCPKG_TARGET_IS_IOS)
+if(VCPKG_TARGET_IS_IOS)
+    vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
+elseif(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_ANDROID)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
-if(VCPKG_TARGET_IS_OSX AND ("framework" IN_LIST FEATURES))
+if("framework" IN_LIST FEATURES)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
+string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
 # requires https://github.com/microsoft/onnxruntime/pull/18038 for later version of XNNPACK
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF 5fade70b5052efae1553e8e3ac0b06a527877ef0
-    SHA512 84dcb491cf44093934bef4139cbcf227200d2a16aaeb49c6ab6b9aa35023fb4583190974422f49ac81b91c2c5eae16d577f46000b9cfcdf390bc4fbdc3b64288
+    REF v1.17.0
+    SHA512 63f1b8a8ede1d45d68c341c0df60ee360e689d513626ac2ad07b50930651321bd6cf661f628bd6768c10a0b3029ced51ad0df05060be028f0e820512ad4c5bc1
     PATCHES
         fix-cmake.patch
         fix-source-flatbuffers.patch
@@ -48,7 +51,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         # training  onnxruntime_ENABLE_TRAINING_OPS
         cuda      onnxruntime_USE_CUDA
         cuda      onnxruntime_USE_CUDA_NHWC_OPS
-        # cuda      onnxruntime_USE_CUTLASS
         openvino  onnxruntime_USE_OPENVINO
         tensorrt  onnxruntime_USE_TENSORRT
         tensorrt  onnxruntime_USE_TENSORRT_BUILTIN_PARSER
@@ -71,8 +73,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         mpi       onnxruntime_USE_MPI
     INVERTED_FEATURES
         abseil    onnxruntime_DISABLE_ABSEIL
-        training  onnxruntime_DISABLE_RTTI
-        cuda      onnxruntime_USE_CUTLASS
         cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
 
@@ -116,8 +116,6 @@ if(VCPKG_TARGET_IS_WINDOWS)
     endif()
 endif()
 
-string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
-
 if("python" IN_LIST FEATURES)
     x_vcpkg_get_python_packages(
         PYTHON_VERSION 3
@@ -143,6 +141,7 @@ if("cuda" IN_LIST FEATURES)
     message(STATUS "  version: ${CUDA_VERSION}")
 endif()
 
+# see tools/ci_build/build.py
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
     ${GENERATOR_OPTIONS}
@@ -151,6 +150,8 @@ vcpkg_cmake_configure(
         ${FEATURE_OPTIONS}
         -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
+        -DInferenceEngine_DIR:PATH=${CURRENT_INSTALLED_DIR}/share/openvino
+        -Dngraph_DIR:PATH=${CURRENT_INSTALLED_DIR}/share/openvino
         # -DProtobuf_USE_STATIC_LIBS=OFF
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
@@ -167,9 +168,12 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
         -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
         -Donnxruntime_NVCC_THREADS=1 # parallel compilation
+        -Donnxruntime_DISABLE_RTTI=OFF
+        -Donnxruntime_USE_NEURAL_SPEED=OFF
+        -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO
-        -DORT_GIT_COMMIT:STRING="5fade70b5052efae1553e8e3ac0b06a527877ef0"
-        -DORT_GIT_BRANCH:STRING="main"
+        -DORT_GIT_COMMIT:STRING="5f0b62cde54f59bdeac7978c9f9c12d0a4bc56db"
+        -DORT_GIT_BRANCH:STRING="v1.17.0"
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
@@ -179,6 +183,8 @@ vcpkg_cmake_configure(
         onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         onnxruntime_USE_CUSTOM_DIRECTML
         onnxruntime_NVCC_THREADS
+        InferenceEngine_DIR
+        ngraph_DIR
 )
 vcpkg_cmake_build(TARGET onnxruntime LOGFILE_BASE build-onnxruntime)
 vcpkg_cmake_install()
@@ -186,25 +192,17 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxrunt
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
 
-if("test" IN_LIST FEATURES)
-    vcpkg_copy_tools(TOOL_NAMES onnx_test_runner AUTO_CLEAN)
-endif()
 if("framework" IN_LIST FEATURES)
-    set(FRAMEWORK_NAME "onnxruntime.framework")
-    file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/${FRAMEWORK_NAME}"
-                "${CURRENT_PACKAGES_DIR}/debug/lib/${FRAMEWORK_NAME}"
-    )
-    file(RENAME "${CURRENT_PACKAGES_DIR}/bin/${FRAMEWORK_NAME}"
-                "${CURRENT_PACKAGES_DIR}/lib/${FRAMEWORK_NAME}"
-    )
+    foreach(FRAMEWORK_NAME "onnxruntime.framework" "onnxruntime_objc.framework")
+        file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/${FRAMEWORK_NAME}" "${CURRENT_PACKAGES_DIR}/debug/lib/${FRAMEWORK_NAME}")
+        file(RENAME "${CURRENT_PACKAGES_DIR}/bin/${FRAMEWORK_NAME}" "${CURRENT_PACKAGES_DIR}/lib/${FRAMEWORK_NAME}")
+    endforeach()
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin" "${CURRENT_PACKAGES_DIR}/bin")
 endif()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
-    file(REMOVE_RECURSE
-        "${CURRENT_PACKAGES_DIR}/debug/bin"
-        "${CURRENT_PACKAGES_DIR}/bin"
-    )
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin" "${CURRENT_PACKAGES_DIR}/bin")
 endif()
 
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

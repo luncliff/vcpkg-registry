@@ -48,8 +48,8 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - v2407-windows-{{ .Branch }}
             - v2407-windows-{{ checksum ".circleci/config.yml" }}
+            - v2407-windows-{{ .Branch }}
             - v2407-windows-main
       - run:
           name: "Install: port-windows.txt"
@@ -111,8 +111,9 @@ jobs:
             pwd
       - restore_cache:
           keys:
-            - v2407-linux-{{ .Branch }}
             - v2407-linux-{{ checksum ".circleci/config.yml" }}
+            - v2407-linux-{{ .Branch }}
+            - v2407-linux-main
       - run:
           name: "Install APT packages"
           command: |
@@ -131,6 +132,7 @@ jobs:
             CC: gcc-12
             CXX: g++-12
           working_directory: vcpkg
+          no_output_timeout: 1h
       - save_cache:
           key: v2407-linux-{{ .Branch }}
           paths:
