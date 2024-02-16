@@ -1,1 +1,4 @@
-onnxruntime[xnnpack,python,mpi]
+protobuf
+grpc[codegen]
+flatbuffers
+abseil

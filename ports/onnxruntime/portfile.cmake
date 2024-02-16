@@ -1,9 +1,12 @@
 if(VCPKG_TARGET_IS_IOS)
     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
+elseif(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_ANDROID)
+    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
 if("framework" IN_LIST FEATURES)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
+string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
 # requires https://github.com/microsoft/onnxruntime/pull/18038 for later version of XNNPACK
 vcpkg_from_github(
@@ -112,8 +115,6 @@ if(VCPKG_TARGET_IS_WINDOWS)
         list(APPEND ARCH_OPTIONS -DCMAKE_SYSTEM_PROCESSOR="${VCPKG_TARGET_ARCHITECTURE}")
     endif()
 endif()
-
-string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
 if("python" IN_LIST FEATURES)
     x_vcpkg_get_python_packages(
