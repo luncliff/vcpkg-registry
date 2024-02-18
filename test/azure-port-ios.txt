@@ -1,2 +1,3 @@
 tensorflow-lite
 miniaudio
+coreml-tools
