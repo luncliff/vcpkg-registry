@@ -5,8 +5,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO NVIDIA/cutlass
-    REF v3.4.0
-    SHA512 6debdfa0ffbb9c14293619a281e864ac16592f64856e4a54ae456a79cbce3ec2f5068031f4eae589e72fb10c3c61f1fa6d3fa14650754a27c4b12e14774e7f75
+    REF v3.4.1
+    SHA512 c2ff60af28de951cf4420b163ba2dfc46d30c98fe9e6e765cd1e0be89bf9292e057542ec7061c043c42225b74d970f95f675d366db64105a5c103bb165183ab5
     PATCHES
         fix-cmake.patch
     HEAD_REF main
