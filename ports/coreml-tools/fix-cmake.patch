@@ -233,7 +233,7 @@ index ab4679c..259b4ef 100644
 +            add_custom_target(tgt_${proto_fn}_enums ALL
 +                COMMENT "Generating c++ enums from ${proto_fn}.proto into ${CMAKE_CURRENT_SOURCE_DIR}/build/format/"
 +                COMMAND ${Protobuf_PROTOC_EXECUTABLE}
-+                    --plugin=protoc-gen-enum=mlmodel${target_suffix}/enumgen
++                    --plugin=protoc-gen-enum=${ENUMGEN}
 +                    --enum_out=${CMAKE_CURRENT_SOURCE_DIR}/build/format/
 +                    -I${CMAKE_CURRENT_SOURCE_DIR}/format/
 +                    ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
@@ -244,7 +244,7 @@ index ab4679c..259b4ef 100644
 +            add_custom_target(tgt_${proto_fn}_enums ALL
 +                COMMENT "Generating c++ enums from ${proto_fn}.proto into ${CMAKE_CURRENT_SOURCE_DIR}/build/format/"
 +                COMMAND ${Protobuf_PROTOC_EXECUTABLE}
-+                    --plugin=protoc-gen-enum=mlmodel/enumgen
++                    --plugin=protoc-gen-enum=${ENUMGEN}
 +                    --enum_out=${CMAKE_CURRENT_SOURCE_DIR}/build/format/
 +                    -I${CMAKE_CURRENT_SOURCE_DIR}/format/
 +                    ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
