@@ -15,6 +15,7 @@
     },
     "nvidia-cnmem",
     "nvidia-cutlass",
+    "nvidia-nvbench",
     "nvidia-tools-extension-sdk",
     "nvidia-triton-common",
     "nvidia-triton-core",
