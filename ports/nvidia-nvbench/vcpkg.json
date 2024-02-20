@@ -1,0 +1,20 @@
+{
+  "name": "nvidia-nvbench",
+  "version-date": "2024-01-13",
+  "description": "CUDA Kernel Benchmarking Library",
+  "homepage": "https://github.com/NVIDIA/nvbench",
+  "license": "Apache-2.0",
+  "dependencies": [
+    "cuda",
+    "fmt",
+    "nlohmann-json",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
