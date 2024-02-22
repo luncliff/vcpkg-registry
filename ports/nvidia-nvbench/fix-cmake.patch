@@ -1,0 +1,99 @@
+diff --git a/cmake/NVBenchConfigTarget.cmake b/cmake/NVBenchConfigTarget.cmake
+index 5e5e270..6032918 100644
+--- a/cmake/NVBenchConfigTarget.cmake
++++ b/cmake/NVBenchConfigTarget.cmake
+@@ -74,6 +74,11 @@ target_compile_options(nvbench.build_interface INTERFACE
+   $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--display_error_number>
+   $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Wno-deprecated-gpu-targets>
+ )
++if (WIN32)
++  target_compile_definitions(nvbench.build_interface INTERFACE
++    _USE_MATH_DEFINES
++  )
++endif()
+ if (NVBench_ENABLE_WERROR)
+   target_compile_options(nvbench.build_interface INTERFACE
+     $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--promote_warnings>
+diff --git a/cmake/NVBenchDependencies.cmake b/cmake/NVBenchDependencies.cmake
+index 78fa758..e4a91fe 100644
+--- a/cmake/NVBenchDependencies.cmake
++++ b/cmake/NVBenchDependencies.cmake
+@@ -1,48 +1,18 @@
+ ################################################################################
+ # fmtlib/fmt
+-include("${rapids-cmake-dir}/cpm/fmt.cmake")
++find_package(fmt CONFIG REQUIRED)
+ 
+ if(NOT BUILD_SHARED_LIBS AND NVBench_ENABLE_INSTALL_RULES)
+ set(export_set_details BUILD_EXPORT_SET nvbench-targets
+                        INSTALL_EXPORT_SET nvbench-targets)
+ endif()
+ 
+-rapids_cpm_fmt(${export_set_details}
+-  CPM_ARGS
+-    OPTIONS
+-      # Force static to keep fmt internal.
+-      "BUILD_SHARED_LIBS OFF"
+-)
+ 
+-if(NOT fmt_ADDED)
+-  set(fmt_is_external TRUE)
+-endif()
++set(fmt_is_external TRUE) # from vcpkg
+ 
+ ################################################################################
+ # nlohmann/json
+-#
+-# Following recipe from
+-# http://github.com/cpm-cmake/CPM.cmake/blob/master/examples/json/CMakeLists.txt
+-# Download the zips because the repo takes an excessively long time to clone.
+-rapids_cpm_find(nlohmann_json 3.9.1
+-  # Release:
+-  CPM_ARGS
+-    URL https://github.com/nlohmann/json/releases/download/v3.9.1/include.zip
+-    URL_HASH SHA256=6bea5877b1541d353bd77bdfbdb2696333ae5ed8f9e8cc22df657192218cad91
+-    PATCH_COMMAND
+-      # Work around compiler bug in nvcc 11.0, see NVIDIA/NVBench#18
+-      ${CMAKE_COMMAND} -E copy
+-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/patches/nlohmann_json.hpp"
+-        "./include/nlohmann/json.hpp"
+-
+-  # Development version:
+-  # I'm waiting for https://github.com/nlohmann/json/issues/2676 to be fixed,
+-  # leave this in to simplify testing patches as they come out.
+-  #  CPM_ARGS
+-  #    VERSION develop
+-  #    URL https://github.com/nlohmann/json/archive/refs/heads/develop.zip
+-  #    OPTIONS JSON_MultipleHeaders ON
+-)
++find_package(nlohmann_json CONFIG REQUIRED)
+ 
+ add_library(nvbench_json INTERFACE IMPORTED)
+ if (TARGET nlohmann_json::nlohmann_json)
+diff --git a/cmake/NVBenchInstallRules.cmake b/cmake/NVBenchInstallRules.cmake
+index 16e9b7e..a475631 100644
+--- a/cmake/NVBenchInstallRules.cmake
++++ b/cmake/NVBenchInstallRules.cmake
+@@ -55,8 +55,10 @@ endif()
+ function(nvbench_install_libraries)
+   if(NVBench_ENABLE_INSTALL_RULES)
+     install(TARGETS ${ARGN}
+-      DESTINATION "${NVBench_INSTALL_LIB_DIR}"
+       EXPORT nvbench-targets
++      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+     )
+   endif()
+ endfunction()
+diff --git a/cmake/NVBenchRapidsCMake.cmake b/cmake/NVBenchRapidsCMake.cmake
+index b110ccc..a6a5e00 100644
+--- a/cmake/NVBenchRapidsCMake.cmake
++++ b/cmake/NVBenchRapidsCMake.cmake
+@@ -21,5 +21,5 @@ endmacro()
+ macro(nvbench_init_rapids_cmake)
+   rapids_cmake_build_type(Release)
+   rapids_cmake_write_version_file("${NVBench_BINARY_DIR}/nvbench/detail/version.cuh")
+-  rapids_cpm_init()
++  # rapids_cpm_init() # vcpkg will be used
+ endmacro()
