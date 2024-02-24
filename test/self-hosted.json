@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "test",
+  "version-date": "2024-02-24",
+  "description": "vcpkg registry maintained by @luncliff",
+  "homepage": "https://github.com/luncliff/vcpkg-registry",
+  "supports": "windows",
+  "dependencies": [
+    {
+      "name": "openjdk-jdk",
+      "platform": "x64 & windows"
+    }
+  ]
+}
