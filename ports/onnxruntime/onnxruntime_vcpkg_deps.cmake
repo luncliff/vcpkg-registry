@@ -17,7 +17,7 @@ if (onnxruntime_BUILD_BENCHMARKS)
 endif()
 
 # Flatbuffers
-find_package(flatbuffers CONFIG REQUIRED) # flatbuffers::flatbuffers
+find_package(Flatbuffers CONFIG REQUIRED) # flatbuffers::flatbuffers
 list(APPEND onnxruntime_EXTERNAL_DEPENDENCIES flatbuffers::flatbuffers)
 list(APPEND onnxruntime_EXTERNAL_LIBRARIES flatbuffers::flatbuffers)
 
