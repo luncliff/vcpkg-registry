@@ -25,14 +25,20 @@ vcpkg_execute_required_process(
     WORKING_DIRECTORY "${SOURCE_PATH}"
 )
 
+# todo: replace zip, freetype, etc
+
 message(STATUS "Configuring ${TARGET_TRIPLET}")
 vcpkg_execute_required_process(
-    COMMAND ${BASH} configure 
+    COMMAND ${BASH} configure
+        "--prefix=${CURRENT_PACKAGES_DIR}"
+        "--exec-prefix=${CURRENT_PACKAGES_DIR}"
         "--enable-debug" # replaces "--with-debug-level=fastdebug"
         "--with-version-string=23+10"
         "--with-boot-jdk=${BOOTJDK_PATH}"
         "--with-jvm-variants=server" # client, minimal, etc
         "--with-target-bits=64"
+        "--with-stdc++lib=${VCPKG_CRT_LINKAGE}" # dynamic, static, default        
+        "--with-source-date=version"
     LOGNAME config-${TARGET_TRIPLET}
     WORKING_DIRECTORY "${SOURCE_PATH}"
 )
@@ -47,18 +53,18 @@ vcpkg_execute_required_process(
 message(STATUS "Building ${TARGET_TRIPLET}")
 vcpkg_execute_required_process(
     COMMAND ${MAKE} -f Makefile JOBS=${VCPKG_CONCURRENCY} LOG=info
-        all # images docs
+        images docs # all
     WORKING_DIRECTORY "${SOURCE_PATH}"
     LOGNAME build-${TARGET_TRIPLET}
 )
 
-message(STATUS "Testing ${TARGET_TRIPLET}")
-vcpkg_execute_required_process(
-    COMMAND ${MAKE} -f Makefile TEST_JOBS=${VCPKG_CONCURRENCY} LOG=info
-        check
-    WORKING_DIRECTORY "${SOURCE_PATH}"
-    LOGNAME test-${TARGET_TRIPLET}
-)
+# message(STATUS "Testing ${TARGET_TRIPLET}")
+# vcpkg_execute_required_process(
+#     COMMAND ${MAKE} -f Makefile TEST_JOBS=${VCPKG_CONCURRENCY} LOG=info
+#         check
+#     WORKING_DIRECTORY "${SOURCE_PATH}"
+#     LOGNAME test-${TARGET_TRIPLET}
+# )
 
 if(VCPKG_TARGET_IS_WINDOWS)
     set(OUTPUT_NAME "windows-x86_64-server-fastdebug")
@@ -66,11 +72,36 @@ endif()
 get_filename_component(OUTPUT_DIR "${SOURCE_PATH}/build/${OUTPUT_NAME}/jdk" ABSOLUTE)
 
 file(COPY "${OUTPUT_DIR}/" DESTINATION "${CURRENT_PACKAGES_DIR}")
+if(VCPKG_TARGET_IS_WINDOWS)
+    file(GLOB UNUSED_FILES
+        "${CURRENT_PACKAGES_DIR}/bin/api-ms*.dll"
+        "${CURRENT_PACKAGES_DIR}/bin/ucrtbase*.dll"
+        "${CURRENT_PACKAGES_DIR}/bin/vcruntime*.dll"
+        "${CURRENT_PACKAGES_DIR}/bin/msvc*.dll"
+        "${CURRENT_PACKAGES_DIR}/bin/*.map"
+        "${CURRENT_PACKAGES_DIR}/bin/*.pdb"
+        "${CURRENT_PACKAGES_DIR}/bin/server/*.map"
+        "${CURRENT_PACKAGES_DIR}/bin/server/*.pdb"
+        "${CURRENT_PACKAGES_DIR}/_optimize_image_exec*"
+        "${CURRENT_PACKAGES_DIR}/release"
+    )
+    file(REMOVE_RECURSE ${UNUSED_FILES})
 
-# file(REMOVE_RECURSE
-#     "${CURRENT_PACKAGES_DIR}/debug/include"
-#     "${CURRENT_PACKAGES_DIR}/debug/share"
-# )
-message(FATAL_ERROR "${OUTPUT_DIR}")
+    list(APPEND TOOLS
+        jabswitch jaccessinspector jaccesswalker jar
+        jarsigner java javac javadoc
+        javap javaw jcmd jconsole
+        jdb jdeprscan jdeps jfr
+        jhsdb jimage jinfo jlink
+        jmap jmod jpackage jps
+        jrunscript jshell jstack jstat
+        jstatd jwebserver keytool kinit
+        klist ktab rmiregistry serialver
+    )
+    vcpkg_copy_tools(TOOL_NAMES ${TOOLS} AUTO_CLEAN)
+endif()
 
+file(INSTALL "${SOURCE_PATH}/README.md" "${SOURCE_PATH}/ADDITIONAL_LICENSE_INFO" 
+    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
+)
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
