@@ -91,8 +91,8 @@ vcpkg_execute_required_process(
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)
-    set(OUTPUT_NAME "windows-x86_64-server-fastdebug")
-    get_filename_component(OUTPUT_DIR "${SOURCE_PATH}/build/${OUTPUT_NAME}/jdk" ABSOLUTE)
+    set(OUTPUT_NAME "windows-x86_64-server-release")
+    get_filename_component(OUTPUT_DIR "${BUILD_DIR_REL}/build/${OUTPUT_NAME}/jdk" ABSOLUTE)
     file(COPY "${OUTPUT_DIR}/" DESTINATION "${CURRENT_PACKAGES_DIR}")
     include(${CMAKE_CURRENT_LIST_DIR}/windows-cleanup.cmake)
 endif()
