@@ -9,10 +9,8 @@ jobs:
   cuda_x64_windows:
     runs-on: ["self-hosted", "Windows", "CUDA"]
     continue-on-error: true
-    timeout-minutes: 180
+    timeout-minutes: 300
     env:
-      VCPKG_DOWNLOADS: "C:/vcpkg/downloads"
-      VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg/archives"
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
