@@ -1,0 +1,13 @@
+{
+  "name": "info-zip",
+  "version-date": "2008-09-24",
+  "description": "...",
+  "homepage": "https://infozip.sourceforge.net/Zip.html",
+  "dependencies": [
+    "zlib",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}
