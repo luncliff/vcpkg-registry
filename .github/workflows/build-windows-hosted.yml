@@ -1,4 +1,4 @@
-name: "Windows(CUDA)"
+name: "Windows(Hosted)"
 
 on: [push, workflow_dispatch]
 
@@ -6,9 +6,8 @@ env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
 
 jobs:
-  cuda_x64_windows:
-    runs-on: ["self-hosted", "Windows", "CUDA"]
-    continue-on-error: true
+  x64_windows:
+    runs-on: ["self-hosted", "Windows"]
     timeout-minutes: 300
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -22,8 +21,7 @@ jobs:
       - name: "create cache folders"
         run: |
           New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
-          New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
-          Move-Item -Path "test/self-hosted-cuda.json" -Destination "test/vcpkg.json" -Force
+          Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
 
       - uses: lukka/run-vcpkg@v11.5
         with:
