@@ -9,7 +9,10 @@ vcpkg_acquire_msys(MSYS_ROOT Z_ALL_PACKAGES)
 vcpkg_add_to_path(PREPEND "${MSYS_ROOT}")
 vcpkg_add_to_path(PREPEND "${MSYS_ROOT}/usr/bin")
 find_program(BASH NAMES bash PATHS "${MSYS_ROOT}/usr/bin" REQUIRED NO_DEFAULT_PATH)
+message(STATUS "Using bash: ${BASH}")
+
 find_program(MAKE NAMES make PATHS "${MSYS_ROOT}/usr/bin" REQUIRED NO_DEFAULT_PATH)
+message(STATUS "Using make: ${MAKE}")
 
 # OpenJDK 21 from https://learn.microsoft.com/en-us/java/openjdk/download
 vcpkg_download_distfile(MICROSOFT_JDK_21_PATH
@@ -19,3 +22,7 @@ vcpkg_download_distfile(MICROSOFT_JDK_21_PATH
 )
 file(ARCHIVE_EXTRACT INPUT "${MICROSOFT_JDK_21_PATH}" DESTINATION "${CURRENT_BUILDTREES_DIR}")
 get_filename_component(BOOTJDK_PATH "${CURRENT_BUILDTREES_DIR}/jdk-21.0.2+13" ABSOLUTE)
+
+list(APPEND CONFIG_TOOLCHAIN_OPTIONS
+    "--with-toolchain-type=microsoft"
+)

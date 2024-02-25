@@ -4,6 +4,8 @@ vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 # Prepare toolchains like BASH, MAKE, and BOOTJDK_PATH...
 if(VCPKG_TARGET_IS_WINDOWS)
     include(${CMAKE_CURRENT_LIST_DIR}/windows-setup.cmake)
+elseif(VCPKG_TARGET_IS_LINUX)
+    include(${CMAKE_CURRENT_LIST_DIR}/linux-setup.cmake)
 endif()
 if(NOT DEFINED BOOTJDK_PATH)
     message(FATAL_ERROR "BOOTJDK_PATH is required")
@@ -46,8 +48,9 @@ vcpkg_execute_required_process(
         "--with-boot-jdk=${BOOTJDK_PATH}"
         "--with-jvm-variants=server" # client, minimal, etc
         "--with-target-bits=64"
-        "--with-stdc++lib=${VCPKG_CRT_LINKAGE}" # dynamic, static, default        
         "--with-source-date=version"
+        "--with-build-user=vcpkg"
+        ${CONFIG_TOOLCHAIN_OPTIONS}
     LOGNAME config-${TARGET_TRIPLET}-dbg
     WORKING_DIRECTORY "${BUILD_DIR_DBG}"
 )
@@ -76,8 +79,9 @@ vcpkg_execute_required_process(
         "--with-boot-jdk=${BOOTJDK_PATH}"
         "--with-jvm-variants=server" # client, minimal, etc
         "--with-target-bits=64"
-        "--with-stdc++lib=${VCPKG_CRT_LINKAGE}" # dynamic, static, default        
         "--with-source-date=version"
+        "--with-build-user=vcpkg"
+        ${CONFIG_TOOLCHAIN_OPTIONS}
     LOGNAME config-${TARGET_TRIPLET}-rel
     WORKING_DIRECTORY "${BUILD_DIR_REL}"
 )
@@ -95,6 +99,8 @@ if(VCPKG_TARGET_IS_WINDOWS)
     get_filename_component(OUTPUT_DIR "${BUILD_DIR_REL}/build/${OUTPUT_NAME}/jdk" ABSOLUTE)
     file(COPY "${OUTPUT_DIR}/" DESTINATION "${CURRENT_PACKAGES_DIR}")
     include(${CMAKE_CURRENT_LIST_DIR}/windows-cleanup.cmake)
+elseif(VCPKG_TARGET_IS_LINUX)
+    include(${CMAKE_CURRENT_LIST_DIR}/linux-cleanup.cmake)
 endif()
 
 file(REMOVE_RECURSE
