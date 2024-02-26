@@ -5,9 +5,9 @@
     Runs vcpkg executable and update baseline/version JSON files.
 
 .EXAMPLE
-    PS> registry-format.ps1 -PortNmae "openssl" -VcpkgRoot $env:VCPKG_ROOT 
+    PS> registry-add-version.ps1 -PortNmae "openssl" -VcpkgRoot $env:VCPKG_ROOT 
 .EXAMPLE
-    PS> registry-format.ps1 "openssl" -VcpkgRoot $env:VCPKG_ROOT 
+    PS> registry-add-version.ps1 "openssl" -VcpkgRoot $env:VCPKG_ROOT 
     version 1.1.1t is already in C:\vcpkg\vcpkg-registry\versions\o-\openssl1.json
     version 1.1.1t is already in C:\vcpkg\vcpkg-registry\versions\baseline.json
     No files were updated for openssl1
