@@ -27,6 +27,10 @@
       "platform": "windows"
     },
     {
+      "name": "openjdk-jdk",
+      "platform": "linux"
+    },
+    {
       "name": "onnxruntime",
       "features": [
         "python",
