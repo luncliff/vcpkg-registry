@@ -5,3 +5,9 @@ libx11-dev
 libxi-dev
 libxext-dev
 libx11-xcb-dev
+libasound2-dev
+libcups2-dev
+libxrender-dev
+libxrandr-dev
+libxtst-dev
+libxt-dev

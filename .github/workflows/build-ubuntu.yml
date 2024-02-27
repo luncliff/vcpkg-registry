@@ -26,7 +26,10 @@ jobs:
       - uses: actions/checkout@v4.1.1
       - uses: ConorMacBride/install-package@v1.1.0
         with:
-          apt: nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
+          apt: >
+            nuget nasm
+            libnuma-dev libopenmpi-dev libasound2-dev libcups2-dev
+            libx11-dev libxi-dev libxext-dev libx11-xcb-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev
 
       - name: "create cache folders"
         run: |
