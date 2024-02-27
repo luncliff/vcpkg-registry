@@ -57,14 +57,14 @@ vcpkg_execute_required_process(
 
 # for command debugging of `make`
 vcpkg_execute_required_process(
-    COMMAND ${MAKE} -f Makefile help
+    COMMAND ${MAKE} help
     LOGNAME make-help-${BUILD_DIR_DBG}-dbg
     WORKING_DIRECTORY "${BUILD_DIR_DBG}"
 )
 
 message(STATUS "Building ${TARGET_TRIPLET}-dbg")
 vcpkg_execute_required_process(
-    COMMAND ${MAKE} -f Makefile JOBS=${VCPKG_CONCURRENCY} LOG=info
+    COMMAND ${MAKE} JOBS=${VCPKG_CONCURRENCY} LOG=info
         images docs # all
     LOGNAME build-${TARGET_TRIPLET}-dbg
     WORKING_DIRECTORY "${BUILD_DIR_DBG}"
@@ -88,7 +88,7 @@ vcpkg_execute_required_process(
 
 message(STATUS "Building ${TARGET_TRIPLET}-rel")
 vcpkg_execute_required_process(
-    COMMAND ${MAKE} -f Makefile JOBS=${VCPKG_CONCURRENCY} LOG=info
+    COMMAND ${MAKE} JOBS=${VCPKG_CONCURRENCY} LOG=info
         images docs
     LOGNAME build-${TARGET_TRIPLET}-rel
     WORKING_DIRECTORY "${BUILD_DIR_REL}"
