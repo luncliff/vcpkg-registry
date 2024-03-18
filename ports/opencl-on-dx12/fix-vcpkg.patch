@@ -67,3 +67,27 @@ index 3fc0eed..21b94ec 100644
  option(BUILD_TESTS "Build tests" ON)
  
  if (BUILD_TESTS)
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+index a771cd4..7817df2 100644
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@ -1,16 +1,11 @@
+ # Copyright (c) Microsoft Corporation.
+ # Licensed under the MIT License.
+-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+-FetchContent_Declare(
+-    googletest
+-    GIT_REPOSITORY https://github.com/google/googletest.git
+-    GIT_TAG        2d924d7a971e9667d76ad09727fb2402b4f8a1e3
+-)
+-FetchContent_MakeAvailable(googletest)
++find_package(GTest CONFIG REQUIRED)
+ 
+ file(GLOB SRC CONFIGURE_DEPENDS *.cpp)
+ file(GLOB INC *.h *.hpp)
+ 
+ add_executable(openclon12test ${SRC} ${INC})
+ target_include_directories(openclon12test PRIVATE ../include)
+-target_link_libraries(openclon12test openclon12 gtest_main opengl32 gdi32 user32)
++target_link_libraries(openclon12test openclon12 GTest::gtest_main D3D12 dxgi opengl32 gdi32 user32)
++install(TARGETS openclon12test RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

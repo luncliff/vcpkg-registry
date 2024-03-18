@@ -11,22 +11,31 @@ vcpkg_download_distfile(MS_TELEMETRY_H_PATH
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/OpenCLOn12
-    REF b9cef1443007ed3cd4e39a03666a539f91e159e5
-    SHA512 13aa2abe8ff0e3f14ed481bd45d8741d0783a40094ea1e70280414751f40784b4c82b9da60224bda51bf3d5c491b4471242118bc7ecf42b6497a55e9276afde7
+    REF 9e46984446ee30c9ac8a45911aa3e57798246b9f
+    SHA512 0e0e895fb61341e53f2010b697b527b7fa6b6a0676158672e521ac14016fa258a988dcb1ea012a7dd557915843c0bd31b0b94a589fa3c2a1bedb919ef4b189cb
     PATCHES
         fix-vcpkg.patch
     HEAD_REF master
 )
 file(COPY "${MS_TELEMETRY_H_PATH}" DESTINATION "${SOURCE_PATH}/external")
 
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+        test    BUILD_TESTS
+)
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     WINDOWS_USE_MSBUILD
     OPTIONS
-        -DBUILD_TESTS=OFF
+        ${FEATURE_OPTIONS}
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
+
+if("test" IN_LIST FEATURES)
+    vcpkg_copy_tools(TOOL_NAMES openclon12test AUTO_CLEAN)
+endif()
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
