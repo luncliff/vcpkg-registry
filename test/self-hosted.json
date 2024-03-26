@@ -7,6 +7,13 @@
   "supports": "windows",
   "dependencies": [
     {
+      "name": "d3d12-transition-layer",
+      "features": [
+        "pix"
+      ],
+      "platform": "x64 & windows"
+    },
+    {
       "name": "winpixeventruntime",
       "platform": "x64 & windows"
     },
