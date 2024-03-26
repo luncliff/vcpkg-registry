@@ -185,7 +185,7 @@
       "port-version": 1
     },
     "zlib-ng": {
-      "baseline": "2.0.7",
+      "baseline": "2.1.6",
       "port-version": 0
     }
   }
