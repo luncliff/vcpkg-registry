@@ -7,6 +7,10 @@
   "supports": "windows",
   "dependencies": [
     {
+      "name": "winpixeventruntime",
+      "platform": "x64 & windows"
+    },
+    {
       "name": "onnxruntime",
       "features": [
         "openvino",
