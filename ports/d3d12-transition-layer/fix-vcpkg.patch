@@ -69,3 +69,31 @@ index e9d9537..8180fe1 100644
 +install(FILES ${INC} ${INL} ../include/XPlatHelpers.h
 +    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/D3D12TranslationLayer
 +)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 4910b81..0d6cbf2 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -115,15 +115,18 @@ else()
+ 	target_compile_definitions(d3d12translationlayer PRIVATE DYNAMIC_LOAD_DXCORE=1)
+ endif()
+ 
+-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../packages.config ${CMAKE_CURRENT_BINARY_DIR}/packages.config COPYONLY)
+-add_library(WinPixEventRuntime INTERFACE IMPORTED GLOBAL)
+-set_target_properties(WinPixEventRuntime PROPERTIES INTERFACE_LINK_LIBRARIES "${CMAKE_BINARY_DIR}/packages/WinPixEventRuntime.1.0.190604001/build/WinPixEventRuntime.targets")
+-target_link_libraries(d3d12translationlayer WinPixEventRuntime)
+-
+ target_compile_definitions(d3d12translationlayer PRIVATE $<$<CONFIG:DEBUG>:DBG>)
+ target_compile_definitions(d3d12translationlayer PUBLIC $<$<CONFIG:DEBUG>:TRANSLATION_LAYER_DBG=1>)
+ 
+ if (USE_PIX)
++	find_path(PIX_INCLUDE_DIR NAMES "pix3.h" PATHS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/WinPixEventRuntime" REQUIRED)
++	find_path(PIX_LIBRARY NAMES WinPixEventRuntime REQUIRED)
++	add_library(WinPixEventRuntime INTERFACE IMPORTED GLOBAL)
++	set_target_properties(WinPixEventRuntime PROPERTIES
++		INTERFACE_INCLUDE_DIRECTORIES "${PIX_INCLUDE_DIR}"
++		INTERFACE_LINK_LIBRARIES "${PIX_LIBRARY}"
++	)
++	target_link_libraries(d3d12translationlayer WinPixEventRuntime)
+ 	target_compile_definitions(d3d12translationlayer PUBLIC USE_PIX)
+ endif()
+ 
