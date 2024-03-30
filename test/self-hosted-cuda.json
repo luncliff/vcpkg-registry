@@ -19,14 +19,6 @@
     "nvidia-tools-extension-sdk",
     "nvidia-triton-common",
     "nvidia-triton-core",
-    "nvidia-triton-client",
-    {
-      "name": "onnxruntime",
-      "features": [
-        "cuda",
-        "xnnpack"
-      ],
-      "platform": "x64 & windows"
-    }
+    "nvidia-triton-client"
   ]
 }
