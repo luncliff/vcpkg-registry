@@ -217,3 +217,31 @@ index 8a95d535..72155e4c 100644
  # The kernel tests.
  if(TFLITE_KERNEL_TEST)
    enable_testing()
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index 92b87da9..a0f91daf 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -265,7 +265,22 @@ else()
+ endif()
+ 
+ populate_tflite_source_vars("core" TFLITE_CORE_SRCS)
+-populate_tflite_source_vars("core/acceleration/configuration" TFLITE_CORE_ACCELERATION_SRCS)
++populate_tflite_source_vars("core/acceleration/configuration" TFLITE_CORE_ACCELERATION_SRCS
++  FILTER "(nnapi).*\\.(cc|h)"
++)
++if(CMAKE_SYSTEM_NAME STREQUAL WindowsStore)
++  add_compile_definitions(
++    _SILENCE_CXX20_IS_POD_DEPRECATION_WARNING
++    _CRT_SECURE_NO_WARNINGS
++    _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
++    _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING
++  )
++elseif(ANDROID)
++  list(APPEND TFLITE_CORE_ACCELERATION_SRCS
++    ${TFLITE_SOURCE_DIR}/core/acceleration/configuration/nnapi_plugin.h
++    ${TFLITE_SOURCE_DIR}/core/acceleration/configuration/nnapi_plugin.cc
++  )
++endif()
+ populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
+ populate_tflite_source_vars("core/async" TFLITE_CORE_ASYNC_SRCS)
+ populate_tflite_source_vars("core/async/c" TFLITE_CORE_ASYNC_C_SRCS)
