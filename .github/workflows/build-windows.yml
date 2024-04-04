@@ -21,6 +21,8 @@ jobs:
           #   vcpkg_commit: "53bef8994c541b6561884a8395ea35715ece75db"
           - vcpkg_tag: "2024.02.14"
             vcpkg_commit: "fba75d09065fcc76a25dcf386b1d00d33f5175af"
+          - vcpkg_tag: "2024.03.25"
+            vcpkg_commit: "a34c873a9717a888f58dc05268dea15592c2f0ff"
       fail-fast: false
     env:
       VCPKG_DOWNLOADS: "C:/vcpkg/downloads"
