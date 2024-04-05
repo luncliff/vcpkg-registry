@@ -23,8 +23,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.15.1
-    SHA512 21f63e7b3a5d8d7d0356a13aac259ca3fd40bd9c118a747378741fc304fa24de2674c0722de92dfa0524c3b5c40bc0dfde1988301b050ac69f2a3f2fbfbf9875
+    REF v2.16.1
+    SHA512 6f02261b3e72b476a3adb8e47efe2bee76b8564315b853e3b16f443193204d363b5fb22ac5c388cebd6a1f326f0daf00586e0ccbf6a305d761a9266534fde13f
     PATCHES
         tensorflow-pr-61381.patch
         tensorflow-pr-62037.patch
