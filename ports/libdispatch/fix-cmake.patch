@@ -76,3 +76,80 @@ index 87675a7..ee9949a 100644
      set(${var} arm64 PARENT_SCOPE)
    else()
      message(FATAL_ERROR "do not know MSVC spelling for ARCH: `${arch}`")
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 898c21b..fdbc1a2 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -17,7 +17,7 @@ if(WIN32)
+   include(ClangClCompileRules)
+ endif()
+ 
+-if(CMAKE_SYSTEM_NAME STREQUAL Windows)
++if(CMAKE_SYSTEM_NAME MATCHES Windows)
+   include(DispatchWindowsSupport)
+   dispatch_windows_arch_spelling(${CMAKE_SYSTEM_PROCESSOR} DISPATCH_MSVC_ARCH)
+   dispatch_windows_include_for_arch(${DISPATCH_MSVC_ARCH} DISPATCH_INCLUDES)
+@@ -198,7 +198,7 @@ if(HAVE_MACH)
+ else()
+   set(USE_MACH_SEM 0)
+ endif()
+-if(CMAKE_SYSTEM_NAME STREQUAL Windows)
++if(CMAKE_SYSTEM_NAME MATCHES Windows)
+   add_compile_definitions($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:USE_WIN32_SEM>)
+ endif()
+ check_library_exists(pthread sem_init "" USE_POSIX_SEM)
+diff --git a/src/BlocksRuntime/CMakeLists.txt b/src/BlocksRuntime/CMakeLists.txt
+index 50123d4..eb3a285 100644
+--- a/src/BlocksRuntime/CMakeLists.txt
++++ b/src/BlocksRuntime/CMakeLists.txt
+@@ -2,7 +2,7 @@
+ add_library(BlocksRuntime
+   data.c
+   runtime.c)
+-if(CMAKE_SYSTEM_NAME STREQUAL Windows)
++if(CMAKE_SYSTEM_NAME MATCHES Windows)
+   target_sources(BlocksRuntime PRIVATE
+     BlocksRuntime.def)
+ 
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 8483298..1168bf4 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -57,7 +57,7 @@ add_library(dispatch
+   shims/yield.c
+   shims/yield.h)
+ 
+-if(CMAKE_SYSTEM_NAME STREQUAL Windows)
++if(CMAKE_SYSTEM_NAME MATCHES Windows)
+   target_sources(dispatch PRIVATE
+     shims/generic_sys_queue.h
+     shims/generic_win_stubs.c
+@@ -103,7 +103,7 @@ target_include_directories(dispatch PUBLIC
+ target_include_directories(dispatch PRIVATE
+   ${PROJECT_SOURCE_DIR}/private)
+ 
+-if(CMAKE_SYSTEM_NAME STREQUAL Windows)
++if(CMAKE_SYSTEM_NAME MATCHES Windows)
+   target_compile_definitions(dispatch PRIVATE
+     _CRT_NONSTDC_NO_WARNINGS
+     _CRT_SECURE_NO_WARNINGS)
+@@ -141,7 +141,7 @@ target_link_libraries(dispatch PRIVATE
+   Threads::Threads)
+ target_link_libraries(dispatch PUBLIC
+   BlocksRuntime::BlocksRuntime)
+-if(CMAKE_SYSTEM_NAME STREQUAL Windows)
++if(CMAKE_SYSTEM_NAME MATCHES Windows)
+   target_link_libraries(dispatch PRIVATE
+     AdvAPI32
+     ShLwApi
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 0176a06..94df578 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ 
+-if(CMAKE_SYSTEM_NAME STREQUAL Windows)
++if(CMAKE_SYSTEM_NAME MATCHES Windows)
+     execute_process(COMMAND
+                       "${CMAKE_COMMAND}" -E copy_directory "${PROJECT_SOURCE_DIR}/private"
+                       "${CMAKE_CURRENT_BINARY_DIR}/dispatch")
