@@ -1,8 +1,8 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 78657b58..7ee0d64e 100644
+index a61f5373..338d958d 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -731,6 +731,34 @@ target_compile_definitions(tensorflow-lite
+@@ -661,6 +661,34 @@ target_compile_options(tensorflow-lite
  )
  add_library(${PROJECT_NAME}::tensorflowlite ALIAS tensorflow-lite)
  
@@ -37,7 +37,7 @@ index 78657b58..7ee0d64e 100644
  # The install targets.
  if(TFLITE_ENABLE_INSTALL)
    install(
-@@ -738,6 +766,7 @@ if(TFLITE_ENABLE_INSTALL)
+@@ -668,6 +696,7 @@ if(TFLITE_ENABLE_INSTALL)
      EXPORT ${PROJECT_NAME}Targets
      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

@@ -4,19 +4,19 @@ endif()
 
 # check https://github.com/tensorflow/tensorflow/pull/61381
 # vcpkg_download_distfile(TENSORFLOW_PR_61381_PATCH
-#     URLS "https://patch-diff.githubusercontent.com/raw/tensorflow/tensorflow/pull/61381.diff"
-#     FILENAME tensorflow-pr-61381.patch  SHA512 4308c6f1b2f100689be5829ce770294a85489137b85cfd670df04f503b7a14683d42d798eb24e7679b56d99825257192065fedce9f6d0746a2e776c27e6e89d1
+#     URLS "https://github.com/tensorflow/tensorflow/pull/61381.diff?full_index=1"
+#     FILENAME tensorflow-pr-61381.patch  SHA512 0
 # )
 
 # check https://github.com/tensorflow/tensorflow/pull/62037
 # vcpkg_download_distfile(TENSORFLOW_PR_62037_PATCH
-#     URLS "https://patch-diff.githubusercontent.com/raw/tensorflow/tensorflow/pull/62037.diff"
-#     FILENAME tensorflow-pr-62037.patch  SHA512 e33edae25e1ff9a95e0465a8cf26b7e592a1beb0466e180014ee7b1d7ab2792b04f58c5fb875ed40eae26d3986ac1e2cfa1dbdff14b5c8eaf99655cb697ed6b5
+#     URLS "https://github.com/tensorflow/tensorflow/pull/62037.diff?full_index=1"
+#     FILENAME tensorflow-pr-62037.patch  SHA512 0
 # )
 
 # check https://github.com/tensorflow/tensorflow/pull/62705
 # vcpkg_download_distfile(TENSORFLOW_PR_62705_PATCH
-#     URLS "https://patch-diff.githubusercontent.com/raw/tensorflow/tensorflow/pull/62705.diff"
+#     URLS "https://github.com/tensorflow/tensorflow/pull/62705.diff?full_index=1"
 #     FILENAME tensorflow-pr-62705.patch  SHA512 0
 # )
 
@@ -32,7 +32,7 @@ vcpkg_from_github(
         fix-cmake-c-api.patch
         fix-cmake-vcpkg.patch
         fix-sources.patch
-        fix-source-abseil.patch
+        # fix-source-abseil.patch
         fix-source-apple-opencl.patch
 )
 
@@ -138,7 +138,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gpu     TFLITE_ENABLE_GPU
         gpu     TFLITE_ENABLE_METAL
-        # gpu     TFLITE_ENABLE_GLES3
 )
 
 if(VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_ANDROID)
@@ -146,16 +145,11 @@ if(VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_ANDROID)
 else()
     list(APPEND FEATURE_OPTIONS -DTFLITE_ENABLE_MMAP=OFF)
 endif()
-if(VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_WINDOWS)
-    if("gpu" IN_LIST FEATURES)
-        list(APPEND FEATURE_OPTIONS -DTFLITE_ENABLE_GLES3=ON)
-    endif()
-else()
-    list(APPEND FEATURE_OPTIONS -DTFLITE_ENABLE_GLES3=OFF)
-endif()
 
 if(VCPKG_TARGET_IS_WINDOWS)
-    list(APPEND GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+    # Visual Studio with ClangCL
+    set(VCPKG_PLATFORM_TOOLSET ClangCL) # CMAKE_GENERATOR_TOOLSET
+    set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     list(APPEND GENERATOR_OPTIONS GENERATOR Xcode)
 endif()
@@ -172,8 +166,8 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
         -DTFLITE_ENABLE_EXTERNAL_DELEGATE=ON
         -DTFLITE_ENABLE_INSTALL=ON
-        -DTENSORFLOW_SOURCE_DIR:PATH="${SOURCE_PATH}"
-        -DFLATBUFFERS_FLATC_EXECUTABLE:FILEPATH="${FLATC}"
+        "-DTENSORFLOW_SOURCE_DIR:PATH=${SOURCE_PATH}"
+        "-DFLATBUFFERS_FLATC_EXECUTABLE:FILEPATH=${FLATC}"
     OPTIONS_DEBUG
         -DTFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION=${VCPKG_TARGET_IS_ANDROID}
     MAYBE_UNUSED_VARIABLES
