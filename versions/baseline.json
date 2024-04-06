@@ -65,8 +65,8 @@
       "port-version": 0
     },
     "libdispatch": {
-      "baseline": "swift-5.5",
-      "port-version": 4
+      "baseline": "swift-5.10",
+      "port-version": 0
     },
     "llama-cpp": {
       "baseline": "b1695",
