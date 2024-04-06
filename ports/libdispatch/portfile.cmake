@@ -1,6 +1,6 @@
 if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
-    # set(VCPKG_POLICY_SKIP_ARCHITECTURE_CHECK enabled)
+    set(VCPKG_POLICY_SKIP_ARCHITECTURE_CHECK disabled)
     set(VCPKG_POLICY_SKIP_DUMPBIN_CHECKS disabled)
 endif()
 
@@ -26,20 +26,17 @@ if(VCPKG_TARGET_IS_WINDOWS)
 
     # Visual Studio with ClangCL
     set(VCPKG_PLATFORM_TOOLSET ClangCL) # CMAKE_GENERATOR_TOOLSET
-    # set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+    set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
 
     if(VCPKG_TARGET_IS_UWP) # error MSB8020
         list(APPEND COMPILE_FLAGS "-fms-compatibility")
         list(APPEND PLATFORM_OPTIONS
-            "-DCMAKE_C_COMPILER:FILEPATH=${CLANG_CL_EXE}"
-            "-DCMAKE_C_FLAGS=${COMPILE_FLAGS}"
-            -DCMAKE_C_COMPILER_FORCED=TRUE
-            "-DCMAKE_CXX_COMPILER:FILEPATH=${CLANG_CL_EXE}"
-            "-DCMAKE_CXX_FLAGS=${COMPILE_FLAGS}"
-            -DCMAKE_CXX_COMPILER_FORCED=TRUE
+            -DCMAKE_C_COMPILER:PATH=${CLANG_CL_EXE}
+            -DCMAKE_CXX_COMPILER:PATH=${CLANG_CL_EXE}
         )
-        list(APPEND GENERATOR_OPTIONS GENERATOR Ninja)
     endif()
+    # todo: fix linker errors in arm64-windows
+    # todo: support x64-uwp, arm64-uwp
 else()
     list(APPEND GENERATOR_OPTIONS GENERATOR Ninja)
 endif()
@@ -64,6 +61,5 @@ vcpkg_copy_pdbs()
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share"
                     "${CURRENT_PACKAGES_DIR}/debug/include"
 )
-file(INSTALL "${SOURCE_PATH}/LICENSE"
-     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright
-)
+# file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
