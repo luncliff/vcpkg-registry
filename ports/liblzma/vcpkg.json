@@ -1,0 +1,17 @@
+{
+  "name": "liblzma",
+  "version": "5.4.6",
+  "description": "Compression library with an API similar to that of zlib.",
+  "homepage": "https://sourceforge.net/projects/lzmautils/",
+  "license": null,
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
