@@ -2,3 +2,4 @@ protobuf
 grpc[codegen]
 flatbuffers
 abseil
+liblzma
