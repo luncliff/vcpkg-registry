@@ -68,6 +68,10 @@
       "baseline": "swift-5.10",
       "port-version": 0
     },
+    "liblzma": {
+      "baseline": "5.4.6",
+      "port-version": 0
+    },
     "llama-cpp": {
       "baseline": "b1695",
       "port-version": 0

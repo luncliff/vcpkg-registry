@@ -6,6 +6,7 @@
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows",
   "dependencies": [
+    "liblzma",
     {
       "name": "d3d12-transition-layer",
       "features": [
