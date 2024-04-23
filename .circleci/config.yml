@@ -36,21 +36,21 @@ jobs:
       - checkout
       - aws-cli/setup
       - run:
-          name: "Setup: microsoft/vcpkg(2024.02.14)"
+          name: "Setup: microsoft/vcpkg(2024.03.25)"
           shell: "powershell.exe"
           command: |
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2024.02.14 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2024.03.25 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
             Pop-Location
       - restore_cache:
           keys:
-            - v2407-windows-{{ checksum ".circleci/config.yml" }}
-            - v2407-windows-{{ .Branch }}
-            - v2407-windows-main
+            - v2416-windows-{{ checksum ".circleci/config.yml" }}
+            - v2416-windows-{{ .Branch }}
+            - v2416-windows-main
       - run:
           name: "Install: port-windows.txt"
           shell: "powershell.exe"
@@ -68,15 +68,15 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: v2407-windows-main
+              key: v2416-windows-main
               paths:
                 - C:/vcpkg-caches
       - save_cache:
-          key: v2407-windows-{{ .Branch }}
+          key: v2416-windows-{{ .Branch }}
           paths:
             - C:/vcpkg-caches
       - save_cache:
-          key: v2407-windows-{{ checksum ".circleci/config.yml" }}
+          key: v2416-windows-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-caches
       - store_artifacts:
@@ -97,13 +97,13 @@ jobs:
       - checkout
       - aws-cli/setup
       - run:
-          name: "Setup: microsoft/vcpkg(2024.02.14)"
+          name: "Setup: microsoft/vcpkg(2024.03.25)"
           command: |
             sudo apt-get update -y -q
             sudo apt-get install -y -q curl zip unzip tar
             mkdir -p $VCPKG_DOWNLOADS
             mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2024.02.14 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2024.03.25 --depth=1 https://github.com/microsoft/vcpkg
             pushd vcpkg
               ./bootstrap-vcpkg.sh
               ./vcpkg --version
@@ -111,9 +111,9 @@ jobs:
             pwd
       - restore_cache:
           keys:
-            - v2407-linux-{{ checksum ".circleci/config.yml" }}
-            - v2407-linux-{{ .Branch }}
-            - v2407-linux-main
+            - v2416-linux-{{ checksum ".circleci/config.yml" }}
+            - v2416-linux-{{ .Branch }}
+            - v2416-linux-main
       - run:
           name: "Install APT packages"
           command: |
@@ -134,11 +134,11 @@ jobs:
           working_directory: vcpkg
           no_output_timeout: 1h
       - save_cache:
-          key: v2407-linux-{{ .Branch }}
+          key: v2416-linux-{{ .Branch }}
           paths:
             - /tmp/vcpkg-caches
       - save_cache:
-          key: v2407-linux-{{ checksum ".circleci/config.yml" }}
+          key: v2416-linux-{{ checksum ".circleci/config.yml" }}
           paths:
             - /tmp/vcpkg-caches
       - store_artifacts:

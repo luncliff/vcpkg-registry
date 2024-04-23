@@ -38,7 +38,7 @@ jobs:
 
       - uses: actions/cache@v4.0.0
         with:
-          key: "v2407-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
+          key: "v2416-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
           path: |
             /usr/local/share/vcpkg-downloads
             /usr/local/share/vcpkg-archives

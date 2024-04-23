@@ -25,7 +25,7 @@ schedules:
 variables:
   # check https://github.com/microsoft/vcpkg/releases
   - name: vcpkg.commit
-    value: "fba75d09065fcc76a25dcf386b1d00d33f5175af" # 2024.02.14
+    value: "a34c873a9717a888f58dc05268dea15592c2f0ff" # 2024.03.25
 
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
@@ -84,10 +84,10 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2406-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"v2416-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2416-bin-uwp" | "$(vcpkg.default.triplet)"
                 "v2406-bin-uwp" | "$(vcpkg.default.triplet)"
-                "v2404-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: arm64-windows"
@@ -146,10 +146,10 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2406-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"v2416-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
+                "v2416-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
                 "v2406-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
-                "v2404-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(cxx)"
@@ -184,18 +184,18 @@ stages:
           matrix: # https://github.com/android/ndk/releases
             arm64_ndk26:
               vcpkg.default.triplet: "arm64-android"
-              android.ndk.home: "/usr/local/lib/android/sdk/ndk/26.2.11394342"
+              android.ndk.home: "/usr/local/lib/android/sdk/ndk/26.3.11579264"
             x64_ndk26:
               vcpkg.default.triplet: "x64-android"
-              android.ndk.home: "/usr/local/lib/android/sdk/ndk/26.2.11394342"
+              android.ndk.home: "/usr/local/lib/android/sdk/ndk/26.3.11579264"
         steps:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2406-bin-android" | "$(vcpkg.default.triplet)"'
+              key: '"v2416-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2416-bin-android" | "$(vcpkg.default.triplet)"
                 "v2406-bin-android" | "$(vcpkg.default.triplet)"
-                "v2404-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(vcpkg.default.triplet)"
@@ -234,10 +234,10 @@ stages:
             displayName: "Install HomeBrew packages"
           - task: Cache@2
             inputs:
-              key: '"v2406-bin-mac-host"'
+              key: '"v2416-bin-mac-host"'
               restoreKeys: |
+                "v2416-bin-mac-host"
                 "v2406-bin-mac-host"
-                "v2404-bin-mac-host"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: osx(host)"
@@ -289,10 +289,10 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2406-bin-osx" | "$(vcpkg.default.triplet)"'
+              key: '"v2416-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2416-bin-osx" | "$(vcpkg.default.triplet)"
                 "v2406-bin-osx" | "$(vcpkg.default.triplet)"
-                "v2404-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: osx"
@@ -334,10 +334,10 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2406-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"v2416-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
+                "v2416-bin-ios" | "$(vcpkg.default.triplet)"
                 "v2406-bin-ios" | "$(vcpkg.default.triplet)"
-                "v2404-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: arm64-ios"
