@@ -1,22 +1,14 @@
-if(VCPKG_TARGET_IS_IOS)
-    vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
-elseif(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_ANDROID)
-    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
-endif()
-if("framework" IN_LIST FEATURES)
-    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
-endif()
+vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
-# requires https://github.com/microsoft/onnxruntime/pull/18038 for later version of XNNPACK
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF v1.17.0
-    SHA512 63f1b8a8ede1d45d68c341c0df60ee360e689d513626ac2ad07b50930651321bd6cf661f628bd6768c10a0b3029ced51ad0df05060be028f0e820512ad4c5bc1
+    REF v1.17.3
+    SHA512 f24e333ad113e15733867fae237c3495f93e373b2998508deeebb061ce9a56c444bf68fc49ae251bcc45539d0695f3ae758d73dc3c42bc01bbd7cfaa8561c793
     PATCHES
+        fix-onnxruntime-pr-19966.patch # https://github.com/microsoft/onnxruntime/pull/19966 for OpenVINO 2024.0+
         fix-cmake.patch
-        fix-source-flatbuffers.patch
         fix-sources.patch
         fix-clang-cl-simd-compile.patch
         fix-llvm-rc-unicode.patch

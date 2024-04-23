@@ -38,22 +38,23 @@ include(external/protobuf_function.cmake)
 find_package(date CONFIG REQUIRED)
 list(APPEND onnxruntime_EXTERNAL_LIBRARIES date::date)
 
-find_package(Boost REQUIRED)
+# see Hints of FindBoost.cmake
 find_path(BOOST_INCLUDEDIR "boost/mp11.hpp" REQUIRED)
+find_package(Boost REQUIRED)
 add_library(Boost::mp11 ALIAS Boost::headers)
 list(APPEND onnxruntime_EXTERNAL_LIBRARIES Boost::mp11)
 
 find_package(nlohmann_json CONFIG REQUIRED)
 list(APPEND onnxruntime_EXTERNAL_LIBRARIES nlohmann_json::nlohmann_json)
 
-#TODO: include clog first
 if (onnxruntime_ENABLE_CPUINFO)
   find_package(cpuinfo CONFIG REQUIRED)
   list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo::cpuinfo)
 endif()
 
 if (NOT WIN32)
-  find_package(nsync CONFIG REQUIRED)
+  find_package(unofficial-nsync CONFIG REQUIRED) # unofficial::nsync::nsync_cpp
+  add_library(nsync::nsync_cpp ALIAS unofficial::nsync::nsync_cpp)
   list(APPEND onnxruntime_EXTERNAL_LIBRARIES nsync::nsync_cpp)
 endif()
 
@@ -70,10 +71,7 @@ list(APPEND onnxruntime_EXTERNAL_LIBRARIES Eigen3::Eigen)
 find_package(wil CONFIG REQUIRED)
 list(APPEND onnxruntime_EXTERNAL_LIBRARIES WIL::WIL)
 
-add_library(safeint_interface INTERFACE)
 find_path(SAFEINT_INCLUDE_DIRS "SafeInt.hpp" REQUIRED)
-target_include_directories(safeint_interface INTERFACE ${SAFEINT_INCLUDE_DIRS})
-list(APPEND onnxruntime_EXTERNAL_LIBRARIES safeint_interface)
 
 # XNNPACK EP
 if (onnxruntime_USE_XNNPACK)
@@ -83,8 +81,8 @@ if (onnxruntime_USE_XNNPACK)
   endif()
   find_package(cpuinfo CONFIG REQUIRED)
   find_library(PTHREADPOOL_LIBRARY NAMES pthreadpool REQUIRED)
-  find_package(xnnpack CONFIG REQUIRED) # xnnpack
-  list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo::cpuinfo ${PTHREADPOOL_LIBRARY} xnnpack)
+  find_library(XNNPACK_LIBRARY NAMES XNNPACK REQUIRED)
+  list(APPEND onnxruntime_EXTERNAL_LIBRARIES cpuinfo::cpuinfo ${PTHREADPOOL_LIBRARY} ${XNNPACK_LIBRARY})
 endif()
 
 if (onnxruntime_USE_MIMALLOC)
@@ -115,7 +113,5 @@ endif()
 
 if (onnxruntime_USE_OPENVINO)
   find_package(OpenVINO REQUIRED)
-  # deceive ENV{INTEL_OPENVINO_DIR} usages in CMakeLists.txt
-  set(ENV{INTEL_OPENVINO_DIR} "${OpenVINO_VERSION_MAJOR}.${OpenVINO_VERSION_MINOR}") # "2023.0"
   # list(APPEND onnxruntime_EXTERNAL_LIBRARIES openvino::runtime)
 endif()
