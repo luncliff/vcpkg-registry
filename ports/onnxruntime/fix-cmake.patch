@@ -96,7 +96,7 @@ index 3ab4c19..28919c6 100644
  endif()
 -
 diff --git a/cmake/onnxruntime_framework.cmake b/cmake/onnxruntime_framework.cmake
-index c9bf2ac..3808f7d 100644
+index c9bf2ac..d613612 100644
 --- a/cmake/onnxruntime_framework.cmake
 +++ b/cmake/onnxruntime_framework.cmake
 @@ -69,9 +69,9 @@ endif()
@@ -111,7 +111,7 @@ index c9bf2ac..3808f7d 100644
  endif()
  # Needed for the provider interface, as it includes training headers when training is enabled
  if (onnxruntime_ENABLE_TRAINING_OPS)
-@@ -125,7 +125,7 @@ endif()
+@@ -125,9 +125,9 @@ endif()
  
  if (NOT onnxruntime_BUILD_SHARED_LIB)
    install(DIRECTORY ${PROJECT_SOURCE_DIR}/../include/onnxruntime/core/framework  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/onnxruntime/core)
@@ -120,6 +120,9 @@ index c9bf2ac..3808f7d 100644
              ARCHIVE   DESTINATION ${CMAKE_INSTALL_LIBDIR}
              LIBRARY   DESTINATION ${CMAKE_INSTALL_LIBDIR}
              RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR}
+-            FRAMEWORK DESTINATION ${CMAKE_INSTALL_BINDIR})
++            FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ endif()
 diff --git a/cmake/onnxruntime_objectivec.cmake b/cmake/onnxruntime_objectivec.cmake
 index 4be2f51..6cad0d7 100644
 --- a/cmake/onnxruntime_objectivec.cmake

@@ -53,8 +53,7 @@ if (onnxruntime_ENABLE_CPUINFO)
 endif()
 
 if (NOT WIN32)
-  find_package(unofficial-nsync CONFIG REQUIRED) # unofficial::nsync::nsync_cpp
-  add_library(nsync::nsync_cpp ALIAS unofficial::nsync::nsync_cpp)
+  find_package(nsync CONFIG REQUIRED)
   list(APPEND onnxruntime_EXTERNAL_LIBRARIES nsync::nsync_cpp)
 endif()
 
