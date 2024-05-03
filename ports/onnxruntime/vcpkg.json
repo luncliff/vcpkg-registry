@@ -103,9 +103,6 @@
     "tensorrt": {
       "description": "Build with NVIDIA TensorRT support"
     },
-    "training": {
-      "description": "Build with NCCL support"
-    },
     "xnnpack": {
       "description": "Build with XNNPack support",
       "dependencies": [
