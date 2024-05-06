@@ -7,8 +7,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/XNNPACK
-    REF 0ec73cadf48e65152e25e56b1d19add9ced75e57 # 2023-11-17
-    SHA512 926b18aa253c2b656ff25cf23bc7646229cbd1c0a522b0e1367b377876899f60e9322416e02b9d543e8426d44a1143ee8f4b7dc2d4bce47a6f3a7a3ca7b4f86c
+    REF 92c6254f6a2a57f394248f66271a77f4f48a27aa # 2024-05-06
+    SHA512 71fe88ba951ff353288f07ae2119301d046750c850b268eb01435816848adfd9a8f5d701d3ce134fe9b3178c4f70410fad5e5ed2521292f7c17320a904d3ac7a
     HEAD_REF master
     PATCHES
         fix-cmake.patch
@@ -16,29 +16,13 @@ vcpkg_from_github(
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/xnnpack-config.template.cmake" DESTINATION "${SOURCE_PATH}/cmake")
 
 if(VCPKG_TARGET_IS_WINDOWS)
-    # Visual Studio generator may required for CMake to detect ASM compiler
-    # Use `vcpkg_cmake_configure(WINDOWS_USE_MSBUILD)` if the Ninja can't detect it correctly
-    list(APPEND GENERATOR_OPTIONS
-        -DCMAKE_ASM_COMPILER=cl
-        -DCMAKE_MSVC_RUNTIME_LIBRARY:STRING= # see https://cmake.org/cmake/help/latest/policy/CMP0091.html
-    )
-    # CMAKE_SYSTEM_PROCESSOR for the generator
-    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
-        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR=x86_64)
-    elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
-        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR=i386)
-    elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR=arm64) # -DCMAKE_ASM_COMPILER=armasm64?
-    else() # ex) armv8
-        list(APPEND GENERATOR_OPTIONS -DCMAKE_SYSTEM_PROCESSOR=${VCPKG_TARGET_ARCHITECTURE})
-    endif()
-    # see also: https://docs.microsoft.com/en-us/cpp/intrinsics/arm64-intrinsics?view=msvc-170
+    # see https://docs.microsoft.com/en-us/cpp/intrinsics/arm64-intrinsics?view=msvc-170
+    # see https://github.com/google/XNNPACK/blob/master/scripts/build-windows-arm64.cmd
     if(VCPKG_TARGET_ARCHITECTURE MATCHES "arm")
         list(APPEND PLATFORM_OPTIONS
-            -DXNNPACK_ENABLE_ARM_FP16=OFF # `__fp16` type is missing
-            -DXNNPACK_ENABLE_ARM_BF16=OFF # `bfloat16_t` type is missing
             -DXNNPACK_ENABLE_ARM_FP16_SCALAR=OFF
-            -DXNNPACK_ENABLE_ARM_DOTPROD=OFF
+            -DXNNPACK_ENABLE_ARM_BF16=OFF # `bfloat16_t` type is missing
+            -DXNNPACK_ENABLE_ARM_FP16_VECTOR=ON # `__fp16` type is missing
         )
     endif()
 elseif(VCPKG_TARGET_IS_ANDROID)
@@ -66,19 +50,19 @@ endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH ${SOURCE_PATH}
+    WINDOWS_USE_MSBUILD
     OPTIONS
         ${FEATURE_OPTIONS}
-        ${GENERATOR_OPTIONS}
         ${PLATFORM_OPTIONS}
         -DXNNPACK_USE_SYSTEM_LIBS=ON
-        -DXNNPACK_ENABLE_ASSEMBLY:BOOL=${USE_ASSEMBLY}
+        -DXNNPACK_ENABLE_ASSEMBLY=${USE_ASSEMBLY}
         -DXNNPACK_ENABLE_MEMOPT=ON
         -DXNNPACK_ENABLE_SPARSE=ON
         -DXNNPACK_BUILD_TESTS=OFF
         -DXNNPACK_BUILD_BENCHMARKS=OFF
 )
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(CONFIG_PATH share)
+vcpkg_cmake_config_fixup(CONFIG_PATH share PACKAGE_NAME xnnpack)
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
