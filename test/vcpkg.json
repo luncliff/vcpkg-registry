@@ -27,10 +27,14 @@
       "platform": "windows"
     },
     {
-      "name": "xnnpack",
+      "name": "cpuinfo",
       "features": [
         "tools"
       ],
+      "platform": "linux"
+    },
+    {
+      "name": "xnnpack",
       "platform": "linux"
     },
     {
