@@ -27,6 +27,13 @@
       "platform": "windows"
     },
     {
+      "name": "xnnpack",
+      "features": [
+        "tools"
+      ],
+      "platform": "linux"
+    },
+    {
       "name": "onnxruntime",
       "features": [
         "python",
