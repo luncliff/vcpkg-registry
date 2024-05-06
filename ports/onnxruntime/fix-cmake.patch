@@ -223,3 +223,16 @@ index 79bee3b..e6a6924 100644
  if(onnxruntime_ENABLE_INSTRUMENT)
    target_compile_definitions(onnxruntime_session PUBLIC ONNXRUNTIME_ENABLE_INSTRUMENT)
  endif()
+diff --git a/cmake/onnxruntime_objectivec.cmake b/cmake/onnxruntime_objectivec.cmake
+index 6cad0d7..31ae11c 100644
+--- a/cmake/onnxruntime_objectivec.cmake
++++ b/cmake/onnxruntime_objectivec.cmake
+@@ -63,7 +63,7 @@ onnxruntime_add_shared_library(onnxruntime_objc
+ 
+ target_include_directories(onnxruntime_objc
+     PUBLIC
+-        "${OBJC_ROOT}/include"
++        $<BUILD_INTERFACE:${OBJC_ROOT}/include>
+     PRIVATE
+         "${ONNXRUNTIME_INCLUDE_DIR}/core/session"
+         "${OBJC_ROOT}")

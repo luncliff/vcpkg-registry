@@ -10,6 +10,7 @@ vcpkg_from_github(
         fix-onnxruntime-pr-19966.patch # https://github.com/microsoft/onnxruntime/pull/19966 for OpenVINO 2024.0+
         fix-cmake.patch
         fix-sources.patch
+        fix-xnnpack.patch # todo: check xnnpack updates & tests
         fix-clang-cl-simd-compile.patch
         fix-llvm-rc-unicode.patch
 )
@@ -71,7 +72,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     # For some reason CUDA compiler detection is not working in WINDOWS_USE_MSBUILD
     if(NOT ("cuda" IN_LIST FEATURES))
-        # set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+        set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
     endif()
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
