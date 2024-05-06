@@ -6,8 +6,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/cpuinfo
-    REF 9d809924011af8ff49dadbda1499dc5193f1659c
-    SHA512 36d518965f118d80b341ad4dfec168865e3a59b12fd657e8c71a2afb3047eeb4ddbab32bdb6fc29835282b77fe1bb05083edc46ec828c44716cd3c345928ca49
+    REF 3c8b1533ac03dd6531ab6e7b9245d488f13a82a5
+    SHA512 8e86495bf68cd4bf68d96b317094bf6048bb94cb0b53406d19fa37570b54f4136a88bd06d2520edd756db7a30086db31d4c5ab2a0ca9b61641bf4c6ab790ae5d
     HEAD_REF main
 )
 
@@ -20,19 +20,17 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
-        ${PLATFORM_OPTIONS}
-        -DCPUINFO_LIBRARY_TYPE:STRING=default
-        -DCPUINFO_RUNTIME_TYPE:STRING=default
         -DCPUINFO_BUILD_UNIT_TESTS=OFF
         -DCPUINFO_BUILD_MOCK_TESTS=OFF
         -DCPUINFO_BUILD_BENCHMARKS=OFF
+        -DCPUINFO_BUILD_PKG_CONFIG=ON
     OPTIONS_DEBUG
         -DCPUINFO_LOG_LEVEL=debug
     OPTIONS_RELEASE
         -DCPUINFO_LOG_LEVEL=default
 )
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup()
+vcpkg_cmake_config_fixup(CONFIG_PATH share/cpuinfo PACKAGE_NAME ${PORT})
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libcpuinfo)
 
 if("tools" IN_LIST FEATURES)
