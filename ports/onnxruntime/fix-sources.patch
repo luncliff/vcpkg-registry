@@ -50,33 +50,3 @@ index 04f2679..9c4de02 100644
  #include <charconv>
  #include <vector>
  #include <utility>
-diff --git a/onnxruntime/core/common/logging/sinks/ostream_sink.cc b/onnxruntime/core/common/logging/sinks/ostream_sink.cc
-index 0db3d87..ae80616 100644
---- a/onnxruntime/core/common/logging/sinks/ostream_sink.cc
-+++ b/onnxruntime/core/common/logging/sinks/ostream_sink.cc
-@@ -23,9 +23,10 @@ struct Color {
- #endif
- 
- void OStreamSink::SendImpl(const Timestamp& timestamp, const std::string& logger_id, const Capture& message) {
-+#if !defined(__APPLE__) // Xcode 15.3+
-   // operator for formatting of timestamp in ISO8601 format including microseconds
-   using date::operator<<;
--
-+#endif
-   // Two options as there may be multiple calls attempting to write to the same sink at once:
-   // 1) Use mutex to synchronize access to the stream.
-   // 2) Create the message in an ostringstream and output in one call.
-diff --git a/onnxruntime/core/platform/apple/logging/apple_log_sink.mm b/onnxruntime/core/platform/apple/logging/apple_log_sink.mm
-index 8dbd8ee..6eef0c7 100644
---- a/onnxruntime/core/platform/apple/logging/apple_log_sink.mm
-+++ b/onnxruntime/core/platform/apple/logging/apple_log_sink.mm
-@@ -13,7 +13,9 @@
- namespace logging {
- 
- void AppleLogSink::SendImpl(const Timestamp& timestamp, const std::string& logger_id, const Capture& message) {
-+#if !defined(__APPLE__) // Xcode 15.3+
-   using date::operator<<;
-+#endif
-   std::ostringstream msg;
-   msg << timestamp << " [" << message.SeverityPrefix() << ":" << message.Category() << ":" << logger_id << ", "
-       << message.Location().ToString() << "] " << message.Message();
