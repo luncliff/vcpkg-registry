@@ -142,8 +142,10 @@ endif()
 if(VCPKG_TARGET_IS_WINDOWS)
     # Visual Studio with ClangCL?
     set(VCPKG_PLATFORM_TOOLSET ClangCL) # CMAKE_GENERATOR_TOOLSET
-    # sadly, we can't build well with the toolset. use MSVC even if the upstream uses ClangCL
-    unset(VCPKG_PLATFORM_TOOLSET)
+    if((VCPKG_TARGET_ARCHITECTURE STREQUAL "arm") OR (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64"))
+        # We have to locate LLVM/ARM64/bin/clang-cl.exe and its forks, but too complicated for now
+        unset(VCPKG_PLATFORM_TOOLSET)
+    endif()
     set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     list(APPEND GENERATOR_OPTIONS GENERATOR Xcode)

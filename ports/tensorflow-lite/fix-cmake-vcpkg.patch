@@ -26,17 +26,16 @@ index a6fba5f3..a3a51d6d 100644
  set(CMAKE_CXX_STANDARD_REQUIRED ON)
  set(_TFLITE_ENABLE_RUY "${TFLITE_ENABLE_RUY}")
  if("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
-@@ -241,6 +233,14 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+@@ -241,6 +233,13 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
      ${ANDROID_ANDROID_LIB}
    )
  endif()
-+if(CMAKE_SYSTEM_NAME STREQUAL WindowsStore)
++if(CMAKE_SYSTEM_NAME STREQUAL Windows) # Windows|WindowsStore
 +  list(APPEND TFLITE_TARGET_PRIVATE_DEFINITIONS
-+    _SILENCE_CXX20_IS_POD_DEPRECATION_WARNING
 +    _CRT_SECURE_NO_WARNINGS
-+    _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
-+    _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING
++    _SILENCE_CXX20_IS_POD_DEPRECATION_WARNING _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING
 +  )
++  list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS /Zc:__cplusplus)
 +endif()
  # Build a list of source files to compile into the TF Lite library.
  populate_tflite_source_vars("." TFLITE_SRCS)
@@ -65,7 +64,7 @@ index a6fba5f3..a3a51d6d 100644
 -  find_package(vulkan_headers REQUIRED)
 -  find_package(fp16_headers REQUIRED)
 +  find_package(OpenCL REQUIRED)
-+  find_package(Vulkan REQUIRED)
++  find_package(Vulkan COMPONENTS Headers)
 +  if(Vulkan_FOUND)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES Vulkan::Headers)
 +  endif()
@@ -130,7 +129,7 @@ index a6fba5f3..a3a51d6d 100644
 +      target_include_directories(${lib_name} PRIVATE ${TENSORFLOW_SOURCE_DIR})
 +      target_link_libraries(${lib_name} PUBLIC absl::status flatbuffers::flatbuffers)
 +      set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE OBJCXX) # requires CMP0119
-+      endforeach()
++   endforeach()
  
     list(APPEND MM_SRCS
       buffer_convert

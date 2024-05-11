@@ -92,7 +92,6 @@
     {
       "name": "tensorflow-lite",
       "features": [
-        "google-angle",
         "gpu"
       ],
       "platform": "windows & !arm"
