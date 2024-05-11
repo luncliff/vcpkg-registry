@@ -37,28 +37,6 @@
     "xnnpack"
   ],
   "features": {
-    "gles3": {
-      "description": "Enable OpenGL ES 3 delegate",
-      "supports": "windows | android",
-      "dependencies": [
-        "egl-registry",
-        "opengl-registry",
-        {
-          "name": "tensorflow-lite",
-          "default-features": false,
-          "features": [
-            "google-angle"
-          ],
-          "platform": "windows"
-        }
-      ]
-    },
-    "google-angle": {
-      "description": "Link EGL, OpenGL ES code with Google/ANGLE",
-      "dependencies": [
-        "angle"
-      ]
-    },
     "gpu": {
       "description": "Enable GPU delegates",
       "dependencies": [
@@ -72,14 +50,6 @@
             "metal"
           ],
           "platform": "osx | ios"
-        },
-        {
-          "name": "tensorflow-lite",
-          "default-features": false,
-          "features": [
-            "gles3"
-          ],
-          "platform": "windows | android"
         },
         "vulkan-headers"
       ]

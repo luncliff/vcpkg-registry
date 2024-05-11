@@ -14,12 +14,6 @@ endif()
 #     FILENAME tensorflow-pr-62037.patch  SHA512 0
 # )
 
-# check https://github.com/tensorflow/tensorflow/pull/62705
-# vcpkg_download_distfile(TENSORFLOW_PR_62705_PATCH
-#     URLS "https://github.com/tensorflow/tensorflow/pull/62705.diff?full_index=1"
-#     FILENAME tensorflow-pr-62705.patch  SHA512 0
-# )
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
@@ -28,11 +22,10 @@ vcpkg_from_github(
     PATCHES
         tensorflow-pr-61381.patch
         tensorflow-pr-62037.patch
-        tensorflow-pr-62705.patch
         fix-cmake-c-api.patch
         fix-cmake-vcpkg.patch
         fix-sources.patch
-        # fix-source-abseil.patch
+        fix-source-abseil.patch
         fix-source-apple-opencl.patch
 )
 
@@ -147,8 +140,10 @@ else()
 endif()
 
 if(VCPKG_TARGET_IS_WINDOWS)
-    # Visual Studio with ClangCL
+    # Visual Studio with ClangCL?
     set(VCPKG_PLATFORM_TOOLSET ClangCL) # CMAKE_GENERATOR_TOOLSET
+    # sadly, we can't build well with the toolset. use MSVC even if the upstream uses ClangCL
+    unset(VCPKG_PLATFORM_TOOLSET)
     set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     list(APPEND GENERATOR_OPTIONS GENERATOR Xcode)
