@@ -40,8 +40,7 @@
     {
       "name": "onnxruntime",
       "features": [
-        "python",
-        "training"
+        "python"        
       ],
       "platform": "windows"
     },

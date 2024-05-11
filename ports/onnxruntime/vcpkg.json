@@ -1,6 +1,6 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.17.0",
+  "version-semver": "1.17.3",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://onnxruntime.ai/",
   "license": "MIT",
@@ -78,11 +78,14 @@
     },
     "openvino": {
       "description": "Build with OpenVINO support",
+      "supports": "!(osx | ios | android | emscripten)",
       "dependencies": [
         {
           "name": "openvino",
           "default-features": false,
           "features": [
+            "cpu",
+            "gpu",
             "onnx"
           ]
         }
@@ -99,9 +102,6 @@
     },
     "tensorrt": {
       "description": "Build with NVIDIA TensorRT support"
-    },
-    "training": {
-      "description": "Build with NCCL support"
     },
     "xnnpack": {
       "description": "Build with XNNPack support",

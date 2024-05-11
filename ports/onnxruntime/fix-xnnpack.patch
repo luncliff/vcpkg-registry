@@ -1,0 +1,169 @@
+diff --git a/onnxruntime/core/providers/xnnpack/math/softmax.cc b/onnxruntime/core/providers/xnnpack/math/softmax.cc
+index 87440b7..81baef0 100644
+--- a/onnxruntime/core/providers/xnnpack/math/softmax.cc
++++ b/onnxruntime/core/providers/xnnpack/math/softmax.cc
+@@ -159,26 +159,20 @@ Softmax::Softmax(const OpKernelInfo& info) : XnnpackKernel{info} {
+   axis_ = gsl::narrow<int>(HandleNegativeAxis(axis_, int64_t(rank)));
+ 
+   auto input_shape = utils::GetTensorShapeFromTensorShapeProto(*x_shape);
+-  int64_t channels = opset_ < 13 ? input_shape.SizeFromDimension(axis_) : input_shape[axis_];
++  // int64_t channels = opset_ < 13 ? input_shape.SizeFromDimension(axis_) : input_shape[axis_];
+ 
+   xnn_status xstatus = xnn_status_invalid_state;
+   struct xnn_operator* p = nullptr;
+   if (op_type_ == OpComputeType::op_compute_type_qu8) {
+     // the order of input tensor, x,x_scale, x_zp, y_scale, y_zp
+     OpQuantParam quant_param = ParseQuantParamForOp(info, x_dtype, 1);
+-    xstatus = xnn_create_softmax_nc_qu8(channels,
+-                                        channels,
+-                                        channels,
+-                                        quant_param[0].first[0],  // x_scale
++    xstatus = xnn_create_softmax_nc_qu8(quant_param[0].first[0],  // x_scale
+                                         quant_param[1].second,    // y_zp
+                                         quant_param[1].first[0],  // y_scale
+                                         0,                        // flags,
+                                         &p);
+   } else if (op_type_ == OpComputeType::op_compute_type_fp32) {
+-    xstatus = xnn_create_softmax_nc_f32(channels,
+-                                        channels,
+-                                        channels,
+-                                        0,  // flags,
++    xstatus = xnn_create_softmax_nc_f32(0,  // flags,
+                                         &p);
+   }
+ 
+@@ -205,7 +199,10 @@ Status Softmax::Compute(OpKernelContext* ctx) const {
+ 
+   auto reshape_fn = op_type_ == OpComputeType::op_compute_type_qu8 ? xnn_reshape_softmax_nc_qu8
+                                                                    : xnn_reshape_softmax_nc_f32;
+-  status = reshape_fn(op0_.get(), N, threadpool);
++  size_t channels = 0; // todo
++  size_t input_stride = 0; // todo
++  size_t output_stride = 0; // todo
++  status = reshape_fn(op0_.get(), channels, input_stride, output_stride, N, threadpool);
+ 
+   if (status != xnn_status_success) {
+     return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "xnn_reshape_softmax_nc_", OpTypeToString(op_type_),
+diff --git a/onnxruntime/core/providers/xnnpack/nn/average_pool.cc b/onnxruntime/core/providers/xnnpack/nn/average_pool.cc
+index 58c209a..ccb0551 100644
+--- a/onnxruntime/core/providers/xnnpack/nn/average_pool.cc
++++ b/onnxruntime/core/providers/xnnpack/nn/average_pool.cc
+@@ -42,7 +42,6 @@ Status CreateXnnpackKernel(const PoolAttributes& pool_attrs,
+                                                    input_padding_bottom, input_padding_left,
+                                                    pooling_height, pooling_width,
+                                                    stride_height, stride_width,
+-                                                   C, C, C,  // channels, input_pixel_stride, output_pixel_stride
+                                                    foutput_min, foutput_max, flags, &p);
+   } else if (avgpool_type == OpComputeType::op_compute_type_qu8) {
+     const float output_scale = quant_param[1].first[0];
+@@ -53,7 +52,6 @@ Status CreateXnnpackKernel(const PoolAttributes& pool_attrs,
+                                                    input_padding_bottom, input_padding_left,
+                                                    pooling_height, pooling_width,
+                                                    stride_height, stride_width,
+-                                                   C, C, C,  // channels, input_pixel_stride, output_pixel_stride
+                                                    quant_param[0].second,
+                                                    quant_param[0].first[0],
+                                                    quant_param[1].second,
+@@ -247,7 +245,11 @@ Status AveragePool::Compute(OpKernelContext* context) const {
+                         ? xnn_reshape_average_pooling2d_nhwc_f32
+                         : xnn_reshape_average_pooling2d_nhwc_qu8;
+ 
++  size_t channels = 0; // todo
++    size_t input_stride = 0; // todo
++    size_t output_stride = 0; // todo
+   auto status = reshape_fn(op0_.get(), N, H, W,
++                           channels,input_stride,output_stride,
+                            &workspace_size, &workspace_alignment,
+                            /*output_height_out=*/nullptr, /*output_width_out=*/nullptr,
+                            threadpool);
+diff --git a/onnxruntime/core/providers/xnnpack/nn/max_pool.cc b/onnxruntime/core/providers/xnnpack/nn/max_pool.cc
+index 2ef9f97..0ad08f2 100644
+--- a/onnxruntime/core/providers/xnnpack/nn/max_pool.cc
++++ b/onnxruntime/core/providers/xnnpack/nn/max_pool.cc
+@@ -172,7 +172,6 @@ MaxPool::MaxPool(const OpKernelInfo& info)
+                                                pooling_height, pooling_width,
+                                                stride_height, stride_width,
+                                                dilation_height, dilation_width,
+-                                               C, C, C,  // channels, input_pixel_stride, output_pixel_stride
+                                                foutput_min, foutput_max, flags, &p);
+   } else if (input_dtype == ONNX_NAMESPACE::TensorProto_DataType_UINT8) {
+     maxpool_type_ = OpComputeType::op_compute_type_qu8;
+@@ -183,7 +182,6 @@ MaxPool::MaxPool(const OpKernelInfo& info)
+                                               pooling_height, pooling_width,
+                                               stride_height, stride_width,
+                                               dilation_height, dilation_width,
+-                                              C, C, C,  // channels, input_pixel_stride, output_pixel_stride
+                                               output_min, output_max, flags, &p);
+   } else if (input_dtype == ONNX_NAMESPACE::TensorProto_DataType_INT8) {
+     maxpool_type_ = OpComputeType::op_compute_type_qs8;
+@@ -194,7 +192,6 @@ MaxPool::MaxPool(const OpKernelInfo& info)
+                                               pooling_height, pooling_width,
+                                               stride_height, stride_width,
+                                               dilation_height, dilation_width,
+-                                              C, C, C,  // channels, input_pixel_stride, output_pixel_stride
+                                               output_min, output_max, flags, &p);
+   } else {
+     auto stype = DataTypeImpl::ToString(DataTypeImpl::TypeFromProto(*X_arg.TypeAsProto()));
+@@ -232,8 +229,11 @@ Status MaxPool::Compute(OpKernelContext* context) const {
+   else if (maxpool_type_ == OpComputeType::op_compute_type_qs8) {
+     reshape_fn = xnn_reshape_max_pooling2d_nhwc_s8;
+   }
+-
++    size_t channels = 0; // todo
++    size_t input_stride = 0; // todo
++    size_t output_stride = 0; // todo
+   auto status = reshape_fn(op0_.get(), N, H, W,
++                           channels, input_stride, output_stride,
+                            /*output_height_out=*/nullptr, /*output_width_out=*/nullptr,
+                            threadpool);
+   if (status != xnn_status_success) {
+diff --git a/onnxruntime/core/providers/xnnpack/tensor/resize.cc b/onnxruntime/core/providers/xnnpack/tensor/resize.cc
+index 0c9e2e9..556956f 100644
+--- a/onnxruntime/core/providers/xnnpack/tensor/resize.cc
++++ b/onnxruntime/core/providers/xnnpack/tensor/resize.cc
+@@ -209,11 +209,11 @@ Resize::Resize(const OpKernelInfo& info) : UpsampleBase(info), XnnpackKernel{inf
+   xnn_status xstatus = xnn_status_invalid_state;
+   struct xnn_operator* p = nullptr;
+   if (op_type_ == OpComputeType::op_compute_type_fp32) {
+-    xstatus = xnn_create_resize_bilinear2d_nhwc_f32(channels, channels, channels, flags, &p);
++    xstatus = xnn_create_resize_bilinear2d_nhwc_f32(channels, channels, flags, &p);
+   } else if (op_type_ == OpComputeType::op_compute_type_qu8) {
+-    xstatus = xnn_create_resize_bilinear2d_nhwc_u8(channels, channels, channels, flags, &p);
++    xstatus = xnn_create_resize_bilinear2d_nhwc_u8(channels, channels, flags, &p);
+   } else {
+-    xstatus = xnn_create_resize_bilinear2d_nhwc_s8(channels, channels, channels, flags, &p);
++    xstatus = xnn_create_resize_bilinear2d_nhwc_s8(channels, channels, flags, &p);
+   }
+ 
+   ORT_ENFORCE(xstatus == xnn_status_success, "xnn_create_resize_bilinear2d_nhwc_", OpTypeToString(op_type_), " failed. Status:",
+@@ -247,7 +247,8 @@ Status Resize::ComputeInternal(OpKernelContext* ctx, const Tensor* input,
+     reshape_fn = xnn_reshape_resize_bilinear2d_nhwc_s8;
+   }
+ 
+-  auto status = reshape_fn(op0_.get(), N, H, W, output_dims[1], output_dims[2],
++  size_t channels = 0; // todo
++  auto status = reshape_fn(op0_.get(), N, H, W, output_dims[1], output_dims[2], channels,
+                            &workspace_size, &workspace_alignment, threadpool);
+   if (status != xnn_status_success) {
+     return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "xnn_reshape_resize_bilinear2d_nhwc_", OpTypeToString(op_type_),
+diff --git a/onnxruntime/core/providers/xnnpack/xnnpack_kernel.h b/onnxruntime/core/providers/xnnpack/xnnpack_kernel.h
+index 0978a88..1191e5b 100644
+--- a/onnxruntime/core/providers/xnnpack/xnnpack_kernel.h
++++ b/onnxruntime/core/providers/xnnpack/xnnpack_kernel.h
+@@ -5,6 +5,7 @@
+ #include "core/framework/op_kernel.h"
+ #include "core/providers/xnnpack/xnnpack_execution_provider.h"
+ #include "xnnpack.h"
++#include <type_traits>
+ 
+ struct pthreadpool;
+ 
+@@ -57,7 +58,7 @@ class XnnpackKernel : public OpKernel {
+     }
+ 
+     // std::unique_ptr<xnn_code_cache, decltype(&xnn_release_code_cache)> auto_code_cache;
+-    std::unique_ptr<xnn_weights_cache, decltype(&xnn_delete_weights_cache)> auto_weights_cache;
++    std::unique_ptr<xnn_weights_cache_provider, decltype(&xnn_delete_weights_cache)> auto_weights_cache;
+ 
+     // private:
+     // #if defined(XNN_CACHE_ENABLE) && XNN_PLATFORM_JIT

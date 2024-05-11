@@ -1,23 +1,16 @@
-if(VCPKG_TARGET_IS_IOS)
-    vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
-elseif(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_ANDROID)
-    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
-endif()
-if("framework" IN_LIST FEATURES)
-    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
-endif()
+vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
-# requires https://github.com/microsoft/onnxruntime/pull/18038 for later version of XNNPACK
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF v1.17.0
-    SHA512 63f1b8a8ede1d45d68c341c0df60ee360e689d513626ac2ad07b50930651321bd6cf661f628bd6768c10a0b3029ced51ad0df05060be028f0e820512ad4c5bc1
+    REF v1.17.3
+    SHA512 f24e333ad113e15733867fae237c3495f93e373b2998508deeebb061ce9a56c444bf68fc49ae251bcc45539d0695f3ae758d73dc3c42bc01bbd7cfaa8561c793
     PATCHES
+        fix-onnxruntime-pr-19966.patch # https://github.com/microsoft/onnxruntime/pull/19966 for OpenVINO 2024.0+
         fix-cmake.patch
-        fix-source-flatbuffers.patch
         fix-sources.patch
+        fix-xnnpack.patch # todo: check xnnpack updates & tests
         fix-clang-cl-simd-compile.patch
         fix-llvm-rc-unicode.patch
 )
@@ -76,22 +69,10 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
 
-
-if("training" IN_LIST FEATURES)
-    # check cmake/deps.txt
-    vcpkg_from_github(
-        OUT_SOURCE_PATH TENSORBOARD_SOURCE_PATH
-        REPO tensorflow/tensorboard
-        REF 373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81
-        SHA512 7f76af0ee40eba93aca58178315a2e6bb7b85eefe8721567ed77aeeece13190e28202fc067e9f84f84fab21d8ac7dfcbd00c75e6e0771ed9992ff6ac6bba67c7
-    )
-    list(APPEND FEATURE_OPTIONS "-Dtensorboard_SOURCE_DIR:PATH=${TENSORBOARD_SOURCE_PATH}")
-endif()
-
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     # For some reason CUDA compiler detection is not working in WINDOWS_USE_MSBUILD
     if(NOT ("cuda" IN_LIST FEATURES))
-        # set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+        set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
     endif()
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
@@ -172,8 +153,8 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_NEURAL_SPEED=OFF
         -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO
-        -DORT_GIT_COMMIT:STRING="5f0b62cde54f59bdeac7978c9f9c12d0a4bc56db"
-        -DORT_GIT_BRANCH:STRING="v1.17.0"
+        -DORT_GIT_COMMIT:STRING="56b660f36940a919295e6f1e18ad3a9a93a10bf7"
+        -DORT_GIT_BRANCH:STRING="v1.17.3"
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
@@ -191,14 +172,6 @@ vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxruntime)
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
-
-if("framework" IN_LIST FEATURES)
-    foreach(FRAMEWORK_NAME "onnxruntime.framework" "onnxruntime_objc.framework")
-        file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/${FRAMEWORK_NAME}" "${CURRENT_PACKAGES_DIR}/debug/lib/${FRAMEWORK_NAME}")
-        file(RENAME "${CURRENT_PACKAGES_DIR}/bin/${FRAMEWORK_NAME}" "${CURRENT_PACKAGES_DIR}/lib/${FRAMEWORK_NAME}")
-    endforeach()
-    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin" "${CURRENT_PACKAGES_DIR}/bin")
-endif()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
