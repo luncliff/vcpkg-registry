@@ -25,7 +25,7 @@ schedules:
 variables:
   # check https://github.com/microsoft/vcpkg/releases
   - name: vcpkg.commit
-    value: "a34c873a9717a888f58dc05268dea15592c2f0ff" # 2024.03.25
+    value: "943c5ef1c8f6b5e6ced092b242c8299caae2ff01" # 2024.04.26
 
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
@@ -42,30 +42,8 @@ variables:
     value: $(Build.ArtifactStagingDirectory)/vcpkg-archives
 
 stages:
-  - stage: "Triplets"
-    jobs:
-      - job: "triplet_ios_simulator"
-        displayName: "iOS Simulator"
-        pool:
-          vmImage: macOS-13
-        steps:
-          - powershell: brew install $(Get-Content test/packages-homebrew.txt)
-            displayName: "Install HomeBrew packages"
-          - task: PowerShell@2
-            displayName: "Triplet: ios-simulator"
-            inputs:
-              script: |
-                New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
-                vcpkg --version
-                $Ports=$(Get-Content test/azure-triplet-ios.txt)
-                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build `
-                  --triplet arm64-ios-simulator --debug
-                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build `
-                  --triplet x64-ios-simulator
-              targetType: 'inline'
-
   - stage: "Windows"
-    dependsOn: "Triplets"
+    dependsOn: []
     jobs:
       - job: "port_windows_arm"
         displayName: "Windows(ARM)"
@@ -87,14 +65,13 @@ stages:
               key: '"v2416-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
                 "v2416-bin-uwp" | "$(vcpkg.default.triplet)"
-                "v2406-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: arm64-windows"
             inputs:
               script: |
                 $Ports=$(Get-Content "test/azure-port-arm64-windows.txt")
-                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
               targetType: 'inline'
             condition: ne(variables['vcpkg.default.triplet'], 'arm64-uwp')
           - task: PowerShell@2
@@ -102,7 +79,7 @@ stages:
             inputs:
               script: |
                 $Ports=$(Get-Content "test/azure-port-arm64-uwp.txt")
-                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
               targetType: 'inline'
             condition: eq(variables['vcpkg.default.triplet'], 'arm64-uwp')
           - task: CopyFiles@2
@@ -121,7 +98,7 @@ stages:
         timeoutInMinutes: "500"
 
   - stage: "Ubuntu"
-    dependsOn: "Triplets"
+    dependsOn: []
     jobs:
       - job: "port_linux"
         displayName: "Linux"
@@ -132,7 +109,7 @@ stages:
             value: "/usr/local/share/vcpkg" # VCPKG_INSTALLATION_ROOT
         strategy:
           matrix:
-            x64_clang15:
+            x64_clang15: # ubuntu-22.04
               vcpkg.default.triplet: "x64-linux"
               cc: clang-15
               cxx: clang++-15
@@ -149,14 +126,13 @@ stages:
               key: '"v2416-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
                 "v2416-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
-                "v2406-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(cxx)"
             inputs:
               script: |
                 $Ports=$(Get-Content "test/azure-port-linux.txt")
-                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
               targetType: 'inline'
           - task: CopyFiles@2
             inputs:
@@ -195,14 +171,13 @@ stages:
               key: '"v2416-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
                 "v2416-bin-android" | "$(vcpkg.default.triplet)"
-                "v2406-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(vcpkg.default.triplet)"
             inputs:
               script: |
                 $Ports=$(Get-Content "test/azure-port-android.txt")
-                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
               targetType: 'inline'
           - task: CopyFiles@2
             inputs:
@@ -218,6 +193,29 @@ stages:
               ArtifactName: "$(Agent.JobName)"
             condition: always()
         timeoutInMinutes: "500"
+
+  - stage: "Triplets"
+    dependsOn: []
+    jobs:
+      - job: "triplet_ios_simulator"
+        displayName: "iOS Simulator"
+        pool:
+          vmImage: macOS-13
+        steps:
+          - powershell: brew install $(Get-Content test/packages-homebrew.txt)
+            displayName: "Install HomeBrew packages"
+          - task: PowerShell@2
+            displayName: "Triplet: ios-simulator"
+            inputs:
+              script: |
+                New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
+                vcpkg --version
+                $Ports=$(Get-Content test/azure-triplet-ios.txt)
+                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build `
+                  --triplet arm64-ios-simulator --debug
+                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build `
+                  --triplet x64-ios-simulator
+              targetType: 'inline'
 
   - stage: "Apple"
     dependsOn: "Triplets"
@@ -237,7 +235,6 @@ stages:
               key: '"v2416-bin-mac-host"'
               restoreKeys: |
                 "v2416-bin-mac-host"
-                "v2406-bin-mac-host"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: osx(host)"
@@ -245,7 +242,7 @@ stages:
               script: |
                 New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
                 $Ports=$(Get-Content "test/azure-port-osx-host.txt")
-                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
               targetType: 'inline'
           - task: CopyFiles@2
             inputs:
@@ -292,14 +289,13 @@ stages:
               key: '"v2416-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
                 "v2416-bin-osx" | "$(vcpkg.default.triplet)"
-                "v2406-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: osx"
             inputs:
               script: |
                 $Ports=$(Get-Content "test/azure-port-osx.txt")
-                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
               targetType: 'inline'
           - task: CopyFiles@2
             inputs:
@@ -337,14 +333,13 @@ stages:
               key: '"v2416-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
                 "v2416-bin-ios" | "$(vcpkg.default.triplet)"
-                "v2406-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: arm64-ios"
             inputs:
               script: |
                 $Ports=$(Get-Content "test/azure-port-ios.txt")
-                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
               targetType: 'inline'
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios
@@ -353,7 +348,7 @@ stages:
             inputs:
               script: |
                 $Ports=$(Get-Content "test/azure-port-ios.txt")
-                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
               targetType: 'inline'
             env:
               VCPKG_DEFAULT_TRIPLET: arm64-ios-simulator
@@ -362,7 +357,7 @@ stages:
             inputs:
               script: |
                 $Ports=$(Get-Content "test/azure-port-ios.txt")
-                vcpkg install $Ports --clean-buildtrees-after-build --clean-packages-after-build
+                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
               targetType: 'inline'
             env:
               VCPKG_DEFAULT_TRIPLET: x64-ios-simulator
