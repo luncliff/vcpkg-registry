@@ -100,9 +100,6 @@
         }
       ]
     },
-    "tensorrt": {
-      "description": "Build with NVIDIA TensorRT support"
-    },
     "xnnpack": {
       "description": "Build with XNNPack support",
       "dependencies": [
