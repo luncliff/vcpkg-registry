@@ -27,6 +27,14 @@
         "xnnpack"
       ],
       "platform": "x64 & windows"
+    },
+    {
+      "name": "onnxruntime",
+      "features": [
+        "directml",
+        "xnnpack"
+      ],
+      "platform": "arm64 & windows"
     }
   ]
 }
