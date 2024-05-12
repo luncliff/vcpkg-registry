@@ -1,9 +1,10 @@
 {
   "name": "tensorflow-lite",
-  "version-semver": "2.15.1",
+  "version-semver": "2.16.1",
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://www.tensorflow.org/",
   "license": "Apache-2.0",
+  "supports": "!android",
   "dependencies": [
     "abseil",
     "eigen3",
@@ -37,28 +38,6 @@
     "xnnpack"
   ],
   "features": {
-    "gles3": {
-      "description": "Enable OpenGL ES 3 delegate",
-      "supports": "windows | android",
-      "dependencies": [
-        "egl-registry",
-        "opengl-registry",
-        {
-          "name": "tensorflow-lite",
-          "default-features": false,
-          "features": [
-            "google-angle"
-          ],
-          "platform": "windows"
-        }
-      ]
-    },
-    "google-angle": {
-      "description": "Link EGL, OpenGL ES code with Google/ANGLE",
-      "dependencies": [
-        "angle"
-      ]
-    },
     "gpu": {
       "description": "Enable GPU delegates",
       "dependencies": [
@@ -72,14 +51,6 @@
             "metal"
           ],
           "platform": "osx | ios"
-        },
-        {
-          "name": "tensorflow-lite",
-          "default-features": false,
-          "features": [
-            "gles3"
-          ],
-          "platform": "windows | android"
         },
         "vulkan-headers"
       ]

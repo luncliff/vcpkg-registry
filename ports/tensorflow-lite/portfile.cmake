@@ -4,31 +4,24 @@ endif()
 
 # check https://github.com/tensorflow/tensorflow/pull/61381
 # vcpkg_download_distfile(TENSORFLOW_PR_61381_PATCH
-#     URLS "https://patch-diff.githubusercontent.com/raw/tensorflow/tensorflow/pull/61381.diff"
-#     FILENAME tensorflow-pr-61381.patch  SHA512 4308c6f1b2f100689be5829ce770294a85489137b85cfd670df04f503b7a14683d42d798eb24e7679b56d99825257192065fedce9f6d0746a2e776c27e6e89d1
+#     URLS "https://github.com/tensorflow/tensorflow/pull/61381.diff?full_index=1"
+#     FILENAME tensorflow-pr-61381.patch  SHA512 0
 # )
 
 # check https://github.com/tensorflow/tensorflow/pull/62037
 # vcpkg_download_distfile(TENSORFLOW_PR_62037_PATCH
-#     URLS "https://patch-diff.githubusercontent.com/raw/tensorflow/tensorflow/pull/62037.diff"
-#     FILENAME tensorflow-pr-62037.patch  SHA512 e33edae25e1ff9a95e0465a8cf26b7e592a1beb0466e180014ee7b1d7ab2792b04f58c5fb875ed40eae26d3986ac1e2cfa1dbdff14b5c8eaf99655cb697ed6b5
-# )
-
-# check https://github.com/tensorflow/tensorflow/pull/62705
-# vcpkg_download_distfile(TENSORFLOW_PR_62705_PATCH
-#     URLS "https://patch-diff.githubusercontent.com/raw/tensorflow/tensorflow/pull/62705.diff"
-#     FILENAME tensorflow-pr-62705.patch  SHA512 0
+#     URLS "https://github.com/tensorflow/tensorflow/pull/62037.diff?full_index=1"
+#     FILENAME tensorflow-pr-62037.patch  SHA512 0
 # )
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.15.1
-    SHA512 21f63e7b3a5d8d7d0356a13aac259ca3fd40bd9c118a747378741fc304fa24de2674c0722de92dfa0524c3b5c40bc0dfde1988301b050ac69f2a3f2fbfbf9875
+    REF v2.16.1
+    SHA512 6f02261b3e72b476a3adb8e47efe2bee76b8564315b853e3b16f443193204d363b5fb22ac5c388cebd6a1f326f0daf00586e0ccbf6a305d761a9266534fde13f
     PATCHES
         tensorflow-pr-61381.patch
         tensorflow-pr-62037.patch
-        tensorflow-pr-62705.patch
         fix-cmake-c-api.patch
         fix-cmake-vcpkg.patch
         fix-sources.patch
@@ -138,7 +131,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gpu     TFLITE_ENABLE_GPU
         gpu     TFLITE_ENABLE_METAL
-        # gpu     TFLITE_ENABLE_GLES3
 )
 
 if(VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_ANDROID)
@@ -146,16 +138,15 @@ if(VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_ANDROID)
 else()
     list(APPEND FEATURE_OPTIONS -DTFLITE_ENABLE_MMAP=OFF)
 endif()
-if(VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_WINDOWS)
-    if("gpu" IN_LIST FEATURES)
-        list(APPEND FEATURE_OPTIONS -DTFLITE_ENABLE_GLES3=ON)
-    endif()
-else()
-    list(APPEND FEATURE_OPTIONS -DTFLITE_ENABLE_GLES3=OFF)
-endif()
 
 if(VCPKG_TARGET_IS_WINDOWS)
-    list(APPEND GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+    # Visual Studio with ClangCL?
+    set(VCPKG_PLATFORM_TOOLSET ClangCL) # CMAKE_GENERATOR_TOOLSET
+    if((VCPKG_TARGET_ARCHITECTURE STREQUAL "arm") OR (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64"))
+        # We have to locate LLVM/ARM64/bin/clang-cl.exe and its forks, but too complicated for now
+        unset(VCPKG_PLATFORM_TOOLSET)
+    endif()
+    set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     list(APPEND GENERATOR_OPTIONS GENERATOR Xcode)
 endif()
@@ -172,8 +163,8 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
         -DTFLITE_ENABLE_EXTERNAL_DELEGATE=ON
         -DTFLITE_ENABLE_INSTALL=ON
-        -DTENSORFLOW_SOURCE_DIR:PATH="${SOURCE_PATH}"
-        -DFLATBUFFERS_FLATC_EXECUTABLE:FILEPATH="${FLATC}"
+        "-DTENSORFLOW_SOURCE_DIR:PATH=${SOURCE_PATH}"
+        "-DFLATBUFFERS_FLATC_EXECUTABLE:FILEPATH=${FLATC}"
     OPTIONS_DEBUG
         -DTFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION=${VCPKG_TARGET_IS_ANDROID}
     MAYBE_UNUSED_VARIABLES
