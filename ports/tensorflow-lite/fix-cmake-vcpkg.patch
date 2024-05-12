@@ -30,7 +30,7 @@ index a6fba5f3..a3a51d6d 100644
      ${ANDROID_ANDROID_LIB}
    )
  endif()
-+if(CMAKE_SYSTEM_NAME STREQUAL Windows) # Windows|WindowsStore
++if(CMAKE_SYSTEM_NAME MATCHES Windows) # Windows|WindowsStore
 +  list(APPEND TFLITE_TARGET_PRIVATE_DEFINITIONS
 +    _CRT_SECURE_NO_WARNINGS
 +    _SILENCE_CXX20_IS_POD_DEPRECATION_WARNING _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING
@@ -105,9 +105,9 @@ index a6fba5f3..a3a51d6d 100644
 -      PRIVATE ${TENSORFLOW_SOURCE_DIR}
 -    )
 +    target_include_directories(metal_delegate PRIVATE ${TENSORFLOW_SOURCE_DIR})
-+    target_link_libraries(metal_delegate PUBLIC
-+      absl::status flatbuffers::flatbuffers
-+      "-framework Foundation" "-framework Metal")
++    target_link_libraries(metal_delegate PUBLIC absl::status flatbuffers::flatbuffers "-framework Foundation" "-framework Metal")
++    # some sources need Objective-C++ types
++    set_source_files_properties(${TFLITE_DELEGATES_METAL_SRCS} PROPERTIES LANGUAGE OBJCXX)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES metal_delegate)
      #
      # generate flatbuffers header for inference_context
@@ -127,13 +127,13 @@ index a6fba5f3..a3a51d6d 100644
 -   endforeach()
 +      add_library(${lib_name} STATIC ${METAL_DELEGATE_PATH}${lib_name}.cc)
 +      target_include_directories(${lib_name} PRIVATE ${TENSORFLOW_SOURCE_DIR})
-+      target_link_libraries(${lib_name} PUBLIC absl::status flatbuffers::flatbuffers)
 +      set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE OBJCXX) # requires CMP0119
++      target_link_libraries(${lib_name} PUBLIC absl::status flatbuffers::flatbuffers)
 +   endforeach()
  
     list(APPEND MM_SRCS
       buffer_convert
-@@ -455,21 +465,20 @@ if(TFLITE_ENABLE_GPU)
+@@ -455,21 +465,21 @@ if(TFLITE_ENABLE_GPU)
     )
     foreach(lib_name ${MM_SRCS})
       add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.mm)
@@ -142,6 +142,7 @@ index a6fba5f3..a3a51d6d 100644
 -       ${CMAKE_BINARY_DIR}/flatbuffers/include
 -     )
 -     target_link_libraries(${lib_name})
++     target_include_directories(${lib_name} PRIVATE ${TENSORFLOW_SOURCE_DIR})
 +     target_link_libraries(${lib_name} PUBLIC absl::status flatbuffers::flatbuffers)
     endforeach()
  endif()
