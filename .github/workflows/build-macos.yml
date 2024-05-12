@@ -27,6 +27,10 @@ jobs:
         with:
           brew: ninja autoconf automake libtool
 
+      # - uses: mobiledevops/xcode-select-version-action@v1.0.0
+      #   with:
+      #     xcode-select-version: "15.2"
+
       - name: "create cache folders"
         run: |
           mkdir -p ${VCPKG_DOWNLOADS}

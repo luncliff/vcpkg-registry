@@ -1,3 +1,18 @@
+diff --git a/onnxruntime/core/framework/kernel_type_str_resolver_utils.h b/onnxruntime/core/framework/kernel_type_str_resolver_utils.h
+index 3d06013..4121534 100644
+--- a/onnxruntime/core/framework/kernel_type_str_resolver_utils.h
++++ b/onnxruntime/core/framework/kernel_type_str_resolver_utils.h
+@@ -10,9 +10,7 @@
+ #include "core/framework/kernel_type_str_resolver.h"
+ #include "core/graph/op_identifier.h"
+ 
+-namespace flatbuffers {
+-class DetachedBuffer;
+-}
++#include <flatbuffers/flatbuffers.h>
+ 
+ namespace onnxruntime::kernel_type_str_resolver_utils {
+ 
 diff --git a/onnxruntime/core/optimizer/compute_optimizer/upstream_gather_actors.h b/onnxruntime/core/optimizer/compute_optimizer/upstream_gather_actors.h
 index 0c21be1..3ee6061 100644
 --- a/onnxruntime/core/optimizer/compute_optimizer/upstream_gather_actors.h

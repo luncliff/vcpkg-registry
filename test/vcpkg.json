@@ -27,10 +27,20 @@
       "platform": "windows"
     },
     {
+      "name": "cpuinfo",
+      "features": [
+        "tools"
+      ],
+      "platform": "linux"
+    },
+    {
+      "name": "xnnpack",
+      "platform": "linux"
+    },
+    {
       "name": "onnxruntime",
       "features": [
-        "python",
-        "training"
+        "python"        
       ],
       "platform": "windows"
     },
@@ -82,7 +92,6 @@
     {
       "name": "tensorflow-lite",
       "features": [
-        "google-angle",
         "gpu"
       ],
       "platform": "windows & !arm"
