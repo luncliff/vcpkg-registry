@@ -2,6 +2,10 @@ name: "Windows"
 
 on: [push, workflow_dispatch]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
 env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
 
