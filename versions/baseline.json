@@ -89,7 +89,7 @@
       "port-version": 0
     },
     "ml-dtypes": {
-      "baseline": "0.3.2",
+      "baseline": "0.4.0",
       "port-version": 0
     },
     "nsync": {
