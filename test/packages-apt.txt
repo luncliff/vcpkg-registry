@@ -5,3 +5,5 @@ libx11-dev
 libxi-dev
 libxext-dev
 libx11-xcb-dev
+g++-13
+libstdc++-13-dev
