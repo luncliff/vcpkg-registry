@@ -100,6 +100,7 @@
       "name": "vcpkg-cmake",
       "host": true
     },
+    "miniaudio",
     "xatlas",
     "zlib-ng"
   ]
