@@ -108,15 +108,15 @@ stages:
           - name: vcpkg.root
             value: "/usr/local/share/vcpkg" # VCPKG_INSTALLATION_ROOT
         strategy:
-          matrix:
-            x64_clang15: # ubuntu-22.04
+          matrix: # ubuntu-22.04
+            x64_clang15:
               vcpkg.default.triplet: "x64-linux"
               cc: clang-15
               cxx: clang++-15
-            x64_gcc13:
+            x64_gcc11:
               vcpkg.default.triplet: "x64-linux"
-              cc: gcc-13
-              cxx: g++-13
+              cc: gcc-11
+              cxx: g++-11
         steps:
           - powershell: sudo apt-get install -y $(Get-Content test/packages-apt.txt)
             displayName: "Install APT packages"
