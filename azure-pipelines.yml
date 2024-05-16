@@ -103,13 +103,13 @@ stages:
       - job: "port_linux"
         displayName: "Linux"
         pool:
-          vmImage: ubuntu-22.04
+          vmImage: ubuntu-24.04
         variables:
           - name: vcpkg.root
             value: "/usr/local/share/vcpkg" # VCPKG_INSTALLATION_ROOT
         strategy:
-          matrix:
-            x64_clang15: # ubuntu-22.04
+          matrix: # ubuntu-24.04
+            x64_clang15:
               vcpkg.default.triplet: "x64-linux"
               cc: clang-15
               cxx: clang++-15
