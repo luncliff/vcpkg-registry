@@ -113,10 +113,10 @@ stages:
               vcpkg.default.triplet: "x64-linux"
               cc: clang-15
               cxx: clang++-15
-            x64_gcc13:
+            x64_gcc11:
               vcpkg.default.triplet: "x64-linux"
-              cc: gcc-13
-              cxx: g++-13
+              cc: gcc-11
+              cxx: g++-11
         steps:
           - powershell: sudo apt-get install -y $(Get-Content test/packages-apt.txt)
             displayName: "Install APT packages"
