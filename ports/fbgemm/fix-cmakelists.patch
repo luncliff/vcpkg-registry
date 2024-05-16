@@ -1,36 +1,36 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index ab980eb..218ec02 100644
+index 0b510717..f64d5b66 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -178,6 +178,7 @@ if(MSVC)
+@@ -187,6 +187,7 @@ if(MSVC)
        endif(${flag_var} MATCHES "/MD")
      endforeach(flag_var)
    endif()
-+  target_compile_options(fbgemm_generic PRIVATE /bigobj)
++  target_compile_options(fbgemm_generic PRIVATE "/bigobj")
    target_compile_options(fbgemm_avx2 PRIVATE "/arch:AVX2")
    target_compile_options(fbgemm_avx512 PRIVATE "/arch:AVX512")
- else(MSVC)
-@@ -229,7 +230,8 @@ message(WARNING "CMAKE_CXX_FLAGS_DEBUG is ${CMAKE_CXX_FLAGS_DEBUG}")
+   if(OpenMP_FOUND)
+@@ -241,7 +242,8 @@ message(WARNING "CMAKE_CXX_FLAGS_DEBUG is ${CMAKE_CXX_FLAGS_DEBUG}")
  message(WARNING "CMAKE_CXX_FLAGS_RELEASE is ${CMAKE_CXX_FLAGS_RELEASE}")
  message(WARNING "==========")
  
 -if(NOT TARGET asmjit)
-+find_package(asmjit CONFIG REQUIRED) # target 'asmjit::asmjit'
++find_package(asmjit CONFIG REQUIRED) # asmjit::asmjit
 +if(FALSE)
    #Download asmjit from github if ASMJIT_SRC_DIR is not specified.
    if(NOT DEFINED ASMJIT_SRC_DIR)
      set(ASMJIT_SRC_DIR "${FBGEMM_SOURCE_DIR}/third_party/asmjit"
-@@ -258,7 +260,8 @@ if(NOT TARGET asmjit)
+@@ -270,7 +272,8 @@ if(NOT TARGET asmjit)
    endif()
  endif()
  
 -if(NOT TARGET cpuinfo)
-+find_package(cpuinfo CONFIG REQUIRED) # target 'cpuinfo::cpuinfo'
++find_package(cpuinfo CONFIG REQUIRED) # cpuinfo::cpuinfo
 +if(FALSE)
    #Download cpuinfo from github if CPUINFO_SOURCE_DIR is not specified.
    if(NOT DEFINED CPUINFO_SOURCE_DIR)
      set(CPUINFO_SOURCE_DIR "${FBGEMM_SOURCE_DIR}/third_party/cpuinfo"
-@@ -279,20 +282,20 @@ endif()
+@@ -291,26 +294,26 @@ endif()
  target_include_directories(fbgemm_generic BEFORE
        PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}>
        PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}/include>
@@ -55,29 +55,36 @@ index ab980eb..218ec02 100644
 +)
 +target_link_libraries(fbgemm_avx512 PRIVATE asmjit::asmjit cpuinfo::cpuinfo)
  
+ target_include_directories(fbgemm_autovec BEFORE
+       PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}>
+       PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}/include>
+-      PRIVATE "${ASMJIT_SRC_DIR}/src"
+-      PRIVATE "${CPUINFO_SOURCE_DIR}/include")
++)
++target_link_libraries(fbgemm_autovec PRIVATE asmjit::asmjit cpuinfo::cpuinfo)
+ 
  if(FBGEMM_LIBRARY_TYPE STREQUAL "default")
    add_library(fbgemm
-@@ -332,11 +335,9 @@ target_include_directories(fbgemm BEFORE
+@@ -354,15 +357,10 @@ target_include_directories(fbgemm BEFORE
+     PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}>
      PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}/include>)
  
- target_link_libraries(fbgemm
+-target_link_libraries(fbgemm
 -  $<BUILD_INTERFACE:asmjit>
 -  $<BUILD_INTERFACE:cpuinfo>)
 -add_dependencies(fbgemm
 -  asmjit
 -  cpuinfo)
-+  asmjit::asmjit
-+  cpuinfo::cpuinfo
-+)
++target_link_libraries(fbgemm PRIVATE asmjit::asmjit cpuinfo::cpuinfo)
  
  if(OpenMP_FOUND)
-   target_link_libraries(fbgemm OpenMP::OpenMP_CXX)
-@@ -361,11 +362,9 @@ install(
- if(MSVC)
-   if(FBGEMM_LIBRARY_TYPE STREQUAL "shared")
-     install(
--      FILES $<TARGET_PDB_FILE:fbgemm> $<TARGET_PDB_FILE:asmjit>
-+      FILES $<TARGET_PDB_FILE:fbgemm>
+-  target_link_libraries(fbgemm OpenMP::OpenMP_CXX)
++  target_link_libraries(fbgemm PRIVATE OpenMP::OpenMP_CXX)
+ endif()
+ 
+ install(
+@@ -387,8 +385,6 @@ if(MSVC)
+       FILES $<TARGET_PDB_FILE:fbgemm> $<TARGET_PDB_FILE:asmjit>
        DESTINATION ${CMAKE_INSTALL_LIBDIR} OPTIONAL)
    endif()
 -  install(TARGETS fbgemm DESTINATION ${CMAKE_INSTALL_LIBDIR})

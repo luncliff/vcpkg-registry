@@ -4,8 +4,8 @@ vcpkg_find_acquire_program(PYTHON3)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/fbgemm
-    REF v0.5.0
-    SHA512 b200a174b493cf2540ca993f42405ed9c7af00a56788af3b5e1a3c1b1a27fb0f3b2189f809c6e7a8322e39e56fe74f249e4e93aa672d643df83b0e8d55339c35
+    REF v0.7.0
+    SHA512 e969697f0dd864bf904ee0c762351b3a3486a699156926934c37beae09f9c9bb53e27cb0f4804376a7087c37e00772061b5f697595317392215d1b64d1f18cff
     PATCHES
         fix-cmakelists.patch
 )
@@ -13,9 +13,6 @@ vcpkg_from_github(
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gpu FBGEMM_BUILD_FBGEMM_GPU
-    INVERTED_FEATURES
-        gpu FBGEMM_CPU_ONLY
-        gpu USE_ROCM
 )
 
 vcpkg_cmake_configure(
@@ -26,11 +23,7 @@ vcpkg_cmake_configure(
         -DFBGEMM_BUILD_TESTS=OFF
         -DFBGEMM_BUILD_BENCHMARKS=OFF
         -DFBGEMM_BUILD_DOCS=OFF
-        -DFBGEMM_LIBRARY_TYPE:STRING="default"
         -DPYTHON_EXECUTABLE=${PYTHON3} # inject the path instead of find_package(Python)
-    MAYBE_UNUSED_VARIABLES
-        FBGEMM_CPU_ONLY
-        USE_ROCM
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
