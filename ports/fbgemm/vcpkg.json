@@ -3,8 +3,8 @@
   "version-semver": "0.7.0",
   "description": "FB (Facebook) + GEMM (General Matrix-Matrix Multiplication)",
   "homepage": "https://github.com/pytorch/FBGEMM",
-  "supports": "x64",
   "license": "BSD-3-Clause",
+  "supports": "x64",
   "dependencies": [
     "asmjit",
     "cpuinfo",
