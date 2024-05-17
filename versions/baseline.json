@@ -89,7 +89,7 @@
       "port-version": 0
     },
     "miniaudio": {
-      "baseline": "0.11.18",
+      "baseline": "0.11.21",
       "port-version": 0
     },
     "ml-dtypes": {

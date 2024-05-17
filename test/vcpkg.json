@@ -104,6 +104,7 @@
       "name": "fbgemm",
       "platform": "!arm"
     },
+    "miniaudio",
     "xatlas",
     "zlib-ng"
   ]
