@@ -1,0 +1,9 @@
+{
+  "versions": [
+    {
+      "git-tree": "c1117f1c72e18a3771acde0a11cfec79b7aa7331",
+      "version-string": "jdk-23+10",
+      "port-version": 0
+    }
+  ]
+}
