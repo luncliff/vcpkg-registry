@@ -9,12 +9,6 @@ orbs:
 workflows:
   overlay:
     jobs:
-      - x64_windows:
-          filters:
-            branches:
-              ignore:
-                - gh-pages
-                - docs
       - x64_linux_gcc:
           filters:
             branches:
