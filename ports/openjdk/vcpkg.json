@@ -1,0 +1,8 @@
+{
+  "name": "openjdk",
+  "version-string": "jdk-23+10",
+  "description": "JDK main-line development",
+  "homepage": "https://openjdk.org/projects/jdk",
+  "license": "GPL-2.0",
+  "supports": "x64 & windows"
+}
