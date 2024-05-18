@@ -4,5 +4,5 @@
   "description": "JDK main-line development",
   "homepage": "https://openjdk.org/projects/jdk",
   "license": "GPL-2.0",
-  "supports": "windows"
+  "supports": "x64 & windows"
 }

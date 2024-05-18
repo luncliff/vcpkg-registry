@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2024-02-12",
+  "version-date": "2024-05-18",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows | linux | osx | ios",
@@ -19,14 +19,6 @@
       "platform": "osx | ios"
     },
     {
-      "name": "d3d12-transition-layer",
-      "platform": "windows"
-    },
-    {
-      "name": "opencl-on-dx12",
-      "platform": "windows"
-    },
-    {
       "name": "cpuinfo",
       "features": [
         "tools"
@@ -34,29 +26,13 @@
       "platform": "linux"
     },
     {
-      "name": "xnnpack",
-      "platform": "linux"
-    },
-    {
-      "name": "onnxruntime",
-      "features": [
-        "python"        
-      ],
+      "name": "d3d12-transition-layer",
       "platform": "windows"
-    },
-    {
-      "name": "onnxruntime",
-      "features": [
-        "xnnpack",
-        "framework",
-        "coreml"
-      ],
-      "platform": "osx"
     },
     "etcpak",
     {
-      "name": "openjdk",
-      "platform": "windows"
+      "name": "fbgemm",
+      "platform": "!arm"
     },
     {
       "name": "libdispatch",
@@ -77,9 +53,34 @@
       "name": "metal-cpp",
       "platform": "osx | ios"
     },
+    "miniaudio",
+    {
+      "name": "onnxruntime",
+      "features": [
+        "coreml",
+        "framework",
+        "xnnpack"
+      ],
+      "platform": "osx"
+    },
+    {
+      "name": "onnxruntime",
+      "features": [
+        "python"
+      ],
+      "platform": "windows"
+    },
     {
       "name": "opencl",
       "platform": "windows | linux"
+    },
+    {
+      "name": "opencl-on-dx12",
+      "platform": "windows"
+    },
+    {
+      "name": "openjdk",
+      "platform": "x64 & windows"
     },
     "openssl3",
     {
@@ -104,12 +105,11 @@
       "name": "vcpkg-cmake",
       "host": true
     },
-    {
-      "name": "fbgemm",
-      "platform": "!arm"
-    },
-    "miniaudio",
     "xatlas",
+    {
+      "name": "xnnpack",
+      "platform": "linux"
+    },
     "zlib-ng"
   ]
 }

@@ -4,8 +4,6 @@ vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 # Prepare toolchains like BASH, MAKE, and BOOTJDK_PATH...
 if(VCPKG_TARGET_IS_WINDOWS)
     include(${CMAKE_CURRENT_LIST_DIR}/windows-setup.cmake)
-elseif(VCPKG_TARGET_IS_LINUX)
-    include(${CMAKE_CURRENT_LIST_DIR}/linux-setup.cmake)
 endif()
 if(NOT DEFINED BOOTJDK_PATH)
     message(FATAL_ERROR "BOOTJDK_PATH is required")
