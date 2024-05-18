@@ -137,11 +137,11 @@
       "port-version": 0
     },
     "opencl": {
-      "baseline": "2023-12-14",
+      "baseline": "v2024.05.08",
       "port-version": 0
     },
     "opencl-headers": {
-      "baseline": "2023-12-14",
+      "baseline": "v2024.05.08",
       "port-version": 0
     },
     "openjdk": {

@@ -1,6 +1,6 @@
 {
   "name": "opencl",
-  "version-date": "2023-12-14",
+  "version-string": "v2024.05.08",
   "description": "C/C++ headers and ICD loader (Installable Client Driver) for OpenCL",
   "homepage": "https://github.com/KhronosGroup/OpenCL-ICD-Loader",
   "license": "Apache-2.0",
