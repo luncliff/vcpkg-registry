@@ -209,7 +209,7 @@ diff --git a/cmake/onnxruntime_providers_cuda.cmake b/cmake/onnxruntime_provider
 index b5c3100865..da2fc588ac 100644
 --- a/cmake/onnxruntime_providers_cuda.cmake
 +++ b/cmake/onnxruntime_providers_cuda.cmake
-@@ -180,8 +180,13 @@
+@@ -180,8 +180,17 @@
        target_link_libraries(${target} PRIVATE CUDA::cuda_driver)
      endif()
  
@@ -218,6 +218,10 @@ index b5c3100865..da2fc588ac 100644
 +    find_package(NvidiaCutlass)
 +    if(NvidiaCutlass_FOUND)
 +      target_link_libraries(${target} PRIVATE nvidia::cutlass::cutlass)
++      if(MSVC)
++        # CUTLASS_CONSTEXPR_IF_CXX17 must be constexpr. Correct the __cplusplus value with MSVC
++        target_compile_options(${target} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler /Zc:__cplusplus>)
++      endif()
 +    else()
 +      include(cutlass)
 +      target_include_directories(${target} PRIVATE ${cutlass_SOURCE_DIR}/include ${cutlass_SOURCE_DIR}/examples ${cutlass_SOURCE_DIR}/tools/util/include)

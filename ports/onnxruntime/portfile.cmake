@@ -71,6 +71,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     # For some reason CUDA compiler detection is not working in WINDOWS_USE_MSBUILD
+    # See https://github.com/pytorch/pytorch PR 85958, need to change NVIDIA CUTLASS?
     if(NOT ("cuda" IN_LIST FEATURES))
         set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
     endif()
@@ -168,6 +169,9 @@ vcpkg_cmake_configure(
         ngraph_DIR
 )
 vcpkg_cmake_build(TARGET onnxruntime LOGFILE_BASE build-onnxruntime)
+if("cuda" IN_LIST FEATURES)
+    vcpkg_cmake_build(TARGET onnxruntime_providers_cuda LOGFILE_BASE build-onnxruntime-cuda)
+endif()
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxruntime)
 vcpkg_copy_pdbs()
