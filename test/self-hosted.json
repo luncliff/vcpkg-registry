@@ -1,12 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2024-02-24",
+  "version-date": "2024-05-18",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows",
   "dependencies": [
-    "liblzma",
     {
       "name": "d3d12-transition-layer",
       "features": [
@@ -14,15 +13,12 @@
       ],
       "platform": "x64 & windows"
     },
-    {
-      "name": "winpixeventruntime",
-      "platform": "x64 & windows"
-    },
+    "liblzma",
     {
       "name": "onnxruntime",
       "features": [
-        "openvino",
         "directml",
+        "openvino",
         "python",
         "xnnpack"
       ],
@@ -35,6 +31,14 @@
         "xnnpack"
       ],
       "platform": "arm64 & windows"
+    },
+    {
+      "name": "openjdk",
+      "platform": "x64 & windows"
+    },
+    {
+      "name": "winpixeventruntime",
+      "platform": "x64 & windows"
     }
   ]
 }
