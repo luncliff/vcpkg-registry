@@ -11,7 +11,7 @@ env:
 
 jobs:
   overlay:
-    # check https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md
+    # check https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md
     runs-on: "ubuntu-22.04"
     strategy:
       matrix:
@@ -25,7 +25,7 @@ jobs:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
-      - uses: actions/checkout@v4.1.6
+      - uses: actions/checkout@v4.1.1
       - uses: ConorMacBride/install-package@v1.1.0
         with:
           apt: nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
@@ -38,7 +38,7 @@ jobs:
           VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
           VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"
 
-      - uses: actions/cache@v4.0.2
+      - uses: actions/cache@v4.0.0
         with:
           key: "v2419-x64-linux-${{ matrix.vcpkg_tag }}"
           path: |
