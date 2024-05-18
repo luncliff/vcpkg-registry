@@ -56,7 +56,7 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-osx"
-          VCPKG_BINARY_SOURCES: "default;${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
 
       - uses: lukka/run-vcpkg@v11.5
         with:
@@ -67,4 +67,4 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-osx"
-          VCPKG_BINARY_SOURCES: "default;${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}

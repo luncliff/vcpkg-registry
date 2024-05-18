@@ -54,6 +54,6 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-linux"
-          VCPKG_BINARY_SOURCES: "default;${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
           VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
           VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"

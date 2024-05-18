@@ -48,6 +48,7 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
+          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
 
       - uses: lukka/run-vcpkg@v11.5
         with:
@@ -58,6 +59,7 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
+          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
 
       - uses: yumis-coconudge/clean-workspace-action@v1.0.6
         with:
