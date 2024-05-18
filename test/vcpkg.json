@@ -100,6 +100,10 @@
       "name": "vcpkg-cmake",
       "host": true
     },
+    {
+      "name": "fbgemm",
+      "platform": "!arm"
+    },
     "miniaudio",
     "xatlas",
     "zlib-ng"
