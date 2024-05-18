@@ -19,7 +19,7 @@ jobs:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4.1.6
       - uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: x64
@@ -32,7 +32,7 @@ jobs:
           git config --system core.longpaths true
         shell: pwsh
 
-      - uses: actions/cache@v4.0.0
+      - uses: actions/cache@v4.0.2
         with:
           key: "v2419-x64-windows-hosted"
           path: |
@@ -59,6 +59,6 @@ jobs:
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
 
-      - uses: yumis-coconudge/clean-workspace-action@v1.0.5
+      - uses: yumis-coconudge/clean-workspace-action@v1.0.6
         with:
           additional-path: "C:/vcpkg/installed"
