@@ -7,7 +7,7 @@
 
 Targets...
 
-* [vcpkg](https://github.com/microsoft/vcpkg): recommend [2023.10.19](https://github.com/microsoft/vcpkg/releases/tag/2023.10.19) or later
+* [vcpkg](https://github.com/microsoft/vcpkg): recommend [2024.03.19](https://github.com/microsoft/vcpkg/releases/tag/2024.03.19) or later
 * [vcpkg-tool](https://github.com/microsoft/vcpkg-tool) follows the vcpkg
 
 ### References
