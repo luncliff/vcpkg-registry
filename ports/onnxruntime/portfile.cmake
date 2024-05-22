@@ -117,10 +117,7 @@ if("cuda" IN_LIST FEATURES)
     if(NOT DEFINED ENV{CUDA_PATH})
         message(FATAL_ERROR "ENV{CUDA_PATH} is required. Please check the environment variable")
     endif()
-    message(STATUS "Using CUDA: $ENV{CUDA_PATH}")
-    get_filename_component(CUDA_VERSION "$ENV{CUDA_PATH}" NAME)
-    string(REPLACE "v" "" CUDA_VERSION "${CUDA_VERSION}") # "v12.0" -> "12.0"
-    message(STATUS "  version: ${CUDA_VERSION}")
+    message(STATUS "Using ENV{CUDA_PATH}: $ENV{CUDA_PATH}")
 endif()
 
 # see tools/ci_build/build.py

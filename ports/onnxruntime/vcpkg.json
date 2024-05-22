@@ -1,7 +1,7 @@
 {
   "name": "onnxruntime",
   "version-semver": "1.17.3",
-  "port-version": 1,
+  "port-version": 2,
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://onnxruntime.ai/",
   "license": "MIT",
@@ -24,7 +24,12 @@
       "name": "nsync",
       "platform": "!windows"
     },
-    "onnx",
+    {
+      "name": "onnx",
+      "features": [
+        "disable-static-generation"
+      ]
+    },
     "optional-lite",
     "protobuf",
     {
@@ -74,9 +79,6 @@
         "mpi"
       ]
     },
-    "nccl": {
-      "description": "Build with NCCL support"
-    },
     "openvino": {
       "description": "Build with OpenVINO support",
       "supports": "!(osx | ios | android | emscripten)",
@@ -99,6 +101,13 @@
           "name": "vcpkg-get-python-packages",
           "host": true
         }
+      ]
+    },
+    "test": {
+      "description": "Build ONNXRuntime unit tests, micro-benchmarks",
+      "dependencies": [
+        "benchmark",
+        "gtest"
       ]
     },
     "xnnpack": {
