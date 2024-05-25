@@ -7,6 +7,7 @@ vcpkg_from_github(
     SHA512 b46a4ab70af88053318eba45251c1f71528f15e45a33042877570e8d857febd3ec66e2e811fcda2105a4f17b84c9a1c6a0aaa22756c3287321b3ea29e83127fd
     PATCHES
         fix-cmakelists.patch
+        support-test.patch
 )
 
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
@@ -27,10 +28,12 @@ message(STATUS "Using protoc: ${PROTOC}")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        python BUILD_ONNX_PYTHON
-        protobuf-lite ONNX_USE_LITE_PROTO
-        disable-exception ONNX_DISABLE_EXCEPTIONS
-        disable-static-generation ONNX_DISABLE_STATIC_REGISTRATION
+        python              BUILD_ONNX_PYTHON
+        protobuf-lite       ONNX_USE_LITE_PROTO
+        test                ONNX_BUILD_TESTS
+    INVERTED_FEATURES
+        exception           ONNX_DISABLE_EXCEPTIONS
+        static-registration ONNX_DISABLE_STATIC_REGISTRATION
 )
 
 if("python" IN_LIST FEATURES)
@@ -69,7 +72,6 @@ vcpkg_cmake_configure(
         -DONNX_GEN_PB_TYPE_STUBS=ON
         -DONNX_USE_PROTOBUF_SHARED_LIBS=${USE_PROTOBUF_SHARED}
         -DONNX_USE_MSVC_STATIC_RUNTIME=${USE_STATIC_RUNTIME}
-        -DONNX_BUILD_TESTS=OFF
         -DONNX_BUILD_BENCHMARKS=OFF
     MAYBE_UNUSED_VARIABLES
         ONNX_USE_MSVC_STATIC_RUNTIME
@@ -78,6 +80,9 @@ vcpkg_cmake_configure(
 
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/ONNX PACKAGE_NAME ONNX)
+if("test" IN_LIST FEATURES)
+    vcpkg_copy_tools(TOOL_NAMES onnx_gtests AUTO_CLEAN)
+endif()
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
