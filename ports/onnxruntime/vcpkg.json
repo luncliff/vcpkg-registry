@@ -27,7 +27,7 @@
     {
       "name": "onnx",
       "features": [
-        "disable-static-generation"
+        "static-registration"
       ]
     },
     "optional-lite",
