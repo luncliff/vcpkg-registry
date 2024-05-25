@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2024-05-13",
+  "version-date": "2024-05-25",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows",
@@ -13,19 +13,26 @@
       ],
       "platform": "x64 & windows"
     },
+    "nvidia-cnmem",
+    "nvidia-cutlass",
+    "nvidia-nvbench",
+    "nvidia-tools-extension-sdk",
+    "nvidia-triton-client",
+    "nvidia-triton-common",
+    "nvidia-triton-core",
+    {
+      "name": "onnx",
+      "features": [
+        "static-registration",
+        "test"
+      ]
+    },
     {
       "name": "onnxruntime",
       "features": [
         "cuda"
       ],
       "platform": "x64 & windows"
-    },
-    "nvidia-cnmem",
-    "nvidia-cutlass",
-    "nvidia-nvbench",
-    "nvidia-tools-extension-sdk",
-    "nvidia-triton-common",
-    "nvidia-triton-core",
-    "nvidia-triton-client"
+    }
   ]
 }
