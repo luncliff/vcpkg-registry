@@ -27,10 +27,11 @@ message(STATUS "Using protoc: ${PROTOC}")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        python BUILD_ONNX_PYTHON
-        protobuf-lite ONNX_USE_LITE_PROTO
-        disable-exception ONNX_DISABLE_EXCEPTIONS
-        disable-static-generation ONNX_DISABLE_STATIC_REGISTRATION
+        python              BUILD_ONNX_PYTHON
+        protobuf-lite       ONNX_USE_LITE_PROTO
+    INVERTED_FEATURES
+        exception           ONNX_DISABLE_EXCEPTIONS
+        static-registration ONNX_DISABLE_STATIC_REGISTRATION
 )
 
 if("python" IN_LIST FEATURES)
