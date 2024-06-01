@@ -1,7 +1,7 @@
 {
   "name": "onnx",
   "version-semver": "1.15.0",
-  "port-version": 1,
+  "port-version": 2,
   "description": "Open standard for machine learning interoperability",
   "homepage": "https://onnx.ai",
   "license": "Apache-2.0",
@@ -20,12 +20,12 @@
       "host": true
     }
   ],
-  "default-features": [
-    "exception"
-  ],
   "features": {
-    "exception": {
+    "disable-exception": {
       "description": "Enable exception handling"
+    },
+    "disable-static-registration": {
+      "description": "Enable static registration for onnx operator schemas"
     },
     "python": {
       "description": "Build Python binaries",
@@ -36,9 +36,6 @@
           "host": true
         }
       ]
-    },
-    "static-registration": {
-      "description": "Enable static registration for onnx operator schemas"
     },
     "test": {
       "description": "Enable exception handling",
