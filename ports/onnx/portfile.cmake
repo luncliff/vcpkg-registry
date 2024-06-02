@@ -31,9 +31,8 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         python              BUILD_ONNX_PYTHON
         protobuf-lite       ONNX_USE_LITE_PROTO
         test                ONNX_BUILD_TESTS
-    INVERTED_FEATURES
-        exception           ONNX_DISABLE_EXCEPTIONS
-        static-registration ONNX_DISABLE_STATIC_REGISTRATION
+        disable-exception           ONNX_DISABLE_EXCEPTIONS
+        disable-static-registration ONNX_DISABLE_STATIC_REGISTRATION
 )
 
 if("python" IN_LIST FEATURES)
