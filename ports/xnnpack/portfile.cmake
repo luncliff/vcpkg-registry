@@ -7,8 +7,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/XNNPACK
-    REF 92c6254f6a2a57f394248f66271a77f4f48a27aa # 2024-05-06
-    SHA512 71fe88ba951ff353288f07ae2119301d046750c850b268eb01435816848adfd9a8f5d701d3ce134fe9b3178c4f70410fad5e5ed2521292f7c17320a904d3ac7a
+    REF bed314a60a3b0cd7ea3dd0838bea4aaa2a38884e # 2024-06-08
+    SHA512 0
     HEAD_REF master
     PATCHES
         fix-cmake.patch
