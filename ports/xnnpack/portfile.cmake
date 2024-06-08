@@ -8,7 +8,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/XNNPACK
     REF bed314a60a3b0cd7ea3dd0838bea4aaa2a38884e # 2024-06-08
-    SHA512 0
+    SHA512 27f5d8a4b5053c18b6bf75dffb4c7f8bc59a71dbbd7d0860201279d6de99b0d60595471c691ba7085354a9d202280d6f42e8262f9135f4af894c66f5288a5883
     HEAD_REF master
     PATCHES
         fix-cmake.patch
