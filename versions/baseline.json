@@ -157,7 +157,7 @@
       "port-version": 1
     },
     "openssl3": {
-      "baseline": "3.3.0",
+      "baseline": "3.3.1",
       "port-version": 0
     },
     "pthreadpool": {
