@@ -36,12 +36,12 @@ jobs:
       - checkout
       - aws-cli/setup
       - run:
-          name: "Setup: microsoft/vcpkg(2024.04.26)"
+          name: "Setup: microsoft/vcpkg(2024.05.24)"
           shell: "powershell.exe"
           command: |
             New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
             New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2024.04.26 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2024.05.24 --depth=1 https://github.com/microsoft/vcpkg
             Push-Location vcpkg
               ./bootstrap-vcpkg.bat
               ./vcpkg.exe --version
@@ -98,13 +98,13 @@ jobs:
       - checkout
       - aws-cli/setup
       - run:
-          name: "Setup: microsoft/vcpkg(2024.04.26)"
+          name: "Setup: microsoft/vcpkg(2024.05.24)"
           command: |
             sudo apt-get update -y -q
             sudo apt-get install -y -q curl zip unzip tar
             mkdir -p $VCPKG_DOWNLOADS
             mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2024.04.26 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2024.05.24 --depth=1 https://github.com/microsoft/vcpkg
             pushd vcpkg
               ./bootstrap-vcpkg.sh
               ./vcpkg --version
