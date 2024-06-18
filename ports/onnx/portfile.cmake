@@ -3,10 +3,9 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO onnx/onnx
-    REF v1.15.0
-    SHA512 b46a4ab70af88053318eba45251c1f71528f15e45a33042877570e8d857febd3ec66e2e811fcda2105a4f17b84c9a1c6a0aaa22756c3287321b3ea29e83127fd
+    REF v1.16.0
+    SHA512 ef641447d8d6c4ed9f083793fe14a8568d6aa7b9b7e7b859a4082e9b892acd801230da2027d097ceaa0d68bbd37b2422b89bb7d1d55d5c3b5955c0f9c7c657c5
     PATCHES
-        fix-cmakelists.patch
         support-test.patch
 )
 
@@ -63,8 +62,6 @@ vcpkg_cmake_configure(
     OPTIONS
         ${FEATURE_OPTIONS}
         -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON3}
-        -DPython3_EXECUTABLE:FILEPATH=${PYTHON3}
-        -DPython3_ROOT_DIR=${PYTHON_ROOT}
         -DProtobuf_PROTOC_EXECUTABLE=${PROTOC}
         -DONNX_CUSTOM_PROTOC_EXECUTABLE=${PROTOC}
         -DONNX_ML=ON
