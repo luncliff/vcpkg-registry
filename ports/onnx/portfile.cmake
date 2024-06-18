@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO onnx/onnx
-    REF v1.16.0
-    SHA512 ef641447d8d6c4ed9f083793fe14a8568d6aa7b9b7e7b859a4082e9b892acd801230da2027d097ceaa0d68bbd37b2422b89bb7d1d55d5c3b5955c0f9c7c657c5
+    REF v1.16.1
+    SHA512 0ae1b36563ddeaa9947bf452eb20b83174e4c2bc4696b61768f096c401666323343fac0f699f756da99d3c29df15a0bd78fe3fa51da15f133617d7310c5b28d4
     PATCHES
         support-test.patch
 )
