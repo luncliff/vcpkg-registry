@@ -6,6 +6,7 @@ vcpkg_from_github(
     REF v1.16.0
     SHA512 ef641447d8d6c4ed9f083793fe14a8568d6aa7b9b7e7b859a4082e9b892acd801230da2027d097ceaa0d68bbd37b2422b89bb7d1d55d5c3b5955c0f9c7c657c5
     PATCHES
+        fix-cmake.patch
         support-test.patch
 )
 
