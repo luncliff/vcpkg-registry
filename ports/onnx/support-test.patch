@@ -1,40 +1,8 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index dd9fba2..651cb4e 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -125,8 +125,7 @@ if(NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
- endif()
- 
- if(ONNX_BUILD_TESTS)
--  list(APPEND CMAKE_MODULE_PATH ${ONNX_ROOT}/cmake/external)
--  include(googletest)
-+  find_package(GTest CONFIG REQUIRED)
- endif()
- 
- if((ONNX_USE_LITE_PROTO AND TARGET protobuf::libprotobuf-lite) OR ((NOT ONNX_USE_LITE_PROTO) AND TARGET protobuf::libprotobuf))
 diff --git a/cmake/unittest.cmake b/cmake/unittest.cmake
-index e71b92a..afccacf 100644
+index cc825a0..3c55689 100644
 --- a/cmake/unittest.cmake
 +++ b/cmake/unittest.cmake
-@@ -22,7 +22,7 @@ function(AddTest)
-   list(REMOVE_DUPLICATES _UT_SOURCES)
- 
-   add_executable(${_UT_TARGET} ${_UT_SOURCES})
--  add_dependencies(${_UT_TARGET} onnx onnx_proto googletest)
-+  add_dependencies(${_UT_TARGET} onnx onnx_proto)
- 
-   target_include_directories(${_UT_TARGET}
-                              PUBLIC ${googletest_INCLUDE_DIRS}
-@@ -30,7 +30,7 @@ function(AddTest)
-                                     ${PROTOBUF_INCLUDE_DIRS}
-                                     ${ONNX_ROOT}
-                                     ${CMAKE_CURRENT_BINARY_DIR})
--  target_link_libraries(${_UT_TARGET} ${_UT_LIBS} ${CMAKE_THREAD_LIBS_INIT})
-+  target_link_libraries(${_UT_TARGET} ${_UT_LIBS} ${CMAKE_THREAD_LIBS_INIT} GTest::gtest)
-   if(TARGET protobuf::libprotobuf)
-     target_link_libraries(${_UT_TARGET} protobuf::libprotobuf)
-   else()
-@@ -84,3 +84,4 @@ function(AddTest)
+@@ -88,3 +88,4 @@ function(AddTest)
  endfunction(AddTest)
  
  addtest(TARGET ${UT_NAME} SOURCES ${${UT_NAME}_src} LIBS ${${UT_NAME}_libs})

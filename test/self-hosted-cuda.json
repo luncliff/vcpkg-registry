@@ -26,13 +26,6 @@
         "disable-static-registration",
         "test"
       ]
-    },
-    {
-      "name": "onnxruntime",
-      "features": [
-        "cuda"
-      ],
-      "platform": "x64 & windows"
     }
   ]
 }

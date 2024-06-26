@@ -1,0 +1,13 @@
+diff --git a/cmake/ONNXConfig.cmake.in b/cmake/ONNXConfig.cmake.in
+index d588f8a..a61af08 100644
+--- a/cmake/ONNXConfig.cmake.in
++++ b/cmake/ONNXConfig.cmake.in
+@@ -6,8 +6,6 @@
+ # library version information
+ set(ONNX_VERSION "@ONNX_VERSION@")
+ 
+-list(APPEND CMAKE_PREFIX_PATH "@PROTOBUF_DIR@")
+-set(Protobuf_INCLUDE_DIR "@PROTOBUF_INCLUDE_DIR@")
+ find_package(Protobuf REQUIRED)
+ 
+ # import targets

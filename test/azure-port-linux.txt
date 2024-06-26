@@ -1,2 +1,1 @@
 tensorflow-lite[gpu]
-onnxruntime[xnnpack]

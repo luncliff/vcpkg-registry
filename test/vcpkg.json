@@ -62,22 +62,6 @@
       ]
     },
     {
-      "name": "onnxruntime",
-      "features": [
-        "coreml",
-        "framework",
-        "xnnpack"
-      ],
-      "platform": "osx"
-    },
-    {
-      "name": "onnxruntime",
-      "features": [
-        "python"
-      ],
-      "platform": "windows"
-    },
-    {
       "name": "opencl",
       "platform": "windows | linux"
     },
