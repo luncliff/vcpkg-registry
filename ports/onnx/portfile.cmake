@@ -84,32 +84,40 @@ endif()
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/reference"
-    # the others are empty
-    "${CURRENT_PACKAGES_DIR}/include/onnx/backend"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/bin"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/controlflow"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/generator"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/logical"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/math"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/nn"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/object_detection"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/optional"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/quantization"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/reduction"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/rnn"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/sequence"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/traditionalml"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/training"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/image"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/defs/text"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/examples"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/frontend"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/onnx_cpp2py_export"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/test"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/tools"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/onnx_ml"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/onnx_data"
-    "${CURRENT_PACKAGES_DIR}/include/onnx/onnx_operators_ml"
 )
+
+# Traverse the folder and remove "some" empty folders
+function(cleanup_once folder)
+    if(NOT IS_DIRECTORY "${folder}")
+        return()
+    endif()
+    file(GLOB paths LIST_DIRECTORIES true "${folder}/*")
+    list(LENGTH paths count)
+    # 1. remove if the given folder is empty
+    if(count EQUAL 0)
+        file(REMOVE_RECURSE "${folder}")
+        message(VERBOSE "Removed ${folder}")
+        return()
+    endif()
+    # 2. repeat the operation for hop 1 sub-directories 
+    foreach(path ${paths})
+        cleanup_once(${path})
+    endforeach()
+endfunction()
+
+# Some folders may contain empty folders. They will become empty after `cleanup_once`.
+# Repeat given times to delete new empty folders.
+function(cleanup_repeat folder repeat)
+    if(NOT IS_DIRECTORY "${folder}")
+        return()
+    endif()
+    while(repeat GREATER_EQUAL 1)
+        math(EXPR repeat "${repeat} - 1" OUTPUT_FORMAT DECIMAL)
+        cleanup_once("${folder}")
+    endwhile()
+endfunction()
+
+# https://github.com/microsoft/vcpkg PR 30230
+cleanup_repeat("${CURRENT_PACKAGES_DIR}/include" 4)
+
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

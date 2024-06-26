@@ -11,3 +11,24 @@ index d588f8a..a61af08 100644
  find_package(Protobuf REQUIRED)
  
  # import targets
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6d7ca84..93999f4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -764,7 +764,15 @@ if(ONNX_USE_UNITY_BUILD)
+ 
+ endif()
+ 
+-
++# install protobuf files
++install(FILES ${CMAKE_CURRENT_BINARY_DIR}/onnx/onnx-data.proto
++              ${CMAKE_CURRENT_BINARY_DIR}/onnx/onnx-data.proto3
++              ${CMAKE_CURRENT_BINARY_DIR}/onnx/onnx-ml.proto
++              ${CMAKE_CURRENT_BINARY_DIR}/onnx/onnx-ml.proto3
++              ${CMAKE_CURRENT_BINARY_DIR}/onnx/onnx-operators-ml.proto
++              ${CMAKE_CURRENT_BINARY_DIR}/onnx/onnx-operators-ml.proto3
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/onnx
++)
+ 
+ install(TARGETS
+   onnx onnx_proto
