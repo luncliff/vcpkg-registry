@@ -22,24 +22,6 @@
       ]
     },
     {
-      "name": "onnxruntime",
-      "features": [
-        "directml",
-        "openvino",
-        "python",
-        "xnnpack"
-      ],
-      "platform": "x64 & windows"
-    },
-    {
-      "name": "onnxruntime",
-      "features": [
-        "directml",
-        "xnnpack"
-      ],
-      "platform": "arm64 & windows"
-    },
-    {
       "name": "openjdk",
       "platform": "x64 & windows"
     },
