@@ -95,3 +95,17 @@ index 1346a9ce96..688790dff7 100644
  
      target_include_directories(${target} PRIVATE ${ONNXRUNTIME_ROOT} ${CMAKE_CURRENT_BINARY_DIR}  ${eigen_INCLUDE_DIRS} ${TVM_INCLUDES}
       PUBLIC ${CUDAToolkit_INCLUDE_DIRS})
+diff --git a/cmake/onnxruntime_unittests.cmake b/cmake/onnxruntime_unittests.cmake
+index 66df115..bd313d8 100644
+--- a/cmake/onnxruntime_unittests.cmake
++++ b/cmake/onnxruntime_unittests.cmake
+@@ -959,6 +959,9 @@ target_compile_definitions(onnx_test_data_proto PRIVATE "-DONNX_API=")
+ onnxruntime_add_include_to_target(onnx_test_data_proto onnx_proto)
+ target_include_directories(onnx_test_data_proto PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+ set_target_properties(onnx_test_data_proto PROPERTIES FOLDER "ONNXRuntimeTest")
++if(NOT DEFINED onnx_SOURCE_DIR)
++  find_path(onnx_SOURCE_DIR NAMES "onnx/onnx-ml.proto3" "onnx/onnx-ml.proto" REQUIRED)
++endif()
+ onnxruntime_protobuf_generate(APPEND_PATH IMPORT_DIRS ${onnx_SOURCE_DIR} TARGET onnx_test_data_proto)
+ 
+ #

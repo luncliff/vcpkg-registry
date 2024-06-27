@@ -4,6 +4,7 @@
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://onnxruntime.ai/",
   "license": "MIT",
+  "supports": "windows | linux | osx",
   "dependencies": [
     "abseil",
     {
@@ -67,5 +68,18 @@
       "host": true
     },
     "wil"
-  ]
+  ],
+  "features": {
+    "framework": {
+      "description": "Build a macOS/iOS framework, Objective-C library",
+      "supports": "osx | ios"
+    },
+    "test": {
+      "description": "Build ONNXRuntime unit tests",
+      "dependencies": [
+        "benchmark",
+        "gtest"
+      ]
+    }
+  }
 }

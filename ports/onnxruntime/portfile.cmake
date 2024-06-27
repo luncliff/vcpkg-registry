@@ -28,10 +28,17 @@ message(STATUS "Using flatc: ${FLATC}")
 
 set(SCHEMA_DIR "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema")
 vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --scoped-enums --filename-suffix ".fbs" ort.fbs ort_training_checkpoint.fbs
+    COMMAND "${FLATC}" --cpp --scoped-enums --filename-suffix ".fbs" ort.fbs ort_training_checkpoint.fbs
     LOGNAME codegen-flatc-cpp
     WORKING_DIRECTORY "${SCHEMA_DIR}"
 )
+if("test" IN_LIST FEATURES)
+    vcpkg_execute_required_process(
+        COMMAND "${FLATC}" --cpp --scoped-enums --filename-suffix ".fbs" flatbuffers_utils_test.fbs
+        LOGNAME codegen-flatc-test-cpp
+        WORKING_DIRECTORY "${SOURCE_PATH}/onnxruntime/test/flatbuffers"
+    )
+endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
@@ -90,7 +97,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
         -Donnxruntime_BUILD_WEBASSEMBLY=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
-        -Donnxruntime_USE_FULL_PROTOBUF=OFF # minimalize protoc execution
+        -Donnxruntime_USE_FULL_PROTOBUF=ON
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_NNAPI_BUILTIN=${VCPKG_TARGET_IS_ANDROID}
         -Donnxruntime_ENABLE_CPUINFO=ON

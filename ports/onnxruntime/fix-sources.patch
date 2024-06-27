@@ -7,7 +7,7 @@ index d05e02e..6f8a47c 100644
    const auto type_str_it = type_str_map.find(std::string(kernel_type_str));
  #else
 -  const auto type_str_it = type_str_map.find(kernel_type_str);
-+  const auto type_str_it = type_str_map.find(std::string(kernel_type_str)); // abseil::raw_hash_set fails deduction ...
++  const auto type_str_it = type_str_map.find(std::string(kernel_type_str));
  #endif
  
    ORT_RETURN_IF(type_str_it == type_str_map.end(),
@@ -20,7 +20,7 @@ index 1b5f6bc..b721205 100644
      auto it = map_.find(std::string(name));
  #else
 -    auto it = map_.find(name);
-+    auto it = map_.find(std::string(name)); // abseil::raw_hash_set fails deduction ...
++    auto it = map_.find(std::string(name));
  #endif
      if (it == map_.end()) {
        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Could not find OrtValue with name '", name, "'");
