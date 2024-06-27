@@ -99,6 +99,7 @@ list(APPEND onnxruntime_EXTERNAL_LIBRARIES onnx onnx_proto)
 
 find_package(Eigen3 CONFIG REQUIRED)
 list(APPEND onnxruntime_EXTERNAL_LIBRARIES Eigen3::Eigen)
+get_property(eigen_INCLUDE_DIRS TARGET Eigen3::Eigen PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 
 find_package(wil CONFIG REQUIRED)
 list(APPEND onnxruntime_EXTERNAL_LIBRARIES WIL::WIL)

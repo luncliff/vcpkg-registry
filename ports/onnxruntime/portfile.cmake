@@ -62,7 +62,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         nccl      onnxruntime_USE_NCCL
         mpi       onnxruntime_USE_MPI
     INVERTED_FEATURES
-        abseil    onnxruntime_DISABLE_ABSEIL
         cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
 
@@ -91,7 +90,6 @@ vcpkg_cmake_configure(
         -Donnxruntime_BUILD_WEBASSEMBLY=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
         -Donnxruntime_USE_FULL_PROTOBUF=OFF # minimalize protoc execution
-        -Donnxruntime_USE_PREINSTALLED_EIGEN=ON
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_NNAPI_BUILTIN=${VCPKG_TARGET_IS_ANDROID}
         -Donnxruntime_ENABLE_CPUINFO=ON
@@ -102,6 +100,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
         -Donnxruntime_NVCC_THREADS=1 # parallel compilation
         -Donnxruntime_DISABLE_RTTI=OFF
+        -Donnxruntime_DISABLE_ABSEIL=OFF
         -Donnxruntime_USE_NEURAL_SPEED=OFF
         -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO

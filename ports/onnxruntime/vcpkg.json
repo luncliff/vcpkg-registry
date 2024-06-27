@@ -64,14 +64,5 @@
       "host": true
     },
     "wil"
-  ],
-  "features": {
-    "test": {
-      "description": "Build ONNXRuntime unit tests",
-      "dependencies": [
-        "benchmark",
-        "gtest"
-      ]
-    }
-  }
+  ]
 }
