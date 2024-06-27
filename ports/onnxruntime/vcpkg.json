@@ -41,6 +41,9 @@
     },
     {
       "name": "onnx",
+      "features": [
+        "disable-static-registration"
+      ],
       "version>=": "1.16.0"
     },
     "optional-lite",
