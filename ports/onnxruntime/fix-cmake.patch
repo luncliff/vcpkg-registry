@@ -99,6 +99,16 @@ diff --git a/cmake/onnxruntime_unittests.cmake b/cmake/onnxruntime_unittests.cma
 index 66df115..bd313d8 100644
 --- a/cmake/onnxruntime_unittests.cmake
 +++ b/cmake/onnxruntime_unittests.cmake
+@@ -867,6 +867,9 @@ AddTest(
+   DEPENDS ${all_dependencies}
+   TEST_ARGS ${test_all_args}
+ )
++target_include_directories(onnxruntime_test_all PRIVATE
++  ${ONNXRUNTIME_ROOT}/core/flatbuffers/schema # ort.fbs.h
++)
+ 
+ if (MSVC)
+   # The warning means the type of two integral values around a binary operator is narrow than their result.
 @@ -959,6 +959,9 @@ target_compile_definitions(onnx_test_data_proto PRIVATE "-DONNX_API=")
  onnxruntime_add_include_to_target(onnx_test_data_proto onnx_proto)
  target_include_directories(onnx_test_data_proto PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

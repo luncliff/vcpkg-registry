@@ -26,11 +26,10 @@ find_program(FLATC NAMES flatc
 )
 message(STATUS "Using flatc: ${FLATC}")
 
-set(SCHEMA_DIR "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema")
 vcpkg_execute_required_process(
     COMMAND "${FLATC}" --cpp --scoped-enums --filename-suffix ".fbs" ort.fbs ort_training_checkpoint.fbs
     LOGNAME codegen-flatc-cpp
-    WORKING_DIRECTORY "${SCHEMA_DIR}"
+    WORKING_DIRECTORY "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema"
 )
 if("test" IN_LIST FEATURES)
     vcpkg_execute_required_process(
