@@ -8,6 +8,7 @@ vcpkg_from_github(
     SHA512 2e1d724eda5635fc24f93966412c197c82ee933aaea4f4ce907b5f2ee7730c1e741f2ef4d50a2d54284fc7bd05bf104bd3c56fd4466525fcd70e63c07fbb2b16
     PATCHES
         fix-cmake.patch
+        fix-sources.patch
         # fix-clang-cl-simd-compile.patch
         fix-llvm-rc-unicode.patch
 )
