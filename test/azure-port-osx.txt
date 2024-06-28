@@ -1,4 +1,4 @@
 tensorflow-lite[gpu]
-onnxruntime
+onnxruntime[framework]
 metal-cpp
 miniaudio
