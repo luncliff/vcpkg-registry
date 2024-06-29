@@ -128,6 +128,10 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxrunt
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
 
+if("test" IN_LIST FEATURES)
+    vcpkg_copy_tools(TOOL_NAMES onnx_test_runner AUTO_CLEAN)
+endif()
+
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
     file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin" "${CURRENT_PACKAGES_DIR}/bin")

@@ -23,6 +23,9 @@
     },
     {
       "name": "onnxruntime",
+      "features": [
+        "test"
+      ],
       "platform": "windows"
     },
     {

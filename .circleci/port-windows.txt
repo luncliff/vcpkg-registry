@@ -1,2 +1,2 @@
-onnxruntime[test]:x64-windows
+onnxruntime
 openssl3[tools]:x64-windows
