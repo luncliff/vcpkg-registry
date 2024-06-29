@@ -22,6 +22,13 @@
       ]
     },
     {
+      "name": "onnxruntime",
+      "features": [
+        "test"
+      ],
+      "platform": "windows"
+    },
+    {
       "name": "openjdk",
       "platform": "x64 & windows"
     },

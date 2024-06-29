@@ -1,18 +1,48 @@
 diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
-index 755e20f..6a6eeee 100644
+index 8edbb6ad6f..4987d5af5a 100644
 --- a/cmake/CMakeLists.txt
 +++ b/cmake/CMakeLists.txt
-@@ -572,7 +572,8 @@ get_filename_component(ORTTRAINING_ROOT "${ORTTRAINING_ROOT}" ABSOLUTE)
+@@ -38,6 +38,7 @@ include(CheckLanguage)
+ include(CMakeDependentOption)
+ include(FetchContent)
+ include(CheckFunctionExists)
++include(GNUInstallDirs) # onnxruntime_providers_* require CMAKE_INSTALL_* variables
+ 
+ # TODO: update this once all system adapt c++20
+ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+@@ -583,7 +584,7 @@ get_filename_component(ORTTRAINING_ROOT "${ORTTRAINING_ROOT}" ABSOLUTE)
  get_filename_component(REPO_ROOT "${REPO_ROOT}" ABSOLUTE)
  set(ONNXRUNTIME_INCLUDE_DIR ${REPO_ROOT}/include/onnxruntime)
  
 -include(external/onnxruntime_external_deps.cmake)
-+include(external/onnxruntime_vcpkg_deps.cmake) # see onnxruntime/portfile.cmake
-+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/external")
++include(external/onnxruntime_vcpkg_deps.cmake)
  
  set(ORT_WARNING_FLAGS)
  if (WIN32)
-@@ -904,7 +905,7 @@ function(onnxruntime_set_compile_flags target_name)
+@@ -714,7 +719,21 @@ if (onnxruntime_USE_CUDA)
+   if (onnxruntime_USE_CUDA_NHWC_OPS)
+     add_compile_definitions(ENABLE_CUDA_NHWC_OPS)
+   endif()
+-  enable_language(CUDA)
++  # Give more hints for the generator, with FindCUDAToolkit.cmake
++  if(CMAKE_GENERATOR MATCHES "Visual Studio")
++    set(CMAKE_VS_PLATFORM_TOOLSET_CUDA "${CUDAToolkit_VERSION_MAJOR}.${CUDAToolkit_VERSION_MINOR}")
++    set(CMAKE_VS_PLATFORM_TOOLSET_CUDA_CUSTOM_DIR "${CUDAToolkit_TARGET_DIR}/")
++  endif()
++
++  # Help finding CUDA compiler
++  get_filename_component(CMAKE_CUDA_COMPILER "${CUDAToolkit_NVCC_EXECUTABLE}" ABSOLUTE)
++  check_language(CUDA)
++  enable_language(CUDA) # crashes Visual Studio generator...?
++
++  # Guess the version if unknown from enable_language(CUDA)...
++  if(NOT DEFINED CMAKE_CUDA_COMPILER_VERSION)
++    set(CMAKE_CUDA_COMPILER_VERSION "${CUDAToolkit_VERSION_MAJOR}.${CUDAToolkit_VERSION_MINOR}")
++  endif()
+   message( STATUS "CMAKE_CUDA_COMPILER_VERSION: ${CMAKE_CUDA_COMPILER_VERSION}")
+ 
+   if (onnxruntime_DISABLE_CONTRIB_OPS)
+@@ -956,7 +975,7 @@ function(onnxruntime_set_compile_flags target_name)
        target_compile_definitions(${target_name} PRIVATE ORT_NEURAL_SPEED)
      endif()
  
@@ -21,41 +51,13 @@ index 755e20f..6a6eeee 100644
      if (onnxruntime_USE_CUDA)
        # Suppress a "conversion_function_not_usable" warning in gsl/span
        target_compile_options(${target_name} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe \"--diag_suppress=conversion_function_not_usable\">")
-@@ -967,7 +968,7 @@ function(onnxruntime_set_compile_flags target_name)
-         target_compile_options(${target_name} PRIVATE "-Wno-unused-parameter")
-       endif()
-       target_compile_definitions(${target_name} PUBLIC -DNSYNC_ATOMIC_CPP11)
--      onnxruntime_add_include_to_target(${target_name} nsync::nsync_cpp)
-+      onnxruntime_add_include_to_target(${target_name} nsync::nsync_cpp Eigen3::Eigen)
-     endif()
-     foreach(ORT_FLAG ${ORT_PROVIDER_FLAGS})
-       target_compile_definitions(${target_name} PRIVATE ${ORT_FLAG})
-@@ -1098,9 +1099,7 @@ endfunction()
- function(onnxruntime_add_include_to_target dst_target)
-     foreach(src_target ${ARGN})
-       if(TARGET ${src_target})
--        target_include_directories(${dst_target} PRIVATE $<TARGET_PROPERTY:${src_target},INTERFACE_INCLUDE_DIRECTORIES>)
--        target_compile_definitions(${dst_target} PRIVATE $<TARGET_PROPERTY:${src_target},INTERFACE_COMPILE_DEFINITIONS>)
--        target_sources(${dst_target} PRIVATE $<TARGET_PROPERTY:${src_target},INTERFACE_SOURCES>)
-+        target_link_libraries(${dst_target} PRIVATE ${src_target})
-       endif()
-     endforeach()
- endfunction()
-@@ -1721,6 +1720,7 @@ if (WIN32 AND NOT GDK_PLATFORM)
-   endif()
- endif()
- 
-+include(GNUInstallDirs) # some targets requires this...
- foreach(target_name ${ONNXRUNTIME_CMAKE_FILES})
-   include(${target_name}.cmake)
- endforeach()
 diff --git a/cmake/onnxruntime.cmake b/cmake/onnxruntime.cmake
-index c900f4d..8d5fcd6 100644
+index e15c8a046d..d3a2e64bb9 100644
 --- a/cmake/onnxruntime.cmake
 +++ b/cmake/onnxruntime.cmake
-@@ -303,6 +303,9 @@ if(onnxruntime_BUILD_APPLE_FRAMEWORK)
-   # If it's an onnxruntime library, extract .o files to a separate directory for each library to avoid any clashes
-   # with filenames (e.g. utils.o)
+@@ -308,6 +308,9 @@ if(onnxruntime_BUILD_APPLE_FRAMEWORK)
+   # If it's an onnxruntime library, extract .o files from the original cmake build path to a separate directory for
+   # each library to avoid any clashes with filenames (e.g. utils.o)
    foreach(_LIB ${onnxruntime_INTERNAL_LIBRARIES} )
 +    if(NOT TARGET ${_LIB}) # if we didn't build from source. it may not a target
 +      continue()
@@ -63,7 +65,7 @@ index c900f4d..8d5fcd6 100644
      GET_TARGET_PROPERTY(_LIB_TYPE ${_LIB} TYPE)
      if(_LIB_TYPE STREQUAL "STATIC_LIBRARY")
        set(CUR_STATIC_LIB_OBJ_DIR ${STATIC_LIB_TEMP_DIR}/$<TARGET_LINKER_FILE_BASE_NAME:${_LIB}>)
-@@ -317,6 +320,9 @@ if(onnxruntime_BUILD_APPLE_FRAMEWORK)
+@@ -338,6 +341,9 @@ if(onnxruntime_BUILD_APPLE_FRAMEWORK)
  
    # for external libraries we create a symlink to the .a file
    foreach(_LIB ${onnxruntime_EXTERNAL_LIBRARIES})
@@ -73,166 +75,47 @@ index c900f4d..8d5fcd6 100644
      GET_TARGET_PROPERTY(_LIB_TYPE ${_LIB} TYPE)
      if(_LIB_TYPE STREQUAL "STATIC_LIBRARY")
        add_custom_command(TARGET onnxruntime POST_BUILD
-diff --git a/cmake/onnxruntime_common.cmake b/cmake/onnxruntime_common.cmake
-index 43d5fa9..44993ab 100644
---- a/cmake/onnxruntime_common.cmake
-+++ b/cmake/onnxruntime_common.cmake
-@@ -129,7 +129,7 @@ target_include_directories(onnxruntime_common
-         ${OPTIONAL_LITE_INCLUDE_DIR})
+diff --git a/cmake/onnxruntime_providers_cuda.cmake b/cmake/onnxruntime_providers_cuda.cmake
+index 1346a9ce96..688790dff7 100644
+--- a/cmake/onnxruntime_providers_cuda.cmake
++++ b/cmake/onnxruntime_providers_cuda.cmake
+@@ -211,8 +211,13 @@
+       target_link_libraries(${target} PRIVATE CUDA::cuda_driver)
+     endif()
  
+-    include(cutlass)
+-    target_include_directories(${target} PRIVATE ${cutlass_SOURCE_DIR}/include ${cutlass_SOURCE_DIR}/examples ${cutlass_SOURCE_DIR}/tools/util/include)
++    find_package(NvidiaCutlass)
++    if(NvidiaCutlass_FOUND)
++      target_link_libraries(${target} PRIVATE nvidia::cutlass::cutlass)
++    else()
++      include(cutlass)
++      target_include_directories(${target} PRIVATE ${cutlass_SOURCE_DIR}/include ${cutlass_SOURCE_DIR}/examples ${cutlass_SOURCE_DIR}/tools/util/include)
++    endif()
  
--target_link_libraries(onnxruntime_common PUBLIC safeint_interface ${GSL_TARGET} ${ABSEIL_LIBS})
-+target_link_libraries(onnxruntime_common PUBLIC ${GSL_TARGET} ${ABSEIL_LIBS})
+     target_include_directories(${target} PRIVATE ${ONNXRUNTIME_ROOT} ${CMAKE_CURRENT_BINARY_DIR}  ${eigen_INCLUDE_DIRS} ${TVM_INCLUDES}
+      PUBLIC ${CUDAToolkit_INCLUDE_DIRS})
+diff --git a/cmake/onnxruntime_unittests.cmake b/cmake/onnxruntime_unittests.cmake
+index 66df115..bd313d8 100644
+--- a/cmake/onnxruntime_unittests.cmake
++++ b/cmake/onnxruntime_unittests.cmake
+@@ -867,6 +867,9 @@ AddTest(
+   DEPENDS ${all_dependencies}
+   TEST_ARGS ${test_all_args}
+ )
++target_include_directories(onnxruntime_test_all PRIVATE
++  ${ONNXRUNTIME_ROOT}/core/flatbuffers/schema # ort.fbs.h
++)
  
- add_dependencies(onnxruntime_common ${onnxruntime_EXTERNAL_DEPENDENCIES})
- 
-diff --git a/cmake/onnxruntime_flatbuffers.cmake b/cmake/onnxruntime_flatbuffers.cmake
-index 3ab4c19..28919c6 100644
---- a/cmake/onnxruntime_flatbuffers.cmake
-+++ b/cmake/onnxruntime_flatbuffers.cmake
-@@ -28,4 +28,3 @@ if (NOT onnxruntime_BUILD_SHARED_LIB)
-             RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR}
-             FRAMEWORK DESTINATION ${CMAKE_INSTALL_BINDIR})
- endif()
--
-diff --git a/cmake/onnxruntime_framework.cmake b/cmake/onnxruntime_framework.cmake
-index c9bf2ac..d613612 100644
---- a/cmake/onnxruntime_framework.cmake
-+++ b/cmake/onnxruntime_framework.cmake
-@@ -69,9 +69,9 @@ endif()
- if(onnxruntime_USE_TENSORRT OR onnxruntime_USE_NCCL)
- # TODO: for now, core framework depends on CUDA. It should be moved to TensorRT EP
- # TODO: provider_bridge_ort.cc should not include nccl.h
--target_include_directories(onnxruntime_framework PRIVATE ${ONNXRUNTIME_ROOT} ${eigen_INCLUDE_DIRS} ${onnxruntime_CUDNN_HOME}/include PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
-+target_include_directories(onnxruntime_framework PRIVATE ${ONNXRUNTIME_ROOT} ${eigen_INCLUDE_DIRS} ${onnxruntime_CUDNN_HOME}/include ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
- else()
--target_include_directories(onnxruntime_framework PRIVATE ${ONNXRUNTIME_ROOT} ${eigen_INCLUDE_DIRS} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-+target_include_directories(onnxruntime_framework PRIVATE ${ONNXRUNTIME_ROOT} ${eigen_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
- endif()
- # Needed for the provider interface, as it includes training headers when training is enabled
- if (onnxruntime_ENABLE_TRAINING_OPS)
-@@ -125,9 +125,9 @@ endif()
- 
- if (NOT onnxruntime_BUILD_SHARED_LIB)
-   install(DIRECTORY ${PROJECT_SOURCE_DIR}/../include/onnxruntime/core/framework  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/onnxruntime/core)
--  install(TARGETS onnxruntime_framework
-+  install(TARGETS onnxruntime_framework EXPORT ${PROJECT_NAME}Targets
-             ARCHIVE   DESTINATION ${CMAKE_INSTALL_LIBDIR}
-             LIBRARY   DESTINATION ${CMAKE_INSTALL_LIBDIR}
-             RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR}
--            FRAMEWORK DESTINATION ${CMAKE_INSTALL_BINDIR})
-+            FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
- endif()
-diff --git a/cmake/onnxruntime_objectivec.cmake b/cmake/onnxruntime_objectivec.cmake
-index 4be2f51..6cad0d7 100644
---- a/cmake/onnxruntime_objectivec.cmake
-+++ b/cmake/onnxruntime_objectivec.cmake
-@@ -112,8 +112,8 @@ add_custom_command(TARGET onnxruntime_objc POST_BUILD
-                 "@rpath/$<TARGET_NAME:onnxruntime_objc>.framework/Libraries/$<TARGET_FILE_NAME:onnxruntime>"
-         "$<TARGET_FILE:onnxruntime_objc>")
- 
--install(TARGETS onnxruntime_objc
--    FRAMEWORK DESTINATION ${CMAKE_INSTALL_BINDIR})
-+install(TARGETS onnxruntime_objc EXPORT ${PROJECT_NAME}Targets
-+    FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
- 
- if(onnxruntime_BUILD_UNIT_TESTS)
-     find_package(XCTest REQUIRED)
-diff --git a/cmake/onnxruntime_providers_coreml.cmake b/cmake/onnxruntime_providers_coreml.cmake
-index aa8c355..cbd7505 100644
---- a/cmake/onnxruntime_providers_coreml.cmake
-+++ b/cmake/onnxruntime_providers_coreml.cmake
-@@ -14,7 +14,7 @@
-       "${COREML_PROTO_ROOT}/*.proto"
-     )
-     onnxruntime_add_static_library(onnxruntime_coreml_proto ${coreml_proto_srcs})
--    target_include_directories(onnxruntime_coreml_proto PUBLIC $<TARGET_PROPERTY:${PROTOBUF_LIB},INTERFACE_INCLUDE_DIRECTORIES> "${CMAKE_CURRENT_BINARY_DIR}")
-+    target_include_directories(onnxruntime_coreml_proto PUBLIC $<TARGET_PROPERTY:${PROTOBUF_LIB},INTERFACE_INCLUDE_DIRECTORIES> PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
-     target_compile_definitions(onnxruntime_coreml_proto PUBLIC $<TARGET_PROPERTY:${PROTOBUF_LIB},INTERFACE_COMPILE_DEFINITIONS>)
-     set_target_properties(onnxruntime_coreml_proto PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
-     set_target_properties(onnxruntime_coreml_proto PROPERTIES COMPILE_FLAGS "-fvisibility-inlines-hidden")
-@@ -99,9 +99,9 @@
-   set_target_properties(onnxruntime_providers_coreml PROPERTIES LINKER_LANGUAGE CXX)
- 
-   if (NOT onnxruntime_BUILD_SHARED_LIB)
--    install(TARGETS onnxruntime_providers_coreml
-+    install(TARGETS onnxruntime_providers_coreml EXPORT ${PROJECT_NAME}Targets
-             ARCHIVE   DESTINATION ${CMAKE_INSTALL_LIBDIR}
-             LIBRARY   DESTINATION ${CMAKE_INSTALL_LIBDIR}
-             RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR}
-             FRAMEWORK DESTINATION ${CMAKE_INSTALL_BINDIR})
--  endif()
-\ No newline at end of file
-+  endif()
-diff --git a/cmake/onnxruntime_providers_cpu.cmake b/cmake/onnxruntime_providers_cpu.cmake
-index b81a5c7..b1fc27a 100644
---- a/cmake/onnxruntime_providers_cpu.cmake
-+++ b/cmake/onnxruntime_providers_cpu.cmake
-@@ -60,7 +60,7 @@ if(NOT onnxruntime_DISABLE_CONTRIB_OPS)
-       "${ONNXRUNTIME_ROOT}/contrib_ops/cpu/aten_ops/aten_op_executor.cc"
-     )
-   endif()
--  set(onnxruntime_cpu_neural_speed_srcs 
-+  set(onnxruntime_cpu_neural_speed_srcs
-     "${ONNXRUNTIME_ROOT}/contrib_ops/cpu/quantization/neural_speed_wrapper.h"
-     "${ONNXRUNTIME_ROOT}/contrib_ops/cpu/quantization/neural_speed_defs.h"
-     "${ONNXRUNTIME_ROOT}/contrib_ops/cpu/quantization/neural_speed_gemm.cc"
-@@ -273,4 +273,4 @@ if (NOT onnxruntime_BUILD_SHARED_LIB)
-           LIBRARY   DESTINATION ${CMAKE_INSTALL_LIBDIR}
-           RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR}
-           FRAMEWORK DESTINATION ${CMAKE_INSTALL_BINDIR})
--endif()
-\ No newline at end of file
+ if (MSVC)
+   # The warning means the type of two integral values around a binary operator is narrow than their result.
+@@ -959,6 +959,9 @@ target_compile_definitions(onnx_test_data_proto PRIVATE "-DONNX_API=")
+ onnxruntime_add_include_to_target(onnx_test_data_proto onnx_proto)
+ target_include_directories(onnx_test_data_proto PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+ set_target_properties(onnx_test_data_proto PROPERTIES FOLDER "ONNXRuntimeTest")
++if(NOT DEFINED onnx_SOURCE_DIR)
++  find_path(onnx_SOURCE_DIR NAMES "onnx/onnx-ml.proto3" "onnx/onnx-ml.proto" REQUIRED)
 +endif()
-diff --git a/cmake/onnxruntime_providers_nnapi.cmake b/cmake/onnxruntime_providers_nnapi.cmake
-index 5ac25a3..4db4857 100644
---- a/cmake/onnxruntime_providers_nnapi.cmake
-+++ b/cmake/onnxruntime_providers_nnapi.cmake
-@@ -81,4 +81,4 @@
-             LIBRARY   DESTINATION ${CMAKE_INSTALL_LIBDIR}
-             RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR}
-             FRAMEWORK DESTINATION ${CMAKE_INSTALL_BINDIR})
--  endif()
-\ No newline at end of file
-+  endif()
-diff --git a/cmake/onnxruntime_providers_openvino.cmake b/cmake/onnxruntime_providers_openvino.cmake
-index 5876b2b..28e02b0 100644
---- a/cmake/onnxruntime_providers_openvino.cmake
-+++ b/cmake/onnxruntime_providers_openvino.cmake
-@@ -42,8 +42,8 @@
-     target_compile_options(onnxruntime_providers_openvino PRIVATE "-Wno-parentheses")
-   endif()
-   add_dependencies(onnxruntime_providers_openvino onnxruntime_providers_shared ${onnxruntime_EXTERNAL_DEPENDENCIES})
--  target_include_directories(onnxruntime_providers_openvino SYSTEM PUBLIC ${ONNXRUNTIME_ROOT} ${CMAKE_CURRENT_BINARY_DIR} ${eigen_INCLUDE_DIRS} ${OpenVINO_INCLUDE_DIR} ${OPENVINO_INCLUDE_DIR_LIST} ${PYTHON_INCLUDE_DIRS} $ENV{OPENCL_INCS} $ENV{OPENCL_INCS}/../../cl_headers/)
--  target_link_libraries(onnxruntime_providers_openvino ${ONNXRUNTIME_PROVIDERS_SHARED} Boost::mp11 ${OPENVINO_LIB_LIST} ${ABSEIL_LIBS})
-+  target_include_directories(onnxruntime_providers_openvino SYSTEM PRIVATE ${ONNXRUNTIME_ROOT} ${CMAKE_CURRENT_BINARY_DIR} ${eigen_INCLUDE_DIRS} ${OpenVINO_INCLUDE_DIR} ${OPENVINO_INCLUDE_DIR_LIST} ${PYTHON_INCLUDE_DIRS})
-+  target_link_libraries(onnxruntime_providers_openvino PRIVATE ${ONNXRUNTIME_PROVIDERS_SHARED} Boost::mp11 ${OPENVINO_LIB_LIST} ${ABSEIL_LIBS})
+ onnxruntime_protobuf_generate(APPEND_PATH IMPORT_DIRS ${onnx_SOURCE_DIR} TARGET onnx_test_data_proto)
  
-   target_compile_definitions(onnxruntime_providers_openvino PRIVATE VER_MAJOR=${VERSION_MAJOR_PART})
-   target_compile_definitions(onnxruntime_providers_openvino PRIVATE VER_MINOR=${VERSION_MINOR_PART})
-diff --git a/cmake/onnxruntime_session.cmake b/cmake/onnxruntime_session.cmake
-index 79bee3b..e6a6924 100644
---- a/cmake/onnxruntime_session.cmake
-+++ b/cmake/onnxruntime_session.cmake
-@@ -30,7 +30,7 @@ endif()
- source_group(TREE ${REPO_ROOT} FILES ${onnxruntime_session_srcs})
- 
- onnxruntime_add_static_library(onnxruntime_session ${onnxruntime_session_srcs})
--onnxruntime_add_include_to_target(onnxruntime_session onnxruntime_common onnxruntime_framework onnx onnx_proto ${PROTOBUF_LIB} flatbuffers::flatbuffers Boost::mp11 safeint_interface nlohmann_json::nlohmann_json)
-+onnxruntime_add_include_to_target(onnxruntime_session onnxruntime_common onnxruntime_framework onnx onnx_proto ${PROTOBUF_LIB} flatbuffers::flatbuffers Boost::mp11 nlohmann_json::nlohmann_json)
- if(onnxruntime_ENABLE_INSTRUMENT)
-   target_compile_definitions(onnxruntime_session PUBLIC ONNXRUNTIME_ENABLE_INSTRUMENT)
- endif()
-diff --git a/cmake/onnxruntime_objectivec.cmake b/cmake/onnxruntime_objectivec.cmake
-index 6cad0d7..31ae11c 100644
---- a/cmake/onnxruntime_objectivec.cmake
-+++ b/cmake/onnxruntime_objectivec.cmake
-@@ -63,7 +63,7 @@ onnxruntime_add_shared_library(onnxruntime_objc
- 
- target_include_directories(onnxruntime_objc
-     PUBLIC
--        "${OBJC_ROOT}/include"
-+        $<BUILD_INTERFACE:${OBJC_ROOT}/include>
-     PRIVATE
-         "${ONNXRUNTIME_INCLUDE_DIR}/core/session"
-         "${OBJC_ROOT}")
+ #

@@ -1,21 +1,33 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.17.3",
+  "version-semver": "1.18.0",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://onnxruntime.ai/",
   "license": "MIT",
+  "supports": "windows | linux | osx",
   "dependencies": [
-    "boost-config",
-    "boost-mp11",
+    "abseil",
+    {
+      "name": "boost-config",
+      "version>=": "1.82.0"
+    },
+    {
+      "name": "boost-mp11",
+      "version>=": "1.82.0"
+    },
     "cpuinfo",
     "cxxopts",
     "date",
     "dlpack",
     "eigen3",
-    "flatbuffers",
     {
       "name": "flatbuffers",
-      "host": true
+      "host": true,
+      "version>=": "23.5.26"
+    },
+    {
+      "name": "flatbuffers",
+      "version>=": "23.5.26"
     },
     "ms-gsl",
     "nlohmann-json",
@@ -23,12 +35,27 @@
       "name": "nsync",
       "platform": "!windows"
     },
-    "onnx",
+    {
+      "name": "nsync",
+      "platform": "!windows",
+      "version>=": "1.26.0"
+    },
+    {
+      "name": "onnx",
+      "features": [
+        "disable-static-registration"
+      ],
+      "version>=": "1.16.0"
+    },
     "optional-lite",
-    "protobuf",
     {
       "name": "protobuf",
-      "host": true
+      "version>=": "3.21.12"
+    },
+    {
+      "name": "protobuf",
+      "host": true,
+      "version>=": "3.21.12"
     },
     "re2",
     "safeint",
@@ -40,70 +67,18 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
-    "wil",
-    "zlib"
+    "wil"
   ],
   "features": {
-    "coreml": {
-      "description": "Build with CoreML support",
-      "supports": "osx | ios"
-    },
-    "cuda": {
-      "description": "Build with CUDA/NCCL support",
-      "dependencies": [
-        "cuda",
-        "cudnn",
-        "nvidia-cutlass"
-      ]
-    },
-    "directml": {
-      "description": "Build with DirectML support",
-      "supports": "windows",
-      "dependencies": [
-        "directml"
-      ]
-    },
     "framework": {
-      "description": "Artifact will be Apple framework",
+      "description": "Build a macOS/iOS framework, Objective-C library",
       "supports": "osx | ios"
     },
-    "mpi": {
-      "description": "Build with MPI support",
+    "test": {
+      "description": "Build ONNXRuntime unit tests",
       "dependencies": [
-        "mpi"
-      ]
-    },
-    "nccl": {
-      "description": "Build with NCCL support"
-    },
-    "openvino": {
-      "description": "Build with OpenVINO support",
-      "supports": "!(osx | ios | android | emscripten)",
-      "dependencies": [
-        {
-          "name": "openvino",
-          "default-features": false,
-          "features": [
-            "cpu",
-            "gpu",
-            "onnx"
-          ]
-        }
-      ]
-    },
-    "python": {
-      "description": "Enable python buildings",
-      "dependencies": [
-        {
-          "name": "vcpkg-get-python-packages",
-          "host": true
-        }
-      ]
-    },
-    "xnnpack": {
-      "description": "Build with XNNPack support",
-      "dependencies": [
-        "xnnpack"
+        "benchmark",
+        "gtest"
       ]
     }
   }

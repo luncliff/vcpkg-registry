@@ -3,3 +3,4 @@ grpc[codegen]
 flatbuffers
 abseil
 liblzma
+onnxruntime

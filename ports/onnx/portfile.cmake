@@ -23,7 +23,10 @@ else()
     set(USE_PROTOBUF_SHARED OFF)
 endif()
 
-find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED)
+find_program(PROTOC NAMES protoc
+    PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
+    REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
+)
 message(STATUS "Using protoc: ${PROTOC}")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -65,6 +68,7 @@ vcpkg_cmake_configure(
         -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON3}
         -DProtobuf_PROTOC_EXECUTABLE=${PROTOC}
         -DONNX_CUSTOM_PROTOC_EXECUTABLE=${PROTOC}
+        -DONNX_VERIFY_PROTO3=ON # --protoc_path for gen_proto.py
         -DONNX_ML=ON
         -DONNX_GEN_PB_TYPE_STUBS=ON
         -DONNX_USE_PROTOBUF_SHARED_LIBS=${USE_PROTOBUF_SHARED}
