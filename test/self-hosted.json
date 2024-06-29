@@ -36,5 +36,27 @@
       "name": "winpixeventruntime",
       "platform": "x64 & windows"
     }
-  ]
+  ],
+  "features": {
+    "cuda": {
+      "description": "Install CUDA related ports",
+      "dependencies": [
+        "cuda",
+        {
+          "name": "llama-cpp",
+          "features": [
+            "cublas"
+          ],
+          "platform": "x64 & windows"
+        },
+        "nvidia-cnmem",
+        "nvidia-cutlass",
+        "nvidia-nvbench",
+        "nvidia-tools-extension-sdk",
+        "nvidia-triton-client",
+        "nvidia-triton-common",
+        "nvidia-triton-core"
+      ]
+    }
+  }
 }
