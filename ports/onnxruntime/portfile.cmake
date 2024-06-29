@@ -72,8 +72,20 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
 
+if("cuda" IN_LIST FEATURES)
+    # https://cmake.org/cmake/help/latest/module/FindCUDAToolkit.html
+    if(NOT DEFINED ENV{CUDA_PATH})
+        message(WARNING "ENV{CUDA_PATH} is required. Please check the environment variable")
+    endif()
+    get_filename_component(CUDA_VERSION "$ENV{CUDA_PATH}" NAME)
+    message(STATUS "Using CUDA: ${CUDA_VERSION}")
+endif()
+
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+    if("cuda" IN_LIST FEATURES)
+        unset(GENERATOR_OPTIONS) # use Ninja for CUDA build
+    endif()
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
 endif()
@@ -123,6 +135,9 @@ vcpkg_cmake_configure(
         onnxruntime_USE_CUSTOM_DIRECTML
         onnxruntime_NVCC_THREADS
 )
+if("cuda" IN_LIST FEATURES)
+    vcpkg_cmake_build(TARGET onnxruntime_providers_cuda LOGFILE_BASE build-cuda)
+endif()
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxruntime)
 vcpkg_copy_pdbs()
