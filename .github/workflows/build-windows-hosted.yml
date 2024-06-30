@@ -8,7 +8,7 @@ concurrency:
 
 env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
-  VCPKG_DOWNLOADS: "C:/vcpkg-downloads"
+  # VCPKG_DOWNLOADS: "C:/vcpkg-downloads"
 
 jobs:
   manifest:
@@ -27,11 +27,14 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - name: "Setup Environment"
+      - name: "Enalbe LongPath"
         run: |
-          New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
-          Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+          New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
           git config --system core.longpaths true
+        shell: pwsh
+
+      - name: "Change vcpkg.json"
+        run: Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.5
@@ -59,11 +62,14 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - name: "Setup Environment"
+      - name: "Enalbe LongPath"
         run: |
-          New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
-          Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+          New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
           git config --system core.longpaths true
+        shell: pwsh
+
+      - name: "Change vcpkg.json"
+        run: Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.5
