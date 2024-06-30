@@ -84,6 +84,21 @@
       "description": "Build a macOS/iOS framework, Objective-C library",
       "supports": "osx | ios"
     },
+    "openvino": {
+      "description": "Build with OpenVINO support",
+      "supports": "!(osx | ios | android | emscripten)",
+      "dependencies": [
+        {
+          "name": "openvino",
+          "default-features": false,
+          "features": [
+            "cpu",
+            "gpu",
+            "onnx"
+          ]
+        }
+      ]
+    },
     "tensorrt": {
       "description": "Build with TensorRT support",
       "dependencies": [
