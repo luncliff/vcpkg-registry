@@ -72,15 +72,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
 
-if("cuda" IN_LIST FEATURES)
-    # https://cmake.org/cmake/help/latest/module/FindCUDAToolkit.html
-    if(NOT DEFINED ENV{CUDA_PATH})
-        message(WARNING "ENV{CUDA_PATH} is required. Please check the environment variable")
-    endif()
-    get_filename_component(CUDA_VERSION "$ENV{CUDA_PATH}" NAME)
-    message(STATUS "Using CUDA: ${CUDA_VERSION}")
-endif()
-
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
     if("cuda" IN_LIST FEATURES)
