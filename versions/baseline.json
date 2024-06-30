@@ -134,7 +134,7 @@
     },
     "onnxruntime": {
       "baseline": "1.18.0",
-      "port-version": 0
+      "port-version": 1
     },
     "opencl": {
       "baseline": "v2024.05.08",

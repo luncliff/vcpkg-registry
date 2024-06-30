@@ -8,12 +8,50 @@ concurrency:
 
 env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
-  VCPKG_DOWNLOADS: "C:/vcpkg/downloads"
-  VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg/archives"
+  # VCPKG_DOWNLOADS: "C:/vcpkg-downloads"
 
 jobs:
-  x64_windows:
+  manifest:
     runs-on: ["self-hosted", "Windows"]
+    timeout-minutes: 300
+    strategy:
+      matrix:
+        triplet: ["x64-windows", "arm64-windows"]
+      fail-fast: false
+    env:
+      VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+      VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
+    steps:
+      - uses: actions/checkout@v4.1.6
+      - uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+
+      - name: "Enalbe LongPath"
+        run: |
+          New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+          git config --system core.longpaths true
+        shell: pwsh
+
+      - name: "Change vcpkg.json"
+        run: Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+        shell: pwsh
+
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "C:/vcpkg"
+          vcpkgGitCommitId: "943c5ef1c8f6b5e6ced092b242c8299caae2ff01" # 2024.04.26
+          vcpkgJsonGlob: "test/vcpkg.json"
+          runVcpkgInstall: true
+          runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
+        env:
+          VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
+          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
+
+  manifest_cuda:
+    runs-on: ["self-hosted", "Windows", "CUDA"]
+    # needs: ["manifest"]
+    continue-on-error: true
     timeout-minutes: 300
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -24,20 +62,15 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - name: "Setup Environment"
+      - name: "Enalbe LongPath"
         run: |
-          New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
-          New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
-          Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+          New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
           git config --system core.longpaths true
         shell: pwsh
 
-      - uses: actions/cache@v4.0.2
-        with:
-          key: "v2419-x64-windows-hosted"
-          path: |
-            C:/vcpkg/downloads
-            C:/vcpkg/archives
+      - name: "Change vcpkg.json"
+        run: Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+        shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.5
         with:
@@ -45,22 +78,7 @@ jobs:
           vcpkgGitCommitId: "943c5ef1c8f6b5e6ced092b242c8299caae2ff01" # 2024.04.26
           vcpkgJsonGlob: "test/vcpkg.json"
           runVcpkgInstall: true
-          runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
+          runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `cuda`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
           VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
-
-      - uses: lukka/run-vcpkg@v11.5
-        with:
-          vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "943c5ef1c8f6b5e6ced092b242c8299caae2ff01" # 2024.04.26
-          vcpkgJsonGlob: "test/vcpkg.json"
-          runVcpkgInstall: true
-          runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
-        env:
-          VCPKG_DEFAULT_TRIPLET: "arm64-windows"
-          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
-
-      - uses: yumis-coconudge/clean-workspace-action@v1.0.6
-        with:
-          additional-path: "C:/vcpkg/installed"
