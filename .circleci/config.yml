@@ -48,9 +48,9 @@ jobs:
             Pop-Location
       - restore_cache:
           keys:
-            - v2419-windows-{{ checksum ".circleci/config.yml" }}
-            - v2419-windows-{{ .Branch }}
-            - v2419-windows-main
+            - v2426-windows-{{ checksum ".circleci/config.yml" }}
+            - v2426-windows-{{ .Branch }}
+            - v2426-windows-main
       - run:
           name: "Install: port-windows.txt"
           shell: "powershell.exe"
@@ -69,15 +69,15 @@ jobs:
             equal: [ main, << pipeline.git.branch >> ]
           steps:
            - save_cache:
-              key: v2419-windows-main
+              key: v2426-windows-main
               paths:
                 - C:/vcpkg-caches
       - save_cache:
-          key: v2419-windows-{{ .Branch }}
+          key: v2426-windows-{{ .Branch }}
           paths:
             - C:/vcpkg-caches
       - save_cache:
-          key: v2419-windows-{{ checksum ".circleci/config.yml" }}
+          key: v2426-windows-{{ checksum ".circleci/config.yml" }}
           paths:
             - C:/vcpkg-caches
       - store_artifacts:
@@ -112,9 +112,9 @@ jobs:
             pwd
       - restore_cache:
           keys:
-            - v2419-linux-{{ checksum ".circleci/config.yml" }}
-            - v2419-linux-{{ .Branch }}
-            - v2419-linux-main
+            - v2426-linux-{{ checksum ".circleci/config.yml" }}
+            - v2426-linux-{{ .Branch }}
+            - v2426-linux-main
       - run:
           name: "Install APT packages"
           command: |
@@ -135,11 +135,11 @@ jobs:
           working_directory: vcpkg
           no_output_timeout: 1h
       - save_cache:
-          key: v2419-linux-{{ .Branch }}
+          key: v2426-linux-{{ .Branch }}
           paths:
             - /tmp/vcpkg-caches
       - save_cache:
-          key: v2419-linux-{{ checksum ".circleci/config.yml" }}
+          key: v2426-linux-{{ checksum ".circleci/config.yml" }}
           paths:
             - /tmp/vcpkg-caches
       - store_artifacts:
