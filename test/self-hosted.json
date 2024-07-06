@@ -50,9 +50,9 @@
           ]
         },
         "nvidia-cnmem",
-        "nvidia-cutlass",
+        "nvidia-nvbench",
         {
-          "name": "nvidia-nvbench",
+          "name": "nvidia-cutlass",
           "features": [
             "tests",
             "tools"
