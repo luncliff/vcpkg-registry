@@ -1,0 +1,44 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4933b6c..ef7d157 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -702,7 +702,7 @@ include(CTest)
+ enable_testing()
+ 
+ if (CUTLASS_ENABLE_GTEST_UNIT_TESTS)
+-  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/googletest.cmake)
++  find_package(GTest REQUIRED)
+ endif()
+ 
+ if (NOT TARGET test_all)
+diff --git a/test/unit/CMakeLists.txt b/test/unit/CMakeLists.txt
+index 16252a0..c9fb48f 100644
+--- a/test/unit/CMakeLists.txt
++++ b/test/unit/CMakeLists.txt
+@@ -42,7 +42,7 @@ target_link_libraries(
+   CUTLASS
+   cutlass_tools_util_includes
+   $<$<BOOL:${CUTLASS_ENABLE_CUBLAS}>:nvidia::cublas>
+-  gtest
++  GTest::gtest
+   cudart
+   cuda_driver
+   )
+@@ -76,7 +76,7 @@ function(cutlass_test_unit_add_executable NAME)
+     ${NAME}
+     PRIVATE
+     ${CUTLASS_UNIT_TEST_COMMON_DIR}
+-    ${__EXTRA_INCLUDE_DIRS}
++    ${CUTLASS_INCLUDE_DIR}
+   )
+   if (__WITHOUT_CUDA)
+     # Avoid CUDA dependencies for host-only unit tests that provide the
+@@ -84,7 +84,7 @@ function(cutlass_test_unit_add_executable NAME)
+     target_link_libraries(
+       ${NAME}
+       PUBLIC
+-      gtest
++      GTest::gtest
+     )
+   else()
+     target_link_libraries(

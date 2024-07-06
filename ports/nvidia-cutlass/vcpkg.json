@@ -1,11 +1,13 @@
 {
   "name": "nvidia-cutlass",
   "version-semver": "3.5.0",
+  "port-version": 1,
   "description": "CUDA Templates for Linear Algebra Subroutines",
   "homepage": "https://github.com/NVIDIA/cutlass",
   "license": "BSD-3-Clause",
   "dependencies": [
     "cuda",
+    "cudnn",
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -14,5 +16,23 @@
       "name": "vcpkg-cmake-config",
       "host": true
     }
-  ]
+  ],
+  "features": {
+    "tests": {
+      "description": "Enable CUTLASS GTest-based Unit Tests",
+      "dependencies": [
+        "gtest",
+        {
+          "name": "nvidia-cutlass",
+          "default-features": false,
+          "features": [
+            "tools"
+          ]
+        }
+      ]
+    },
+    "tools": {
+      "description": "Enable CUTLASS Tools"
+    }
+  }
 }
