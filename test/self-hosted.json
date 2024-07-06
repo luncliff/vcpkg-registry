@@ -40,18 +40,24 @@
   "features": {
     "cuda": {
       "description": "Install CUDA related ports",
+      "supports": "x64 & windows",
       "dependencies": [
         "cuda",
         {
           "name": "llama-cpp",
           "features": [
             "cublas"
-          ],
-          "platform": "x64 & windows"
+          ]
         },
         "nvidia-cnmem",
         "nvidia-cutlass",
-        "nvidia-nvbench",
+        {
+          "name": "nvidia-nvbench",
+          "features": [
+            "tests",
+            "tools"
+          ]
+        },
         "nvidia-tools-extension-sdk",
         "nvidia-triton-client",
         "nvidia-triton-common",
