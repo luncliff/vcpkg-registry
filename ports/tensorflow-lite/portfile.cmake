@@ -18,7 +18,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
     REF v2.16.2
-    SHA512 0
+    SHA512 548eb959597bc76b11a94151d0201ee24166744b74317f59bd70611f3e5490863c6f444b38f7d141921b7725cdc62633bf8eacf38b6b71ff50a6431c396fe2d4
     PATCHES
         tensorflow-pr-61381.patch
         tensorflow-pr-62037.patch
