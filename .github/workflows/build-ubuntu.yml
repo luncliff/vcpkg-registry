@@ -16,10 +16,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2024.03.25"
-            vcpkg_commit: "a34c873a9717a888f58dc05268dea15592c2f0ff"
           - vcpkg_tag: "2024.04.26"
             vcpkg_commit: "943c5ef1c8f6b5e6ced092b242c8299caae2ff01"
+          - vcpkg_tag: "2024.05.24"
+            vcpkg_commit: "01f602195983451bc83e72f4214af2cbc495aa94"
+          - vcpkg_tag: "2024.06.15"
+            vcpkg_commit: "f7423ee180c4b7f40d43402c2feb3859161ef625"
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
