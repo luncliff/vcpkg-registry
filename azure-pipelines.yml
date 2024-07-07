@@ -25,7 +25,7 @@ schedules:
 variables:
   # check https://github.com/microsoft/vcpkg/releases
   - name: vcpkg.commit
-    value: "943c5ef1c8f6b5e6ced092b242c8299caae2ff01" # 2024.04.26
+    value: "01f602195983451bc83e72f4214af2cbc495aa94" # 2024.05.24
 
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
@@ -62,9 +62,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2416-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"v2426-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2416-bin-uwp" | "$(vcpkg.default.triplet)"
+                "v2426-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: arm64-windows"
@@ -123,9 +123,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2416-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"v2426-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
-                "v2416-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
+                "v2426-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(cxx)"
@@ -168,9 +168,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2416-bin-android" | "$(vcpkg.default.triplet)"'
+              key: '"v2426-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2416-bin-android" | "$(vcpkg.default.triplet)"
+                "v2426-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(vcpkg.default.triplet)"
@@ -232,9 +232,9 @@ stages:
             displayName: "Install HomeBrew packages"
           - task: Cache@2
             inputs:
-              key: '"v2416-bin-mac-host"'
+              key: '"v2426-bin-mac-host"'
               restoreKeys: |
-                "v2416-bin-mac-host"
+                "v2426-bin-mac-host"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: osx(host)"
@@ -286,9 +286,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2416-bin-osx" | "$(vcpkg.default.triplet)"'
+              key: '"v2426-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2416-bin-osx" | "$(vcpkg.default.triplet)"
+                "v2426-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: osx"
@@ -330,9 +330,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2416-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"v2426-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2416-bin-ios" | "$(vcpkg.default.triplet)"
+                "v2426-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: arm64-ios"
