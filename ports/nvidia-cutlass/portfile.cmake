@@ -24,6 +24,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         tests   CUTLASS_TEST_UNIT_ENABLE_WARNINGS
         samples CUTLASS_ENABLE_EXAMPLES
         tools   CUTLASS_ENABLE_TOOLS
+        tools   CUTLASS_ENABLE_LIBRARY
 )
 
 vcpkg_cmake_configure(
@@ -32,13 +33,12 @@ vcpkg_cmake_configure(
         ${FEATURE_OPTIONS}
         -DCUTLASS_REVISION:STRING=v${VERSION}
         -DCUTLASS_ENABLE_HEADERS_ONLY=ON
-        -DCUTLASS_ENABLE_LIBRARY=ON
         -DCUTLASS_ENABLE_PERFORMANCE=OFF
         -DCUTLASS_LIBRARY_OPERATIONS:STRING=all
         -DCUTLASS_LIBRARY_KERNELS:STRING=all
-        -DCUTLASS_ENABLE_PROFILER=OFF
         -DCUTLASS_ENABLE_CUBLAS=ON
         -DCUTLASS_ENABLE_CUDNN=ON
+        -DCUTLASS_ENABLE_PROFILER=OFF
         -DPython3_EXECUTABLE:FILEPATH=${PYTHON3}
     MAYBE_UNUSED_VARIABLES
         CUTLASS_LIBRARY_OPERATIONS
@@ -46,9 +46,9 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/NvidiaCutlass" PACKAGE_NAME "NvidiaCutlass")
 
-# file(REMOVE_RECURSE
-#     "${CURRENT_PACKAGES_DIR}/debug"
-#     "${CURRENT_PACKAGES_DIR}/test"
-#     "${CURRENT_PACKAGES_DIR}/lib"
-# )
+file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/debug"
+    "${CURRENT_PACKAGES_DIR}/test"
+    "${CURRENT_PACKAGES_DIR}/lib"
+)
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")

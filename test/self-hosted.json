@@ -50,14 +50,8 @@
           ]
         },
         "nvidia-cnmem",
+        "nvidia-cutlass",
         "nvidia-nvbench",
-        {
-          "name": "nvidia-cutlass",
-          "features": [
-            "tests",
-            "tools"
-          ]
-        },
         "nvidia-tools-extension-sdk",
         "nvidia-triton-client",
         "nvidia-triton-common",
