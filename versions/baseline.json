@@ -106,7 +106,7 @@
     },
     "nvidia-cutlass": {
       "baseline": "3.5.0",
-      "port-version": 0
+      "port-version": 1
     },
     "nvidia-nvbench": {
       "baseline": "2024-01-13",
