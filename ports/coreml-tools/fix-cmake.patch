@@ -10,7 +10,7 @@ index d462525..1f97838 100644
  
  if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
    message(FATAL_ERROR "
-@@ -31,34 +32,49 @@ if(HAS_CCACHE)
+@@ -31,34 +32,46 @@ if(HAS_CCACHE)
    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
  endif()
  
@@ -38,12 +38,9 @@ index d462525..1f97838 100644
 -message("Found python version ${PYTHON_VERSION_STRING}")
 -message("Found python includes ${PYTHON_INCLUDE_DIRS}")
 +find_package(protobuf CONFIG REQUIRED) # protobuf::libprotobuf
++link_libraries("-framework Foundation")
 +
 +add_subdirectory(mlmodel)
-+
-+message(STATUS "Found python at ${Python3_EXECUTABLE}")
-+message(STATUS "Found python version ${Python3_VERSION}")
-+message(STATUS "Found python includes ${Python3_INCLUDE_DIRS}")
  
  include_directories(
    .
@@ -331,7 +328,7 @@ index 6d7b7fa..85cf718 100644
  
  target_link_libraries(enumgen
 -    libprotobuf
-+    protobuf::libprotobuf protobuf::libprotoc "-framework Foundation"
++    protobuf::libprotobuf protobuf::libprotoc
  )
  
  option(OVERWRITE_PB_SOURCE
