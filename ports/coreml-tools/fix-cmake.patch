@@ -331,7 +331,7 @@ index 6d7b7fa..85cf718 100644
  
  target_link_libraries(enumgen
 -    libprotobuf
-+    protobuf::libprotobuf protobuf::libprotoc
++    protobuf::libprotobuf protobuf::libprotoc "-framework Foundation"
  )
  
  option(OVERWRITE_PB_SOURCE
