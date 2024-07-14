@@ -4,8 +4,8 @@ string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF v1.18.0
-    SHA512 2e1d724eda5635fc24f93966412c197c82ee933aaea4f4ce907b5f2ee7730c1e741f2ef4d50a2d54284fc7bd05bf104bd3c56fd4466525fcd70e63c07fbb2b16
+    REF v1.18.1
+    SHA512 192cb95e131d7a7796f29556355d0c9055c05723e1120e21155ed21e05301d862f2ba3fd613d8f9289b61577f64cc4b406db7bb25d1bd666b75c29a0f29cc9d8
     PATCHES
         fix-cmake.patch
         fix-sources.patch
