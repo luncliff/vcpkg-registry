@@ -148,6 +148,10 @@
       "baseline": "v2024.05.08",
       "port-version": 0
     },
+    "opencl-on-dx12": {
+      "baseline": "2023-12-08",
+      "port-version": 1
+    },
     "openjdk": {
       "baseline": "jdk-23+10",
       "port-version": 0
