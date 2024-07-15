@@ -1,6 +1,7 @@
 {
   "name": "d3d12-transition-layer",
   "version-date": "2024-03-18",
+  "port-version": 1,
   "description": "A library containing utilities for mapping higher-level graphics work to D3D12",
   "homepage": "https://github.com/microsoft/D3D12TranslationLayer",
   "license": "MIT",
@@ -9,7 +10,7 @@
     "atl",
     {
       "name": "directx-headers",
-      "version>=": "1.610.0"
+      "version>=": "1.610.2"
     },
     {
       "name": "vcpkg-cmake",
