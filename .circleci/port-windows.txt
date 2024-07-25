@@ -1,2 +1,0 @@
-onnxruntime
-openssl3[tools]:x64-windows

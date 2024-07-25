@@ -2,19 +2,13 @@
 version: 2.1
 
 orbs:
-  win: circleci/windows@5.0
+  # win: circleci/windows@5.0
   aws-cli: circleci/aws-cli@4.1.2 # https://circleci.com/developer/orbs/orb/circleci/aws-cli
   aws-s3: circleci/aws-s3@4.0
 
 workflows:
   overlay:
     jobs:
-      - x64_windows:
-          filters:
-            branches:
-              ignore:
-                - gh-pages
-                - docs
       - x64_linux_gcc:
           filters:
             branches:
@@ -23,67 +17,6 @@ workflows:
                 - docs
 
 jobs:
-  x64_windows:
-    executor:
-      name: win/server-2022
-      size: large
-      shell: "bash.exe"
-    environment:
-      VCPKG_DOWNLOADS: C:/vcpkg-caches
-      VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-caches
-      VCPKG_DEFAULT_TRIPLET: x64-windows
-    steps:
-      - checkout
-      - aws-cli/setup
-      - run:
-          name: "Setup: microsoft/vcpkg(2024.05.24)"
-          shell: "powershell.exe"
-          command: |
-            New-Item -Type Directory -Force -Path $env:VCPKG_DOWNLOADS
-            New-Item -Type Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2024.05.24 --depth=1 https://github.com/microsoft/vcpkg
-            Push-Location vcpkg
-              ./bootstrap-vcpkg.bat
-              ./vcpkg.exe --version
-            Pop-Location
-      - restore_cache:
-          keys:
-            - v2426-windows-{{ checksum ".circleci/config.yml" }}
-            - v2426-windows-{{ .Branch }}
-            - v2426-windows-main
-      - run:
-          name: "Install: port-windows.txt"
-          shell: "powershell.exe"
-          command: |
-            git config --system core.longpaths true
-            ./vcpkg.exe install `
-              --keep-going --recurse `
-              --clean-buildtrees-after-build `
-              --clean-packages-after-build `
-              --overlay-ports "$env:CIRCLE_WORKING_DIRECTORY/ports" `
-              $(Get-Content "$env:CIRCLE_WORKING_DIRECTORY/.circleci/port-windows.txt")
-          working_directory: vcpkg
-          no_output_timeout: 1h
-      - when:
-          condition:
-            equal: [ main, << pipeline.git.branch >> ]
-          steps:
-           - save_cache:
-              key: v2426-windows-main
-              paths:
-                - C:/vcpkg-caches
-      - save_cache:
-          key: v2426-windows-{{ .Branch }}
-          paths:
-            - C:/vcpkg-caches
-      - save_cache:
-          key: v2426-windows-{{ checksum ".circleci/config.yml" }}
-          paths:
-            - C:/vcpkg-caches
-      - store_artifacts:
-          path: vcpkg/buildtrees/
-          destination: "build-logs"
-
   x64_linux_gcc:
     # docker:
     #   - image: gcc:13.2
@@ -112,9 +45,9 @@ jobs:
             pwd
       - restore_cache:
           keys:
-            - v2426-linux-{{ checksum ".circleci/config.yml" }}
-            - v2426-linux-{{ .Branch }}
-            - v2426-linux-main
+            - v2430-linux-{{ checksum ".circleci/config.yml" }}
+            - v2430-linux-{{ .Branch }}
+            - v2430-linux-main
       - run:
           name: "Install APT packages"
           command: |
@@ -135,11 +68,11 @@ jobs:
           working_directory: vcpkg
           no_output_timeout: 1h
       - save_cache:
-          key: v2426-linux-{{ .Branch }}
+          key: v2430-linux-{{ .Branch }}
           paths:
             - /tmp/vcpkg-caches
       - save_cache:
-          key: v2426-linux-{{ checksum ".circleci/config.yml" }}
+          key: v2430-linux-{{ checksum ".circleci/config.yml" }}
           paths:
             - /tmp/vcpkg-caches
       - store_artifacts:
