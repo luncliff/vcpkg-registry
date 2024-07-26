@@ -122,7 +122,7 @@
     },
     "nvidia-triton-common": {
       "baseline": "2023-01-23",
-      "port-version": 0
+      "port-version": 1
     },
     "nvidia-triton-core": {
       "baseline": "2023-01-23",
