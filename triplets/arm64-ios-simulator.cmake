@@ -8,7 +8,7 @@ This triplet is for the minimal works to try iOS Simulator build
 
 * `VCPKG_TARGET_IS_SIMULATOR`: always `true`
 * `VCPKG_OSX_SYSROOT`: Run xcodebuild to acuire SDK folder for `iphonesimulator`
-* `VCPKG_CMAKE_SYSTEM_VERSION`: Minimum SDK version. Fixed to 11.0
+* `VCPKG_CMAKE_SYSTEM_VERSION`: Minimum SDK version. Fixed to 16.0
 * `VCPKG_CXX_FLAGS`: Will be set to `-mios-simulator-version-min=${VCPKG_DEPLOYMENT_TARGET}`
 * `VCPKG_C_FLAGS`: Same with the `VCPKG_CXX_FLAGS`
 
@@ -43,7 +43,7 @@ execute_process(
 message(STATUS "Detected SDK: ${VCPKG_OSX_SYSROOT}")
 
 if(NOT DEFINED VCPKG_CMAKE_SYSTEM_VERSION)
-    set(VCPKG_CMAKE_SYSTEM_VERSION 11.0) 
+    set(VCPKG_CMAKE_SYSTEM_VERSION 16.0) 
 endif()
 set(VCPKG_CXX_FLAGS "-mios-simulator-version-min=${VCPKG_CMAKE_SYSTEM_VERSION}")
 set(VCPKG_C_FLAGS "${VCPKG_CXX_FLAGS}")

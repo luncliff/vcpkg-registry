@@ -1,11 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2024-05-25",
+  "version-date": "2024-07-26",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows | linux | osx | ios",
   "dependencies": [
+    "abseil",
     {
       "name": "apple-crypto",
       "platform": "osx | ios"
