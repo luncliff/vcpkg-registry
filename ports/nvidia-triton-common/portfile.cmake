@@ -20,6 +20,8 @@ vcpkg_cmake_configure(
         -DTRITON_COMMON_ENABLE_PROTOBUF=ON
         -DTRITON_COMMON_ENABLE_GRPC=ON
         -DTRITON_COMMON_ENABLE_JSON=ON
+        -DTRITON_MIN_CXX_STANDARD=17
+        -DCMAKE_CXX_STANDARD=17 # it's 2024...
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/TritonCommon PACKAGE_NAME TritonCommon)
