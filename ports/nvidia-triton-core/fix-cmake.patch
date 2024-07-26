@@ -1,5 +1,23 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 37631ff..ba05d37 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -210,13 +210,6 @@ if(NOT TRITON_CORE_HEADERS_ONLY)
+     message(FATAL_ERROR "TRITON_ENABLE_METRICS_GPU=ON requires TRITON_ENABLE_GPU=ON")
+   endif()
+ 
+-  include(FetchContent)
+-  FetchContent_Declare(
+-    repo-third-party
+-    GIT_REPOSITORY ${TRITON_REPO_ORGANIZATION}/third_party.git
+-    GIT_TAG ${TRITON_THIRD_PARTY_REPO_TAG}
+-  )
+-  FetchContent_MakeAvailable(repo-third-party)
+ 
+   # Some libs are installed to ${TRITON_THIRD_PARTY_INSTALL_PREFIX}/{LIB}/lib64 instead
+   # of ${TRITON_THIRD_PARTY_INSTALL_PREFIX}/{LIB}/lib on Centos
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 4a3d692..afe7c02 100644
+index ba027a5..afe7c02 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -38,17 +38,7 @@ endif()
@@ -10,7 +28,7 @@ index 4a3d692..afe7c02 100644
 -
 -FetchContent_Declare(
 -  repo-common
--  GIT_REPOSITORY https://github.com/triton-inference-server/common.git
+-  GIT_REPOSITORY ${TRITON_REPO_ORGANIZATION}/common.git
 -  GIT_TAG ${TRITON_COMMON_REPO_TAG}
 -)
 -

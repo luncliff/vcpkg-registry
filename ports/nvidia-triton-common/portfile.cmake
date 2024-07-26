@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO triton-inference-server/common
-    REF 1ef550b8ec9793a053290147bc330128f5b5f7d0
-    SHA512 026aca7328011faa29cf07481de3ddfbf4c10e3fa13562789e7204faf40c0c333ca18a8cf82228262441fcb1e71fe9313ed2cc1199a75398c01668bf3a346260
+    REF e827f28a4815ec3a4caa859b333fa67b4ad848ac
+    SHA512 932139aa52ec03fcce2c2c16eaae034ffe7b8e5e06f142305ed97def7ee3307076286617e5a886a31e7d7553c0fe3eafd183b5e8dfd8f1a2a1c2aa6a0f913b66
     HEAD_REF main
     PATCHES
         fix-cmake.patch
@@ -20,6 +20,8 @@ vcpkg_cmake_configure(
         -DTRITON_COMMON_ENABLE_PROTOBUF=ON
         -DTRITON_COMMON_ENABLE_GRPC=ON
         -DTRITON_COMMON_ENABLE_JSON=ON
+        -DTRITON_MIN_CXX_STANDARD=17
+        -DCMAKE_CXX_STANDARD=17 # it's 2024...
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/TritonCommon PACKAGE_NAME TritonCommon)
