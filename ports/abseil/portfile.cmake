@@ -1,5 +1,3 @@
-vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
-
 # https://github.com/abseil/abseil-cpp/releases/tag/20240722.rc1
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
