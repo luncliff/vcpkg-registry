@@ -1,7 +1,6 @@
 {
   "name": "nvidia-triton-core",
-  "version-date": "2023-01-23",
-  "port-version": 1,
+  "version-date": "2024-07-26",
   "description": "The core library and APIs implementing the Triton Inference Server.",
   "homepage": "https://github.com/triton-inference-server/core",
   "license": "BSD-3-Clause",
