@@ -8,11 +8,13 @@ vcpkg_from_github(
     SHA512 192cb95e131d7a7796f29556355d0c9055c05723e1120e21155ed21e05301d862f2ba3fd613d8f9289b61577f64cc4b406db7bb25d1bd666b75c29a0f29cc9d8
     PATCHES
         fix-cmake.patch
+        fix-cmake-cuda.patch
         fix-sources.patch
         # fix-clang-cl-simd-compile.patch
         fix-llvm-rc-unicode.patch
 )
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_vcpkg_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
+# https://github.com/microsoft/onnxruntime/pull/21348
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_external_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
@@ -114,8 +116,9 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_NEURAL_SPEED=OFF
         -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO
-        -DORT_GIT_COMMIT:STRING="45737400a2f3015c11f005ed7603611eaed306a6"
-        -DORT_GIT_BRANCH:STRING="v1.18.0"
+        -DORT_GIT_COMMIT:STRING="387127404e6c1d84b3468c387d864877ed1c67fe"
+        -DORT_GIT_BRANCH:STRING="v1.18.1"
+        --compile-no-warning-as-error
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
