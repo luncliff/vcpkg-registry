@@ -53,10 +53,34 @@ if(VCPKG_TARGET_IS_OSX AND (arch_count GREATER 1))
             "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel"
         )
         install_cpuinfo()
+        file(COPY "${CURRENT_PACKAGES_DIR}/include" DESTINATION "${PACKAGES_DIR}")
+        file(COPY "${CURRENT_PACKAGES_DIR}/share" DESTINATION "${PACKAGES_DIR}")
+        file(COPY "${CURRENT_PACKAGES_DIR}/lib/pkgconfig" DESTINATION "${PACKAGES_DIR}/lib")
+        file(COPY "${CURRENT_PACKAGES_DIR}/debug/share" DESTINATION "${PACKAGES_DIR}/debug")
+        file(COPY "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig" DESTINATION "${PACKAGES_DIR}/debug/lib")
     endforeach()
     get_filename_component(CURRENT_PACKAGES_DIR "${PACKAGES_DIR}" ABSOLUTE)
     # combine ...
-    # ...
+    find_program(LIPO NAMES lipo REQUIRED)
+    file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/lib")
+    vcpkg_execute_required_process(
+        COMMAND "${LIPO}"   -create "${PACKAGES_DIR}/x86_64/lib/libcpuinfo.a"
+                                    "${PACKAGES_DIR}/arm64/lib/libcpuinfo.a"
+                            -output "lib/libcpuinfo.a"
+        LOGNAME lipo
+        WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}"
+    )
+    file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/lib")
+    vcpkg_execute_required_process(
+        COMMAND "${LIPO}"   -create "${PACKAGES_DIR}/x86_64/debug/lib/libcpuinfo.a"
+                                    "${PACKAGES_DIR}/arm64/debug/lib/libcpuinfo.a"
+                            -output "debug/lib/libcpuinfo.a"
+        LOGNAME lipo-debug
+        WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}"
+    )
+    foreach(ARCH ${OSX_ARCHS})
+        file(REMOVE_RECURSE "${PACKAGES_DIR}/${ARCH}")
+    endforeach()
 else()
     install_cpuinfo()
 endif()
