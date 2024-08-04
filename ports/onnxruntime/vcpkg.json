@@ -82,18 +82,18 @@
       "description": "Build a macOS/iOS framework, Objective-C library",
       "supports": "osx | ios"
     },
-    "training": {
-      "description": "Enable full training functionality. Includes ORTModule and ORT Training APIs",
-      "dependencies": [
-        "cxxopts",
-        "dlpack"
-      ]
-    },
     "test": {
       "description": "Build ONNXRuntime unit tests",
       "dependencies": [
         "benchmark",
         "gtest"
+      ]
+    },
+    "training": {
+      "description": "Enable full training functionality. Includes ORTModule and ORT Training APIs",
+      "dependencies": [
+        "cxxopts",
+        "dlpack"
       ]
     }
   }
