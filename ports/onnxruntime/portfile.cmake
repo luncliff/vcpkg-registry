@@ -9,6 +9,7 @@ vcpkg_from_github(
     PATCHES
         fix-cmake.patch
         fix-cmake-cuda.patch
+        fix-cmake-training.patch
         fix-sources.patch
         fix-clang-cl-simd-compile.patch
 )
@@ -45,6 +46,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         training  onnxruntime_ENABLE_TRAINING
         training  onnxruntime_ENABLE_TRAINING_APIS
         # training  onnxruntime_ENABLE_TRAINING_OPS
+        # training  onnxruntime_ENABLE_TRAINING_TORCH_INTEROP
         cuda      onnxruntime_USE_CUDA
         cuda      onnxruntime_USE_CUDA_NHWC_OPS
         openvino  onnxruntime_USE_OPENVINO
@@ -70,6 +72,16 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     INVERTED_FEATURES
         cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
+
+if("training" IN_LIST FEATURES)
+    vcpkg_from_github(
+        OUT_SOURCE_PATH TENSORBOARD_SOURCE_PATH
+        REPO tensorflow/tensorboard
+        REF 2.16.2
+        SHA512 0dc57928d55ebd46386d0f0852b3b4e9078222bd4378655abb16f6bc0e5ed2969600071d5d2ae9a3f2aa6bb327fe567869a01a69fdda35c261dc44a1eadd18ce
+    )
+    list(APPEND FEATURE_OPTIONS -DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH})
+endif()
 
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)

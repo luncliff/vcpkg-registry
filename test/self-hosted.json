@@ -24,7 +24,8 @@
     {
       "name": "onnxruntime",
       "features": [
-        "test"
+        "test",
+        "training"
       ],
       "platform": "windows"
     },
@@ -51,7 +52,13 @@
         "nvidia-tools-extension-sdk",
         "nvidia-triton-client",
         "nvidia-triton-common",
-        "nvidia-triton-core"
+        "nvidia-triton-core",
+        {
+          "name": "onnxruntime",
+          "features": [
+            "cuda"
+          ]
+        }
       ]
     }
   }
