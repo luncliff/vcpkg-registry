@@ -10,8 +10,7 @@ vcpkg_from_github(
         fix-cmake.patch
         fix-cmake-cuda.patch
         fix-sources.patch
-        # fix-clang-cl-simd-compile.patch
-        fix-llvm-rc-unicode.patch
+        fix-clang-cl-simd-compile.patch
 )
 # https://github.com/microsoft/onnxruntime/pull/21348
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_external_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
@@ -28,18 +27,16 @@ find_program(FLATC NAMES flatc
 )
 message(STATUS "Using flatc: ${FLATC}")
 
+vcpkg_find_acquire_program(PYTHON3)
+get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
+message(STATUS "Using python3: ${PYTHON3}")
+vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
+
 vcpkg_execute_required_process(
-    COMMAND "${FLATC}" --cpp --scoped-enums --filename-suffix ".fbs" ort.fbs ort_training_checkpoint.fbs
-    LOGNAME codegen-flatc-cpp
-    WORKING_DIRECTORY "${SOURCE_PATH}/onnxruntime/core/flatbuffers/schema"
+    COMMAND "${PYTHON3}" onnxruntime/core/flatbuffers/schema/compile_schema.py --flatc "${FLATC}"
+    LOGNAME compile_schema
+    WORKING_DIRECTORY "${SOURCE_PATH}"
 )
-if("test" IN_LIST FEATURES)
-    vcpkg_execute_required_process(
-        COMMAND "${FLATC}" --cpp --scoped-enums --filename-suffix ".fbs" flatbuffers_utils_test.fbs
-        LOGNAME codegen-flatc-test-cpp
-        WORKING_DIRECTORY "${SOURCE_PATH}/onnxruntime/test/flatbuffers"
-    )
-endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
@@ -83,11 +80,6 @@ elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
 endif()
 
-vcpkg_find_acquire_program(PYTHON3)
-get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
-message(STATUS "Using python3: ${PYTHON3}")
-vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
-
 # see tools/ci_build/build.py
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
@@ -104,6 +96,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_FULL_PROTOBUF=ON
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_NNAPI_BUILTIN=${VCPKG_TARGET_IS_ANDROID}
+        -Donnxruntime_USE_VCPKG=ON
         -Donnxruntime_ENABLE_CPUINFO=ON
         -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=OFF
         -Donnxruntime_ENABLE_BITCODE=${VCPKG_TARGET_IS_IOS}
@@ -116,8 +109,8 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_NEURAL_SPEED=OFF
         -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO
-        -DORT_GIT_COMMIT:STRING="387127404e6c1d84b3468c387d864877ed1c67fe"
-        -DORT_GIT_BRANCH:STRING="v1.18.1"
+        -DORT_GIT_COMMIT:STRING=387127404e6c1d84b3468c387d864877ed1c67fe
+        -DORT_GIT_BRANCH:STRING=v1.18.1
         --compile-no-warning-as-error
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
