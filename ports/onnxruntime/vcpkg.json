@@ -59,6 +59,7 @@
     },
     "re2",
     "safeint",
+    "utf8-range",
     {
       "name": "vcpkg-cmake",
       "host": true
