@@ -1,8 +1,8 @@
 {
   "name": "eigen3",
-  "version-date": "2024-01-16",
+  "version-date": "2024-08-01",
   "description": "C++ template library for linear algebra: matrices, vectors, numerical solvers, and related algorithms.",
-  "homepage": "http://eigen.tuxfamily.org",
+  "homepage": "https://gitlab.com/libeigen/eigen",
   "license": "MPL-2.0",
   "dependencies": [
     {
