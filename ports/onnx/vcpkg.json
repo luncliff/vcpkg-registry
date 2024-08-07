@@ -26,16 +26,6 @@
     "disable-static-registration": {
       "description": "Enable static registration for onnx operator schemas"
     },
-    "python": {
-      "description": "Build Python binaries",
-      "supports": "x64",
-      "dependencies": [
-        {
-          "name": "vcpkg-get-python-packages",
-          "host": true
-        }
-      ]
-    },
     "test": {
       "description": "Enable exception handling",
       "dependencies": [

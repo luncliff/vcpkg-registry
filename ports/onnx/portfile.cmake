@@ -27,17 +27,8 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         disable-static-registration ONNX_DISABLE_STATIC_REGISTRATION
 )
 
-if("python" IN_LIST FEATURES)
-    x_vcpkg_get_python_packages(
-        PYTHON_VERSION 3
-        PACKAGES numpy pybind11
-        OUT_PYTHON_VAR PYTHON3
-    )
-    get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
-else()
-    vcpkg_find_acquire_program(PYTHON3)
-    get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
-endif()
+vcpkg_find_acquire_program(PYTHON3)
+get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
 message(STATUS "Using python3: ${PYTHON3}")
 vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
 
