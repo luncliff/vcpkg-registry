@@ -80,7 +80,7 @@ if("training" IN_LIST FEATURES)
         REF 2.16.2
         SHA512 0dc57928d55ebd46386d0f0852b3b4e9078222bd4378655abb16f6bc0e5ed2969600071d5d2ae9a3f2aa6bb327fe567869a01a69fdda35c261dc44a1eadd18ce
     )
-    list(APPEND FEATURE_OPTIONS -DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH})
+    list(APPEND FEATURE_OPTIONS "-DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}")
 endif()
 
 if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
@@ -101,12 +101,10 @@ vcpkg_cmake_configure(
         -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         -DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
-        # -DProtobuf_USE_STATIC_LIBS=OFF
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
         -Donnxruntime_BUILD_WEBASSEMBLY=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
-        -Donnxruntime_USE_FULL_PROTOBUF=ON
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_NNAPI_BUILTIN=${VCPKG_TARGET_IS_ANDROID}
         -Donnxruntime_USE_VCPKG=ON
@@ -137,6 +135,9 @@ vcpkg_cmake_configure(
 )
 if("cuda" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_providers_cuda LOGFILE_BASE build-cuda)
+endif()
+if("training" IN_LIST FEATURES)
+    vcpkg_cmake_build(TARGET tensorboard LOGFILE_BASE build-tensorboard)
 endif()
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxruntime)
