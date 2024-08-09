@@ -1,7 +1,6 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.18.0",
-  "port-version": 1,
+  "version-semver": "1.18.1",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://onnxruntime.ai/",
   "license": "MIT",
@@ -60,6 +59,7 @@
     },
     "re2",
     "safeint",
+    "utf8-range",
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -88,6 +88,13 @@
       "dependencies": [
         "benchmark",
         "gtest"
+      ]
+    },
+    "training": {
+      "description": "Enable full training functionality. Includes ORTModule and ORT Training APIs",
+      "dependencies": [
+        "cxxopts",
+        "dlpack"
       ]
     }
   }
