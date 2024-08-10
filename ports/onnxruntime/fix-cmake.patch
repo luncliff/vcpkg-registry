@@ -49,3 +49,17 @@ index 66df115..bd313d8 100644
  
  if (MSVC)
    # The warning means the type of two integral values around a binary operator is narrow than their result.
+diff --git a/cmake/onnxruntime_unittests.cmake b/cmake/onnxruntime_unittests.cmake
+index 2ae07d5..9ee95a7 100644
+--- a/cmake/onnxruntime_unittests.cmake
++++ b/cmake/onnxruntime_unittests.cmake
+@@ -962,7 +962,8 @@ target_compile_definitions(onnx_test_data_proto PRIVATE "-DONNX_API=")
+ onnxruntime_add_include_to_target(onnx_test_data_proto onnx_proto)
+ target_include_directories(onnx_test_data_proto PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+ set_target_properties(onnx_test_data_proto PROPERTIES FOLDER "ONNXRuntimeTest")
+-onnxruntime_protobuf_generate(APPEND_PATH IMPORT_DIRS ${onnx_SOURCE_DIR} TARGET onnx_test_data_proto)
++find_path(ONNX_IMPORT_DIR NAMES onnx/onnx-ml.proto REQUIRED)
++onnxruntime_protobuf_generate(APPEND_PATH IMPORT_DIRS ${ONNX_IMPORT_DIR} TARGET onnx_test_data_proto)
+ 
+ #
+ # onnxruntime_ir_graph test data
