@@ -1,37 +1,14 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2024-08-08",
+  "version-date": "2024-08-10",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows",
   "dependencies": [
     {
-      "name": "d3d12-transition-layer",
-      "features": [
-        "pix"
-      ],
-      "platform": "x64 & windows"
-    },
-    "liblzma",
-    {
-      "name": "onnx",
-      "features": [
-        "disable-static-registration",
-        "test"
-      ]
-    },
-    {
-      "name": "onnxruntime",
-      "features": [
-        "test",
-        "training"
-      ],
-      "platform": "windows"
-    },
-    {
-      "name": "winpixeventruntime",
-      "platform": "x64 & windows"
+      "name": "vcpkg-cmake",
+      "host": true
     }
   ],
   "features": {
@@ -59,6 +36,46 @@
             "cuda"
           ]
         }
+      ]
+    },
+    "test": {
+      "description": "Default ports to test",
+      "dependencies": [
+        {
+          "name": "d3d12-transition-layer",
+          "features": [
+            "pix"
+          ],
+          "platform": "x64 & windows"
+        },
+        "liblzma",
+        {
+          "name": "onnx",
+          "features": [
+            "disable-static-registration",
+            "test"
+          ]
+        },
+        {
+          "name": "onnxruntime",
+          "features": [
+            "test",
+            "training"
+          ],
+          "platform": "windows"
+        },
+        {
+          "name": "winpixeventruntime",
+          "platform": "x64 & windows"
+        }
+      ]
+    },
+    "vulkan": {
+      "description": "Install Vulkan related ports",
+      "supports": "x64 & windows",
+      "dependencies": [
+        "vulkan",
+        "vulkan-headers"
       ]
     }
   }

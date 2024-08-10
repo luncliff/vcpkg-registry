@@ -7,23 +7,23 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
+  VCPKG_ENABLE_METRICS: 0
 
 jobs:
   overlay:
-    # check https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-latest" # check https://github.com/actions/runner-images/blob/main/images/ubuntu
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2024.04.26"
-            vcpkg_commit: "943c5ef1c8f6b5e6ced092b242c8299caae2ff01"
           - vcpkg_tag: "2024.05.24"
             vcpkg_commit: "01f602195983451bc83e72f4214af2cbc495aa94"
           - vcpkg_tag: "2024.06.15"
             vcpkg_commit: "f7423ee180c4b7f40d43402c2feb3859161ef625"
+          - vcpkg_tag: "2024.07.12"
+            vcpkg_commit: "1de2026f28ead93ff1773e6e680387643e914ea1"
       fail-fast: false
     env:
+      VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
@@ -32,30 +32,44 @@ jobs:
         with:
           apt: nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
 
-      - name: "create cache folders"
-        run: |
-          mkdir -p ${VCPKG_DOWNLOADS}
-          mkdir -p ${VCPKG_DEFAULT_BINARY_CACHE}
-        env:
-          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
-          VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"
-
       - uses: actions/cache@v4.0.2
         with:
-          key: "v2426-x64-linux-${{ matrix.vcpkg_tag }}"
+          key: "v2432-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
           path: |
             ${{ runner.temp }}/vcpkg-downloads
-            ${{ runner.temp }}/vcpkg-archives
+
+      - name: "Create cache folders"
+        shell: bash
+        run: |
+          mkdir -p ${VCPKG_DOWNLOADS}
+        env:
+          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
 
       - uses: lukka/run-vcpkg@v11.5
+        name: "Run vcpkg(x64-linux)"
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg" # ignore VCPKG_INSTALLATION_ROOT
           vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
           vcpkgJsonGlob: "test/vcpkg.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
-          runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
+          runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-linux"
           VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
           VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
-          VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-archives"
+
+      - uses: lukka/run-vcpkg@v11.5
+        name: "Run vcpkg(arm64-linux)" # It's for future works. Not ready yet...
+        if: ${{ false }}
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg" # ignore VCPKG_INSTALLATION_ROOT
+          vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
+          vcpkgJsonGlob: "test/vcpkg.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+          runVcpkgInstall: true
+          runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
+        env:
+          VCPKG_DEFAULT_TRIPLET: "arm64-linux"
+          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
+          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
