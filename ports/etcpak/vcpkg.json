@@ -15,8 +15,8 @@
     "tool": {
       "description": "Build/Install the etcpak executable",
       "dependencies": [
-        "tracy",
-        "getopt"
+        "getopt",
+        "tracy"
       ]
     }
   }
