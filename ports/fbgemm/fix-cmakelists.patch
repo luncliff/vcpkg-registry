@@ -1,35 +1,34 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0b510717..f64d5b66 100644
+index 35f0a96..980ceb0 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -187,6 +187,7 @@ if(MSVC)
-       endif(${flag_var} MATCHES "/MD")
-     endforeach(flag_var)
-   endif()
-+  target_compile_options(fbgemm_generic PRIVATE "/bigobj")
-   target_compile_options(fbgemm_avx2 PRIVATE "/arch:AVX2")
-   target_compile_options(fbgemm_avx512 PRIVATE "/arch:AVX512")
-   if(OpenMP_FOUND)
-@@ -196,7 +196,7 @@ if(MSVC)
+@@ -179,6 +179,7 @@ add_dependencies(fbgemm_autovec defs.bzl)
+ # Need to change it to /MT in static case
+ if(MSVC)
+   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4267 /wd4305 /wd4309")
++  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
+   if(FBGEMM_LIBRARY_TYPE STREQUAL "static")
+     target_compile_definitions(fbgemm_generic PRIVATE ASMJIT_STATIC)
+     target_compile_definitions(fbgemm_avx2 PRIVATE ASMJIT_STATIC)
+@@ -199,7 +200,6 @@ if(MSVC)
  else(MSVC)
    string(APPEND CMAKE_CXX_FLAGS " -Wall")
    string(APPEND CMAKE_CXX_FLAGS " -Wextra")
 -  string(APPEND CMAKE_CXX_FLAGS " -Werror")
-+  # string(APPEND CMAKE_CXX_FLAGS " -Werror")
    string(APPEND CMAKE_CXX_FLAGS " -Wno-deprecated-declarations")
+   string(APPEND CMAKE_CXX_FLAGS " -Wunknown-pragmas")
    string(APPEND CMAKE_CXX_FLAGS " -Wimplicit-fallthrough")
-   target_compile_options(fbgemm_avx2 PRIVATE
-@@ -241,7 +242,8 @@ message(WARNING "CMAKE_CXX_FLAGS_DEBUG is ${CMAKE_CXX_FLAGS_DEBUG}")
+@@ -246,7 +246,8 @@ message(WARNING "CMAKE_CXX_FLAGS_DEBUG is ${CMAKE_CXX_FLAGS_DEBUG}")
  message(WARNING "CMAKE_CXX_FLAGS_RELEASE is ${CMAKE_CXX_FLAGS_RELEASE}")
  message(WARNING "==========")
  
 -if(NOT TARGET asmjit)
 +find_package(asmjit CONFIG REQUIRED) # asmjit::asmjit
 +if(FALSE)
-   #Download asmjit from github if ASMJIT_SRC_DIR is not specified.
+   # Download asmjit from github if ASMJIT_SRC_DIR is not specified.
    if(NOT DEFINED ASMJIT_SRC_DIR)
      set(ASMJIT_SRC_DIR "${FBGEMM_SOURCE_DIR}/third_party/asmjit"
-@@ -270,7 +272,8 @@ if(NOT TARGET asmjit)
+@@ -279,7 +280,8 @@ if(NOT TARGET asmjit)
    endif()
  endif()
  
@@ -39,7 +38,7 @@ index 0b510717..f64d5b66 100644
    #Download cpuinfo from github if CPUINFO_SOURCE_DIR is not specified.
    if(NOT DEFINED CPUINFO_SOURCE_DIR)
      set(CPUINFO_SOURCE_DIR "${FBGEMM_SOURCE_DIR}/third_party/cpuinfo"
-@@ -291,26 +294,26 @@ endif()
+@@ -300,26 +302,26 @@ endif()
  target_include_directories(fbgemm_generic BEFORE
        PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}>
        PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}/include>
@@ -74,7 +73,7 @@ index 0b510717..f64d5b66 100644
  
  if(FBGEMM_LIBRARY_TYPE STREQUAL "default")
    add_library(fbgemm
-@@ -354,15 +357,10 @@ target_include_directories(fbgemm BEFORE
+@@ -363,15 +365,14 @@ target_include_directories(fbgemm BEFORE
      PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}>
      PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}/include>)
  
@@ -84,20 +83,32 @@ index 0b510717..f64d5b66 100644
 -add_dependencies(fbgemm
 -  asmjit
 -  cpuinfo)
-+target_link_libraries(fbgemm PRIVATE asmjit::asmjit cpuinfo::cpuinfo)
++if(FBGEMM_LIBRARY_TYPE STREQUAL "static")
++  target_link_libraries(fbgemm PUBLIC asmjit::asmjit cpuinfo::cpuinfo)
++else()
++  target_link_libraries(fbgemm PRIVATE asmjit::asmjit cpuinfo::cpuinfo)
++endif()
  
  if(OpenMP_FOUND)
 -  target_link_libraries(fbgemm OpenMP::OpenMP_CXX)
-+  target_link_libraries(fbgemm PRIVATE OpenMP::OpenMP_CXX)
++  target_link_libraries(fbgemm PUBLIC OpenMP::OpenMP_CXX)
  endif()
  
  install(
-@@ -387,8 +385,6 @@ if(MSVC)
-       FILES $<TARGET_PDB_FILE:fbgemm> $<TARGET_PDB_FILE:asmjit>
-       DESTINATION ${CMAKE_INSTALL_LIBDIR} OPTIONAL)
-   endif()
+@@ -390,16 +391,6 @@ install(
+   DESTINATION share/cmake/fbgemm
+   FILE fbgemmLibraryConfig.cmake)
+ 
+-if(MSVC)
+-  if(FBGEMM_LIBRARY_TYPE STREQUAL "shared")
+-    install(
+-      FILES $<TARGET_PDB_FILE:fbgemm> $<TARGET_PDB_FILE:asmjit>
+-      DESTINATION ${CMAKE_INSTALL_LIBDIR} OPTIONAL)
+-  endif()
 -  install(TARGETS fbgemm DESTINATION ${CMAKE_INSTALL_LIBDIR})
 -  install(TARGETS asmjit DESTINATION ${CMAKE_INSTALL_LIBDIR})
- endif()
- 
+-endif()
+-
  #Make project importable from the build directory
+ #export(TARGETS fbgemm asmjit FILE fbgemmLibraryConfig.cmake)
+ 
