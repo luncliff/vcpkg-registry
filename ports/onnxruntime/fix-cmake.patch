@@ -2,32 +2,15 @@ diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
 index 8edbb6ad6f..4987d5af5a 100644
 --- a/cmake/CMakeLists.txt
 +++ b/cmake/CMakeLists.txt
-@@ -38,6 +38,7 @@ include(CheckLanguage)
+@@ -38,6 +38,8 @@ include(CheckLanguage)
  include(CMakeDependentOption)
  include(FetchContent)
  include(CheckFunctionExists)
 +include(GNUInstallDirs) # onnxruntime_providers_* require CMAKE_INSTALL_* variables
++list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external")
  
  # TODO: update this once all system adapt c++20
  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-@@ -583,7 +584,7 @@ get_filename_component(ORTTRAINING_ROOT "${ORTTRAINING_ROOT}" ABSOLUTE)
- get_filename_component(REPO_ROOT "${REPO_ROOT}" ABSOLUTE)
- set(ONNXRUNTIME_INCLUDE_DIR ${REPO_ROOT}/include/onnxruntime)
- 
--include(external/onnxruntime_external_deps.cmake)
-+include(external/onnxruntime_vcpkg_deps.cmake)
- 
- set(ORT_WARNING_FLAGS)
- if (WIN32)
-@@ -956,7 +975,7 @@ function(onnxruntime_set_compile_flags target_name)
-       target_compile_definitions(${target_name} PRIVATE ORT_NEURAL_SPEED)
-     endif()
- 
--    set_target_properties(${target_name} PROPERTIES COMPILE_WARNING_AS_ERROR ON)
-+    set_target_properties(${target_name} PROPERTIES COMPILE_WARNING_AS_ERROR OFF)
-     if (onnxruntime_USE_CUDA)
-       # Suppress a "conversion_function_not_usable" warning in gsl/span
-       target_compile_options(${target_name} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe \"--diag_suppress=conversion_function_not_usable\">")
 diff --git a/cmake/onnxruntime.cmake b/cmake/onnxruntime.cmake
 index e15c8a046d..d3a2e64bb9 100644
 --- a/cmake/onnxruntime.cmake
@@ -66,50 +49,17 @@ index 66df115..bd313d8 100644
  
  if (MSVC)
    # The warning means the type of two integral values around a binary operator is narrow than their result.
-@@ -959,6 +959,9 @@ target_compile_definitions(onnx_test_data_proto PRIVATE "-DONNX_API=")
+diff --git a/cmake/onnxruntime_unittests.cmake b/cmake/onnxruntime_unittests.cmake
+index 2ae07d5..9ee95a7 100644
+--- a/cmake/onnxruntime_unittests.cmake
++++ b/cmake/onnxruntime_unittests.cmake
+@@ -962,7 +962,8 @@ target_compile_definitions(onnx_test_data_proto PRIVATE "-DONNX_API=")
  onnxruntime_add_include_to_target(onnx_test_data_proto onnx_proto)
  target_include_directories(onnx_test_data_proto PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
  set_target_properties(onnx_test_data_proto PROPERTIES FOLDER "ONNXRuntimeTest")
-+if(NOT DEFINED onnx_SOURCE_DIR)
-+  find_path(onnx_SOURCE_DIR NAMES "onnx/onnx-ml.proto3" "onnx/onnx-ml.proto" REQUIRED)
-+endif()
- onnxruntime_protobuf_generate(APPEND_PATH IMPORT_DIRS ${onnx_SOURCE_DIR} TARGET onnx_test_data_proto)
+-onnxruntime_protobuf_generate(APPEND_PATH IMPORT_DIRS ${onnx_SOURCE_DIR} TARGET onnx_test_data_proto)
++find_path(ONNX_IMPORT_DIR NAMES onnx/onnx-ml.proto REQUIRED)
++onnxruntime_protobuf_generate(APPEND_PATH IMPORT_DIRS ${ONNX_IMPORT_DIR} TARGET onnx_test_data_proto)
  
  #
-diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
-index f829cea..bda2d4c 100644
---- a/cmake/CMakeLists.txt
-+++ b/cmake/CMakeLists.txt
-@@ -715,6 +715,13 @@ if (onnxruntime_USE_CUDA)
-   if (onnxruntime_USE_CUDA_NHWC_OPS)
-     add_compile_definitions(ENABLE_CUDA_NHWC_OPS)
-   endif()
-+  # Give more hints for the generator, with FindCUDAToolkit.cmake
-+  find_package(CUDAToolkit REQUIRED)
-+  if(CMAKE_GENERATOR MATCHES "Visual Studio")
-+    set(CMAKE_VS_PLATFORM_TOOLSET_CUDA "${CUDAToolkit_VERSION_MAJOR}.${CUDAToolkit_VERSION_MINOR}")
-+    set(CMAKE_VS_PLATFORM_TOOLSET_CUDA_CUSTOM_DIR "${CUDAToolkit_TARGET_DIR}/")
-+  endif()
-+  get_filename_component(CMAKE_CUDA_COMPILER "${CUDAToolkit_NVCC_EXECUTABLE}" ABSOLUTE)
-   enable_language(CUDA)
-   message( STATUS "CMAKE_CUDA_COMPILER_VERSION: ${CMAKE_CUDA_COMPILER_VERSION}")
- 
-diff --git a/cmake/onnxruntime_providers_cuda.cmake b/cmake/onnxruntime_providers_cuda.cmake
-index 1346a9c..fd60dd8 100644
---- a/cmake/onnxruntime_providers_cuda.cmake
-+++ b/cmake/onnxruntime_providers_cuda.cmake
-@@ -211,8 +211,12 @@
-       target_link_libraries(${target} PRIVATE CUDA::cuda_driver)
-     endif()
- 
--    include(cutlass)
--    target_include_directories(${target} PRIVATE ${cutlass_SOURCE_DIR}/include ${cutlass_SOURCE_DIR}/examples ${cutlass_SOURCE_DIR}/tools/util/include)
-+    find_package(NvidiaCutlass REQUIRED)
-+    target_link_libraries(${target} PRIVATE nvidia::cutlass::cutlass)
-+    if(MSVC)
-+      # CUTLASS_CONSTEXPR_IF_CXX17 must be constexpr. Correct the __cplusplus value with MSVC
-+      target_compile_options(${target} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler /Zc:__cplusplus>)
-+    endif()
- 
-     target_include_directories(${target} PRIVATE ${ONNXRUNTIME_ROOT} ${CMAKE_CURRENT_BINARY_DIR}  ${eigen_INCLUDE_DIRS} ${TVM_INCLUDES}
-      PUBLIC ${CUDAToolkit_INCLUDE_DIRS})
+ # onnxruntime_ir_graph test data
