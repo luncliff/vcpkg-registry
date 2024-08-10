@@ -7,11 +7,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
+  VCPKG_ENABLE_METRICS: 0
 
 jobs:
   overlay:
-    runs-on: "macos-latest"
+    runs-on: "macos-13"
     strategy:
       matrix:
         include:
@@ -23,31 +23,31 @@ jobs:
             vcpkg_commit: "1de2026f28ead93ff1773e6e680387643e914ea1"
       fail-fast: false
     env:
-      VCPKG_DOWNLOADS: "/usr/local/share/vcpkg-downloads"
-      VCPKG_DEFAULT_BINARY_CACHE: "/usr/local/share/vcpkg-archives"
+      VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
     steps:
       - uses: actions/checkout@v4.1.6
       - uses: ConorMacBride/install-package@v1.1.0
         with:
-          brew: ninja autoconf automake libtool
+          brew: autoconf automake libtool
 
-      # - uses: mobiledevops/xcode-select-version-action@v1.0.0
-      #   with:
-      #     xcode-select-version: "15.2"
-
-      - name: "create cache folders"
-        run: |
-          mkdir -p ${VCPKG_DOWNLOADS}
-          mkdir -p ${VCPKG_DEFAULT_BINARY_CACHE}
+      - uses: mobiledevops/xcode-select-version-action@v1.0.0
+        with:
+          xcode-select-version: "15.2"
 
       - uses: actions/cache@v4.0.2
         with:
-          key: "v2426-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
+          key: "v2432-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
           path: |
-            /usr/local/share/vcpkg-downloads
-            /usr/local/share/vcpkg-archives
+            ${{ runner.temp }}/vcpkg-downloads
+
+      - name: "Create cache folders"
+        shell: bash
+        run: |
+          mkdir -p ${VCPKG_DOWNLOADS}
+        env:
+          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
 
       - uses: lukka/run-vcpkg@v11.5
         name: "Run vcpkg(x64-osx)"
@@ -57,10 +57,11 @@ jobs:
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
-          runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
+          runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-osx"
           VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
+          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
 
       - uses: lukka/run-vcpkg@v11.5
         name: "Run vcpkg(arm64-osx)"
@@ -70,7 +71,8 @@ jobs:
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
-          runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
+          runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-osx"
           VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
+          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"

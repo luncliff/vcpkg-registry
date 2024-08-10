@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
+  VCPKG_ENABLE_METRICS: 0
 
 jobs:
   overlay:
@@ -23,8 +23,7 @@ jobs:
             vcpkg_commit: "1de2026f28ead93ff1773e6e680387643e914ea1"
       fail-fast: false
     env:
-      VCPKG_DOWNLOADS: "C:/vcpkg/downloads"
-      VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg/archives"
+      VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
@@ -33,19 +32,21 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - name: "Setup Environment"
-        run: |
-          New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
-          New-Item -Type Directory -Force ${env:VCPKG_DEFAULT_BINARY_CACHE}
-          git config --system core.longpaths true
-        shell: pwsh
+      - name: "Enalbe LongPath"
+        run: git config --system core.longpaths true
 
       - uses: actions/cache@v4.0.2
         with:
-          key: "v2426-x64-windows-${{ matrix.vcpkg_tag }}"
+          key: "v2432-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
           path: |
-            C:/vcpkg/downloads
-            C:/vcpkg/archives
+            ${{ runner.temp }}/vcpkg-downloads
+
+      - name: "create cache folders"
+        shell: pwsh
+        run: |
+          New-Item -Type Directory -Force ${env:VCPKG_DOWNLOADS}
+        env:
+          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
 
       - uses: lukka/run-vcpkg@v11.5
         name: "Run vcpkg(x64-windows)"
@@ -55,7 +56,8 @@ jobs:
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
-          runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
+          runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
           VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
+          VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"

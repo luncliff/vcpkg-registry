@@ -89,10 +89,6 @@
       ],
       "platform": "windows & !arm"
     },
-    {
-      "name": "vcpkg-cmake",
-      "host": true
-    },
     "xatlas",
     {
       "name": "xnnpack",

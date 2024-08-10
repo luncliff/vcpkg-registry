@@ -80,6 +80,9 @@ jobs:
   arm64_android:
     docker:
       - image: cimg/android:2024.08.1-ndk
+    environment:
+      VCPKG_DOWNLOADS: /tmp/vcpkg-caches
+      VCPKG_DEFAULT_BINARY_CACHE: /tmp/vcpkg-caches
     steps:
       - checkout
       - aws-cli/setup # check project variables

@@ -7,31 +7,8 @@
   "supports": "windows",
   "dependencies": [
     {
-      "name": "d3d12-transition-layer",
-      "features": [
-        "pix"
-      ],
-      "platform": "x64 & windows"
-    },
-    "liblzma",
-    {
-      "name": "onnx",
-      "features": [
-        "disable-static-registration",
-        "test"
-      ]
-    },
-    {
-      "name": "onnxruntime",
-      "features": [
-        "test",
-        "training"
-      ],
-      "platform": "windows"
-    },
-    {
-      "name": "winpixeventruntime",
-      "platform": "x64 & windows"
+      "name": "vcpkg-cmake",
+      "host": true
     }
   ],
   "features": {
@@ -58,6 +35,38 @@
           "features": [
             "cuda"
           ]
+        }
+      ]
+    },
+    "test": {
+      "description": "Default ports to test",
+      "dependencies": [
+        {
+          "name": "d3d12-transition-layer",
+          "features": [
+            "pix"
+          ],
+          "platform": "x64 & windows"
+        },
+        "liblzma",
+        {
+          "name": "onnx",
+          "features": [
+            "disable-static-registration",
+            "test"
+          ]
+        },
+        {
+          "name": "onnxruntime",
+          "features": [
+            "test",
+            "training"
+          ],
+          "platform": "windows"
+        },
+        {
+          "name": "winpixeventruntime",
+          "platform": "x64 & windows"
         }
       ]
     },
