@@ -45,7 +45,7 @@
       "port-version": 0
     },
     "etcpak": {
-      "baseline": "2023-11-07",
+      "baseline": "2.0",
       "port-version": 0
     },
     "farmhash": {

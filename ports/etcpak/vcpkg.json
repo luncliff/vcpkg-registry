@@ -1,12 +1,23 @@
 {
   "name": "etcpak",
-  "version-date": "2023-11-07",
+  "version": "2.0",
   "description": "The fastest ETC compressor on the planet",
   "homepage": "https://github.com/wolfpld/etcpak",
   "dependencies": [
+    "libpng",
+    "lz4",
     {
-      "name": "vcpkg-cmake",
+      "name": "vcpkg-tool-meson",
       "host": true
     }
-  ]
+  ],
+  "features": {
+    "tool": {
+      "description": "Build/Install the etcpak executable",
+      "dependencies": [
+        "getopt",
+        "tracy"
+      ]
+    }
+  }
 }

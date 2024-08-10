@@ -1,0 +1,37 @@
+diff --git a/Application.cpp b/Application.cpp
+index f100385..598ea47 100644
+--- a/Application.cpp
++++ b/Application.cpp
+@@ -5,7 +5,7 @@
+ #include <tracy/Tracy.hpp>
+ 
+ #ifdef _MSC_VER
+-#  include "getopt/getopt.h"
++#  include <getopt.h>
+ #else
+ #  include <unistd.h>
+ #  include <getopt.h>
+@@ -50,8 +50,6 @@ void Usage()
+ 
+ int main( int argc, char** argv )
+ {
+-    TracyNoop;
+-
+     DebugLog::AddCallback( &DebugCallback );
+ 
+     bool viewMode = false;
+diff --git a/Bitmap.cpp b/Bitmap.cpp
+index 6aa36f5..dc9e046 100644
+--- a/Bitmap.cpp
++++ b/Bitmap.cpp
+@@ -3,8 +3,8 @@
+ #include <string.h>
+ #include <assert.h>
+ 
+-#include "libpng/png.h"
+-#include "lz4/lz4.h"
++#include <png.h>
++#include <lz4.h>
+ 
+ #include "Bitmap.hpp"
+ #include "Debug.hpp"
