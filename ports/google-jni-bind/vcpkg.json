@@ -1,6 +1,6 @@
 {
   "name": "google-jni-bind",
-  "version-date": "2023-02-24",
+  "version-semver": "1.1.0-beta",
   "description": "JNI Bind is a set of advanced syntactic sugar for writing efficient correct JNI Code in C++17 (and up)",
   "homepage": "https://github.com/google/jni-bind",
   "license": "Apache-2.0",
@@ -8,10 +8,14 @@
     {
       "name": "vcpkg-cmake",
       "host": true
-    },
-    {
-      "name": "vcpkg-cmake-config",
-      "host": true
     }
-  ]
+  ],
+  "features": {
+    "test": {
+      "description": "Build test.cc sources",
+      "dependencies": [
+        "gtest"
+      ]
+    }
+  }
 }

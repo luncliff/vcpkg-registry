@@ -1,11 +1,9 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/jni-bind
-    REF fb9f3f669edc7e68ae16402dd2083c806d5a009d # visited 2023-02-24
-    SHA512 3ba2b29cc2e2721bda9fc7073623e65506288c31e783c53b744d9eacd03a9ffc9ca534351f84071f10feb90daf58cbc4e5aa71f3ba8e5c73a52eb1571a5250ab
+    REF Release-1.1.0-beta
+    SHA512 ffc011eb1d812360b844ff413ead8eb2c98080264655f7e1e30d9cf8f869875da02882559f147156279f6aa86ceba8a4660ca9fda637ac59d417ceaf4d76330d
     HEAD_REF main
-    # PATCHES
-    #     fix-cmake.patch
 )
 # Install headers and a shim library with JackWeakAPI.c
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")
@@ -14,16 +12,19 @@ if(DEFINED ENV{JAVA_HOME})
     message(STATUS "Using JAVA_HOME: $ENV{JAVA_HOME}")
 endif()
 
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+        test    BUILD_TESTING
+)
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
-        -DBUILD_TESTING=OFF
+        ${FEATURE_OPTIONS}
 )
 vcpkg_cmake_install()
-# vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/jni-bind)
-# vcpkg_fixup_pkgconfig()
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug"
 )
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
