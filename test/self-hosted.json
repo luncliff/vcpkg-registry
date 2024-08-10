@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2024-08-08",
+  "version-date": "2024-08-10",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows",
@@ -59,6 +59,14 @@
             "cuda"
           ]
         }
+      ]
+    },
+    "vulkan": {
+      "description": "Install Vulkan related ports",
+      "supports": "x64 & windows",
+      "dependencies": [
+        "vulkan",
+        "vulkan-headers"
       ]
     }
   }

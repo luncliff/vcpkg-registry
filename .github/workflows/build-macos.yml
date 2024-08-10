@@ -11,16 +11,16 @@ env:
 
 jobs:
   overlay:
-    runs-on: "macos-13"
+    runs-on: "macos-latest"
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2024.04.26"
-            vcpkg_commit: "943c5ef1c8f6b5e6ced092b242c8299caae2ff01"
           - vcpkg_tag: "2024.05.24"
             vcpkg_commit: "01f602195983451bc83e72f4214af2cbc495aa94"
           - vcpkg_tag: "2024.06.15"
             vcpkg_commit: "f7423ee180c4b7f40d43402c2feb3859161ef625"
+          - vcpkg_tag: "2024.07.12"
+            vcpkg_commit: "1de2026f28ead93ff1773e6e680387643e914ea1"
       fail-fast: false
     env:
       VCPKG_DOWNLOADS: "/usr/local/share/vcpkg-downloads"
@@ -50,10 +50,12 @@ jobs:
             /usr/local/share/vcpkg-archives
 
       - uses: lukka/run-vcpkg@v11.5
+        name: "Run vcpkg(x64-osx)"
         with:
           vcpkgDirectory: "/usr/local/share/vcpkg" # see VCPKG_INSTALLATION_ROOT
           vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
           vcpkgJsonGlob: "test/vcpkg.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:
@@ -61,10 +63,12 @@ jobs:
           VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
 
       - uses: lukka/run-vcpkg@v11.5
+        name: "Run vcpkg(arm64-osx)"
         with:
           vcpkgDirectory: "/usr/local/share/vcpkg" # see VCPKG_INSTALLATION_ROOT
           vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
           vcpkgJsonGlob: "test/vcpkg.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:

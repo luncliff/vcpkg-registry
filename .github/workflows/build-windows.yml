@@ -11,16 +11,16 @@ env:
 
 jobs:
   overlay:
-    runs-on: "windows-2022"
+    runs-on: "windows-latest"
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2024.04.26"
-            vcpkg_commit: "943c5ef1c8f6b5e6ced092b242c8299caae2ff01"
           - vcpkg_tag: "2024.05.24"
             vcpkg_commit: "01f602195983451bc83e72f4214af2cbc495aa94"
           - vcpkg_tag: "2024.06.15"
             vcpkg_commit: "f7423ee180c4b7f40d43402c2feb3859161ef625"
+          - vcpkg_tag: "2024.07.12"
+            vcpkg_commit: "1de2026f28ead93ff1773e6e680387643e914ea1"
       fail-fast: false
     env:
       VCPKG_DOWNLOADS: "C:/vcpkg/downloads"
@@ -32,10 +32,6 @@ jobs:
       - uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: x64
-      # - uses: humbletim/install-vulkan-sdk@v1.1.1
-      #   with:
-      #     version: 1.3.204.1
-      #     cache: true
 
       - name: "Setup Environment"
         run: |
@@ -52,10 +48,12 @@ jobs:
             C:/vcpkg/archives
 
       - uses: lukka/run-vcpkg@v11.5
+        name: "Run vcpkg(x64-windows)"
         with:
           vcpkgDirectory: "C:/vcpkg"
           vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
           vcpkgJsonGlob: "test/vcpkg.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--keep-going`, `--clean-buildtrees-after-build`, `--clean-packages-after-build`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]'
         env:
