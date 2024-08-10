@@ -3,4 +3,5 @@ grpc[codegen]
 flatbuffers
 abseil
 liblzma
-onnxruntime
+onnx[disable-static-registration]
+onnxruntime[training]
