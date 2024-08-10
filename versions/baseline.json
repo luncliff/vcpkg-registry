@@ -89,7 +89,7 @@
       "port-version": 0
     },
     "metal-cpp": {
-      "baseline": "2023-04-05",
+      "baseline": "macOS14.2_iOS17.2",
       "port-version": 0
     },
     "miniaudio": {
