@@ -1,0 +1,139 @@
+diff --git a/meson.build b/meson.build
+index 8364921..103f9c3 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1,7 +1,31 @@
+ project('etcpak', 'c', 'cpp', default_options: ['cpp_std=c++20', 'b_lto=true'])
+ 
++headers = [
++    'bc7enc.h',
++    'bcdec.h',
++    'Bitmap.hpp',
++    'BitmapDownsampled.hpp',
++    'BlockData.hpp',
++    'ColorSpace.hpp',
++    'DataProvider.hpp',
++    'Debug.hpp',
++    'Dither.hpp',
++    'Error.hpp',
++    'ForceInline.hpp',
++    'Math.hpp',
++    'mmap.hpp',
++    'ProcessCommon.hpp',
++    'ProcessDxtc.hpp',
++    'ProcessRGB.hpp',
++    'Semaphore.hpp',
++    'System.hpp',
++    'Tables.hpp',
++    'TaskDispatch.hpp',
++    'Timing.hpp',
++    'Vector.hpp'
++]
++
+ sources = [
+-    'Application.cpp',
+     'bc7enc.cpp',
+     'bcdec.c',
+     'Bitmap.cpp',
+@@ -21,41 +45,10 @@ sources = [
+     'Timing.cpp'
+ ]
+ 
+-libpng = [
+-    'libpng/arm_init.c',
+-    'libpng/filter_neon_intrinsics.c',
+-    'libpng/filter_sse2_intrinsics.c',
+-    'libpng/intel_init.c',
+-    'libpng/palette_neon_intrinsics.c',
+-    'libpng/png.c',
+-    'libpng/pngerror.c',
+-    'libpng/pngget.c',
+-    'libpng/pngmem.c',
+-    'libpng/pngpread.c',
+-    'libpng/pngread.c',
+-    'libpng/pngrio.c',
+-    'libpng/pngrtran.c',
+-    'libpng/pngrutil.c',
+-    'libpng/pngset.c',
+-    'libpng/pngtrans.c',
+-    'libpng/pngwio.c',
+-    'libpng/pngwrite.c',
+-    'libpng/pngwtran.c',
+-    'libpng/pngwutil.c'
+-]
+-
+-lz4 = [
+-    'lz4/lz4.c'
+-]
+-
+ compiler = meson.get_compiler('cpp')
+-
+-tracy = dependency('tracy', static: true)
+-zlib_ng = dependency('zlib-ng', static: true)
+-
+ deps = [
+-    tracy,
+-    zlib_ng
++    dependency('PNG', method: 'cmake', modules : ['PNG::PNG']),
++    dependency('lz4', method: 'cmake', modules : ['lz4::lz4'])
+ ]
+ 
+ if get_option('tracy_enable')
+@@ -78,19 +71,36 @@ endif
+ if compiler.get_id() == 'msvc'
+     add_project_arguments(['-DNOMINMAX', '-D__SSE4_1__', '-D__AVX2__', '/arch:AVX2', '/GL'], language: ['c', 'cpp'])
+     add_project_link_arguments('/LTCG:incremental', language: ['c', 'cpp'])
+-    sources += [ 'getopt/getopt.c' ]
+-else
+-    cpu = host_machine.cpu_family()
+-    if cpu == 'arm' or cpu == 'aarch64'
+-        add_project_arguments('-mcpu=native', language: ['c', 'cpp'])
+-    else
+-        add_project_arguments('-march=native', language: ['c', 'cpp'])
+-    endif
+ endif
+ 
+-executable('etcpak',
+-    sources,
+-    libpng,
+-    lz4,
+-    dependencies: deps
+-)
++if get_option('build_tool')
++    executable('etcpak',
++        [ sources, 'Application.cpp' ],
++        dependencies: [
++            deps,
++            dependency('Tracy', method: 'cmake', modules : ['Tracy::TracyClient']),
++            compiler.find_library('getopt')
++        ],
++        install: true,
++        install_dir: get_option('bindir')
++    )
++endif
++
++install_headers(headers, install_dir: get_option('includedir') / 'etcpak')
++if host_machine.system() == 'windows'
++    static_library('etcpak',
++        [ headers, sources ],
++        name_prefix: '',
++        name_suffix: 'lib',
++        install: true,
++        install_dir: get_option('libdir'),
++        dependencies: deps
++    )
++else
++    static_library('etcpak',
++        [ headers, sources ],
++        install: true,
++        install_dir: get_option('libdir'),
++        dependencies: deps
++    )
++endif
+diff --git a/meson.options b/meson.options
+index 906ac3a..323aa7a 100644
+--- a/meson.options
++++ b/meson.options
+@@ -1 +1,2 @@
+ option('tracy_enable', type: 'boolean', value: false, description: 'Enable profiling')
++option('build_tool', type: 'boolean', value: false, description: 'Build etcpak executable')
