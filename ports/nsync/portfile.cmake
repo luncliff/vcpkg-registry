@@ -5,12 +5,11 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/nsync
-    REF 1.26.0
-    SHA512 8aa49997f100f161f0f32e99c9004ee845d7b16c1391e7eb62eea0897e2f91b7f9e5181055fdca637518751b6b26e16a1cd53e45adceda145285752c4b74f3bf
+    REF "${VERSION}"
+    SHA512 2706501a45396172b5b39716ba29ea3ef3d8f5fdd9b0e0b22e6217d93ed64eb3cce4e5610818867ae43ce5fc677581932e67507425299e8b6a8353369eb79ecf
     HEAD_REF master
     PATCHES
-        fix-install.patch
-        export-targets.patch
+        fix-cmake.patch
 )
 
 vcpkg_cmake_configure(
@@ -19,9 +18,9 @@ vcpkg_cmake_configure(
         -DNSYNC_ENABLE_TESTS=OFF
 )
 vcpkg_cmake_install()
-vcpkg_copy_pdbs()
-
-vcpkg_cmake_config_fixup(PACKAGE_NAME nsync CONFIG_PATH share/nsync)
+vcpkg_cmake_config_fixup(PACKAGE_NAME nsync CONFIG_PATH lib/cmake/nsync DO_NOT_DELETE_PARENT_CONFIG_PATH)
+vcpkg_cmake_config_fixup(PACKAGE_NAME nsync_cpp CONFIG_PATH lib/cmake/nsync_cpp)
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
+
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

@@ -94,14 +94,22 @@ if (NOT WIN32)
     google_nsync
     URL ${DEP_URL_google_nsync}
     URL_HASH SHA1=${DEP_SHA1_google_nsync}
-    FIND_PACKAGE_ARGS NAMES nsync unofficial-nsync
+    FIND_PACKAGE_ARGS NAMES nsync_cpp nsync unofficial-nsync CONFIG
   )
   #nsync tests failed on Mac Build
   set(NSYNC_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
   onnxruntime_fetchcontent_makeavailable(google_nsync)
 
-  if (google_nsync_SOURCE_DIR)
+  find_package(nsync_cpp CONFIG)
+  if(nsync_cpp_FOUND)
+    if(NOT TARGET nsync::nsync_cpp)
+      message(STATUS "Aliasing nsync_cpp to nsync::nsync_cpp")
+      add_library(nsync::nsync_cpp ALIAS nsync_cpp)
+    endif()
+  endif()
+  if (google_nsync_SOURCE_DIR AND NOT TARGET nsync::nsync_cpp)
     add_library(nsync::nsync_cpp ALIAS nsync_cpp)
+    message(STATUS "Aliasing nsync_cpp to nsync::nsync_cpp")
     target_include_directories(nsync_cpp PUBLIC ${google_nsync_SOURCE_DIR}/public)
   endif()
   if(TARGET unofficial::nsync::nsync_cpp AND NOT TARGET nsync::nsync_cpp)
