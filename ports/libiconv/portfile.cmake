@@ -1,8 +1,5 @@
 # copied from microsoft/vcpkg 2024-01-30
 set(VCPKG_POLICY_ALLOW_RESTRICTED_HEADERS enabled)
-if(VCPKG_TARGET_IS_WINDOWS)
-    # vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
-endif()
 
 vcpkg_download_distfile(ARCHIVE
     URLS "https://ftp.gnu.org/gnu/libiconv/libiconv-${VERSION}.tar.gz"
@@ -36,8 +33,8 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 
 vcpkg_copy_pdbs()
-vcpkg_copy_tool_dependencies("${CURRENT_PACKAGES_DIR}/tools/${PORT}/bin")
-vcpkg_copy_tool_dependencies("${CURRENT_PACKAGES_DIR}/tools/${PORT}/debug/bin")
+# vcpkg_copy_tool_dependencies("${CURRENT_PACKAGES_DIR}/tools/${PORT}/bin")
+# vcpkg_copy_tool_dependencies("${CURRENT_PACKAGES_DIR}/tools/${PORT}/debug/bin")
 
 # file(COPY "${CMAKE_CURRENT_LIST_DIR}/vcpkg-cmake-wrapper.cmake" DESTINATION "${CURRENT_PACKAGES_DIR}/share/iconv")
 
@@ -46,4 +43,8 @@ file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/share"
 )
 
+file(INSTALL "${SOURCE_PATH}/README" "${SOURCE_PATH}/AUTHORS"
+             "${SOURCE_PATH}/NOTES" "${SOURCE_PATH}/THANKS"
+     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
+)
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING.LIB")
