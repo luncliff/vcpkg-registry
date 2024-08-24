@@ -136,13 +136,34 @@ vcpkg_cmake_configure(
 if("cuda" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_providers_cuda LOGFILE_BASE build-cuda)
 endif()
+if("tensorrt" IN_LIST FEATURES)
+    vcpkg_cmake_build(TARGET onnxruntime_providers_tensorrt LOGFILE_BASE build-tensorrt)
+endif()
 if("training" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET tensorboard LOGFILE_BASE build-tensorboard)
 endif()
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxruntime)
-vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
+
+# cmake function which relocates the onnxruntime_providers_* library before vcpkg_copy_pdbs()
+function(relocate_ort_providers PROVIDER_NAME)
+    if(VCPKG_TARGET_IS_WINDOWS AND (VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic"))
+        # the target is expected to be used without the .lib files
+        file(RENAME "${CURRENT_PACKAGES_DIR}/debug/lib/${PROVIDER_NAME}.dll"
+                    "${CURRENT_PACKAGES_DIR}/debug/bin/${PROVIDER_NAME}.dll")
+        file(RENAME "${CURRENT_PACKAGES_DIR}/lib/${PROVIDER_NAME}.dll"
+                    "${CURRENT_PACKAGES_DIR}/bin/${PROVIDER_NAME}.dll")
+    endif()
+endfunction()
+
+if("cuda" IN_LIST FEATURES)
+    relocate_ort_providers(onnxruntime_providers_cuda)
+endif()
+if("tensorrt" IN_LIST FEATURES)
+    relocate_ort_providers(onnxruntime_providers_tensorrt)
+endif()
+vcpkg_copy_pdbs()
 
 if("test" IN_LIST FEATURES)
     vcpkg_copy_tools(TOOL_NAMES onnx_test_runner AUTO_CLEAN)
