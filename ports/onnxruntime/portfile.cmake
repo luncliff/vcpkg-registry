@@ -10,6 +10,7 @@ vcpkg_from_github(
         fix-cmake.patch
         fix-cmake-cuda.patch
         fix-cmake-training.patch
+        fix-cmake-tensorrt.patch
         fix-sources.patch
         fix-clang-cl-simd-compile.patch
 )
@@ -91,6 +92,19 @@ if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
 elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
 endif()
+
+if("tensorrt" IN_LIST FEATURES)
+    if(DEFINED TENSORRT_ROOT)
+        message(STATUS "Using TensorRT: ${TENSORRT_ROOT}")
+        list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_ROOT}")
+    endif()
+endif()
+# if(DEFINED onnxruntime_TENSORRT_HOME)
+#   set(TENSORRT_ROOT ${onnxruntime_TENSORRT_HOME})
+# else()
+#   find_package(CUDAToolkit REQUIRED)
+#   get_filename_component(TENSORRT_ROOT "${CUDAToolkit_LIBRARY_ROOT}" ABSOLUTE)
+# endif()
 
 # see tools/ci_build/build.py
 vcpkg_cmake_configure(
