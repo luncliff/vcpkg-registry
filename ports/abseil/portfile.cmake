@@ -1,9 +1,8 @@
-# https://github.com/abseil/abseil-cpp/releases/tag/20240722.rc1
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO abseil/abseil-cpp
     REF "${VERSION}"
-    SHA512 282bcef51aeeee3257f917e7ac5ffebc9e2d2c182072c420cf7e363fc4f3228b7243433e9815f99bb9e8c224b1916183717a552f65f0ad14585733bda23067dd
+    SHA512 bd2cca8f007f2eee66f51c95a979371622b850ceb2ce3608d00ba826f7c494a1da0fba3c1427728f2c173fe50d59b701da35c2c9fdad2752a5a49746b1c8ef31
     HEAD_REF master
 )
 
