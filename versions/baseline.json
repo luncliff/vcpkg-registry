@@ -101,7 +101,7 @@
       "port-version": 0
     },
     "nsync": {
-      "baseline": "1.28.1",
+      "baseline": "1.29.2",
       "port-version": 0
     },
     "nvidia-cnmem": {
