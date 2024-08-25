@@ -10,6 +10,7 @@ vcpkg_from_github(
         fix-cmake.patch
         fix-cmake-cuda.patch
         fix-cmake-training.patch
+        fix-cmake-tensorrt.patch
         fix-sources.patch
         fix-clang-cl-simd-compile.patch
 )
@@ -92,6 +93,13 @@ elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
 endif()
 
+if("tensorrt" IN_LIST FEATURES)
+    if(DEFINED TENSORRT_ROOT)
+        message(STATUS "Using TensorRT: ${TENSORRT_ROOT}")
+        list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_ROOT}")
+    endif()
+endif()
+
 # see tools/ci_build/build.py
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
@@ -115,6 +123,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
         -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
         -Donnxruntime_NVCC_THREADS=1 # parallel compilation
+        "-DCMAKE_CUDA_FLAGS=-Xcudafe --diag_suppress=2803" # too much warnings about attribute
         -Donnxruntime_DISABLE_RTTI=OFF
         -Donnxruntime_DISABLE_ABSEIL=OFF
         -Donnxruntime_USE_NEURAL_SPEED=OFF
@@ -132,17 +141,45 @@ vcpkg_cmake_configure(
         onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         onnxruntime_USE_CUSTOM_DIRECTML
         onnxruntime_NVCC_THREADS
+        CMAKE_CUDA_FLAGS
 )
 if("cuda" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_providers_cuda LOGFILE_BASE build-cuda)
+endif()
+if("tensorrt" IN_LIST FEATURES)
+    vcpkg_cmake_build(TARGET onnxruntime_providers_tensorrt LOGFILE_BASE build-tensorrt)
+endif()
+if("directml" IN_LIST FEATURES)
+    vcpkg_cmake_build(TARGET onnxruntime_providers_dml LOGFILE_BASE build-directml)
 endif()
 if("training" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET tensorboard LOGFILE_BASE build-tensorboard)
 endif()
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxruntime)
-vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
+
+# cmake function which relocates the onnxruntime_providers_* library before vcpkg_copy_pdbs()
+function(relocate_ort_providers PROVIDER_NAME)
+    if(VCPKG_TARGET_IS_WINDOWS AND (VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic"))
+        # the target is expected to be used without the .lib files
+        file(RENAME "${CURRENT_PACKAGES_DIR}/debug/lib/${PROVIDER_NAME}.dll"
+                    "${CURRENT_PACKAGES_DIR}/debug/bin/${PROVIDER_NAME}.dll")
+        file(RENAME "${CURRENT_PACKAGES_DIR}/lib/${PROVIDER_NAME}.dll"
+                    "${CURRENT_PACKAGES_DIR}/bin/${PROVIDER_NAME}.dll")
+    endif()
+endfunction()
+
+if("cuda" IN_LIST FEATURES)
+    relocate_ort_providers(onnxruntime_providers_cuda)
+endif()
+if("tensorrt" IN_LIST FEATURES)
+    relocate_ort_providers(onnxruntime_providers_tensorrt)
+endif()
+if("directml" IN_LIST FEATURES)
+    relocate_ort_providers(onnxruntime_providers_dml)
+endif()
+vcpkg_copy_pdbs()
 
 if("test" IN_LIST FEATURES)
     vcpkg_copy_tools(TOOL_NAMES onnx_test_runner AUTO_CLEAN)

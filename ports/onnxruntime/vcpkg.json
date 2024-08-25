@@ -1,7 +1,7 @@
 {
   "name": "onnxruntime",
   "version-semver": "1.18.1",
-  "port-version": 1,
+  "port-version": 2,
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://onnxruntime.ai/",
   "license": "MIT",
@@ -73,16 +73,51 @@
   ],
   "features": {
     "cuda": {
-      "description": "Build ONNXRuntime unit tests",
+      "description": "Build with CUDA support",
       "dependencies": [
         "cuda",
         "cudnn",
         "nvidia-cutlass"
       ]
     },
+    "directml": {
+      "description": "Build with DirectML support",
+      "supports": "windows",
+      "dependencies": [
+        "directml",
+        "directx-headers"
+      ]
+    },
     "framework": {
       "description": "Build a macOS/iOS framework, Objective-C library",
       "supports": "osx | ios"
+    },
+    "openvino": {
+      "description": "Build with OpenVINO support",
+      "supports": "!(osx | ios | android | emscripten)",
+      "dependencies": [
+        {
+          "name": "openvino",
+          "default-features": false,
+          "features": [
+            "cpu",
+            "gpu",
+            "onnx"
+          ]
+        }
+      ]
+    },
+    "tensorrt": {
+      "description": "Build with TensorRT support",
+      "dependencies": [
+        {
+          "name": "onnxruntime",
+          "default-features": false,
+          "features": [
+            "cuda"
+          ]
+        }
+      ]
     },
     "test": {
       "description": "Build ONNXRuntime unit tests",
