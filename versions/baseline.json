@@ -33,7 +33,7 @@
       "port-version": 1
     },
     "directml": {
-      "baseline": "1.13.1",
+      "baseline": "1.15.2",
       "port-version": 0
     },
     "dlpack": {
