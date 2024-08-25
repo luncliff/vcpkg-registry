@@ -60,7 +60,6 @@
         {
           "name": "onnxruntime",
           "features": [
-            "directml",
             "test",
             "training"
           ],
