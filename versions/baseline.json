@@ -1,7 +1,7 @@
 {
   "default": {
     "abseil": {
-      "baseline": "20240722.rc1",
+      "baseline": "20240722.0",
       "port-version": 0
     },
     "apple-crypto": {
@@ -33,7 +33,7 @@
       "port-version": 1
     },
     "directml": {
-      "baseline": "1.13.1",
+      "baseline": "1.15.2",
       "port-version": 0
     },
     "dlpack": {
@@ -101,7 +101,7 @@
       "port-version": 0
     },
     "nsync": {
-      "baseline": "1.28.1",
+      "baseline": "1.29.2",
       "port-version": 0
     },
     "nvidia-cnmem": {
