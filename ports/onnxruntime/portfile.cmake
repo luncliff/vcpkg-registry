@@ -99,12 +99,6 @@ if("tensorrt" IN_LIST FEATURES)
         list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_ROOT}")
     endif()
 endif()
-# if(DEFINED onnxruntime_TENSORRT_HOME)
-#   set(TENSORRT_ROOT ${onnxruntime_TENSORRT_HOME})
-# else()
-#   find_package(CUDAToolkit REQUIRED)
-#   get_filename_component(TENSORRT_ROOT "${CUDAToolkit_LIBRARY_ROOT}" ABSOLUTE)
-# endif()
 
 # see tools/ci_build/build.py
 vcpkg_cmake_configure(
@@ -129,6 +123,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
         -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
         -Donnxruntime_NVCC_THREADS=1 # parallel compilation
+        "-DCMAKE_CUDA_FLAGS=-Xcudafe --diag_suppress=2803" # too much warnings about attribute
         -Donnxruntime_DISABLE_RTTI=OFF
         -Donnxruntime_DISABLE_ABSEIL=OFF
         -Donnxruntime_USE_NEURAL_SPEED=OFF
@@ -146,12 +141,16 @@ vcpkg_cmake_configure(
         onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         onnxruntime_USE_CUSTOM_DIRECTML
         onnxruntime_NVCC_THREADS
+        CMAKE_CUDA_FLAGS
 )
 if("cuda" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_providers_cuda LOGFILE_BASE build-cuda)
 endif()
 if("tensorrt" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_providers_tensorrt LOGFILE_BASE build-tensorrt)
+endif()
+if("directml" IN_LIST FEATURES)
+    vcpkg_cmake_build(TARGET onnxruntime_providers_dml LOGFILE_BASE build-directml)
 endif()
 if("training" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET tensorboard LOGFILE_BASE build-tensorboard)
@@ -176,6 +175,9 @@ if("cuda" IN_LIST FEATURES)
 endif()
 if("tensorrt" IN_LIST FEATURES)
     relocate_ort_providers(onnxruntime_providers_tensorrt)
+endif()
+if("directml" IN_LIST FEATURES)
+    relocate_ort_providers(onnxruntime_providers_dml)
 endif()
 vcpkg_copy_pdbs()
 

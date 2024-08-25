@@ -60,7 +60,7 @@
         {
           "name": "onnxruntime",
           "features": [
-            "openvino",
+            "directml",
             "test",
             "training"
           ],

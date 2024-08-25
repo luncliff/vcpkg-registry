@@ -80,6 +80,14 @@
         "nvidia-cutlass"
       ]
     },
+    "directml": {
+      "description": "Build with DirectML support",
+      "supports": "windows",
+      "dependencies": [
+        "directml",
+        "directx-headers"
+      ]
+    },
     "framework": {
       "description": "Build a macOS/iOS framework, Objective-C library",
       "supports": "osx | ios"
