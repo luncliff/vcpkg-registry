@@ -28,13 +28,13 @@ jobs:
       - checkout
       - aws-cli/setup # check project variables
       - run:
-          name: "Setup: microsoft/vcpkg(2024.07.12)"
+          name: "Setup: microsoft/vcpkg(2024.08.23)"
           command: |
             sudo apt-get update -y -q
             sudo apt-get install -y -q curl zip unzip tar
             mkdir -p $VCPKG_DOWNLOADS
             mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2024.07.12 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2024.08.23 --depth=1 https://github.com/microsoft/vcpkg
             pushd vcpkg
               ./bootstrap-vcpkg.sh
               ./vcpkg --version
@@ -42,9 +42,9 @@ jobs:
             pwd
       - restore_cache:
           keys:
-            - v2432-linux-{{ checksum ".circleci/config.yml" }}
-            - v2432-linux-{{ .Branch }}
-            - v2432-linux-main
+            - v2435-linux-{{ checksum ".circleci/config.yml" }}
+            - v2435-linux-{{ .Branch }}
+            - v2435-linux-main
       - run:
           name: "Install APT packages"
           command: |
@@ -66,11 +66,11 @@ jobs:
           working_directory: vcpkg
           no_output_timeout: 1h
       - save_cache:
-          key: v2432-linux-{{ .Branch }}
+          key: v2435-linux-{{ .Branch }}
           paths:
             - /tmp/vcpkg-caches
       - save_cache:
-          key: v2432-linux-{{ checksum ".circleci/config.yml" }}
+          key: v2435-linux-{{ checksum ".circleci/config.yml" }}
           paths:
             - /tmp/vcpkg-caches
       - store_artifacts:
@@ -88,13 +88,13 @@ jobs:
       - aws-cli/setup # check project variables
       - android/accept-licenses
       - run:
-          name: "Setup: microsoft/vcpkg(2024.07.12)"
+          name: "Setup: microsoft/vcpkg(2024.08.23)"
           command: |
             sudo apt-get update -y -q
             sudo apt-get install -y -q curl zip unzip tar
             mkdir -p $VCPKG_DOWNLOADS
             mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2024.07.12 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2024.08.23 --depth=1 https://github.com/microsoft/vcpkg
             pushd vcpkg
               ./bootstrap-vcpkg.sh
               ./vcpkg --version

@@ -25,7 +25,7 @@ schedules:
 variables:
   # check https://github.com/microsoft/vcpkg/releases
   - name: vcpkg.commit
-    value: "1de2026f28ead93ff1773e6e680387643e914ea1" # 2024.07.12
+    value: "3508985146f1b1d248c67ead13f8f54be5b4f5da" # 2024.08.23
 
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
@@ -63,9 +63,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2432-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"v2435-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2432-bin-uwp" | "$(vcpkg.default.triplet)"
+                "v2435-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: arm64-windows"
@@ -124,9 +124,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2432-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"v2435-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
-                "v2432-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
+                "v2435-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(cxx)"
@@ -168,9 +168,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2432-bin-android" | "$(vcpkg.default.triplet)"'
+              key: '"v2435-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2432-bin-android" | "$(vcpkg.default.triplet)"
+                "v2435-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(vcpkg.default.triplet)"
@@ -224,9 +224,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2432-bin-osx" | "$(vcpkg.default.triplet)"'
+              key: '"v2435-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2432-bin-osx" | "$(vcpkg.default.triplet)"
+                "v2435-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: osx"
@@ -271,9 +271,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2432-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"v2435-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2432-bin-ios" | "$(vcpkg.default.triplet)"
+                "v2435-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(vcpkg.default.triplet)"
