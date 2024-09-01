@@ -113,7 +113,7 @@
       "port-version": 1
     },
     "nvidia-nvbench": {
-      "baseline": "2024-01-13",
+      "baseline": "2024-06-01",
       "port-version": 0
     },
     "nvidia-tools-extension-sdk": {
