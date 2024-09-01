@@ -6,7 +6,7 @@ set(ENV{NUGET_PACKAGES} "${BUILDTREES_DIR}/nuget")
 # https://devblogs.microsoft.com/pix/pix-2403/
 # see https://www.nuget.org/packages/WinPixEventRuntime/
 set(PACKAGE_NAME    "WinPixEventRuntime")
-set(PACKAGE_VERSION "1.0.231030001")
+set(PACKAGE_VERSION "1.0.240308001")
 
 file(REMOVE_RECURSE "${CURRENT_BUILDTREES_DIR}/${PACKAGE_NAME}")
 vcpkg_execute_required_process(
