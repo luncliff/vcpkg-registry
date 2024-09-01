@@ -5,8 +5,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/D3D12TranslationLayer
-    REF 1666438638012549dbaf959f921bca2aeff5c550
-    SHA512 27e6ea47fab94df198b862b7dd6e97bc120ca873c4f18e639de6f69c0e4fecd4f46f9b742ec7aac106182b9c05903e71ae641cf8f83202f4cebf02ac2200b808
+    REF 315ca769aeed49bb84f72a8d5551951ba092ccd8
+    SHA512 960c1eaa6f497555c4655e03fc930d85dcf32557a412e4921d10018232a4cff660a3943afac18e6d4d0509956a06ff55f8bfeadc496e4219a3f1b70f983a7b57
     PATCHES
         fix-vcpkg.patch
     HEAD_REF master
