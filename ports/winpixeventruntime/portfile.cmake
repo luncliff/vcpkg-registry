@@ -1,4 +1,6 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY ONLY_DYNAMIC_CRT)
+set(VCPKG_POLICY_MISMATCHED_NUMBER_OF_BINARIES enabled)
+
 vcpkg_find_acquire_program(NUGET)
 
 set(ENV{NUGET_PACKAGES} "${BUILDTREES_DIR}/nuget")
