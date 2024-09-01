@@ -1,6 +1,6 @@
 {
   "name": "libdispatch",
-  "version-string": "swift-5.10",
+  "version": "5.10.1",
   "description": "The libdispatch Project, (a.k.a. Grand Central Dispatch), for concurrency on multicore hardware",
   "homepage": "https://github.com/apple/swift-corelibs-libdispatch",
   "license": "Apache-2.0",
