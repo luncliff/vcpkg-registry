@@ -1,0 +1,35 @@
+name: "Deploy"
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  prerelease:
+    name: "Prerelease"
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4.1.7
+
+      - name: "Run gh(auth)"
+        run: |
+          gh auth setup-git
+          gh auth status
+
+      - name: "Run make-configuration.ps1"
+        run: |
+          $text = scripts/make-configuration.ps1 -Dump
+          Write-Output $text | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+        shell: pwsh
+
+      - name: "Run gh(release)"
+        run: |
+          gh release create ${{ github.ref_name }} \
+            -t ${{ github.ref_name }} \
+            --discussion-category "General"
+            --generate-notes --prerelease
+          gh release upload ${{ github.ref_name }} \
+            vcpkg-configuration.json
