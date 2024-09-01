@@ -134,7 +134,7 @@
     },
     "onnx": {
       "baseline": "1.16.2",
-      "port-version": 0
+      "port-version": 1
     },
     "onnxruntime": {
       "baseline": "1.18.1",
