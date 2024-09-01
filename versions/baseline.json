@@ -77,7 +77,7 @@
       "port-version": 0
     },
     "libdispatch": {
-      "baseline": "swift-5.10",
+      "baseline": "5.10.1",
       "port-version": 0
     },
     "liblzma": {
