@@ -7,6 +7,7 @@ vcpkg_from_github(
     SHA512 7a9a8493b9c007429629484156487395044506f34e72253640e626351cb623b390750b36af78a290786131e3dcac35f4eb269e8693b594b7ce7cb105bcf9318d
     PATCHES
         fix-cmake.patch
+        fix-cmake-protobuf.patch
         support-test.patch
 )
 
@@ -43,9 +44,10 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
-        -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON3}
-        -DProtobuf_PROTOC_EXECUTABLE=${PROTOC}
-        -DONNX_CUSTOM_PROTOC_EXECUTABLE=${PROTOC}
+        "-DPYTHON_EXECUTABLE:FILEPATH=${PYTHON3}"
+        "-D_PROTOBUF_INSTALL_PREFIX=${CURRENT_INSTALLED_DIR}"
+        "-DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
+        "-DONNX_CUSTOM_PROTOC_EXECUTABLE=${PROTOC}"
         -DONNX_VERIFY_PROTO3=ON # --protoc_path for gen_proto.py
         -DONNX_ML=ON
         -DONNX_GEN_PB_TYPE_STUBS=ON
@@ -54,6 +56,7 @@ vcpkg_cmake_configure(
     MAYBE_UNUSED_VARIABLES
         ONNX_USE_MSVC_STATIC_RUNTIME
         ONNX_CUSTOM_PROTOC_EXECUTABLE
+        PROTOBUF_SEARCH_DIRS
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/ONNX PACKAGE_NAME ONNX)

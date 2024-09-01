@@ -1,0 +1,34 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a815ac1..bdc787f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -151,10 +151,10 @@ else()
+   # to resolve PREFIX.
+   if(Protobuf_PROTOC_EXECUTABLE)
+     set(ONNX_PROTOC_EXECUTABLE ${Protobuf_PROTOC_EXECUTABLE})
+-    get_filename_component(_PROTOBUF_INSTALL_PREFIX
+-                           ${Protobuf_PROTOC_EXECUTABLE} DIRECTORY)
+-    get_filename_component(_PROTOBUF_INSTALL_PREFIX
+-                           ${_PROTOBUF_INSTALL_PREFIX}/.. REALPATH)
++    if(NOT DEFINED _PROTOBUF_INSTALL_PREFIX)
++      get_filename_component(_PROTOBUF_INSTALL_PREFIX ${Protobuf_PROTOC_EXECUTABLE} DIRECTORY)
++      get_filename_component(_PROTOBUF_INSTALL_PREFIX ${_PROTOBUF_INSTALL_PREFIX}/.. REALPATH)
++    endif()
+     find_library(Protobuf_PROTOC_LIBRARY
+                  NAMES protoc
+                  PATHS ${_PROTOBUF_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+@@ -173,12 +173,12 @@ else()
+     find_path(Protobuf_INCLUDE_DIR google/protobuf/service.h
+               PATHS ${_PROTOBUF_INSTALL_PREFIX}/include
+               NO_DEFAULT_PATH)
+-    find_package(Protobuf)
++    find_package(Protobuf REQUIRED)
+     if (Protobuf_FOUND)
+       set(PROTOBUF_DIR "${_PROTOBUF_INSTALL_PREFIX}")
+       set(PROTOBUF_INCLUDE_DIR "${_PROTOBUF_INSTALL_PREFIX}/include")
+       set(Build_Protobuf OFF)
+-      if ("${Protobuf_VERSION}" VERSION_GREATER_EQUAL "4.22.0")
++      if (FALSE)
+         # There are extra dependencies for protobuf.
+         find_package(absl REQUIRED)
+         find_package(utf8_range REQUIRED)
