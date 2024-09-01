@@ -7,6 +7,7 @@ vcpkg_from_github(
     SHA512 7a9a8493b9c007429629484156487395044506f34e72253640e626351cb623b390750b36af78a290786131e3dcac35f4eb269e8693b594b7ce7cb105bcf9318d
     PATCHES
         fix-cmake.patch
+        fix-cmake-protobuf.patch
         support-test.patch
 )
 
