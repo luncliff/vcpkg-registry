@@ -29,8 +29,8 @@
       "port-version": 0
     },
     "d3d12-transition-layer": {
-      "baseline": "2024-03-18",
-      "port-version": 1
+      "baseline": "2024-07-25",
+      "port-version": 0
     },
     "directml": {
       "baseline": "1.15.2",
