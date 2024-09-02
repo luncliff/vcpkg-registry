@@ -13,7 +13,7 @@
       "port-version": 0
     },
     "asmjit": {
-      "baseline": "2024-03-25",
+      "baseline": "2024-08-26",
       "port-version": 0
     },
     "basis-universal": {
@@ -25,12 +25,12 @@
       "port-version": 0
     },
     "cpuinfo": {
-      "baseline": "2024-04-18",
+      "baseline": "2024-08-31",
       "port-version": 0
     },
     "d3d12-transition-layer": {
-      "baseline": "2024-03-18",
-      "port-version": 1
+      "baseline": "2024-07-25",
+      "port-version": 0
     },
     "directml": {
       "baseline": "1.15.2",
@@ -61,7 +61,7 @@
       "port-version": 3
     },
     "fp16": {
-      "baseline": "2024-04-11",
+      "baseline": "2024-06-20",
       "port-version": 0
     },
     "gemmlowp": {
@@ -193,7 +193,7 @@
       "port-version": 0
     },
     "winpixeventruntime": {
-      "baseline": "1.0.231030001",
+      "baseline": "1.0.240308001",
       "port-version": 0
     },
     "xatlas": {

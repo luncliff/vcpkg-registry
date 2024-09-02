@@ -1,8 +1,8 @@
 {
   "name": "winpixeventruntime",
-  "version-semver": "1.0.231030001",
-  "description": "llows applications to be instrumented with marker events, for use with Microsoft PIX.",
+  "version-semver": "1.0.240308001",
+  "description": "Allows applications to be instrumented with marker events, for use with Microsoft PIX",
   "homepage": "https://devblogs.microsoft.com/pix/winpixeventruntime/",
-  "license": null,
+  "license": "MIT",
   "supports": "windows & (x64 | arm64)"
 }

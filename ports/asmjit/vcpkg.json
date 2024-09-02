@@ -1,6 +1,6 @@
 {
   "name": "asmjit",
-  "version-date": "2024-03-25",
+  "version-date": "2024-08-26",
   "description": "Complete x86/x64 JIT and Remote Assembler for C++",
   "homepage": "https://github.com/asmjit/asmjit",
   "dependencies": [
