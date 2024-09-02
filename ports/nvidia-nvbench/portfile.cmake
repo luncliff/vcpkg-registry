@@ -15,13 +15,14 @@ vcpkg_from_github(
     REPO NVIDIA/nvbench
     REF a171514056e5d6a7f52a035dd6c812fa301d4f4f
     SHA512 5a5fb4886495fa0682c7331ac12610b0c09caa95a1f31b8a2c5af69ebaa1965a841b6f23c1226c29c9020e7db6988926db142d36792d32b7cce04edae2b0cc08
-    # PATCHES
-    #     fix-cmake.patch
+    PATCHES
+        fix-cmake.patch
     HEAD_REF main
 )
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
+    DISABLE_PARALLEL_CONFIGURE
     OPTIONS
         "-Drapids-cmake-dir:PATH=${RAPIDS_SOURCE_PATH}/rapids-cmake"
         "-DCMAKE_MODULE_PATH:PATH=${RAPIDS_SOURCE_PATH}/rapids-cmake"
