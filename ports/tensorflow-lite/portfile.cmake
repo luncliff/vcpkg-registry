@@ -17,16 +17,15 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.16.2
-    SHA512 548eb959597bc76b11a94151d0201ee24166744b74317f59bd70611f3e5490863c6f444b38f7d141921b7725cdc62633bf8eacf38b6b71ff50a6431c396fe2d4
+    REF v2.17.0
+    SHA512 45061f075971cf2bc219a34b1cda2ee9851ba586e94046838e6e1fd26adcfb399d90e71e89a0f709d5282ff3be7cc3a82b81d62dce53db5010640ea41487a469
     PATCHES
         tensorflow-pr-61381.patch
         tensorflow-pr-62037.patch
-        fix-cmake-c-api.patch
         fix-cmake-vcpkg.patch
-        fix-sources.patch
-        fix-source-abseil.patch
-        fix-source-apple-opencl.patch
+        fix-cmake-c-api.patch
+        # fix-sources.patch
+        # fix-source-abseil.patch
 )
 
 file(REMOVE_RECURSE
@@ -73,9 +72,31 @@ vcpkg_execute_required_process(
     WORKING_DIRECTORY "${ACCELERATION_CONFIGURATION_PATH}"
 )
 
-set(SCHEMA_PATH "${TFLITE_SOURCE_DIR}/schema")
+set(SCHEMA_PATH "${TFLITE_SOURCE_DIR}/stablehlo/schema")
 vcpkg_execute_required_process(
     COMMAND ${FLATC} --cpp --gen-mutable --gen-object-api schema.fbs
+    LOGNAME codegen-flatc-stablehlo-schema
+    WORKING_DIRECTORY "${SCHEMA_PATH}"
+)
+
+set(SCHEMA_PATH "${TFLITE_SOURCE_DIR}/schema")
+vcpkg_download_distfile(TFLITE_SCHEMA_FBS_PATH
+    URLS "https://raw.githubusercontent.com/tensorflow/tensorflow/fcbcc19aa91748d2b506048cb450f95792f92254/tensorflow/lite/schema/schema.fbs?full_index=1"
+    FILENAME tensorflow-schema.fbs
+    SHA512 574f63957e01bd4ed4810d5218e80768a815b2713da689bb6907ef306546a9126cce77f75bcbd7222ed341fbee8bc11f83dc69d4b7dd7e184f640a2fc46634b8
+)
+file(COPY_FILE "${TFLITE_SCHEMA_FBS_PATH}" "${SCHEMA_PATH}/schema.fbs")
+vcpkg_execute_required_process(
+    COMMAND ${FLATC} --cpp --gen-mutable --gen-object-api
+        schema.fbs
+        conversion_metadata.fbs
+        schema_v0.fbs
+        schema_v1.fbs
+        schema_v2.fbs
+        schema_v3.fbs
+        schema_v3a.fbs
+        schema_v3b.fbs
+        schema_v3c.fbs
     LOGNAME codegen-flatc-schema
     WORKING_DIRECTORY "${SCHEMA_PATH}"
 )
