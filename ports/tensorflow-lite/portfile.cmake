@@ -79,12 +79,14 @@ vcpkg_execute_required_process(
     WORKING_DIRECTORY "${SCHEMA_PATH}"
 )
 
-set(SCHEMA_PATH "${TFLITE_SOURCE_DIR}/schema")
+# download schema.fbs from the previous commit
+# see https://github.com/tensorflow/tensorflow/tree/v2.17.0/tensorflow/lite/schema
 vcpkg_download_distfile(TFLITE_SCHEMA_FBS_PATH
     URLS "https://raw.githubusercontent.com/tensorflow/tensorflow/fcbcc19aa91748d2b506048cb450f95792f92254/tensorflow/lite/schema/schema.fbs?full_index=1"
     FILENAME tensorflow-schema.fbs
     SHA512 574f63957e01bd4ed4810d5218e80768a815b2713da689bb6907ef306546a9126cce77f75bcbd7222ed341fbee8bc11f83dc69d4b7dd7e184f640a2fc46634b8
 )
+set(SCHEMA_PATH "${TFLITE_SOURCE_DIR}/schema")
 file(COPY_FILE "${TFLITE_SCHEMA_FBS_PATH}" "${SCHEMA_PATH}/schema.fbs")
 vcpkg_execute_required_process(
     COMMAND ${FLATC} --cpp --gen-mutable --gen-object-api
