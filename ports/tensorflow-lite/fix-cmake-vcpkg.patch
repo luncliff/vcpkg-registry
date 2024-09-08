@@ -99,14 +99,14 @@ index b79818f3..b646abf5 100644
 -      PRIVATE ${TENSORFLOW_SOURCE_DIR}
 -    )
 +    target_include_directories(metal_delegate PRIVATE ${TENSORFLOW_SOURCE_DIR})
-+    target_link_libraries(metal_delegate PUBLIC absl::status flatbuffers::flatbuffers "-framework Foundation" "-framework Metal")
++    target_link_libraries(metal_delegate PUBLIC absl::status absl::strings flatbuffers::flatbuffers "-framework Foundation" "-framework Metal")
 +    # some sources need Objective-C++ types
 +    set_source_files_properties(${TFLITE_DELEGATES_METAL_SRCS} PROPERTIES LANGUAGE OBJCXX)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES metal_delegate)
      #
      # generate flatbuffers header for inference_context
      #
-@@ -438,40 +451,39 @@ if(TFLITE_ENABLE_GPU)
+@@ -438,40 +451,36 @@ if(TFLITE_ENABLE_GPU)
          metal_device
          metal_spatial_tensor
      )
@@ -141,7 +141,7 @@ index b79818f3..b646abf5 100644
 +        add_library(${lib_name} STATIC ${METAL_DELEGATE_PATH}${lib_name}.cc)
 +        target_include_directories(${lib_name} PRIVATE ${TENSORFLOW_SOURCE_DIR})
 +        set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE OBJCXX) # requires CMP0119
-+        target_link_libraries(${lib_name} PUBLIC absl::status flatbuffers::flatbuffers)
++        target_link_libraries(${lib_name} PUBLIC absl::status absl::strings flatbuffers::flatbuffers)
 +    endforeach()
 +
 +    list(APPEND MM_SRCS
@@ -150,11 +150,8 @@ index b79818f3..b646abf5 100644
 +    )
 +    foreach(lib_name ${MM_SRCS})
 +      add_library("${lib_name}" STATIC ${METAL_DELEGATE_PATH}${lib_name}.mm)
-+      target_include_directories("${lib_name}" PUBLIC
-+        target_include_directories(${lib_name} PRIVATE ${TENSORFLOW_SOURCE_DIR})
-+        target_link_libraries(${lib_name} PUBLIC absl::status flatbuffers::flatbuffers)
-+      )
-+      target_link_libraries(${lib_name})
++      target_include_directories(${lib_name} PRIVATE ${TENSORFLOW_SOURCE_DIR})
++      target_link_libraries(${lib_name} PUBLIC absl::status absl::strings flatbuffers::flatbuffers)
 +    endforeach()
  endif()
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
