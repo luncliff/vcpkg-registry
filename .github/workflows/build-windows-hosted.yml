@@ -33,6 +33,15 @@ jobs:
         with:
           msbuild-architecture: x64
 
+      - uses: ConorMacBride/install-package@v1.1.0
+        with:
+          choco: awscli
+
+      - uses: myci-actions/export-env-var-powershell@1
+        with:
+          name: PATH
+          value: $env:PATH;C:\Program Files\Amazon\AWSCLIV2
+
       - name: "Enalbe LongPath"
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
@@ -99,6 +108,15 @@ jobs:
         with:
           msbuild-architecture: x64
 
+      - uses: ConorMacBride/install-package@v1.1.0
+        with:
+          choco: awscli
+
+      - uses: myci-actions/export-env-var-powershell@1
+        with:
+          name: PATH
+          value: $env:PATH;C:\Program Files\Amazon\AWSCLIV2
+
       - name: "Enalbe LongPath"
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
@@ -149,6 +167,15 @@ jobs:
       - uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: x64
+
+      - uses: ConorMacBride/install-package@v1.1.0
+        with:
+          choco: awscli
+
+      - uses: myci-actions/export-env-var-powershell@1
+        with:
+          name: PATH
+          value: $env:PATH;C:\Program Files\Amazon\AWSCLIV2
 
       - uses: humbletim/install-vulkan-sdk@v1.1.1 # install Vulkan sdk if env.VULKAN_SDK is empty
         if: env.VULKAN_SDK == ''
