@@ -29,3 +29,13 @@ index fcc3f41..610710f 100644
  
  install (TARGETS nsync EXPORT nsync
  	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT RuntimeLibraries
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 610710f..8fa318b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required (VERSION 2.8.12)
++cmake_minimum_required (VERSION 3.22)
+ 
+ # nsync provides portable synchronization primitives, such as mutexes and
+ # condition variables.
