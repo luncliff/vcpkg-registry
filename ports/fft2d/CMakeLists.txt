@@ -20,6 +20,7 @@
 # - Change default value of the cache variablaes 
 # - Add install of the build targets, header files
 #
+cmake_minimum_required(VERSION 3.22)
 project(fft2d C)
 
 set(FFT2D_SOURCE_DIR "${PROJECT_SOURCE_DIR}" CACHE PATH
