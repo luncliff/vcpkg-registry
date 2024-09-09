@@ -62,6 +62,8 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "x64-osx"
           VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
           VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - uses: lukka/run-vcpkg@v11.5
         name: "Run vcpkg(arm64-osx)"
@@ -76,3 +78,5 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "arm64-osx"
           VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
           VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
