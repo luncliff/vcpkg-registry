@@ -37,10 +37,10 @@ jobs:
         with:
           choco: awscli
 
-      - uses: myci-actions/export-env-var-powershell@1
-        with:
-          name: PATH
-          value: $env:PATH;C:\Program Files\Amazon\AWSCLIV2
+      - name: "Update environment variables"
+        run: |
+          Write-Output "PATH=$env:PATH;C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
 
       - name: "Enalbe LongPath"
         run: |
@@ -112,10 +112,10 @@ jobs:
         with:
           choco: awscli
 
-      - uses: myci-actions/export-env-var-powershell@1
-        with:
-          name: PATH
-          value: $env:PATH;C:\Program Files\Amazon\AWSCLIV2
+      - name: "Update environment variables"
+        run: |
+          Write-Output "PATH=$env:PATH;C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
 
       - name: "Enalbe LongPath"
         run: |
@@ -172,10 +172,10 @@ jobs:
         with:
           choco: awscli
 
-      - uses: myci-actions/export-env-var-powershell@1
-        with:
-          name: PATH
-          value: $env:PATH;C:\Program Files\Amazon\AWSCLIV2
+      - name: "Update environment variables"
+        run: |
+          Write-Output "PATH=$env:PATH;C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
 
       - uses: humbletim/install-vulkan-sdk@v1.1.1 # install Vulkan sdk if env.VULKAN_SDK is empty
         if: env.VULKAN_SDK == ''
