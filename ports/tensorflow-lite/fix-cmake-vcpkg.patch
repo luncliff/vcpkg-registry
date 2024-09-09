@@ -180,7 +180,7 @@ index b79818f3..b646abf5 100644
    )
 +  # tsl::mutex requires nsync_cpp
 +  find_package(nsync_cpp CONFIG REQUIRED)
-+  list(APPEND TFLITE_TARGET_DEPENDENCIES ${NSYNC_LIBRARY})
++  list(APPEND TFLITE_TARGET_DEPENDENCIES nsync_cpp)
 +
 +  # disable ml_dtypes/float8.h which requries libeigen3 master branch ...
 +  set_source_files_properties(${TFLITE_NNAPI_SRCS} PROPERTIES
@@ -196,14 +196,14 @@ index b79818f3..b646abf5 100644
 -  find_package(fp16_headers REQUIRED)
 -  find_package(XNNPACK REQUIRED)
 +  find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
-+  find_package(xnnpack CONFIG REQUIRED) # xnnpack
++  find_library(XNNPACK_LIBRARY NAMES xnnpack REQUIRED)
    populate_tflite_source_vars("delegates/xnnpack"
      TFLITE_DELEGATES_XNNPACK_SRCS
      FILTER ".*(_test|_tester)\\.(cc|h)"
    )
    list(APPEND TFLITE_TARGET_DEPENDENCIES
 -    XNNPACK
-+    xnnpack
++    ${XNNPACK_LIBRARY}
    )
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DXNNPACK_DELEGATE_ENABLE_QS8")

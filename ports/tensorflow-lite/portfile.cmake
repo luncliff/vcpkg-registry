@@ -24,8 +24,7 @@ vcpkg_from_github(
         tensorflow-pr-62037.patch
         fix-cmake-vcpkg.patch
         fix-cmake-c-api.patch
-        # fix-sources.patch
-        # fix-source-abseil.patch
+        fix-sources.patch
 )
 
 file(REMOVE_RECURSE
