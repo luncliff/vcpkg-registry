@@ -2,7 +2,7 @@
 version: 2.1
 
 orbs:
-  aws-cli: circleci/aws-cli@4.1.3 # https://circleci.com/developer/orbs/orb/circleci/aws-cli
+  aws-cli: circleci/aws-cli@5.1.0 # https://circleci.com/developer/orbs/orb/circleci/aws-cli
   android: circleci/android@2.5.0
 
 workflows:
@@ -58,6 +58,7 @@ jobs:
               --clean-buildtrees-after-build \
               --clean-packages-after-build \
               --overlay-ports "$(pwd)/../ports" \
+              --overlay-triplets "$(pwd)/../triplets" \
               $(cat "$(pwd)/../.circleci/port-linux.txt")
           environment:
             VCPKG_DEFAULT_TRIPLET: x64-linux
@@ -108,7 +109,7 @@ jobs:
               --clean-buildtrees-after-build \
               --clean-packages-after-build \
               --overlay-ports "$(pwd)/../ports" \
-              --overlay-ports "$(pwd)/../triplets" \
+              --overlay-triplets "$(pwd)/../triplets" \
               $(cat "$(pwd)/../test/azure-port-android.txt")
           working_directory: vcpkg
           environment:
