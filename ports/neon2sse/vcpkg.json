@@ -1,0 +1,17 @@
+{
+  "name": "neon2sse",
+  "version-date": "2024-09-08",
+  "description": "Open standard for machine learning interoperability",
+  "homepage": "https://github.com/intel/ARM_NEON_2_x86_SSE",
+  "license": "BSD-2-Clause",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
