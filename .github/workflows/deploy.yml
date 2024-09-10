@@ -22,7 +22,10 @@ jobs:
       - name: "Run make-configuration.ps1"
         run: |
           $text = scripts/make-configuration.ps1 -Dump
+          Write-Output "## Configuration" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          Write-Output "```json" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           Write-Output $text | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          Write-Output "```" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
         shell: pwsh
 
       - name: "Run gh(release)"
