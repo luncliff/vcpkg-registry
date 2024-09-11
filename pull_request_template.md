@@ -10,25 +10,7 @@
 
 ### Triplet Support
 
+If there is a change in the triplet support, please note it.
+
 * `x64-windows`
 * ...
-
-### Configuration
-
-"vcpkg-configuration.json" changes for the release.
-
-```json
-{
-    "registries": [
-        {
-            "kind": "git",
-            "repository": "https://github.com/luncliff/vcpkg-registry",
-            "packages": [
-                "...",
-                "..."
-            ],
-            "baseline": "..."
-        }
-    ]
-}
-```
