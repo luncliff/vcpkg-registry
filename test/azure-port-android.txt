@@ -5,3 +5,4 @@ abseil
 fft2d
 nsync
 ruy
+tensorflow-lite

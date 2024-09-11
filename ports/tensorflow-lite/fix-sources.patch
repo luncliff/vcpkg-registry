@@ -1,5 +1,17 @@
+diff --git a/tensorflow/lite/delegates/xnnpack/weight_cache.cc b/tensorflow/lite/delegates/xnnpack/weight_cache.cc
+index aa730738..3023167c 100644
+--- a/tensorflow/lite/delegates/xnnpack/weight_cache.cc
++++ b/tensorflow/lite/delegates/xnnpack/weight_cache.cc
+@@ -20,6 +20,7 @@ limitations under the License.
+ #if defined(_MSC_VER)
+ #include <io.h>
+ #define F_OK 0
++#pragma warning(disable:4996)
+ #else
+ #include <sys/mman.h>
+ #include <unistd.h>
 diff --git a/third_party/xla/third_party/tsl/tsl/platform/ml_dtypes.h b/third_party/xla/third_party/tsl/tsl/platform/ml_dtypes.h
-index c25efc2f..23a04428 100644
+index 916be8db..e2df0d5f 100644
 --- a/third_party/xla/third_party/tsl/tsl/platform/ml_dtypes.h
 +++ b/third_party/xla/third_party/tsl/tsl/platform/ml_dtypes.h
 @@ -16,8 +16,8 @@ limitations under the License.
@@ -7,22 +19,9 @@ index c25efc2f..23a04428 100644
  #define TENSORFLOW_TSL_PLATFORM_ML_DTYPES_H_
  
 -#include "ml_dtypes/include/float8.h"  // from @ml_dtypes
--#include "ml_dtypes/include/int4.h"  // from @ml_dtypes
+-#include "ml_dtypes/include/intn.h"  // from @ml_dtypes
 +#include "ml_dtypes/float8.h"  // from @ml_dtypes
-+#include "ml_dtypes/int4.h"  // from @ml_dtypes
++#include "ml_dtypes/intn.h"  // from @ml_dtypes
  
  namespace tsl {
- using float8_e4m3fn = ml_dtypes::float8_e4m3fn;
-diff --git a/third_party/xla/xla/types.h b/third_party/xla/xla/types.h
-index ef9dd11d..9cdc3965 100644
---- a/third_party/xla/xla/types.h
-+++ b/third_party/xla/xla/types.h
-@@ -23,7 +23,7 @@ limitations under the License.
- 
- #include "absl/strings/str_format.h"
- #include "Eigen/Core"  // from @eigen_archive            // IWYU pragma: export
--#include "ml_dtypes/include/int4.h"  // from @ml_dtypes  // IWYU pragma: export
-+#include "ml_dtypes/int4.h"  // from @ml_dtypes
- 
- namespace xla {
- 
+ using float8_e4m3fn = ::ml_dtypes::float8_e4m3fn;
