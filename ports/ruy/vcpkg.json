@@ -1,6 +1,6 @@
 {
   "name": "ruy",
-  "version-date": "2023-12-20",
+  "version-date": "2024-03-22",
   "description": [
     "ruy is a matrix multiplication library.",
     "Its focus is to cover the matrix multiplication needs of neural network inference engines."

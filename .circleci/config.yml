@@ -80,7 +80,7 @@ jobs:
 
   arm64_android:
     docker:
-      - image: cimg/android:2024.08.1-ndk
+      - image: cimg/android:2024.09.1-ndk # 27.0.12077973
     environment:
       VCPKG_DOWNLOADS: /tmp/vcpkg-caches
       VCPKG_DEFAULT_BINARY_CACHE: /tmp/vcpkg-caches

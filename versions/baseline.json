@@ -58,7 +58,7 @@
     },
     "fft2d": {
       "baseline": "1.0",
-      "port-version": 3
+      "port-version": 4
     },
     "fp16": {
       "baseline": "2024-06-20",
@@ -100,9 +100,13 @@
       "baseline": "0.4.0",
       "port-version": 0
     },
+    "neon2sse": {
+      "baseline": "2024-09-08",
+      "port-version": 0
+    },
     "nsync": {
       "baseline": "1.29.2",
-      "port-version": 0
+      "port-version": 1
     },
     "nvidia-cnmem": {
       "baseline": "2018-11-28",
@@ -173,7 +177,7 @@
       "port-version": 0
     },
     "ruy": {
-      "baseline": "2023-12-20",
+      "baseline": "2024-03-22",
       "port-version": 0
     },
     "system-qt5": {
