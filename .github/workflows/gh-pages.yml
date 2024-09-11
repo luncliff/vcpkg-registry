@@ -36,7 +36,7 @@ jobs:
           python3 -m mkdocs build --site-dir _site
 
       - uses: actions/configure-pages@v4.0.0
-      - uses: actions/upload-pages-artifact@v3.0.0
+      - uses: actions/upload-pages-artifact@v3.0.1
         with:
           path: '_site'
       - uses: actions/deploy-pages@v4.0.0
