@@ -172,6 +172,10 @@
       "baseline": "3.3.2",
       "port-version": 0
     },
+    "psimd": {
+      "baseline": "2020-05-17",
+      "port-version": 0
+    },
     "pthreadpool": {
       "baseline": "2024-01-22",
       "port-version": 0
