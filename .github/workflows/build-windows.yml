@@ -32,6 +32,12 @@ jobs:
         with:
           msbuild-architecture: x64
 
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
       - name: "Enalbe LongPath"
         run: git config --system core.longpaths true
 
@@ -61,5 +67,3 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
           VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
           VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
