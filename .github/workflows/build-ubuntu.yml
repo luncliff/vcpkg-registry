@@ -32,6 +32,12 @@ jobs:
         with:
           apt: nuget nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
 
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
       - uses: actions/cache@v4.0.2
         with:
           key: "v2432-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
@@ -58,8 +64,6 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "x64-linux"
           VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
           VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - uses: lukka/run-vcpkg@v11.5
         name: "Run vcpkg(arm64-linux)" # It's for future works. Not ready yet...
@@ -75,5 +79,3 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "arm64-linux"
           VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
           VCPKG_DOWNLOADS: "${{ runner.temp }}/vcpkg-downloads"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
