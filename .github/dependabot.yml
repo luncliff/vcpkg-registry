@@ -21,5 +21,5 @@ updates:
         dependency-type: "direct"
     assignees:
       - "luncliff"
-   commit-message:
+    commit-message:
       prefix: "[skip ci] "
