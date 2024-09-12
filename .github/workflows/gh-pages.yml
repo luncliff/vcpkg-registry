@@ -23,7 +23,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4.1.7
-      - uses: actions/setup-python@v5.0.0
+      - uses: actions/setup-python@v5.2.0
         with:
           python-version: 3.11
           architecture: x64
