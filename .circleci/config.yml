@@ -14,7 +14,12 @@ workflows:
               ignore:
                 - gh-pages
                 - docs
-      - arm64_android
+      - arm64_android:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+                - docs
 
 jobs:
   x64_linux:
