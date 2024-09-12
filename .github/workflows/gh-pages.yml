@@ -6,6 +6,8 @@ on:
     branches:
       - "main"
       - "docs"
+    paths:
+      - 'docs/**'
 
 permissions:
   contents: read
@@ -19,6 +21,7 @@ concurrency:
 jobs:
   mkdocs:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -38,10 +41,24 @@ jobs:
           python3 -m mkdocs build --site-dir _site
 
       - uses: actions/configure-pages@v5.0.0
-        if: github.ref == 'refs/heads/main'
       - uses: actions/upload-pages-artifact@v3.0.1
-        if: github.ref == 'refs/heads/main'
         with:
           path: '_site'
       - uses: actions/deploy-pages@v4.0.5
-        if: github.ref == 'refs/heads/main'
+
+  mkdocs_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.7
+      - uses: actions/setup-python@v5.2.0
+        with:
+          python-version: 3.11
+          architecture: x64
+          cache: 'pip'
+
+      - name: "Run pip install"
+        run: >
+          python3 -m pip install -r requirements.txt
+      - name: "Run MkDocs(build)"
+        run: >
+          python3 -m mkdocs build --site-dir _site
