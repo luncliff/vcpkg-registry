@@ -1,6 +1,10 @@
 name: "Windows"
 
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches-ignore:
+      - docs
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
