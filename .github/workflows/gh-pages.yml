@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - "main"
+      - "docs"
 
 permissions:
   contents: read
@@ -27,6 +28,7 @@ jobs:
         with:
           python-version: 3.11
           architecture: x64
+          cache: 'pip'
 
       - name: "Run pip install"
         run: >
@@ -36,7 +38,10 @@ jobs:
           python3 -m mkdocs build --site-dir _site
 
       - uses: actions/configure-pages@v5.0.0
+        if: github.ref == 'refs/heads/main'
       - uses: actions/upload-pages-artifact@v3.0.1
+        if: github.ref == 'refs/heads/main'
         with:
           path: '_site'
       - uses: actions/deploy-pages@v4.0.5
+        if: github.ref == 'refs/heads/main'
