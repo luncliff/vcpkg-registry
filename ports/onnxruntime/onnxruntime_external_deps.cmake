@@ -49,9 +49,6 @@ if (onnxruntime_BUILD_UNIT_TESTS)
   if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     set(gtest_disable_pthreads ON)
   endif()
-  if (${CMAKE_SYSTEM_NAME} MATCHES "AIX")
-    set(gtest_disable_pthreads ON CACHE BOOL "gtest_disable_pthreads" FORCE)
-  endif()
   set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
   if (IOS OR ANDROID)
     # on mobile platforms the absl flags class dumps the flag names (assumably for binary size), which breaks passing
@@ -94,22 +91,14 @@ if (NOT WIN32)
     google_nsync
     URL ${DEP_URL_google_nsync}
     URL_HASH SHA1=${DEP_SHA1_google_nsync}
-    FIND_PACKAGE_ARGS NAMES nsync_cpp nsync unofficial-nsync CONFIG
+    FIND_PACKAGE_ARGS NAMES nsync unofficial-nsync
   )
   #nsync tests failed on Mac Build
   set(NSYNC_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
   onnxruntime_fetchcontent_makeavailable(google_nsync)
 
-  find_package(nsync_cpp CONFIG)
-  if(nsync_cpp_FOUND)
-    if(NOT TARGET nsync::nsync_cpp)
-      message(STATUS "Aliasing nsync_cpp to nsync::nsync_cpp")
-      add_library(nsync::nsync_cpp ALIAS nsync_cpp)
-    endif()
-  endif()
-  if (google_nsync_SOURCE_DIR AND NOT TARGET nsync::nsync_cpp)
+  if (google_nsync_SOURCE_DIR)
     add_library(nsync::nsync_cpp ALIAS nsync_cpp)
-    message(STATUS "Aliasing nsync_cpp to nsync::nsync_cpp")
     target_include_directories(nsync_cpp PUBLIC ${google_nsync_SOURCE_DIR}/public)
   endif()
   if(TARGET unofficial::nsync::nsync_cpp AND NOT TARGET nsync::nsync_cpp)
@@ -553,8 +542,8 @@ if(TARGET ONNX::onnx_proto AND NOT TARGET onnx_proto)
   add_library(onnx_proto ALIAS ONNX::onnx_proto)
 endif()
 
-if(onnxruntime_USE_VCPKG)
-  find_package(Eigen3 CONFIG REQUIRED)
+find_package(Eigen3 CONFIG)
+if(Eigen3_FOUND)
   get_target_property(eigen_INCLUDE_DIRS Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
 else()
   include(eigen) # FetchContent
@@ -646,20 +635,16 @@ endif()
 
 message(STATUS "Finished fetching external dependencies")
 
-
 set(onnxruntime_LINK_DIRS )
+
 if (onnxruntime_USE_CUDA)
-      #TODO: combine onnxruntime_CUDNN_HOME and onnxruntime_CUDA_HOME, assume they are the same
       find_package(CUDAToolkit REQUIRED)
-      if (WIN32)
-        if(onnxruntime_CUDNN_HOME)
-          list(APPEND onnxruntime_LINK_DIRS ${onnxruntime_CUDNN_HOME}/lib ${onnxruntime_CUDNN_HOME}/lib/x64)
-        endif()
-      else()
-        if(onnxruntime_CUDNN_HOME)
-          list(APPEND onnxruntime_LINK_DIRS  ${onnxruntime_CUDNN_HOME}/lib ${onnxruntime_CUDNN_HOME}/lib64)
-        endif()
+
+      if(onnxruntime_CUDNN_HOME)
+        file(TO_CMAKE_PATH ${onnxruntime_CUDNN_HOME} onnxruntime_CUDNN_HOME)
+        set(CUDNN_PATH ${onnxruntime_CUDNN_HOME})
       endif()
+      include(cuDNN)
 endif()
 
 if(onnxruntime_USE_SNPE)
