@@ -1,6 +1,6 @@
 {
   "name": "eigen3",
-  "version": "3.4.1-20240316",
+  "version-semver": "3.4.1-20240316",
   "description": "C++ template library for linear algebra: matrices, vectors, numerical solvers, and related algorithms.",
   "homepage": "https://gitlab.com/libeigen/eigen",
   "license": "MPL-2.0",
