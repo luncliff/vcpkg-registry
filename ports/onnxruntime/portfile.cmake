@@ -11,11 +11,16 @@ vcpkg_from_github(
         fix-cmake-cuda.patch
         fix-cmake-training.patch
         fix-cmake-tensorrt.patch
+        fix-cmake-coreml.patch
         fix-sources.patch
         fix-clang-cl-simd-compile.patch
 )
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_external_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/cuDNN.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
+# todo: copied from the main branch. remove when upstream has same version
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/cuDNN.cmake"
+          "${CMAKE_CURRENT_LIST_DIR}/abseil-cpp.cmake"
+    DESTINATION "${SOURCE_PATH}/cmake/external"
+)
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
@@ -98,6 +103,12 @@ if("tensorrt" IN_LIST FEATURES)
         list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_ROOT}")
     endif()
 endif()
+if("coreml" IN_LIST FEATURES)
+    list(APPEND FEATURE_OPTIONS
+        -D_enable_ML_PROGRAM=OFF # do not build CoreML Tools program
+        "-Dcoreml_INCLUDE_DIRS:PATH=${CURRENT_INSTALLED_DIR}/include"
+    )
+endif()
 
 # see tools/ci_build/build.py
 vcpkg_cmake_configure(
@@ -128,7 +139,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_NEURAL_SPEED=OFF
         -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO
-        "-DORT_GIT_COMMIT:STRING=26250ae74d2c9a3c6860625ba4a147ddfb936907"
+        "-DORT_GIT_COMMIT:STRING=ffceed9d44f2f3efb9dd69fa75fea51163c91d91"
         "-DORT_GIT_BRANCH:STRING=v${VERSION}"
         --compile-no-warning-as-error
     OPTIONS_DEBUG

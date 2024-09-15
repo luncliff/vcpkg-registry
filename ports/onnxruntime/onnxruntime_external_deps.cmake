@@ -630,14 +630,21 @@ if(onnxruntime_ENABLE_TRAINING OR (onnxruntime_ENABLE_TRAINING_APIS AND onnxrunt
 endif()
 
 if (onnxruntime_USE_COREML)
-  FetchContent_Declare(
-    coremltools
-    URL ${DEP_URL_coremltools}
-    URL_HASH SHA1=${DEP_SHA1_coremltools}
-    PATCH_COMMAND ${Patch_EXECUTABLE} --binary --ignore-whitespace -p1 < ${PROJECT_SOURCE_DIR}/patches/coremltools/crossplatformbuild.patch
-  )
-  # we don't build directly so use Populate. selected files are built from onnxruntime_providers_coreml.cmake
-  FetchContent_Populate(coremltools)
+  if(onnxruntime_USE_VCPKG)
+    # using vcpkg-registry 'coreml-tools'
+    # check onnxruntime_providers_coreml.cmake together
+    find_path(COREML_PROTO_INCLUDE_DIR NAMES "mlmodel/format/Model.proto" REQUIRED)
+    get_filename_component(COREML_PROTO_ROOT "${COREML_PROTO_INCLUDE_DIR}/mlmodel/format" ABSOLUTE)
+  else()
+    FetchContent_Declare(
+      coremltools
+      URL ${DEP_URL_coremltools}
+      URL_HASH SHA1=${DEP_SHA1_coremltools}
+      PATCH_COMMAND ${Patch_EXECUTABLE} --binary --ignore-whitespace -p1 < ${PROJECT_SOURCE_DIR}/patches/coremltools/crossplatformbuild.patch
+    )
+    # we don't build directly so use Populate. selected files are built from onnxruntime_providers_coreml.cmake
+    FetchContent_Populate(coremltools)
+  endif()
 endif()
 
 message(STATUS "Finished fetching external dependencies")
