@@ -31,8 +31,8 @@ vcpkg_download_distfile(EXTERNAL_CUDNN_CMAKE_PATH
     FILENAME onnxruntime-external-cuDNN.cmake
     SKIP_SHA512
 )
-file(RENAME "${EXTERNAL_ABSEIL_CPP_CMAKE_PATH}" "${SOURCE_PATH}/cmake/external/abseil-cpp.cmake")
-file(RENAME "${EXTERNAL_CUDNN_CMAKE_PATH}"      "${SOURCE_PATH}/cmake/external/cuDNN.cmake")
+file(COPY_FILE "${EXTERNAL_ABSEIL_CPP_CMAKE_PATH}" "${SOURCE_PATH}/cmake/external/abseil-cpp.cmake" ONLY_IF_DIFFERENT)
+file(COPY_FILE "${EXTERNAL_CUDNN_CMAKE_PATH}"      "${SOURCE_PATH}/cmake/external/cuDNN.cmake"      ONLY_IF_DIFFERENT)
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
