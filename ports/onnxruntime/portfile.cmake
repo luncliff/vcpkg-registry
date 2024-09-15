@@ -4,8 +4,8 @@ string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF v1.18.1
-    SHA512 192cb95e131d7a7796f29556355d0c9055c05723e1120e21155ed21e05301d862f2ba3fd613d8f9289b61577f64cc4b406db7bb25d1bd666b75c29a0f29cc9d8
+    REF "v${VERSION}"
+    SHA512 da0cd297ffc11e2f627a91e55476952b2511e36bf97fb0d9a0a8b1e2cbd12a451e1a8ead1581bfe03d08c97946f0938434edd4637cbeb28f7007533d4b37ee55
     PATCHES
         fix-cmake.patch
         fix-cmake-cuda.patch
@@ -14,8 +14,8 @@ vcpkg_from_github(
         fix-sources.patch
         fix-clang-cl-simd-compile.patch
 )
-# https://github.com/microsoft/onnxruntime/pull/21348
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_external_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/cuDNN.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
@@ -43,7 +43,6 @@ vcpkg_execute_required_process(
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         python    onnxruntime_ENABLE_PYTHON
-        python    onnxruntime_ENABLE_LANGUAGE_INTEROP_OPS
         training  onnxruntime_ENABLE_TRAINING
         training  onnxruntime_ENABLE_TRAINING_APIS
         # training  onnxruntime_ENABLE_TRAINING_OPS
@@ -106,9 +105,9 @@ vcpkg_cmake_configure(
     ${GENERATOR_OPTIONS}
     OPTIONS
         ${FEATURE_OPTIONS}
-        -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
-        -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
-        -DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
+        "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
+        "-DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
+        "-DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
         -Donnxruntime_BUILD_WEBASSEMBLY=OFF
@@ -129,8 +128,8 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_NEURAL_SPEED=OFF
         -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO
-        -DORT_GIT_COMMIT:STRING=387127404e6c1d84b3468c387d864877ed1c67fe
-        -DORT_GIT_BRANCH:STRING=v1.18.1
+        "-DORT_GIT_COMMIT:STRING=26250ae74d2c9a3c6860625ba4a147ddfb936907"
+        "-DORT_GIT_BRANCH:STRING=v${VERSION}"
         --compile-no-warning-as-error
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF

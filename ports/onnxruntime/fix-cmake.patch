@@ -1,5 +1,5 @@
 diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
-index 8edbb6ad6f..4987d5af5a 100644
+index 78c7bd1..19aefbd 100644
 --- a/cmake/CMakeLists.txt
 +++ b/cmake/CMakeLists.txt
 @@ -38,6 +38,8 @@ include(CheckLanguage)
@@ -11,11 +11,31 @@ index 8edbb6ad6f..4987d5af5a 100644
  
  # TODO: update this once all system adapt c++20
  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+@@ -1430,13 +1432,13 @@ endif()
+ set(ORT_BUILD_INFO "ORT Build Info: ")
+ find_package(Git)
+ if (Git_FOUND)
+-  execute_process(COMMAND ${GIT_EXECUTABLE} log -1 --format=%h
+-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-      OUTPUT_VARIABLE ORT_GIT_COMMIT)
++  # execute_process(COMMAND ${GIT_EXECUTABLE} log -1 --format=%h
++  #     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
++  #     OUTPUT_VARIABLE ORT_GIT_COMMIT)
+   string(STRIP "${ORT_GIT_COMMIT}" ORT_GIT_COMMIT)
+-  execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-      OUTPUT_VARIABLE ORT_GIT_BRANCH)
++  # execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
++  #     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
++  #     OUTPUT_VARIABLE ORT_GIT_BRANCH)
+   string(STRIP "${ORT_GIT_BRANCH}" ORT_GIT_BRANCH)
+   string(APPEND ORT_BUILD_INFO "git-branch=${ORT_GIT_BRANCH}, git-commit-id=${ORT_GIT_COMMIT}, ")
+ endif()
 diff --git a/cmake/onnxruntime.cmake b/cmake/onnxruntime.cmake
-index e15c8a046d..d3a2e64bb9 100644
+index 927b4ac..7e992fb 100644
 --- a/cmake/onnxruntime.cmake
 +++ b/cmake/onnxruntime.cmake
-@@ -308,6 +308,9 @@ if(onnxruntime_BUILD_APPLE_FRAMEWORK)
+@@ -332,6 +332,9 @@ if(onnxruntime_BUILD_APPLE_FRAMEWORK)
    # If it's an onnxruntime library, extract .o files from the original cmake build path to a separate directory for
    # each library to avoid any clashes with filenames (e.g. utils.o)
    foreach(_LIB ${onnxruntime_INTERNAL_LIBRARIES} )
@@ -25,7 +45,7 @@ index e15c8a046d..d3a2e64bb9 100644
      GET_TARGET_PROPERTY(_LIB_TYPE ${_LIB} TYPE)
      if(_LIB_TYPE STREQUAL "STATIC_LIBRARY")
        set(CUR_STATIC_LIB_OBJ_DIR ${STATIC_LIB_TEMP_DIR}/$<TARGET_LINKER_FILE_BASE_NAME:${_LIB}>)
-@@ -338,6 +341,9 @@ if(onnxruntime_BUILD_APPLE_FRAMEWORK)
+@@ -362,6 +365,9 @@ if(onnxruntime_BUILD_APPLE_FRAMEWORK)
  
    # for external libraries we create a symlink to the .a file
    foreach(_LIB ${onnxruntime_EXTERNAL_LIBRARIES})
@@ -36,10 +56,10 @@ index e15c8a046d..d3a2e64bb9 100644
      if(_LIB_TYPE STREQUAL "STATIC_LIBRARY")
        add_custom_command(TARGET onnxruntime POST_BUILD
 diff --git a/cmake/onnxruntime_unittests.cmake b/cmake/onnxruntime_unittests.cmake
-index 66df115..bd313d8 100644
+index 0c1e5e9..2418f9d 100644
 --- a/cmake/onnxruntime_unittests.cmake
 +++ b/cmake/onnxruntime_unittests.cmake
-@@ -867,6 +867,9 @@ AddTest(
+@@ -874,6 +874,9 @@ AddTest(
    DEPENDS ${all_dependencies}
    TEST_ARGS ${test_all_args}
  )
@@ -49,11 +69,7 @@ index 66df115..bd313d8 100644
  
  if (MSVC)
    # The warning means the type of two integral values around a binary operator is narrow than their result.
-diff --git a/cmake/onnxruntime_unittests.cmake b/cmake/onnxruntime_unittests.cmake
-index 2ae07d5..9ee95a7 100644
---- a/cmake/onnxruntime_unittests.cmake
-+++ b/cmake/onnxruntime_unittests.cmake
-@@ -962,7 +962,8 @@ target_compile_definitions(onnx_test_data_proto PRIVATE "-DONNX_API=")
+@@ -967,7 +970,8 @@ target_compile_definitions(onnx_test_data_proto PRIVATE "-DONNX_API=")
  onnxruntime_add_include_to_target(onnx_test_data_proto onnx_proto)
  target_include_directories(onnx_test_data_proto PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
  set_target_properties(onnx_test_data_proto PROPERTIES FOLDER "ONNXRuntimeTest")
