@@ -6,3 +6,4 @@ fft2d
 nsync
 ruy
 tensorflow-lite
+dlpack
