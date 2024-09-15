@@ -63,6 +63,13 @@
       ]
     },
     {
+      "name": "onnxruntime",
+      "features": [
+        "test"
+      ],
+      "platform": "osx | linux"
+    },
+    {
       "name": "opencl",
       "platform": "windows | linux"
     },

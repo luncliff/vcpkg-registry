@@ -1,21 +1,38 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
+set(ORT_GIT_COMMIT "26250ae74d2c9a3c6860625ba4a147ddfb936907")
+set(ORT_GIT_BRANCH "v${VERSION}")
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF "v${VERSION}"
+    REF ${ORT_GIT_BRANCH}
     SHA512 da0cd297ffc11e2f627a91e55476952b2511e36bf97fb0d9a0a8b1e2cbd12a451e1a8ead1581bfe03d08c97946f0938434edd4637cbeb28f7007533d4b37ee55
     PATCHES
         fix-cmake.patch
         fix-cmake-cuda.patch
         fix-cmake-training.patch
         fix-cmake-tensorrt.patch
+        fix-cmake-coreml.patch
         fix-sources.patch
         fix-clang-cl-simd-compile.patch
 )
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_external_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/cuDNN.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
+
+# todo: remove when release branch contains the files
+vcpkg_download_distfile(EXTERNAL_ABSEIL_CPP_CMAKE_PATH
+    URLS "https://raw.githubusercontent.com/microsoft/onnxruntime/main/cmake/external/abseil-cpp.cmake?full_index=1"
+    FILENAME onnxruntime-external-abseil.cmake
+    SKIP_SHA512
+)
+vcpkg_download_distfile(EXTERNAL_CUDNN_CMAKE_PATH
+    URLS "https://raw.githubusercontent.com/microsoft/onnxruntime/main/cmake/external/cuDNN.cmake?full_index=1"
+    FILENAME onnxruntime-external-cuDNN.cmake
+    SKIP_SHA512
+)
+file(COPY_FILE "${EXTERNAL_ABSEIL_CPP_CMAKE_PATH}" "${SOURCE_PATH}/cmake/external/abseil-cpp.cmake" ONLY_IF_DIFFERENT)
+file(COPY_FILE "${EXTERNAL_CUDNN_CMAKE_PATH}"      "${SOURCE_PATH}/cmake/external/cuDNN.cmake"      ONLY_IF_DIFFERENT)
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
@@ -98,6 +115,12 @@ if("tensorrt" IN_LIST FEATURES)
         list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_ROOT}")
     endif()
 endif()
+if("coreml" IN_LIST FEATURES)
+    list(APPEND FEATURE_OPTIONS
+        -D_enable_ML_PROGRAM=OFF # do not build CoreML Tools program
+        "-Dcoreml_INCLUDE_DIRS:PATH=${CURRENT_INSTALLED_DIR}/include"
+    )
+endif()
 
 # see tools/ci_build/build.py
 vcpkg_cmake_configure(
@@ -128,8 +151,8 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_NEURAL_SPEED=OFF
         -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO
-        "-DORT_GIT_COMMIT:STRING=26250ae74d2c9a3c6860625ba4a147ddfb936907"
-        "-DORT_GIT_BRANCH:STRING=v${VERSION}"
+        -DORT_GIT_COMMIT=${ORT_GIT_COMMIT}
+        -DORT_GIT_BRANCH=${ORT_GIT_BRANCH}
         --compile-no-warning-as-error
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
@@ -150,6 +173,9 @@ if("tensorrt" IN_LIST FEATURES)
 endif()
 if("directml" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_providers_dml LOGFILE_BASE build-directml)
+endif()
+if("coreml" IN_LIST FEATURES)
+    vcpkg_cmake_build(TARGET onnxruntime_providers_coreml LOGFILE_BASE build-coreml)
 endif()
 if("training" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET tensorboard LOGFILE_BASE build-tensorboard)

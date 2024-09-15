@@ -1,6 +1,7 @@
 {
   "name": "onnxruntime",
   "version-semver": "1.19.0",
+  "port-version": 1,
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://onnxruntime.ai/",
   "license": "MIT",
@@ -71,6 +72,13 @@
     "wil"
   ],
   "features": {
+    "coreml": {
+      "description": "Build with CoreML support",
+      "supports": "osx | ios",
+      "dependencies": [
+        "coreml-tools"
+      ]
+    },
     "cuda": {
       "description": "Build with CUDA support",
       "dependencies": [

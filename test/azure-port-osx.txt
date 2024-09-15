@@ -1,5 +1,5 @@
 tensorflow-lite[gpu]
-onnxruntime[framework]
+onnxruntime[framework,coreml]
 metal-cpp
 miniaudio
 abseil
