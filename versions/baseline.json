@@ -38,7 +38,7 @@
     },
     "dlpack": {
       "baseline": "1.0",
-      "port-version": 0
+      "port-version": 1
     },
     "eigen3": {
       "baseline": "2024-08-01",
