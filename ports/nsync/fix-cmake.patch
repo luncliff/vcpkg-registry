@@ -1,8 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index fcc3f41..610710f 100644
+index fcc3f41..15fce06 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -88,7 +88,7 @@ if ("${CMAKE_C_COMPILER_ID}X" STREQUAL "MSVCX")
+@@ -1,4 +1,6 @@
+-cmake_minimum_required (VERSION 2.8.12)
++cmake_minimum_required (VERSION 3.22)
++set(CMAKE_CXX_STANDARD 11)
++set(CMAKE_C_STANDARD 11)
+ 
+ # nsync provides portable synchronization primitives, such as mutexes and
+ # condition variables.
+@@ -88,7 +90,7 @@ if ("${CMAKE_C_COMPILER_ID}X" STREQUAL "MSVCX")
  endif ()
  
  # Pick the include directory for the operating system.
@@ -11,7 +19,16 @@ index fcc3f41..610710f 100644
  	include_directories ("${PROJECT_SOURCE_DIR}/platform/win32")
  	set (NSYNC_CPP_FLAGS "/TP")
  
-@@ -232,7 +232,7 @@ elseif (("${CMAKE_SYSTEM_PROCESSOR}X" STREQUAL "ppc64X"))
+@@ -110,7 +112,7 @@ if ("${CMAKE_SYSTEM_NAME}X" STREQUAL "WindowsX")
+ 	set (NSYNC_TEST_OS_SRC
+ 		"platform/win32/src/start_thread.c"
+ 	)
+-elseif ("${CMAKE_SYSTEM_NAME}X" STREQUAL "DarwinX")
++elseif (("${CMAKE_SYSTEM_NAME}X" STREQUAL "DarwinX") OR ("${CMAKE_SYSTEM_NAME}X" STREQUAL "iOSX"))
+ 	include_directories ("${PROJECT_SOURCE_DIR}/platform/macos")
+ 	# Some versions of MacOS, such as Sierra, require _DARWIN_C_SOURCE
+ 	# when including certin C++ standard header files, such as <mutex>.
+@@ -232,7 +234,7 @@ elseif (("${CMAKE_SYSTEM_PROCESSOR}X" STREQUAL "ppc64X"))
  endif ()
  
  # Windows uses some include files from the posix directory also.
@@ -20,7 +37,7 @@ index fcc3f41..610710f 100644
  	include_directories ("${PROJECT_SOURCE_DIR}/platform/posix")
  endif ()
  
-@@ -398,7 +398,7 @@ if (NSYNC_ENABLE_TESTS)
+@@ -398,7 +400,7 @@ if (NSYNC_ENABLE_TESTS)
  	endforeach (t)
  endif ()
  
@@ -29,13 +46,3 @@ index fcc3f41..610710f 100644
  
  install (TARGETS nsync EXPORT nsync
  	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT RuntimeLibraries
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 610710f..8fa318b 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -1,4 +1,4 @@
--cmake_minimum_required (VERSION 2.8.12)
-+cmake_minimum_required (VERSION 3.22)
- 
- # nsync provides portable synchronization primitives, such as mutexes and
- # condition variables.
