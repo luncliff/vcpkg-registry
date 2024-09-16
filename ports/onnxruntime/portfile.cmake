@@ -143,7 +143,7 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_VCPKG=ON
         -Donnxruntime_ENABLE_CPUINFO=ON
         -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=OFF
-        -Donnxruntime_ENABLE_BITCODE=${VCPKG_TARGET_IS_IOS}
+        -Donnxruntime_ENABLE_BITCODE=OFF
         -Donnxruntime_ENABLE_PYTHON=OFF
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
