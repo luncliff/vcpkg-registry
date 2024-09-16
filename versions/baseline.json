@@ -42,7 +42,7 @@
     },
     "eigen3": {
       "baseline": "2024-08-01",
-      "port-version": 0
+      "port-version": 1
     },
     "etcpak": {
       "baseline": "2.0",
