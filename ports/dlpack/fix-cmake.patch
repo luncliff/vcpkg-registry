@@ -1,8 +1,15 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index ea113e1..ed9671a 100644
+index ea113e1..105244f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+@@ -2,13 +2,13 @@
+ # Set minimum version of CMake. Since command 'project' use
+ # VERSION sub-option we need at least 3.0.
+ # Note: If you use 2.6 or 2.4, God kills a kitten. Seriously.
+-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
++cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
+ 
+ ####
  # Set variables:
  #   * PROJECT_NAME
  #   * PROJECT_VERSION
