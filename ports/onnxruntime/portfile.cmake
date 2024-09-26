@@ -102,7 +102,7 @@ if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     if("cuda" IN_LIST FEATURES)
         unset(GENERATOR_OPTIONS) # use Ninja for CUDA build
     endif()
-elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+elseif(VCPKG_TARGET_IS_OSX)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
 endif()
 
