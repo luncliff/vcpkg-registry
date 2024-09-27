@@ -2,3 +2,4 @@ tensorflow-lite
 miniaudio
 coreml-tools
 abseil
+onnxruntime

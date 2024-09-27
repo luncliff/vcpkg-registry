@@ -1,5 +1,4 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
-string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
 set(ORT_GIT_COMMIT "26250ae74d2c9a3c6860625ba4a147ddfb936907")
 set(ORT_GIT_BRANCH "v${VERSION}")
@@ -62,8 +61,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         python    onnxruntime_ENABLE_PYTHON
         training  onnxruntime_ENABLE_TRAINING
         training  onnxruntime_ENABLE_TRAINING_APIS
-        # training  onnxruntime_ENABLE_TRAINING_OPS
-        # training  onnxruntime_ENABLE_TRAINING_TORCH_INTEROP
         cuda      onnxruntime_USE_CUDA
         cuda      onnxruntime_USE_CUDA_NHWC_OPS
         openvino  onnxruntime_USE_OPENVINO
@@ -105,7 +102,7 @@ if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     if("cuda" IN_LIST FEATURES)
         unset(GENERATOR_OPTIONS) # use Ninja for CUDA build
     endif()
-elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+elseif(VCPKG_TARGET_IS_OSX)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
 endif()
 
@@ -121,6 +118,12 @@ if("coreml" IN_LIST FEATURES)
         "-Dcoreml_INCLUDE_DIRS:PATH=${CURRENT_INSTALLED_DIR}/include"
     )
 endif()
+
+# see vcpkg_check_linkage above ...
+string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
+
+# future works?
+# onnxruntime_ORT_MINIMAL_BUILD=${BUILD_MINIMAL}
 
 # see tools/ci_build/build.py
 vcpkg_cmake_configure(
@@ -140,20 +143,19 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_VCPKG=ON
         -Donnxruntime_ENABLE_CPUINFO=ON
         -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=OFF
-        -Donnxruntime_ENABLE_BITCODE=${VCPKG_TARGET_IS_IOS}
+        -Donnxruntime_ENABLE_BITCODE=OFF
         -Donnxruntime_ENABLE_PYTHON=OFF
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
+        -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
         -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
-        -Donnxruntime_NVCC_THREADS=1 # parallel compilation
-        "-DCMAKE_CUDA_FLAGS=-Xcudafe --diag_suppress=2803" # too much warnings about attribute
         -Donnxruntime_DISABLE_RTTI=OFF
         -Donnxruntime_DISABLE_ABSEIL=OFF
-        -Donnxruntime_USE_NEURAL_SPEED=OFF
-        -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO
         -DORT_GIT_COMMIT=${ORT_GIT_COMMIT}
         -DORT_GIT_BRANCH=${ORT_GIT_BRANCH}
+        # some other customizations ...
         --compile-no-warning-as-error
+        "-DCMAKE_CUDA_FLAGS=-Xcudafe --diag_suppress=2803" # too much warnings about attribute
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
