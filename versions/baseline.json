@@ -184,6 +184,10 @@
       "baseline": "2024-03-22",
       "port-version": 0
     },
+    "sse2neon": {
+      "baseline": "2024-08-17",
+      "port-version": 0
+    },
     "system-qt5": {
       "baseline": "2022-10-25",
       "port-version": 0
