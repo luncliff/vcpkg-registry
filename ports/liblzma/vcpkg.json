@@ -3,7 +3,7 @@
   "version": "5.6.2",
   "description": "Compression library with an API similar to that of zlib.",
   "homepage": "https://sourceforge.net/projects/lzmautils/",
-  "license": null,
+  "license": "0BSD",
   "dependencies": [
     {
       "name": "vcpkg-cmake",
