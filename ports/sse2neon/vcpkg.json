@@ -1,0 +1,7 @@
+{
+  "name": "sse2neon",
+  "version-date": "2024-08-17",
+  "description": "Open standard for machine learning interoperability",
+  "homepage": "https://github.com/DLTcollab/sse2neon",
+  "license": "MIT"
+}
