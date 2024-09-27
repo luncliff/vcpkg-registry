@@ -32,10 +32,6 @@
     "nlohmann-json",
     {
       "name": "nsync",
-      "platform": "!windows"
-    },
-    {
-      "name": "nsync",
       "platform": "!windows",
       "version>=": "1.26.0"
     },
