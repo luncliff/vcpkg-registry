@@ -125,6 +125,7 @@ jobs:
             VCPKG_ROOT: /tmp/vcpkg
             VCPKG_DEFAULT_TRIPLET: arm64-android
             VCPKG_MAX_CONCURRENCY: 2
+          no_output_timeout: 1h
       - store_artifacts:
           path: buildtrees/ # follow --x-buildtrees-root
           destination: "build-logs"
