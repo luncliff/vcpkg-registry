@@ -118,9 +118,9 @@ jobs:
               --x-buildtrees-root buildtrees \
               --clean-buildtrees-after-build \
               --clean-packages-after-build \
-              --overlay-ports "$CIRCLE_WORKING_DIRECTORY/ports" \
-              --overlay-triplets "$CIRCLE_WORKING_DIRECTORY/triplets" \
-              $(cat "$CIRCLE_WORKING_DIRECTORY/test/azure-port-android.txt")
+              --overlay-ports "$(pwd)/ports" \
+              --overlay-triplets "$(pwd)/triplets" \
+              $(cat "$(pwd)/test/azure-port-android.txt")
           environment:
             VCPKG_ROOT: /tmp/vcpkg
             VCPKG_DEFAULT_TRIPLET: arm64-android
