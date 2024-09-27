@@ -1,10 +1,10 @@
 # https://sourceforge.net/projects/lzmautils/
-# https://sourceforge.net/projects/lzmautils/files/xz-5.4.6.tar.xz/download
+# https://sourceforge.net/projects/lzmautils/files/xz-5.6.2.tar.xz/download
 vcpkg_from_sourceforge(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO lzmautils
-    FILENAME xz-5.4.6.tar.xz
-    SHA512 495cc890d25c075c927c907b77e60d86dd8a4c377cea5b1172c8e916984149a7bb5fb32db25091f7219346b83155b47e4bc0404cc8529d992014cd7ed0c278b7
+    FILENAME xz-5.6.2.tar.xz
+    SHA512 af3fd021a9c8eaacfb1ae2af3f7e2a0b0554068461de5be3e2c631174cf5fe15425b739832e826c0fb158484b8cea53701be8c568d7ce1f6113b4630205f5c26
 )
 
 if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
@@ -38,7 +38,11 @@ if(NOT VCPKG_TARGET_IS_WINDOWS)
     vcpkg_fixup_pkgconfig()
 endif()
 # https://cmake.org/cmake/help/latest/module/FindLibLZMA.html
-vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/liblzma PACKAGE_NAME liblzma)
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/liblzma PACKAGE_NAME LibLZMA)
+
+if(VCPKG_TARGET_IS_WINDOWS)
+    vcpkg_copy_tools(TOOL_NAMES lzmadec lzmainfo xz xzdec AUTO_CLEAN)
+endif()
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
