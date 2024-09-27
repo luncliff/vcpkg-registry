@@ -86,6 +86,10 @@
       "platform": "windows"
     },
     {
+      "name": "sse2neon",
+      "platform": "x86"
+    },
+    {
       "name": "tensorflow-lite",
       "platform": "windows"
     },
