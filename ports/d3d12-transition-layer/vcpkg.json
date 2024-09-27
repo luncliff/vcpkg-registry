@@ -1,6 +1,6 @@
 {
   "name": "d3d12-transition-layer",
-  "version-date": "2024-07-25",
+  "version-date": "2024-09-14",
   "description": "A library containing utilities for mapping higher-level graphics work to D3D12",
   "homepage": "https://github.com/microsoft/D3D12TranslationLayer",
   "license": "MIT",
