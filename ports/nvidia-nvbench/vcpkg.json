@@ -1,6 +1,6 @@
 {
   "name": "nvidia-nvbench",
-  "version-date": "2024-01-13",
+  "version-date": "2024-06-01",
   "description": "CUDA Kernel Benchmarking Library",
   "homepage": "https://github.com/NVIDIA/nvbench",
   "license": "Apache-2.0",
