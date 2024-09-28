@@ -9,7 +9,6 @@ repo_url: https://github.com/luncliff/vcpkg-registry
 
 copyright: "CC0 1.0 Public Domain"
 
-
 markdown_extensions:
   - admonition
   - pymdownx.details
@@ -66,3 +65,8 @@ theme:
 docs_dir: docs
 nav:
   - Home: vcpkg-for-kor.md
+  - References: references.md
+  - Features:
+     - Binary Caching: feature-binarycaching.md
+     - Registry: feature-registry.md
+     - Manifest: feature-manifest.md
