@@ -43,17 +43,18 @@ jobs:
         with:
           choco: awscli
 
-      - name: "Update environment variables"
+      - name: "Update environment"
         run: |
           Write-Output "PATH=$env:PATH;C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           New-Item -Type Directory -Force C:/vcpkg-caches
         shell: pwsh
 
-      - name: "Enalbe LongPath"
+      - name: "Enable LongPath"
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
           git config --system core.longpaths true
         shell: pwsh
+        continue-on-error: true
 
       - name: "Change vcpkg.json"
         run: Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
@@ -70,8 +71,7 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg-caches"
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches"
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches,readwrite"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -86,14 +86,14 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
-          VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg-caches"
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches"
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches,readwrite"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - uses: yumis-coconudge/clean-workspace-action@v1.0.6
         with:
           additional-path: "C:/vcpkg/buildtrees,C:/vcpkg/packages"
+        if: always()
 
   overlay_cuda:
     runs-on: ["self-hosted", "Windows", "CUDA"]
@@ -123,17 +123,18 @@ jobs:
         with:
           choco: awscli
 
-      - name: "Update environment variables"
+      - name: "Update environment"
         run: |
           Write-Output "PATH=$env:PATH;C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           New-Item -Type Directory -Force C:/vcpkg-caches
         shell: pwsh
 
-      - name: "Enalbe LongPath"
+      - name: "Enable LongPath"
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
           git config --system core.longpaths true
         shell: pwsh
+        continue-on-error: true
 
       - name: "Change vcpkg.json"
         run: Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
@@ -150,14 +151,14 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `cuda`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg-caches"
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches"
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches,readwrite"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - uses: yumis-coconudge/clean-workspace-action@v1.0.6
         with:
           additional-path: "C:/vcpkg/buildtrees,C:/vcpkg/packages"
+        if: always()
 
   overlay_vulkan:
     runs-on: ["self-hosted", "Windows"]
@@ -187,7 +188,7 @@ jobs:
         with:
           choco: awscli
 
-      - name: "Update environment variables"
+      - name: "Update environment"
         run: |
           Write-Output "PATH=$env:PATH;C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           New-Item -Type Directory -Force C:/vcpkg-caches
@@ -200,11 +201,12 @@ jobs:
           cache: true
         continue-on-error: true
 
-      - name: "Enalbe LongPath"
+      - name: "Enable LongPath"
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
           git config --system core.longpaths true
         shell: pwsh
+        continue-on-error: true
 
       - name: "Change vcpkg.json"
         run: Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
@@ -221,8 +223,7 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `vulkan`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg-caches"
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches"
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches,readwrite"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
