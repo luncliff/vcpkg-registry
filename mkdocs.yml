@@ -66,3 +66,7 @@ docs_dir: docs
 nav:
   - Home: vcpkg-for-kor.md
   - References: references.md
+  - Features:
+     - Binary Caching: feature-binarycaching.md
+     - Registry: feature-registry.md
+     - Manifest: feature-manifest.md
