@@ -68,8 +68,8 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-caches
-          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
+          VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg-caches"
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -84,8 +84,8 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
-          VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-caches
-          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
+          VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg-caches"
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -146,8 +146,8 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `cuda`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-caches
-          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
+          VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg-caches"
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -215,8 +215,8 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `vulkan`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          VCPKG_DEFAULT_BINARY_CACHE: C:/vcpkg-caches
-          VCPKG_BINARY_SOURCES: ${{ secrets.VCPKG_BINARY_SOURCES }}
+          VCPKG_DEFAULT_BINARY_CACHE: "C:/vcpkg-caches"
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
