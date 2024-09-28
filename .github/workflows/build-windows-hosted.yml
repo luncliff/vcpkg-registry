@@ -27,6 +27,8 @@ jobs:
             vcpkg_commit: "1de2026f28ead93ff1773e6e680387643e914ea1"
           - vcpkg_tag: "2024.08.23"
             vcpkg_commit: "3508985146f1b1d248c67ead13f8f54be5b4f5da"
+          - vcpkg_tag: "2024.09.23"
+            vcpkg_commit: "f176b58f35a75f9f8f54099cd9df97d2e2793a2e"
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -58,7 +60,7 @@ jobs:
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.5
-        name: "Run vcpkg(x64-windows)"
+        name: "Run vcpkg(x64-windows, ${{ matrix.vcpkg_tag }})"
         with:
           vcpkgDirectory: "C:/vcpkg"
           vcpkgGitCommitId: ${{ matrix.vcpkg_commit }}
@@ -74,7 +76,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - uses: lukka/run-vcpkg@v11.5
-        name: "Run vcpkg(arm64-windows)"
+        name: "Run vcpkg(arm64-windows, ${{ matrix.vcpkg_tag }})"
         with:
           vcpkgDirectory: "C:/vcpkg"
           vcpkgGitCommitId: ${{ matrix.vcpkg_commit }}
@@ -105,6 +107,8 @@ jobs:
             vcpkg_commit: "f7423ee180c4b7f40d43402c2feb3859161ef625"
           - vcpkg_tag: "2024.08.23"
             vcpkg_commit: "3508985146f1b1d248c67ead13f8f54be5b4f5da"
+          - vcpkg_tag: "2024.09.23"
+            vcpkg_commit: "f176b58f35a75f9f8f54099cd9df97d2e2793a2e"
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -136,7 +140,7 @@ jobs:
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.5
-        name: "Run vcpkg(x64-windows)"
+        name: "Run vcpkg(x64-windows, ${{ matrix.vcpkg_tag }})"
         with:
           vcpkgDirectory: "C:/vcpkg"
           vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
@@ -167,6 +171,8 @@ jobs:
             vcpkg_commit: "f7423ee180c4b7f40d43402c2feb3859161ef625"
           - vcpkg_tag: "2024.08.23"
             vcpkg_commit: "3508985146f1b1d248c67ead13f8f54be5b4f5da"
+          - vcpkg_tag: "2024.09.23"
+            vcpkg_commit: "f176b58f35a75f9f8f54099cd9df97d2e2793a2e"
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -205,7 +211,7 @@ jobs:
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.5
-        name: "Run vcpkg(x64-windows)"
+        name: "Run vcpkg(x64-windows, ${{ matrix.vcpkg_tag }})"
         with:
           vcpkgDirectory: "C:/vcpkg"
           vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
