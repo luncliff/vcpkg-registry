@@ -1,21 +1,37 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
-string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
+
+set(ORT_GIT_COMMIT "ffceed9d44f2f3efb9dd69fa75fea51163c91d91")
+set(ORT_GIT_BRANCH "v${VERSION}")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF v1.18.1
-    SHA512 192cb95e131d7a7796f29556355d0c9055c05723e1120e21155ed21e05301d862f2ba3fd613d8f9289b61577f64cc4b406db7bb25d1bd666b75c29a0f29cc9d8
+    REF ${ORT_GIT_BRANCH}
+    SHA512 3bf25e431d175c61953d28b1bf8f6871376684263992451a5b2a66e670768fc66e7027f141c6e3f4d1eddeebeda51f31ea0adf4749e50d99ee89d0a26bec77ce
     PATCHES
         fix-cmake.patch
         fix-cmake-cuda.patch
         fix-cmake-training.patch
         fix-cmake-tensorrt.patch
+        fix-cmake-coreml.patch
         fix-sources.patch
         fix-clang-cl-simd-compile.patch
 )
-# https://github.com/microsoft/onnxruntime/pull/21348
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_external_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
+
+# todo: remove when release branch contains the files
+vcpkg_download_distfile(EXTERNAL_ABSEIL_CPP_CMAKE_PATH
+    URLS "https://raw.githubusercontent.com/microsoft/onnxruntime/main/cmake/external/abseil-cpp.cmake?full_index=1"
+    FILENAME onnxruntime-external-abseil.cmake
+    SKIP_SHA512
+)
+vcpkg_download_distfile(EXTERNAL_CUDNN_CMAKE_PATH
+    URLS "https://raw.githubusercontent.com/microsoft/onnxruntime/main/cmake/external/cuDNN.cmake?full_index=1"
+    FILENAME onnxruntime-external-cuDNN.cmake
+    SKIP_SHA512
+)
+file(COPY_FILE "${EXTERNAL_ABSEIL_CPP_CMAKE_PATH}" "${SOURCE_PATH}/cmake/external/abseil-cpp.cmake" ONLY_IF_DIFFERENT)
+file(COPY_FILE "${EXTERNAL_CUDNN_CMAKE_PATH}"      "${SOURCE_PATH}/cmake/external/cuDNN.cmake"      ONLY_IF_DIFFERENT)
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
@@ -43,11 +59,8 @@ vcpkg_execute_required_process(
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         python    onnxruntime_ENABLE_PYTHON
-        python    onnxruntime_ENABLE_LANGUAGE_INTEROP_OPS
         training  onnxruntime_ENABLE_TRAINING
         training  onnxruntime_ENABLE_TRAINING_APIS
-        # training  onnxruntime_ENABLE_TRAINING_OPS
-        # training  onnxruntime_ENABLE_TRAINING_TORCH_INTEROP
         cuda      onnxruntime_USE_CUDA
         cuda      onnxruntime_USE_CUDA_NHWC_OPS
         openvino  onnxruntime_USE_OPENVINO
@@ -89,7 +102,7 @@ if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
     if("cuda" IN_LIST FEATURES)
         unset(GENERATOR_OPTIONS) # use Ninja for CUDA build
     endif()
-elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+elseif(VCPKG_TARGET_IS_OSX)
     set(GENERATOR_OPTIONS GENERATOR Xcode)
 endif()
 
@@ -99,6 +112,18 @@ if("tensorrt" IN_LIST FEATURES)
         list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_ROOT}")
     endif()
 endif()
+if("coreml" IN_LIST FEATURES)
+    list(APPEND FEATURE_OPTIONS
+        -D_enable_ML_PROGRAM=OFF # do not build CoreML Tools program
+        "-Dcoreml_INCLUDE_DIRS:PATH=${CURRENT_INSTALLED_DIR}/include"
+    )
+endif()
+
+# see vcpkg_check_linkage above ...
+string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
+
+# future works?
+# onnxruntime_ORT_MINIMAL_BUILD=${BUILD_MINIMAL}
 
 # see tools/ci_build/build.py
 vcpkg_cmake_configure(
@@ -106,9 +131,9 @@ vcpkg_cmake_configure(
     ${GENERATOR_OPTIONS}
     OPTIONS
         ${FEATURE_OPTIONS}
-        -DPython_EXECUTABLE:FILEPATH=${PYTHON3}
-        -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
-        -DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
+        "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
+        "-DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
+        "-DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
         -Donnxruntime_BUILD_WEBASSEMBLY=OFF
@@ -118,20 +143,19 @@ vcpkg_cmake_configure(
         -Donnxruntime_USE_VCPKG=ON
         -Donnxruntime_ENABLE_CPUINFO=ON
         -Donnxruntime_ENABLE_MICROSOFT_INTERNAL=OFF
-        -Donnxruntime_ENABLE_BITCODE=${VCPKG_TARGET_IS_IOS}
+        -Donnxruntime_ENABLE_BITCODE=OFF
         -Donnxruntime_ENABLE_PYTHON=OFF
         -Donnxruntime_ENABLE_EXTERNAL_CUSTOM_OP_SCHEMAS=OFF
+        -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
         -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
-        -Donnxruntime_NVCC_THREADS=1 # parallel compilation
-        "-DCMAKE_CUDA_FLAGS=-Xcudafe --diag_suppress=2803" # too much warnings about attribute
         -Donnxruntime_DISABLE_RTTI=OFF
         -Donnxruntime_DISABLE_ABSEIL=OFF
-        -Donnxruntime_USE_NEURAL_SPEED=OFF
-        -DUSE_NEURAL_SPEED=OFF
         # for ORT_BUILD_INFO
-        -DORT_GIT_COMMIT:STRING=387127404e6c1d84b3468c387d864877ed1c67fe
-        -DORT_GIT_BRANCH:STRING=v1.18.1
+        -DORT_GIT_COMMIT=${ORT_GIT_COMMIT}
+        -DORT_GIT_BRANCH=${ORT_GIT_BRANCH}
+        # some other customizations ...
         --compile-no-warning-as-error
+        "-DCMAKE_CUDA_FLAGS=-Xcudafe --diag_suppress=2803" # too much warnings about attribute
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
@@ -151,6 +175,9 @@ if("tensorrt" IN_LIST FEATURES)
 endif()
 if("directml" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_providers_dml LOGFILE_BASE build-directml)
+endif()
+if("coreml" IN_LIST FEATURES)
+    vcpkg_cmake_build(TARGET onnxruntime_providers_coreml LOGFILE_BASE build-coreml)
 endif()
 if("training" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET tensorboard LOGFILE_BASE build-tensorboard)

@@ -1,0 +1,20 @@
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO DLTcollab/sse2neon
+    REF 706d3b58025364c2371cafcf9b16e32ff7e630ed
+    SHA512 1e421a1c087333c2e71980bf2a5f223039453ff6a68cc7e2c9dd88ab12fa7d7c4e72b890652129651af69da2d8371fb0ebe6400fe64c3a8702fa44aaddd0d470
+    HEAD_REF master
+)
+
+file(INSTALL "${SOURCE_PATH}/sse2neon.h"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/include"
+)
+
+file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/debug"
+)
+
+file(INSTALL "${SOURCE_PATH}/README.md"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
+)
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

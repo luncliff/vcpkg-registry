@@ -2,3 +2,9 @@ openssl3
 libdispatch
 google-jni-bind
 abseil
+fft2d
+nsync
+ruy
+tensorflow-lite
+dlpack
+onnxruntime

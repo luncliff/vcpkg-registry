@@ -2,7 +2,7 @@
 version: 2.1
 
 orbs:
-  aws-cli: circleci/aws-cli@4.1.3 # https://circleci.com/developer/orbs/orb/circleci/aws-cli
+  aws-cli: circleci/aws-cli@5.1.0 # https://circleci.com/developer/orbs/orb/circleci/aws-cli
   android: circleci/android@2.5.0
 
 workflows:
@@ -14,7 +14,12 @@ workflows:
               ignore:
                 - gh-pages
                 - docs
-      - arm64_android
+      - arm64_android:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+                - docs
 
 jobs:
   x64_linux:
@@ -58,6 +63,7 @@ jobs:
               --clean-buildtrees-after-build \
               --clean-packages-after-build \
               --overlay-ports "$(pwd)/../ports" \
+              --overlay-triplets "$(pwd)/../triplets" \
               $(cat "$(pwd)/../.circleci/port-linux.txt")
           environment:
             VCPKG_DEFAULT_TRIPLET: x64-linux
@@ -78,8 +84,9 @@ jobs:
           destination: "build-logs"
 
   arm64_android:
-    docker:
-      - image: cimg/android:2024.08.1-ndk
+    docker: # https://circleci.com/developer/images/image/cimg/android
+      - image: cimg/android:2024.09.1-ndk # 27.0.12077973
+    resource_class: large
     environment:
       VCPKG_DOWNLOADS: /tmp/vcpkg-caches
       VCPKG_DEFAULT_BINARY_CACHE: /tmp/vcpkg-caches
@@ -97,22 +104,28 @@ jobs:
             git clone --branch=2024.08.23 --depth=1 https://github.com/microsoft/vcpkg
             pushd vcpkg
               ./bootstrap-vcpkg.sh
-              ./vcpkg --version
             popd
-            pwd
+            echo 'export PATH="$VCPKG_ROOT:$PATH"' >> "$BASH_ENV"
+          working_directory: /tmp
+          environment:
+            VCPKG_ROOT: /tmp/vcpkg
       - run:
           name: "Install: azure-port-android.txt"
           command: |
-            ./vcpkg install \
+            vcpkg --version
+            vcpkg install \
               --keep-going --recurse \
+              --x-buildtrees-root buildtrees \
               --clean-buildtrees-after-build \
               --clean-packages-after-build \
-              --overlay-ports "$(pwd)/../ports" \
-              --overlay-ports "$(pwd)/../triplets" \
-              $(cat "$(pwd)/../test/azure-port-android.txt")
-          working_directory: vcpkg
+              --overlay-ports "$(pwd)/ports" \
+              --overlay-triplets "$(pwd)/triplets" \
+              $(cat "$(pwd)/test/azure-port-android.txt")
           environment:
+            VCPKG_ROOT: /tmp/vcpkg
             VCPKG_DEFAULT_TRIPLET: arm64-android
+            VCPKG_MAX_CONCURRENCY: 2
+          no_output_timeout: 1h
       - store_artifacts:
-          path: vcpkg/buildtrees/
+          path: buildtrees/ # follow --x-buildtrees-root
           destination: "build-logs"

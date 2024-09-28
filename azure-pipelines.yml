@@ -160,10 +160,8 @@ stages:
           matrix: # https://github.com/android/ndk/releases
             arm64_ndk27:
               vcpkg.default.triplet: "arm64-android"
-              android.ndk.home: "/usr/local/lib/android/sdk/ndk/27.0.12077973"
             x64_ndk27:
               vcpkg.default.triplet: "x64-android"
-              android.ndk.home: "/usr/local/lib/android/sdk/ndk/27.0.12077973"
         steps:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2

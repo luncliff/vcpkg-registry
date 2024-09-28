@@ -5,8 +5,8 @@ include(GNUInstallDirs)
 
 list(APPEND headers
     include/float8.h
-    include/int4.h
     include/intn.h
+    include/mxfloat.h
 )
 
 add_library(ml_dtypes INTERFACE)

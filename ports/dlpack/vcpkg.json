@@ -1,6 +1,7 @@
 {
   "name": "dlpack",
-  "version": "0.8",
+  "version": "1.0",
+  "port-version": 1,
   "description": "common in-memory tensor structure",
   "homepage": "https://github.com/dmlc/dlpack",
   "license": "Apache-2.0",

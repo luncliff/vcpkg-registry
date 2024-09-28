@@ -1,0 +1,25 @@
+# https://docs.github.com/en/code-security/dependabot
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "ci: GitHub Actions"
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "documentation"
+    allow:
+      - dependency-name: "mkdocs*"
+        dependency-type: "direct"
+      - dependency-name: "Pygments"
+        dependency-type: "direct"
+    assignees:
+      - "luncliff"
+    commit-message:
+      prefix: "[skip ci] "

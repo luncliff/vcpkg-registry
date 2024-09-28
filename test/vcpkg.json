@@ -63,6 +63,13 @@
       ]
     },
     {
+      "name": "onnxruntime",
+      "features": [
+        "test"
+      ],
+      "platform": "osx | linux"
+    },
+    {
       "name": "opencl",
       "platform": "windows | linux"
     },
@@ -77,6 +84,10 @@
         "tools"
       ],
       "platform": "windows"
+    },
+    {
+      "name": "sse2neon",
+      "platform": "x86"
     },
     {
       "name": "tensorflow-lite",

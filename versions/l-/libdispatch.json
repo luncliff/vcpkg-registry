@@ -1,6 +1,11 @@
 {
   "versions": [
     {
+      "git-tree": "58a5514fa893b2fc37e891ec09acd85f608db3f5",
+      "version": "5.10.1",
+      "port-version": 0
+    },
+    {
       "git-tree": "3ebbccc31cfc1edfd52ebcd710ac049ff08d5ff7",
       "version-string": "swift-5.10",
       "port-version": 0

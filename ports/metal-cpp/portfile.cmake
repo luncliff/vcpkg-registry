@@ -1,8 +1,8 @@
 # see https://github.com/bkaradzic/metal-cpp
 vcpkg_download_distfile(ARCHIVE
-    URLS "https://developer.apple.com/metal/cpp/files/metal-cpp_macOS14.2_iOS17.2.zip"
-    FILENAME metal-cpp_macOS14.2_iOS17.2.zip
-    SHA512 5d1152cda3a3b1284854f352b0e56c27c19491aa614de28db385d69e99d8b88a0186d31b373ef6db74d06dbabecf2ef8ce83a8e2d99f4bcb846ff7d58698629c
+    URLS "https://developer.apple.com/metal/cpp/files/metal-cpp_macOS15_iOS18-beta.zip"
+    FILENAME metal-cpp_macOS15_iOS18-beta.zip
+    SHA512 401a38c9268a772c2586da9269e9eab42f8d5643d36b7bce07fe815c1efc56ae1fd1742513e2c5126487dd5326e25e6a503830347de17cc0c563e493dff709a4
 )
 
 vcpkg_extract_source_archive_ex(
@@ -17,7 +17,8 @@ file(INSTALL "${SOURCE_PATH}/Metal"
     DESTINATION "${CURRENT_PACKAGES_DIR}/include"
 )
 
-file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" "${SOURCE_PATH}/README.md"
+file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage"
+             "${SOURCE_PATH}/README.md"
     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
 )
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")

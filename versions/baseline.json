@@ -37,12 +37,12 @@
       "port-version": 0
     },
     "dlpack": {
-      "baseline": "0.8",
-      "port-version": 0
+      "baseline": "1.0",
+      "port-version": 1
     },
     "eigen3": {
       "baseline": "2024-08-01",
-      "port-version": 0
+      "port-version": 1
     },
     "etcpak": {
       "baseline": "2.0",
@@ -58,7 +58,7 @@
     },
     "fft2d": {
       "baseline": "1.0",
-      "port-version": 3
+      "port-version": 4
     },
     "fp16": {
       "baseline": "2024-06-20",
@@ -77,11 +77,11 @@
       "port-version": 0
     },
     "libdispatch": {
-      "baseline": "swift-5.10",
+      "baseline": "5.10.1",
       "port-version": 0
     },
     "liblzma": {
-      "baseline": "5.4.6",
+      "baseline": "5.6.2",
       "port-version": 0
     },
     "llama-cpp": {
@@ -89,7 +89,7 @@
       "port-version": 0
     },
     "metal-cpp": {
-      "baseline": "macOS14.2_iOS17.2",
+      "baseline": "macOS15_iOS18-beta",
       "port-version": 0
     },
     "miniaudio": {
@@ -97,12 +97,16 @@
       "port-version": 0
     },
     "ml-dtypes": {
-      "baseline": "0.4.0",
+      "baseline": "0.5.0",
+      "port-version": 0
+    },
+    "neon2sse": {
+      "baseline": "2024-09-08",
       "port-version": 0
     },
     "nsync": {
       "baseline": "1.29.2",
-      "port-version": 0
+      "port-version": 2
     },
     "nvidia-cnmem": {
       "baseline": "2018-11-28",
@@ -137,8 +141,8 @@
       "port-version": 1
     },
     "onnxruntime": {
-      "baseline": "1.18.1",
-      "port-version": 1
+      "baseline": "1.19.2",
+      "port-version": 0
     },
     "opencl": {
       "baseline": "v2024.05.08",
@@ -165,7 +169,11 @@
       "port-version": 1
     },
     "openssl3": {
-      "baseline": "3.3.1",
+      "baseline": "3.3.2",
+      "port-version": 0
+    },
+    "psimd": {
+      "baseline": "2020-05-17",
       "port-version": 0
     },
     "pthreadpool": {
@@ -173,7 +181,11 @@
       "port-version": 0
     },
     "ruy": {
-      "baseline": "2023-12-20",
+      "baseline": "2024-03-22",
+      "port-version": 0
+    },
+    "sse2neon": {
+      "baseline": "2024-08-17",
       "port-version": 0
     },
     "system-qt5": {
@@ -185,7 +197,7 @@
       "port-version": 0
     },
     "tensorflow-lite": {
-      "baseline": "2.16.2",
+      "baseline": "2.17.0",
       "port-version": 0
     },
     "tensorpipe": {

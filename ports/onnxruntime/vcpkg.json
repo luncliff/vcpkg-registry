@@ -1,11 +1,9 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.18.1",
-  "port-version": 2,
+  "version-semver": "1.19.2",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://onnxruntime.ai/",
   "license": "MIT",
-  "supports": "windows | linux | osx",
   "dependencies": [
     "abseil",
     {
@@ -32,10 +30,6 @@
     },
     "ms-gsl",
     "nlohmann-json",
-    {
-      "name": "nsync",
-      "platform": "!windows"
-    },
     {
       "name": "nsync",
       "platform": "!windows",
@@ -72,6 +66,13 @@
     "wil"
   ],
   "features": {
+    "coreml": {
+      "description": "Build with CoreML support",
+      "supports": "osx | ios",
+      "dependencies": [
+        "coreml-tools"
+      ]
+    },
     "cuda": {
       "description": "Build with CUDA support",
       "dependencies": [
