@@ -2,7 +2,7 @@
   "default": {
     "abseil": {
       "baseline": "20240722.0",
-      "port-version": 0
+      "port-version": 1
     },
     "apple-crypto": {
       "baseline": "3.0.0",
