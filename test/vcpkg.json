@@ -85,6 +85,7 @@
       ],
       "platform": "windows"
     },
+    "protobuf",
     {
       "name": "sse2neon",
       "platform": "x86"
