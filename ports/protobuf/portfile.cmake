@@ -56,13 +56,27 @@ vcpkg_cmake_configure(
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
-if(BUILD_PROTOC)
-    vcpkg_copy_tools(TOOL_NAMES protoc AUTO_CLEAN)
-endif()
 
 # https://cmake.org/cmake/help/latest/module/FindProtobuf.html
 vcpkg_cmake_config_fixup(PACKAGE_NAME Protobuf CONFIG_PATH lib/cmake/protobuf)
 vcpkg_fixup_pkgconfig()
+
+if(BUILD_PROTOC)
+    # get all names of the executables and append to PROTOC_NAMES
+    file(GLOB PROTOC_EXES "${CURRENT_PACKAGES_DIR}/bin/protoc*${CMAKE_EXECUTABLE_SUFFIX}" )
+    foreach(PROTOC_EXE ${PROTOC_EXES})
+        get_filename_component(PROTOC_NAME "${PROTOC_EXE}" NAME_WE)
+        list(APPEND PROTOC_NAMES ${PROTOC_NAME})
+    endforeach()
+    vcpkg_copy_tools(TOOL_NAMES ${PROTOC_NAMES} AUTO_CLEAN)    
+
+    # protoc executable must be correct version. NO_DEFAULT_PATH
+    configure_file(
+        "${CMAKE_CURRENT_LIST_DIR}/vcpkg-cmake-wrapper.cmake"
+        "${CURRENT_PACKAGES_DIR}/share/${PORT}/vcpkg-cmake-wrapper.cmake"
+        @ONLY
+    )
+endif()
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/share"
