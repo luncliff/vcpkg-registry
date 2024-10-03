@@ -65,7 +65,11 @@ if(BUILD_PROTOC)
     # get all names of the executables and append to PROTOC_NAMES
     file(GLOB PROTOC_EXES "${CURRENT_PACKAGES_DIR}/bin/protoc*${CMAKE_EXECUTABLE_SUFFIX}" )
     foreach(PROTOC_EXE ${PROTOC_EXES})
-        get_filename_component(PROTOC_NAME "${PROTOC_EXE}" NAME_WE)
+        if(WIN32)
+            get_filename_component(PROTOC_NAME "${PROTOC_EXE}" NAME_WE) # exclude extension
+        else()
+            get_filename_component(PROTOC_NAME "${PROTOC_EXE}" NAME)
+        endif()
         list(APPEND PROTOC_NAMES ${PROTOC_NAME})
     endforeach()
     vcpkg_copy_tools(TOOL_NAMES ${PROTOC_NAMES} AUTO_CLEAN)    
