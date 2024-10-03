@@ -1,11 +1,9 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO zlib-ng/zlib-ng
-    REF 2.1.6
-    SHA512 59ef586c09b9a63788475abfd6dd59ed602316b38f543f801bea802ff8bec8b55a89bee90375b8bbffa3bdebc7d92a00903f4b7c94cdc1a53a36e2e1fd71d13a
-    HEAD_REF develop
-    PATCHES
-        fix-cmake.patch
+    REF 2.2.2
+    SHA512 3cb3e97ee1d20e1f3cdf0efcdf55aee0e3a192f9a2ae781cd209b1d37620c48f2ada345fb1f4357315b1cb5e09b7ea5fcdfa2fd54f7b4ac5dcb6e73860000aad
+    HEAD_REF 2.2.x
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -23,10 +21,11 @@ vcpkg_cmake_configure(
         -DSKIP_INSTALL_FILES=OFF
         -DZLIB_ENABLE_TESTS=OFF
         -DZLIBNG_ENABLE_TESTS=OFF
-        -DWITH_NEW_STRATEGIES=ON
+        -DWITH_GZFILEOP=ON
         -DWITH_NATIVE_INSTRUCTIONS=OFF # `-march=native` breaks `check_c_source_compiles`
     OPTIONS_DEBUG
         -DWITH_OPTIM=OFF
+        -DWITH_INFLATE_STRICT=ON
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()

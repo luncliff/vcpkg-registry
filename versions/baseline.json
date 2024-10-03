@@ -224,8 +224,12 @@
       "baseline": "2021-10-15",
       "port-version": 1
     },
+    "zlib": {
+      "baseline": "2024-10-03",
+      "port-version": 0
+    },
     "zlib-ng": {
-      "baseline": "2.1.6",
+      "baseline": "2.2.2",
       "port-version": 0
     }
   }
