@@ -1,0 +1,44 @@
+diff --git a/cmake/abseil-cpp.cmake b/cmake/abseil-cpp.cmake
+index b50fb89..4bdb9b3 100644
+--- a/cmake/abseil-cpp.cmake
++++ b/cmake/abseil-cpp.cmake
+@@ -46,8 +46,37 @@ if (BUILD_SHARED_LIBS AND MSVC)
+   # abseil required by protobuf, it is possible to always link absl::abseil_dll and absl::abseil_test_dll
+   # and remove the if
+   if(protobuf_ABSL_PROVIDER STREQUAL "package")
+-    set(protobuf_ABSL_USED_TARGETS absl::abseil_dll)
+-    set(protobuf_ABSL_USED_TEST_TARGETS absl::abseil_test_dll)
++    if(TARGET absl::abseil_dll)
++      set(protobuf_ABSL_USED_TARGETS absl::abseil_dll)
++    else()
++      # abseil is static library. we may need more targets than abseil_dll
++      list(APPEND protobuf_ABSL_USED_TARGETS
++        absl::cord
++        absl::cord_internal
++        absl::log_initialize
++        absl::log_globals
++        absl::log_severity
++        absl::log_internal_check_op
++        absl::log_internal_conditions
++        absl::log_internal_format
++        absl::log_internal_globals
++        absl::log_internal_proto
++        absl::log_internal_message
++        absl::log_internal_log_sink_set
++        absl::log_internal_nullguard
++        absl::die_if_null
++        absl::raw_hash_set
++        absl::status
++        absl::statusor
++        absl::strings
++        absl::synchronization
++        absl::strings_internal
++        absl::str_format_internal
++      )
++    endif()
++    if(TARGET absl::abseil_test_dll)
++      set(protobuf_ABSL_USED_TEST_TARGETS absl::abseil_test_dll)
++    endif()
+   else()
+     set(protobuf_ABSL_USED_TARGETS abseil_dll)
+     set(protobuf_ABSL_USED_TEST_TARGETS abseil_test_dll)

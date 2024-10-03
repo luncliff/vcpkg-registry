@@ -188,6 +188,10 @@
       "baseline": "3.4.0",
       "port-version": 0
     },
+    "protobuf": {
+      "baseline": "4.25.5",
+      "port-version": 0
+    },
     "psimd": {
       "baseline": "2020-05-17",
       "port-version": 0
