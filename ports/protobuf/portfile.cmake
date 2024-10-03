@@ -6,8 +6,8 @@ vcpkg_find_acquire_program(PKGCONFIG)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO protocolbuffers/protobuf
-    REF v${VERSION} # == v29.0-rc1
-    SHA512 bf679f639108fb6fbb3b80cbd252b93bc53169c2bdca335a815eca26135fa3a331d59745952d6e4fe6ffc7daeaae277a89ca3184762373248619a4fa9da88212
+    REF v${VERSION} # == v25.5
+    SHA512 b1757781fa7d141e965e0a800c8fe60d6a27bad151a0405908de05dad41833f2d6b9aa3c307de028f82f6dafbd4c5bc706deabc4e89c7ad6b2c6056843f6ff29
     HEAD_REF master
     PATCHES
         fix-utf8-range.patch
@@ -16,7 +16,7 @@ vcpkg_from_github(
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        upb protobuf_BUILD_LIBUPB
+        # upb protobuf_BUILD_LIBUPB
         test protobuf_BUILD_TESTS
         test protobuf_BUILD_CONFORMANCE
         examples protobuf_BUILD_EXAMPLES
@@ -51,6 +51,7 @@ vcpkg_cmake_configure(
         -Dprotobuf_ABSL_PROVIDER=package # ${SOURCE_PATH}/cmake/abseil-cpp.cmake
         -Dprotobuf_JSONCPP_PROVIDER=package
         -Dprotobuf_DEBUG_POSTFIX=
+        -DCMAKE_INSTALL_CMAKEDIR=lib/cmake
     MAYBE_UNUSED_VARIABLES
         protobuf_JSONCPP_PROVIDER
 )
@@ -58,14 +59,14 @@ vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 
 # https://cmake.org/cmake/help/latest/module/FindProtobuf.html
-vcpkg_cmake_config_fixup(PACKAGE_NAME Protobuf CONFIG_PATH lib/cmake/protobuf)
+vcpkg_cmake_config_fixup(PACKAGE_NAME Protobuf CONFIG_PATH lib/cmake)
 vcpkg_fixup_pkgconfig()
 
 if(BUILD_PROTOC)
     # get all names of the executables and append to PROTOC_NAMES
     file(GLOB PROTOC_EXES "${CURRENT_PACKAGES_DIR}/bin/protoc*${CMAKE_EXECUTABLE_SUFFIX}" )
     foreach(PROTOC_EXE ${PROTOC_EXES})
-        if(WIN32)
+        if(VCPKG_HOST_IS_WINDOWS)
             get_filename_component(PROTOC_NAME "${PROTOC_EXE}" NAME_WE) # exclude extension
         else()
             get_filename_component(PROTOC_NAME "${PROTOC_EXE}" NAME)
@@ -85,9 +86,9 @@ endif()
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/share"
     "${CURRENT_PACKAGES_DIR}/debug/include"
-    "${CURRENT_PACKAGES_DIR}/include/upb"
-    "${CURRENT_PACKAGES_DIR}/include/upb_generator"
     "${CURRENT_PACKAGES_DIR}/include/java"
+    # "${CURRENT_PACKAGES_DIR}/include/upb"
+    # "${CURRENT_PACKAGES_DIR}/include/upb_generator"
 )
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

@@ -173,7 +173,7 @@
       "port-version": 0
     },
     "protobuf": {
-      "baseline": "5.29.0-rc1",
+      "baseline": "4.25.5",
       "port-version": 0
     },
     "psimd": {
