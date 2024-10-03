@@ -24,8 +24,8 @@ schedules:
 
 variables:
   # check https://github.com/microsoft/vcpkg/releases
-  - name: vcpkg.commit
-    value: "c82f74667287d3dc386bce81e44964370c91a289" # 2024.09.30
+  - name: vcpkg.version
+    value: "2024.09.30"
 
   - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
@@ -63,9 +63,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2440-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"v2439-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2440-bin-uwp" | "$(vcpkg.default.triplet)"
+                "v2439-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: arm64-windows"
@@ -124,9 +124,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2440-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"v2439-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
-                "v2440-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
+                "v2439-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(cxx)"
@@ -166,9 +166,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2440-bin-android" | "$(vcpkg.default.triplet)"'
+              key: '"v2439-bin-android" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2440-bin-android" | "$(vcpkg.default.triplet)"
+                "v2439-bin-android" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(vcpkg.default.triplet)"
@@ -211,20 +211,22 @@ stages:
         steps:
           - powershell: brew install vcpkg $(Get-Content test/packages-homebrew.txt)
             displayName: "Install HomeBrew packages"
-          - task: UsePythonVersion@0
-            displayName: "Setup: Python 3.12"
-            inputs:
-              versionSpec: "3.12"
-              addToPath: true
-              architecture: "x64"
           - powershell: pip install typing-extensions pybind11 numpy pyyaml
             displayName: "Install Python packages"
-          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
+          - task: PowerShell@2
+            displayName: "Setup vcpkg"
+            inputs:
+              script: |
+                New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
+                Push-Location /usr/local/share/
+                  git clone --branch "$env:VCPKG_VERSION" --depth 1 https://github.com/microsoft/vcpkg
+                Pop-Location
+              targetType: 'inline'
           - task: Cache@2
             inputs:
-              key: '"v2440-bin-osx" | "$(vcpkg.default.triplet)"'
+              key: '"v2439-bin-osx" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2440-bin-osx" | "$(vcpkg.default.triplet)"
+                "v2439-bin-osx" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: osx"
@@ -264,14 +266,22 @@ stages:
               vcpkg.default.triplet: "arm64-ios-simulator"
               vcpkg.overlay.triplets: "$(Build.SourcesDirectory)/triplets"
         steps:
-          - powershell: brew install $(Get-Content test/packages-homebrew.txt)
+          - powershell: brew install vcpkg $(Get-Content test/packages-homebrew.txt)
             displayName: "Install HomeBrew packages"
-          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
+          - task: PowerShell@2
+            displayName: "Setup vcpkg"
+            inputs:
+              script: |
+                New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
+                Push-Location /usr/local/share/
+                  git clone --branch "$env:VCPKG_VERSION" --depth 1 https://github.com/microsoft/vcpkg
+                Pop-Location
+              targetType: 'inline'
           - task: Cache@2
             inputs:
-              key: '"v2440-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"v2439-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2440-bin-ios" | "$(vcpkg.default.triplet)"
+                "v2439-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(vcpkg.default.triplet)"
