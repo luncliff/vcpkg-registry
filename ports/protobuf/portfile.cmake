@@ -59,7 +59,7 @@ vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 
 # https://cmake.org/cmake/help/latest/module/FindProtobuf.html
-vcpkg_cmake_config_fixup(PACKAGE_NAME Protobuf CONFIG_PATH lib/cmake)
+vcpkg_cmake_config_fixup(PACKAGE_NAME protobuf CONFIG_PATH lib/cmake)
 vcpkg_fixup_pkgconfig()
 
 if(BUILD_PROTOC)
@@ -75,11 +75,16 @@ if(BUILD_PROTOC)
     endforeach()
     vcpkg_copy_tools(TOOL_NAMES ${PROTOC_NAMES} AUTO_CLEAN)    
 
-    # protoc executable must be correct version. NO_DEFAULT_PATH
+    # copied from vcpkg upstream: protoc executable must be correct version. NO_DEFAULT_PATH
     configure_file(
         "${CMAKE_CURRENT_LIST_DIR}/vcpkg-cmake-wrapper.cmake"
         "${CURRENT_PACKAGES_DIR}/share/${PORT}/vcpkg-cmake-wrapper.cmake"
         @ONLY
+    )
+else()
+    # copied from vcpkg upstream: create protobuf::protoc with the host installed executable
+    file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/protobuf-targets-vcpkg-protoc.cmake"
+        DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
     )
 endif()
 
