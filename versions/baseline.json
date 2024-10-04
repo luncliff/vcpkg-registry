@@ -113,8 +113,8 @@
       "port-version": 0
     },
     "nvidia-cutlass": {
-      "baseline": "3.5.0",
-      "port-version": 1
+      "baseline": "3.5.1",
+      "port-version": 0
     },
     "nvidia-nvbench": {
       "baseline": "2024-06-01",
@@ -228,8 +228,12 @@
       "baseline": "2021-10-15",
       "port-version": 1
     },
+    "zlib": {
+      "baseline": "2024-10-03",
+      "port-version": 0
+    },
     "zlib-ng": {
-      "baseline": "2.1.6",
+      "baseline": "2.2.2",
       "port-version": 0
     }
   }
