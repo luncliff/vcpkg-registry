@@ -1,0 +1,16 @@
+{
+  "name": "zlib",
+  "version-date": "2024-10-03",
+  "description": "Redirection to zlib-ng or system installed ZLIB",
+  "homepage": "https://github.com/zlib-ng/zlib-ng",
+  "license": "Zlib",
+  "dependencies": [
+    {
+      "name": "zlib-ng",
+      "features": [
+        "zlib-compat"
+      ],
+      "platform": "windows"
+    }
+  ]
+}
