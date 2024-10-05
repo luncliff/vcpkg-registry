@@ -1,24 +1,11 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 96e0b0f..3f40cc2 100644
+index 96e0b0f..f97ddfa 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -2,7 +2,7 @@
- # Licensed under the MIT License.
- cmake_minimum_required(VERSION 3.14)
- project(openclon12)
--include(FetchContent)
-+include(GNUInstallDirs)
+@@ -17,30 +17,10 @@ file(GLOB TRANS_SRC CONFIGURE_DEPENDS src/d3d12translationlayer/*.cpp)
+ file(GLOB TRANS_INC include/d3d12translationlayer/*.*)
+ file(GLOB TRANS_INL include/d3d12translationlayer/*.inl src/d3d12translationlayer/*.inl)
  
- set(CMAKE_CXX_STANDARD 17)
- set(CMAKE_CXX_STANDARD_REQUIRED ON)
-@@ -13,58 +13,31 @@ file(GLOB_RECURSE MAIN_SRC CONFIGURE_DEPENDS src/openclon12/*.cpp src/compilers/
- file(GLOB MAIN_INC src/openclon12/*.h src/openclon12/*.hpp)
- file(GLOB_RECURSE EXTERNAL_INC external/*.h external/*.hpp)
- 
--file(GLOB TRANS_SRC CONFIGURE_DEPENDS src/d3d12translationlayer/*.cpp)
--file(GLOB TRANS_INC include/d3d12translationlayer/*.*)
--file(GLOB TRANS_INL include/d3d12translationlayer/*.inl src/d3d12translationlayer/*.inl)
--
 -include(FetchContent)
 -FetchContent_Declare(
 -    DirectX-Headers
@@ -43,44 +30,37 @@ index 96e0b0f..3f40cc2 100644
 -    GIT_TAG ed429e64eb3b91848bf19c17e1431c1b0f2c6d2b
 -)
 -FetchContent_MakeAvailable(wil)
--
--add_library(d3d12translationlayer STATIC ${TRANS_SRC} ${TRANS_INC} ${TRANS_INL})
--target_include_directories(d3d12translationlayer
--    PUBLIC include/d3d12translationlayer
--    PRIVATE external)
--
--target_link_libraries(d3d12translationlayer Microsoft::DirectX-Headers d3d12 dxgi atls dxcore)
--
--target_compile_definitions(d3d12translationlayer PRIVATE $<$<CONFIG:DEBUG>:DBG>)
--target_compile_definitions(d3d12translationlayer PUBLIC $<$<CONFIG:DEBUG>:TRANSLATION_LAYER_DBG=1>)
-+find_path(D3D12TRANSLATIONLAYER_INCLUDE_DIR NAMES D3D12TranslationLayer/D3D12TranslationLayerIncludes.h REQUIRED)
-+find_library(D3D12TRANSLATIONLAYER_LIB NAMES d3d12translationlayer REQUIRED)
++include(GNUInstallDirs)
++find_package(directx-headers CONFIG REQUIRED) # Microsoft::DirectX-Headers
 +find_path(OpenCL_INCLUDE_DIR NAMES CL/cl.h REQUIRED)
 +find_package(wil CONFIG REQUIRED) # WIL::WIL
-+find_package(directx-headers CONFIG REQUIRED) # Microsoft::DirectX-Headers
  
+ add_library(d3d12translationlayer STATIC ${TRANS_SRC} ${TRANS_INC} ${TRANS_INL})
+ target_include_directories(d3d12translationlayer
+@@ -55,12 +35,12 @@ target_compile_definitions(d3d12translationlayer PUBLIC $<$<CONFIG:DEBUG>:TRANSL
  add_library(openclon12 SHARED ${MAIN_SRC} ${MAIN_INC} ${EXTERNAL_INC})
  target_include_directories(openclon12
      PRIVATE src/openclon12
-     PRIVATE external
+-    PRIVATE external
++    PRIVATE external ${OpenCL_INCLUDE_DIR}
      PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-+target_include_directories(openclon12 PRIVATE ${D3D12TRANSLATIONLAYER_INCLUDE_DIR}/D3D12TranslationLayer ${OpenCL_INCLUDE_DIR})
  target_link_libraries(openclon12
 -    d3d12translationlayer
 -    OpenCL::Headers
 -    WIL
-+    ${D3D12TRANSLATIONLAYER_LIB} dxcore d3d12 dxgi
++    d3d12translationlayer dxcore d3d12 dxgi
 +    Microsoft::DirectX-Headers
 +    WIL::WIL
      user32
      gdi32)
  source_group("Header Files\\External" FILES ${EXTERNAL_INC})
- 
-+install(FILES ${TRANS_INC} ${TRANS_INL} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/OpenCLOn12)
+@@ -70,3 +50,8 @@ option(BUILD_TESTS "Build tests" ON)
+ if (BUILD_TESTS)
+     add_subdirectory(test)
+ endif()
++
 +install(TARGETS openclon12
 +    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 +    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 +)
- option(BUILD_TESTS "Build tests" ON)
- 
- if (BUILD_TESTS)
+\ No newline at end of file

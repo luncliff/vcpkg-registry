@@ -6,7 +6,6 @@
   "license": "MIT",
   "supports": "windows",
   "dependencies": [
-    "d3d12-transition-layer",
     {
       "name": "directx-headers",
       "version>=": "1.610.2"

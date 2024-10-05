@@ -7,12 +7,7 @@ vcpkg_from_github(
     SHA512 7053cee9db381b55bab74729fa445b485e70f6c71f3358824ffae5aa4dfc6e869825196c029d94582a8b1d88029a508e7e38a24ffe9adafb242725a790f7f3e5
     PATCHES
         fix-cmake.patch
-        fix-sources.patch
     HEAD_REF master
-)
-file(REMOVE_RECURSE
-    ${SOURCE_PATH}/include/d3d12translationlayer
-    ${SOURCE_PATH}/src/d3d12translationlayer
 )
 
 vcpkg_cmake_configure(
@@ -24,7 +19,9 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 
+set(VCPKG_POLICY_EMPTY_INCLUDE_FOLDER enabled)
 file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/include"
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
 )
