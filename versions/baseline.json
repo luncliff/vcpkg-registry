@@ -188,6 +188,10 @@
       "baseline": "2024-03-22",
       "port-version": 0
     },
+    "smol-v": {
+      "baseline": "2024-09-26",
+      "port-version": 0
+    },
     "sse2neon": {
       "baseline": "2024-08-17",
       "port-version": 0
