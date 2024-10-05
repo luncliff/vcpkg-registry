@@ -35,6 +35,7 @@
       "name": "fbgemm",
       "platform": "x64"
     },
+    "glslang",
     {
       "name": "libdispatch",
       "platform": "windows | android"
