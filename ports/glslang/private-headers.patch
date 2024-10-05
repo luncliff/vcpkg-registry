@@ -1,0 +1,17 @@
+diff --git a/glslang/CMakeLists.txt b/glslang/CMakeLists.txt
+index 47925d8..50900b2 100644
+--- a/glslang/CMakeLists.txt
++++ b/glslang/CMakeLists.txt
+@@ -270,6 +270,12 @@ if(GLSLANG_ENABLE_INSTALL)
+         get_filename_component(dir ${file} DIRECTORY)
+         install(FILES ${file} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/glslang/${dir})
+     endforeach()
++    # <glslang/Inlcude/...>
++    install(DIRECTORY Include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/glslang/Include)
++    # <glslang/MachineIndependent/...>
++    file(GLOB MI_HEADERS MachineIndependent/*.h)
++    list(REMOVE_ITEM MI_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/MachineIndependent/pch.h)
++    install(FILES ${MI_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/glslang/MachineIndependent)
+ 
+     install(FILES ${GLSLANG_BUILD_INFO_H} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/glslang)
+ 
