@@ -11,21 +11,8 @@ index 49fa4b7..1332d78 100644
  
  #include <iostream>
  #include <string>
-diff --git a/filament/backend/test/ShaderGenerator.cpp b/filament/backend/test/ShaderGenerator.cpp
-index 7d0ad71..64504f1 100644
---- a/filament/backend/test/ShaderGenerator.cpp
-+++ b/filament/backend/test/ShaderGenerator.cpp
-@@ -24,7 +24,7 @@
- 
- #include "../src/GLSLPostProcessor.h"
- 
--#include "builtinResource.h"
-+#include <glslang/Include/ResourceLimits.h>
- 
- #include <utils/FixedCapacityVector.h>
- 
 diff --git a/libs/filamat/src/GLSLPostProcessor.cpp b/libs/filamat/src/GLSLPostProcessor.cpp
-index 3a4a482..653eb73 100644
+index 3a4a482..4210a36 100644
 --- a/libs/filamat/src/GLSLPostProcessor.cpp
 +++ b/libs/filamat/src/GLSLPostProcessor.cpp
 @@ -16,15 +16,15 @@
@@ -43,10 +30,37 @@ index 3a4a482..653eb73 100644
  
  #include "backend/DriverEnums.h"
 -#include "sca/builtinResource.h"
-+#include <glslang/Include/ResourceLimits.h>
++#include <glslang/Public/ResourceLimits.h>
  #include "sca/GLSLTools.h"
  
  #include "shaders/CodeGenerator.h"
+@@ -363,7 +363,7 @@ bool GLSLPostProcessor::process(const std::string& inputShader, Config const& co
+         msg = EShMessages(Type(msg) | Type(EShMessages::EShMsgVulkanRules));
+     }
+ 
+-    bool const ok = tShader.parse(&DefaultTBuiltInResource, internalConfig.langVersion, false, msg);
++    bool const ok = tShader.parse(GetDefaultResources(), internalConfig.langVersion, false, msg);
+     if (!ok) {
+         slog.e << tShader.getInfoLog() << io::endl;
+         return false;
+@@ -446,7 +446,7 @@ void GLSLPostProcessor::preprocessOptimization(glslang::TShader& tShader,
+     const int version = GLSLTools::getGlslDefaultVersion(config.shaderModel);
+     EShMessages const msg =
+             GLSLTools::glslangFlagsFromTargetApi(config.targetApi, config.targetLanguage);
+-    bool ok = tShader.preprocess(&DefaultTBuiltInResource, version, ENoProfile, false, false,
++    bool ok = tShader.preprocess(GetDefaultResources(), version, ENoProfile, false, false,
+             msg, &glsl, forbidIncluder);
+ 
+     if (!ok) {
+@@ -465,7 +465,7 @@ void GLSLPostProcessor::preprocessOptimization(glslang::TShader& tShader,
+         spirvShader.setStrings(&shaderCString, 1);
+         GLSLTools::prepareShaderParser(config.targetApi, config.targetLanguage, spirvShader,
+                 internalConfig.shLang, internalConfig.langVersion);
+-        ok = spirvShader.parse(&DefaultTBuiltInResource, internalConfig.langVersion, false, msg);
++        ok = spirvShader.parse(GetDefaultResources(), internalConfig.langVersion, false, msg);
+         program.addShader(&spirvShader);
+         // Even though we only have a single shader stage, linking is still necessary to finalize
+         // SPIR-V types
 diff --git a/libs/filamat/src/GLSLPostProcessor.h b/libs/filamat/src/GLSLPostProcessor.h
 index c13dece..c2fb87c 100644
 --- a/libs/filamat/src/GLSLPostProcessor.h
@@ -89,7 +103,7 @@ index 19ec1ce..680466f 100644
  class TIntermNode;
  
 diff --git a/libs/filamat/src/sca/GLSLTools.cpp b/libs/filamat/src/sca/GLSLTools.cpp
-index eeecf89..19aee05 100644
+index eeecf89..1b27999 100644
 --- a/libs/filamat/src/sca/GLSLTools.cpp
 +++ b/libs/filamat/src/sca/GLSLTools.cpp
 @@ -25,10 +25,10 @@
@@ -102,10 +116,46 @@ index eeecf89..19aee05 100644
 +#include <glslang/MachineIndependent/localintermediate.h>
  
 -#include "builtinResource.h"
-+#include <glslang/Include/ResourceLimits.h>
++#include <glslang/Public/ResourceLimits.h>
  
  using namespace utils;
  using namespace glslang;
+@@ -173,7 +173,7 @@ bool GLSLTools::analyzeComputeShader(const std::string& shaderCode,
+     GLSLangCleaner const cleaner;
+     const int version = getGlslDefaultVersion(model);
+     EShMessages const msg = glslangFlagsFromTargetApi(targetApi, targetLanguage);
+-    bool const ok = tShader.parse(&DefaultTBuiltInResource, version, false, msg);
++    bool const ok = tShader.parse(GetDefaultResources(), version, false, msg);
+     if (!ok) {
+         utils::slog.e << "ERROR: Unable to parse compute shader:" << utils::io::endl;
+         utils::slog.e << tShader.getInfoLog() << utils::io::endl;
+@@ -211,7 +211,7 @@ std::optional<GLSLTools::FragmentShaderInfo> GLSLTools::analyzeFragmentShader(
+     GLSLangCleaner const cleaner;
+     const int version = getGlslDefaultVersion(model);
+     EShMessages const msg = glslangFlagsFromTargetApi(targetApi, targetLanguage);
+-    bool const ok = tShader.parse(&DefaultTBuiltInResource, version, false, msg);
++    bool const ok = tShader.parse(GetDefaultResources(), version, false, msg);
+     if (!ok) {
+         utils::slog.e << "ERROR: Unable to parse fragment shader:" << utils::io::endl;
+         utils::slog.e << tShader.getInfoLog() << utils::io::endl;
+@@ -291,7 +291,7 @@ bool GLSLTools::analyzeVertexShader(const std::string& shaderCode,
+     GLSLangCleaner const cleaner;
+     const int version = getGlslDefaultVersion(model);
+     EShMessages const msg = glslangFlagsFromTargetApi(targetApi, targetLanguage);
+-    bool const ok = tShader.parse(&DefaultTBuiltInResource, version, false, msg);
++    bool const ok = tShader.parse(GetDefaultResources(), version, false, msg);
+     if (!ok) {
+         utils::slog.e << "ERROR: Unable to parse vertex shader" << utils::io::endl;
+         utils::slog.e << tShader.getInfoLog() << utils::io::endl;
+@@ -342,7 +342,7 @@ bool GLSLTools::findProperties(
+     GLSLangCleaner const cleaner;
+     const int version = getGlslDefaultVersion(model);
+     EShMessages const msg = glslangFlagsFromTargetApi(targetApi, targetLanguage);
+-    const TBuiltInResource* builtins = &DefaultTBuiltInResource;
++    const TBuiltInResource* builtins = GetDefaultResources();
+     bool const ok = tShader.parse(builtins, version, false, msg);
+     if (!ok) {
+         // Even with all properties set the shader doesn't build. This is likely a syntax error
 diff --git a/libs/filamat/src/sca/GLSLTools.h b/libs/filamat/src/sca/GLSLTools.h
 index 1c7cf16..fb2a610 100644
 --- a/libs/filamat/src/sca/GLSLTools.h
@@ -119,146 +169,6 @@ index 1c7cf16..fb2a610 100644
  
  class TIntermNode;
  
-diff --git a/libs/filamat/src/sca/builtinResource.h b/libs/filamat/src/sca/builtinResource.h
-deleted file mode 100644
-index d58f2a9..0000000
---- a/libs/filamat/src/sca/builtinResource.h
-+++ /dev/null
-@@ -1,134 +0,0 @@
--/*
-- * Copyright (C) 2018 The Android Open Source Project
-- *
-- * Licensed under the Apache License, Version 2.0 (the "License");
-- * you may not use this file except in compliance with the License.
-- * You may obtain a copy of the License at
-- *
-- *      http://www.apache.org/licenses/LICENSE-2.0
-- *
-- * Unless required by applicable law or agreed to in writing, software
-- * distributed under the License is distributed on an "AS IS" BASIS,
-- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-- * See the License for the specific language governing permissions and
-- * limitations under the License.
-- */
--
--#include "glslang/Include/intermediate.h"
--
--const TBuiltInResource DefaultTBuiltInResource = {
--        /* .MaxLights = */ 32,
--        /* .MaxClipPlanes = */ 6,
--        /* .MaxTextureUnits = */ 32,
--        /* .MaxTextureCoords = */ 32,
--        /* .MaxVertexAttribs = */ 64,
--        /* .MaxVertexUniformComponents = */ 4096,
--        /* .MaxVaryingFloats = */ 64,
--        /* .MaxVertexTextureImageUnits = */ 32,
--        /* .MaxCombinedTextureImageUnits = */ 80,
--        /* .MaxTextureImageUnits = */ 32,
--        /* .MaxFragmentUniformComponents = */ 4096,
--        /* .MaxDrawBuffers = */ 32,
--        /* .MaxVertexUniformVectors = */ 128,
--        /* .MaxVaryingVectors = */ 8,
--        /* .MaxFragmentUniformVectors = */ 16,
--        /* .MaxVertexOutputVectors = */ 16,
--        /* .MaxFragmentInputVectors = */ 15,
--        /* .MinProgramTexelOffset = */ -8,
--        /* .MaxProgramTexelOffset = */ 7,
--        /* .MaxClipDistances = */ 8,
--        /* .MaxComputeWorkGroupCountX = */ 65535,
--        /* .MaxComputeWorkGroupCountY = */ 65535,
--        /* .MaxComputeWorkGroupCountZ = */ 65535,
--        /* .MaxComputeWorkGroupSizeX = */ 1024,
--        /* .MaxComputeWorkGroupSizeY = */ 1024,
--        /* .MaxComputeWorkGroupSizeZ = */ 64,
--        /* .MaxComputeUniformComponents = */ 1024,
--        /* .MaxComputeTextureImageUnits = */ 16,
--        /* .MaxComputeImageUniforms = */ 8,
--        /* .MaxComputeAtomicCounters = */ 8,
--        /* .MaxComputeAtomicCounterBuffers = */ 1,
--        /* .MaxVaryingComponents = */ 60,
--        /* .MaxVertexOutputComponents = */ 64,
--        /* .MaxGeometryInputComponents = */ 64,
--        /* .MaxGeometryOutputComponents = */ 128,
--        /* .MaxFragmentInputComponents = */ 128,
--        /* .MaxImageUnits = */ 8,
--        /* .MaxCombinedImageUnitsAndFragmentOutputs = */ 8,
--        /* .MaxCombinedShaderOutputResources = */ 8,
--        /* .MaxImageSamples = */ 0,
--        /* .MaxVertexImageUniforms = */ 0,
--        /* .MaxTessControlImageUniforms = */ 0,
--        /* .MaxTessEvaluationImageUniforms = */ 0,
--        /* .MaxGeometryImageUniforms = */ 0,
--        /* .MaxFragmentImageUniforms = */ 8,
--        /* .MaxCombinedImageUniforms = */ 8,
--        /* .MaxGeometryTextureImageUnits = */ 16,
--        /* .MaxGeometryOutputVertices = */ 256,
--        /* .MaxGeometryTotalOutputComponents = */ 1024,
--        /* .MaxGeometryUniformComponents = */ 1024,
--        /* .MaxGeometryVaryingComponents = */ 64,
--        /* .MaxTessControlInputComponents = */ 128,
--        /* .MaxTessControlOutputComponents = */ 128,
--        /* .MaxTessControlTextureImageUnits = */ 16,
--        /* .MaxTessControlUniformComponents = */ 1024,
--        /* .MaxTessControlTotalOutputComponents = */ 4096,
--        /* .MaxTessEvaluationInputComponents = */ 128,
--        /* .MaxTessEvaluationOutputComponents = */ 128,
--        /* .MaxTessEvaluationTextureImageUnits = */ 16,
--        /* .MaxTessEvaluationUniformComponents = */ 1024,
--        /* .MaxTessPatchComponents = */ 120,
--        /* .MaxPatchVertices = */ 32,
--        /* .MaxTessGenLevel = */ 64,
--        /* .MaxViewports = */ 16,
--        /* .MaxVertexAtomicCounters = */ 0,
--        /* .MaxTessControlAtomicCounters = */ 0,
--        /* .MaxTessEvaluationAtomicCounters = */ 0,
--        /* .MaxGeometryAtomicCounters = */ 0,
--        /* .MaxFragmentAtomicCounters = */ 8,
--        /* .MaxCombinedAtomicCounters = */ 8,
--        /* .MaxAtomicCounterBindings = */ 1,
--        /* .MaxVertexAtomicCounterBuffers = */ 0,
--        /* .MaxTessControlAtomicCounterBuffers = */ 0,
--        /* .MaxTessEvaluationAtomicCounterBuffers = */ 0,
--        /* .MaxGeometryAtomicCounterBuffers = */ 0,
--        /* .MaxFragmentAtomicCounterBuffers = */ 1,
--        /* .MaxCombinedAtomicCounterBuffers = */ 1,
--        /* .MaxAtomicCounterBufferSize = */ 16384,
--        /* .MaxTransformFeedbackBuffers = */ 4,
--        /* .MaxTransformFeedbackInterleavedComponents = */ 64,
--        /* .MaxCullDistances = */ 8,
--        /* .MaxCombinedClipAndCullDistances = */ 8,
--        /* .MaxSamples = */ 4,
--        /* .maxMeshOutputVerticesNV = */ 256,
--        /* .maxMeshOutputPrimitivesNV = */ 512,
--        /* .maxMeshWorkGroupSizeX_NV = */ 32,
--        /* .maxMeshWorkGroupSizeY_NV = */ 1,
--        /* .maxMeshWorkGroupSizeZ_NV = */ 1,
--        /* .maxTaskWorkGroupSizeX_NV = */ 32,
--        /* .maxTaskWorkGroupSizeY_NV = */ 1,
--        /* .maxTaskWorkGroupSizeZ_NV = */ 1,
--        /* .maxMeshViewCountNV = */ 4,
--        /* .max_mesh_output_vertices_ext = */ 256,
--        /* .max_mesh_output_primitives_ext = */ 256,
--        /* .max_mesh_work_group_size_x_ext = */ 128,
--        /* .max_mesh_work_group_size_y_ext = */ 128,
--        /* .max_mesh_work_group_size_z_ext = */ 128,
--        /* .max_task_work_group_size_x_ext = */ 128,
--        /* .max_task_work_group_size_y_ext = */ 128,
--        /* .max_task_work_group_size_z_ext = */ 128,
--        /* .max_mesh_view_count_ext = */ 4,
--        /* .maxDualSourceDrawBuffersEXT = */ 1,
--
--        /* .limits = */ {
--                /* .nonInductiveForLoops = */ 1,
--                /* .whileLoops = */ 1,
--                /* .doWhileLoops = */ 1,
--                /* .generalUniformIndexing = */ 1,
--                /* .generalAttributeMatrixVectorIndexing = */ 1,
--                /* .generalVaryingIndexing = */ 1,
--                /* .generalSamplerIndexing = */ 1,
--                /* .generalVariableIndexing = */ 1,
--                /* .generalConstantMatrixVectorIndexing = */ 1,
--        }
--};
 diff --git a/libs/geometry/src/MikktspaceImpl.cpp b/libs/geometry/src/MikktspaceImpl.cpp
 index 5c5a1b5..4c6dd9b 100644
 --- a/libs/geometry/src/MikktspaceImpl.cpp
@@ -299,7 +209,7 @@ index 5d53861..f72c108 100644
  
  using namespace basist;
 diff --git a/libs/matdbg/src/ShaderReplacer.cpp b/libs/matdbg/src/ShaderReplacer.cpp
-index 9cd8ba4..f388f72 100644
+index 9cd8ba4..d2b4d0f 100644
 --- a/libs/matdbg/src/ShaderReplacer.cpp
 +++ b/libs/matdbg/src/ShaderReplacer.cpp
 @@ -27,9 +27,9 @@
@@ -310,10 +220,19 @@ index 9cd8ba4..f388f72 100644
 +#include <glslang/SPIRV/GlslangToSpv.h>
  
 -#include "sca/builtinResource.h"
-+#include <glslang/Include/ResourceLimits.h>
++#include <glslang/Public/ResourceLimits.h>
  #include "sca/GLSLTools.h"
  
  #include "eiff/ChunkContainer.h"
+@@ -225,7 +225,7 @@ bool ShaderReplacer::replaceSpirv(ShaderModel shaderModel, Variant variant,
+         GLSLTools::prepareShaderParser(targetApi,
+                 MaterialBuilder::TargetLanguage::SPIRV, tShader, shLang, version);
+ 
+-        const bool ok = tShader.parse(&DefaultTBuiltInResource, version, false, msg);
++        const bool ok = tShader.parse(GetDefaultResources(), version, false, msg);
+         if (!ok) {
+             slog.e << "ShaderReplacer parse:\n" << tShader.getInfoLog() << io::endl;
+             return false;
 diff --git a/libs/viewer/src/RemoteServer.cpp b/libs/viewer/src/RemoteServer.cpp
 index 441c730..89c492f 100644
 --- a/libs/viewer/src/RemoteServer.cpp
@@ -668,7 +587,7 @@ index 6ca6315..11b90b9 100644
  #include <utils/Path.h>
  
 diff --git a/tools/matc/src/matc/MaterialCompiler.cpp b/tools/matc/src/matc/MaterialCompiler.cpp
-index 93d0fed..b5f1795 100644
+index 93d0fed..eca6122 100644
 --- a/tools/matc/src/matc/MaterialCompiler.cpp
 +++ b/tools/matc/src/matc/MaterialCompiler.cpp
 @@ -34,10 +34,9 @@
@@ -681,10 +600,19 @@ index 93d0fed..b5f1795 100644
 -#include "sca/builtinResource.h"
 +#include <glslang/SPIRV/GlslangToSpv.h>
 +#include <glslang/Public/ShaderLang.h>
-+#include <glslang/Include/ResourceLimits.h>
++#include <glslang/Public/ResourceLimits.h>
  
  #include <smolv.h>
  
+@@ -583,7 +582,7 @@ bool MaterialCompiler::compileRawShader(const char* glsl, size_t size, bool isDe
+ 
+     tShader.setAutoMapBindings(true);
+ 
+-    bool const parseOk = tShader.parse(&DefaultTBuiltInResource, version, false, msg);
++    bool const parseOk = tShader.parse(GetDefaultResources(), version, false, msg);
+     if (!parseOk) {
+         std::cerr << "ERROR: Unable to parse " << ext << ":" << std::endl;
+         std::cerr << tShader.getInfoLog() << std::endl;
 diff --git a/tools/matedit/src/main.cpp b/tools/matedit/src/main.cpp
 index 50b4791..3632102 100644
 --- a/tools/matedit/src/main.cpp
