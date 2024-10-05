@@ -1,0 +1,66 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 96e0b0f..f97ddfa 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -17,30 +17,10 @@ file(GLOB TRANS_SRC CONFIGURE_DEPENDS src/d3d12translationlayer/*.cpp)
+ file(GLOB TRANS_INC include/d3d12translationlayer/*.*)
+ file(GLOB TRANS_INL include/d3d12translationlayer/*.inl src/d3d12translationlayer/*.inl)
+ 
+-include(FetchContent)
+-FetchContent_Declare(
+-    DirectX-Headers
+-    GIT_REPOSITORY https://github.com/Microsoft/DirectX-Headers.git
+-    GIT_TAG v1.610.0
+-)
+-FetchContent_MakeAvailable(DirectX-Headers)
+-
+-FetchContent_Declare(
+-    opencl_headers
+-    GIT_REPOSITORY https://github.com/KhronosGroup/OpenCL-Headers.git
+-    GIT_TAG 1bb9ec797d14abed6167e3a3d66ede25a702a5c7
+-)
+-FetchContent_MakeAvailable(opencl_headers)
+-add_library(OpenCL::Headers ALIAS Headers)
+-
+-set(WIL_BUILD_PACKAGING OFF CACHE BOOL "" FORCE)
+-set(WIL_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+-FetchContent_Declare(
+-    wil
+-    GIT_REPOSITORY https://github.com/microsoft/wil.git
+-    GIT_TAG ed429e64eb3b91848bf19c17e1431c1b0f2c6d2b
+-)
+-FetchContent_MakeAvailable(wil)
++include(GNUInstallDirs)
++find_package(directx-headers CONFIG REQUIRED) # Microsoft::DirectX-Headers
++find_path(OpenCL_INCLUDE_DIR NAMES CL/cl.h REQUIRED)
++find_package(wil CONFIG REQUIRED) # WIL::WIL
+ 
+ add_library(d3d12translationlayer STATIC ${TRANS_SRC} ${TRANS_INC} ${TRANS_INL})
+ target_include_directories(d3d12translationlayer
+@@ -55,12 +35,12 @@ target_compile_definitions(d3d12translationlayer PUBLIC $<$<CONFIG:DEBUG>:TRANSL
+ add_library(openclon12 SHARED ${MAIN_SRC} ${MAIN_INC} ${EXTERNAL_INC})
+ target_include_directories(openclon12
+     PRIVATE src/openclon12
+-    PRIVATE external
++    PRIVATE external ${OpenCL_INCLUDE_DIR}
+     PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+ target_link_libraries(openclon12
+-    d3d12translationlayer
+-    OpenCL::Headers
+-    WIL
++    d3d12translationlayer dxcore d3d12 dxgi
++    Microsoft::DirectX-Headers
++    WIL::WIL
+     user32
+     gdi32)
+ source_group("Header Files\\External" FILES ${EXTERNAL_INC})
+@@ -70,3 +50,8 @@ option(BUILD_TESTS "Build tests" ON)
+ if (BUILD_TESTS)
+     add_subdirectory(test)
+ endif()
++
++install(TARGETS openclon12
++    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
+\ No newline at end of file
