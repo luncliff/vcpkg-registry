@@ -76,6 +76,14 @@
       "supports": "x64 & windows",
       "dependencies": [
         "glslang",
+        {
+          "name": "google-filament",
+          "features": [
+            "test",
+            "vulkan"
+          ],
+          "platform": "windows"
+        },
         "smol-v",
         "vulkan",
         "vulkan-headers"
