@@ -12,27 +12,23 @@ index 49fa4b7..1332d78 100644
  #include <iostream>
  #include <string>
 diff --git a/filament/backend/test/ShaderGenerator.cpp b/filament/backend/test/ShaderGenerator.cpp
-index 8e32948..df67bee 100644
+index 7d0ad71..64504f1 100644
 --- a/filament/backend/test/ShaderGenerator.cpp
 +++ b/filament/backend/test/ShaderGenerator.cpp
-@@ -16,10 +16,10 @@
- 
- #include "ShaderGenerator.h"
- 
--#include <GlslangToSpv.h>
-+#include <glslang/SPIRV/GlslangToSpv.h>
- #include <SPVRemapper.h>
- 
--#include <spirv_glsl.hpp>
-+#include <spirv_cross/spirv_glsl.hpp>
- #include <spirv_msl.hpp>
+@@ -24,7 +24,7 @@
  
  #include "../src/GLSLPostProcessor.h"
+ 
+-#include "builtinResource.h"
++#include <glslang/Include/ResourceLimits.h>
+ 
+ #include <utils/FixedCapacityVector.h>
+ 
 diff --git a/libs/filamat/src/GLSLPostProcessor.cpp b/libs/filamat/src/GLSLPostProcessor.cpp
-index a538d02..850def4 100644
+index 3a4a482..653eb73 100644
 --- a/libs/filamat/src/GLSLPostProcessor.cpp
 +++ b/libs/filamat/src/GLSLPostProcessor.cpp
-@@ -16,11 +16,11 @@
+@@ -16,15 +16,15 @@
  
  #include "GLSLPostProcessor.h"
  
@@ -40,43 +36,19 @@ index a538d02..850def4 100644
 -#include <SPVRemapper.h>
 +#include <glslang/SPIRV/GlslangToSpv.h>
 +#include <glslang/SPIRV/SPVRemapper.h>
+ #include <spirv-tools/libspirv.hpp>
  
--#include <spirv_glsl.hpp>
--#include <spirv_msl.hpp>
-+#include <spirv_cross/spirv_glsl.hpp>
-+#include <spirv_cross/spirv_msl.hpp>
+ #include <spirv_glsl.hpp>
+ #include <spirv_msl.hpp>
  
- #include "sca/builtinResource.h"
+ #include "backend/DriverEnums.h"
+-#include "sca/builtinResource.h"
++#include <glslang/Include/ResourceLimits.h>
  #include "sca/GLSLTools.h"
-@@ -240,7 +240,7 @@ void GLSLPostProcessor::spirvToMsl(const SpirvBlob *spirv, std::string *outMsl,
-         // buffer itself;
-         MSLResourceBinding argBufferBinding;
-         // the baseType doesn't matter, but can't be UNKNOWN
--        argBufferBinding.basetype = SPIRType::BaseType::Float;
-+        //argBufferBinding.basetype = SPIRType::BaseType::Float;
-         argBufferBinding.stage = executionModel;
-         argBufferBinding.desc_set = bindingPoint + 1;
-         argBufferBinding.binding = kArgumentBufferBinding;
-@@ -255,7 +255,7 @@ void GLSLPostProcessor::spirvToMsl(const SpirvBlob *spirv, std::string *outMsl,
-         auto set = mslCompiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-         auto binding = mslCompiler.get_decoration(resource.id, spv::DecorationBinding);
-         MSLResourceBinding newBinding;
--        newBinding.basetype = SPIRType::BaseType::Void;
-+        //newBinding.basetype = SPIRType::BaseType::Void;
-         newBinding.stage = executionModel;
-         newBinding.desc_set = set;
-         newBinding.binding = binding;
-@@ -542,7 +542,7 @@ void GLSLPostProcessor::fullOptimization(const TShader& tShader,
  
-         if (tShader.getStage() == EShLangFragment && glslOptions.es) {
-             for (auto i : config.glsl.subpassInputToColorLocation) {
--                glslCompiler.remap_ext_framebuffer_fetch(i.first, i.second, true);
-+                glslCompiler.remap_ext_framebuffer_fetch(i.first, i.second);
-             }
-         }
- 
+ #include "shaders/CodeGenerator.h"
 diff --git a/libs/filamat/src/GLSLPostProcessor.h b/libs/filamat/src/GLSLPostProcessor.h
-index cb95079..2f3c84e 100644
+index c13dece..c2fb87c 100644
 --- a/libs/filamat/src/GLSLPostProcessor.h
 +++ b/libs/filamat/src/GLSLPostProcessor.h
 @@ -25,7 +25,7 @@
@@ -89,7 +61,7 @@ index cb95079..2f3c84e 100644
  #include <backend/DriverEnums.h>
  
 diff --git a/libs/filamat/src/sca/ASTHelpers.cpp b/libs/filamat/src/sca/ASTHelpers.cpp
-index 0ef9ec6..efdaf86 100644
+index d82831a..19df976 100644
 --- a/libs/filamat/src/sca/ASTHelpers.cpp
 +++ b/libs/filamat/src/sca/ASTHelpers.cpp
 @@ -18,8 +18,8 @@
@@ -104,38 +76,41 @@ index 0ef9ec6..efdaf86 100644
  #include <utils/Log.h>
  
 diff --git a/libs/filamat/src/sca/ASTHelpers.h b/libs/filamat/src/sca/ASTHelpers.h
-index b4e4983..e297a3a 100644
+index 19ec1ce..680466f 100644
 --- a/libs/filamat/src/sca/ASTHelpers.h
 +++ b/libs/filamat/src/sca/ASTHelpers.h
-@@ -20,7 +20,7 @@
- #include <deque>
+@@ -19,7 +19,7 @@
+ 
  #include <string>
  #include <vector>
 -#include <intermediate.h>
 +#include <glslang/Include/intermediate.h>
  
- #include "GLSLTools.h"
+ class TIntermNode;
  
 diff --git a/libs/filamat/src/sca/GLSLTools.cpp b/libs/filamat/src/sca/GLSLTools.cpp
-index 0ee77a5..9c59a69 100644
+index eeecf89..19aee05 100644
 --- a/libs/filamat/src/sca/GLSLTools.cpp
 +++ b/libs/filamat/src/sca/GLSLTools.cpp
-@@ -27,8 +27,8 @@
+@@ -25,10 +25,10 @@
  #include "ASTHelpers.h"
  
  // GLSLANG headers
 -#include <InfoSink.h>
 -#include <localintermediate.h>
-+#include <glslang/include/InfoSink.h>
++#include <glslang/Include/InfoSink.h>
 +#include <glslang/MachineIndependent/localintermediate.h>
  
- #include "builtinResource.h"
+-#include "builtinResource.h"
++#include <glslang/Include/ResourceLimits.h>
  
+ using namespace utils;
+ using namespace glslang;
 diff --git a/libs/filamat/src/sca/GLSLTools.h b/libs/filamat/src/sca/GLSLTools.h
-index 082a684..8d40a8d 100644
+index 1c7cf16..fb2a610 100644
 --- a/libs/filamat/src/sca/GLSLTools.h
 +++ b/libs/filamat/src/sca/GLSLTools.h
-@@ -24,7 +24,7 @@
+@@ -25,7 +25,7 @@
  
  #include <filamat/MaterialBuilder.h>
  
@@ -143,13 +118,153 @@ index 082a684..8d40a8d 100644
 +#include <glslang/Public/ShaderLang.h>
  
  class TIntermNode;
- namespace glslang {
+ 
+diff --git a/libs/filamat/src/sca/builtinResource.h b/libs/filamat/src/sca/builtinResource.h
+deleted file mode 100644
+index d58f2a9..0000000
+--- a/libs/filamat/src/sca/builtinResource.h
++++ /dev/null
+@@ -1,134 +0,0 @@
+-/*
+- * Copyright (C) 2018 The Android Open Source Project
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *      http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-
+-#include "glslang/Include/intermediate.h"
+-
+-const TBuiltInResource DefaultTBuiltInResource = {
+-        /* .MaxLights = */ 32,
+-        /* .MaxClipPlanes = */ 6,
+-        /* .MaxTextureUnits = */ 32,
+-        /* .MaxTextureCoords = */ 32,
+-        /* .MaxVertexAttribs = */ 64,
+-        /* .MaxVertexUniformComponents = */ 4096,
+-        /* .MaxVaryingFloats = */ 64,
+-        /* .MaxVertexTextureImageUnits = */ 32,
+-        /* .MaxCombinedTextureImageUnits = */ 80,
+-        /* .MaxTextureImageUnits = */ 32,
+-        /* .MaxFragmentUniformComponents = */ 4096,
+-        /* .MaxDrawBuffers = */ 32,
+-        /* .MaxVertexUniformVectors = */ 128,
+-        /* .MaxVaryingVectors = */ 8,
+-        /* .MaxFragmentUniformVectors = */ 16,
+-        /* .MaxVertexOutputVectors = */ 16,
+-        /* .MaxFragmentInputVectors = */ 15,
+-        /* .MinProgramTexelOffset = */ -8,
+-        /* .MaxProgramTexelOffset = */ 7,
+-        /* .MaxClipDistances = */ 8,
+-        /* .MaxComputeWorkGroupCountX = */ 65535,
+-        /* .MaxComputeWorkGroupCountY = */ 65535,
+-        /* .MaxComputeWorkGroupCountZ = */ 65535,
+-        /* .MaxComputeWorkGroupSizeX = */ 1024,
+-        /* .MaxComputeWorkGroupSizeY = */ 1024,
+-        /* .MaxComputeWorkGroupSizeZ = */ 64,
+-        /* .MaxComputeUniformComponents = */ 1024,
+-        /* .MaxComputeTextureImageUnits = */ 16,
+-        /* .MaxComputeImageUniforms = */ 8,
+-        /* .MaxComputeAtomicCounters = */ 8,
+-        /* .MaxComputeAtomicCounterBuffers = */ 1,
+-        /* .MaxVaryingComponents = */ 60,
+-        /* .MaxVertexOutputComponents = */ 64,
+-        /* .MaxGeometryInputComponents = */ 64,
+-        /* .MaxGeometryOutputComponents = */ 128,
+-        /* .MaxFragmentInputComponents = */ 128,
+-        /* .MaxImageUnits = */ 8,
+-        /* .MaxCombinedImageUnitsAndFragmentOutputs = */ 8,
+-        /* .MaxCombinedShaderOutputResources = */ 8,
+-        /* .MaxImageSamples = */ 0,
+-        /* .MaxVertexImageUniforms = */ 0,
+-        /* .MaxTessControlImageUniforms = */ 0,
+-        /* .MaxTessEvaluationImageUniforms = */ 0,
+-        /* .MaxGeometryImageUniforms = */ 0,
+-        /* .MaxFragmentImageUniforms = */ 8,
+-        /* .MaxCombinedImageUniforms = */ 8,
+-        /* .MaxGeometryTextureImageUnits = */ 16,
+-        /* .MaxGeometryOutputVertices = */ 256,
+-        /* .MaxGeometryTotalOutputComponents = */ 1024,
+-        /* .MaxGeometryUniformComponents = */ 1024,
+-        /* .MaxGeometryVaryingComponents = */ 64,
+-        /* .MaxTessControlInputComponents = */ 128,
+-        /* .MaxTessControlOutputComponents = */ 128,
+-        /* .MaxTessControlTextureImageUnits = */ 16,
+-        /* .MaxTessControlUniformComponents = */ 1024,
+-        /* .MaxTessControlTotalOutputComponents = */ 4096,
+-        /* .MaxTessEvaluationInputComponents = */ 128,
+-        /* .MaxTessEvaluationOutputComponents = */ 128,
+-        /* .MaxTessEvaluationTextureImageUnits = */ 16,
+-        /* .MaxTessEvaluationUniformComponents = */ 1024,
+-        /* .MaxTessPatchComponents = */ 120,
+-        /* .MaxPatchVertices = */ 32,
+-        /* .MaxTessGenLevel = */ 64,
+-        /* .MaxViewports = */ 16,
+-        /* .MaxVertexAtomicCounters = */ 0,
+-        /* .MaxTessControlAtomicCounters = */ 0,
+-        /* .MaxTessEvaluationAtomicCounters = */ 0,
+-        /* .MaxGeometryAtomicCounters = */ 0,
+-        /* .MaxFragmentAtomicCounters = */ 8,
+-        /* .MaxCombinedAtomicCounters = */ 8,
+-        /* .MaxAtomicCounterBindings = */ 1,
+-        /* .MaxVertexAtomicCounterBuffers = */ 0,
+-        /* .MaxTessControlAtomicCounterBuffers = */ 0,
+-        /* .MaxTessEvaluationAtomicCounterBuffers = */ 0,
+-        /* .MaxGeometryAtomicCounterBuffers = */ 0,
+-        /* .MaxFragmentAtomicCounterBuffers = */ 1,
+-        /* .MaxCombinedAtomicCounterBuffers = */ 1,
+-        /* .MaxAtomicCounterBufferSize = */ 16384,
+-        /* .MaxTransformFeedbackBuffers = */ 4,
+-        /* .MaxTransformFeedbackInterleavedComponents = */ 64,
+-        /* .MaxCullDistances = */ 8,
+-        /* .MaxCombinedClipAndCullDistances = */ 8,
+-        /* .MaxSamples = */ 4,
+-        /* .maxMeshOutputVerticesNV = */ 256,
+-        /* .maxMeshOutputPrimitivesNV = */ 512,
+-        /* .maxMeshWorkGroupSizeX_NV = */ 32,
+-        /* .maxMeshWorkGroupSizeY_NV = */ 1,
+-        /* .maxMeshWorkGroupSizeZ_NV = */ 1,
+-        /* .maxTaskWorkGroupSizeX_NV = */ 32,
+-        /* .maxTaskWorkGroupSizeY_NV = */ 1,
+-        /* .maxTaskWorkGroupSizeZ_NV = */ 1,
+-        /* .maxMeshViewCountNV = */ 4,
+-        /* .max_mesh_output_vertices_ext = */ 256,
+-        /* .max_mesh_output_primitives_ext = */ 256,
+-        /* .max_mesh_work_group_size_x_ext = */ 128,
+-        /* .max_mesh_work_group_size_y_ext = */ 128,
+-        /* .max_mesh_work_group_size_z_ext = */ 128,
+-        /* .max_task_work_group_size_x_ext = */ 128,
+-        /* .max_task_work_group_size_y_ext = */ 128,
+-        /* .max_task_work_group_size_z_ext = */ 128,
+-        /* .max_mesh_view_count_ext = */ 4,
+-        /* .maxDualSourceDrawBuffersEXT = */ 1,
+-
+-        /* .limits = */ {
+-                /* .nonInductiveForLoops = */ 1,
+-                /* .whileLoops = */ 1,
+-                /* .doWhileLoops = */ 1,
+-                /* .generalUniformIndexing = */ 1,
+-                /* .generalAttributeMatrixVectorIndexing = */ 1,
+-                /* .generalVaryingIndexing = */ 1,
+-                /* .generalSamplerIndexing = */ 1,
+-                /* .generalVariableIndexing = */ 1,
+-                /* .generalConstantMatrixVectorIndexing = */ 1,
+-        }
+-};
 diff --git a/libs/geometry/src/MikktspaceImpl.cpp b/libs/geometry/src/MikktspaceImpl.cpp
-index f40da14..cb2b914 100644
+index 5c5a1b5..4c6dd9b 100644
 --- a/libs/geometry/src/MikktspaceImpl.cpp
 +++ b/libs/geometry/src/MikktspaceImpl.cpp
 @@ -21,7 +21,7 @@
- 
+ #include <utils/Panic.h>
  
  #include <meshoptimizer.h>
 -#include <mikktspace/mikktspace.h>
@@ -158,7 +273,7 @@ index f40da14..cb2b914 100644
  #include <vector>
  
 diff --git a/libs/imageio/src/BasisEncoder.cpp b/libs/imageio/src/BasisEncoder.cpp
-index 0c24e71..19d7e21 100644
+index 0c24e71..fb4eea1 100644
 --- a/libs/imageio/src/BasisEncoder.cpp
 +++ b/libs/imageio/src/BasisEncoder.cpp
 @@ -22,7 +22,7 @@
@@ -166,12 +281,12 @@ index 0c24e71..19d7e21 100644
  #pragma clang diagnostic push
  #pragma clang diagnostic ignored "-Warray-bounds"
 -#include <basisu_comp.h>
-+#include <encoder/basisu_comp.h>
++#include <basisu/encoder/basisu_comp.h>
  #pragma clang diagnostic pop
  
  namespace image {
 diff --git a/libs/ktxreader/src/Ktx2Reader.cpp b/libs/ktxreader/src/Ktx2Reader.cpp
-index 5d53861..d401133 100644
+index 5d53861..f72c108 100644
 --- a/libs/ktxreader/src/Ktx2Reader.cpp
 +++ b/libs/ktxreader/src/Ktx2Reader.cpp
 @@ -26,7 +26,7 @@
@@ -179,49 +294,26 @@ index 5d53861..d401133 100644
  #pragma clang diagnostic push
  #pragma clang diagnostic ignored "-Warray-bounds"
 -#include <basisu_transcoder.h>
-+#include <transcoder/basisu_transcoder.h>
++#include <basisu/transcoder/basisu_transcoder.h>
  #pragma clang diagnostic pop
  
  using namespace basist;
-diff --git a/libs/matdbg/src/DebugServer.cpp b/libs/matdbg/src/DebugServer.cpp
-index 95c5a63..fd2caef 100644
---- a/libs/matdbg/src/DebugServer.cpp
-+++ b/libs/matdbg/src/DebugServer.cpp
-@@ -22,7 +22,7 @@
- #include <utils/Hash.h>
- #include <utils/Log.h>
- 
--#include <spirv_glsl.hpp>
-+#include <spirv_cross/spirv_glsl.hpp>
- #include <spirv-tools/libspirv.h>
- 
- #include <matdbg/JsonWriter.h>
-diff --git a/libs/matdbg/src/ShaderExtractor.cpp b/libs/matdbg/src/ShaderExtractor.cpp
-index 3f10b60..bee32dc 100644
---- a/libs/matdbg/src/ShaderExtractor.cpp
-+++ b/libs/matdbg/src/ShaderExtractor.cpp
-@@ -26,7 +26,7 @@
- 
- #include <backend/DriverEnums.h>
- 
--#include <spirv_glsl.hpp>
-+#include <spirv_cross/spirv_glsl.hpp>
- #include <spirv-tools/libspirv.h>
- 
- using namespace filament;
 diff --git a/libs/matdbg/src/ShaderReplacer.cpp b/libs/matdbg/src/ShaderReplacer.cpp
-index 8eb3497..8be176e 100644
+index 9cd8ba4..f388f72 100644
 --- a/libs/matdbg/src/ShaderReplacer.cpp
 +++ b/libs/matdbg/src/ShaderReplacer.cpp
-@@ -27,7 +27,7 @@
+@@ -27,9 +27,9 @@
  
  #include <sstream>
  
 -#include <GlslangToSpv.h>
 +#include <glslang/SPIRV/GlslangToSpv.h>
  
- #include "sca/builtinResource.h"
+-#include "sca/builtinResource.h"
++#include <glslang/Include/ResourceLimits.h>
  #include "sca/GLSLTools.h"
+ 
+ #include "eiff/ChunkContainer.h"
 diff --git a/libs/viewer/src/RemoteServer.cpp b/libs/viewer/src/RemoteServer.cpp
 index 441c730..89c492f 100644
 --- a/libs/viewer/src/RemoteServer.cpp
@@ -264,18 +356,18 @@ index 688272d..5210ebd 100644
  #include <utils/NameComponentManager.h>
  
 diff --git a/samples/gltf_viewer.cpp b/samples/gltf_viewer.cpp
-index 6f4bf72..787a459 100644
+index 77aee47..b272d0d 100644
 --- a/samples/gltf_viewer.cpp
 +++ b/samples/gltf_viewer.cpp
-@@ -41,7 +41,7 @@
+@@ -43,7 +43,7 @@
  
- #include <camutils/Manipulator.h>
+ #include <private/filament/EngineEnums.h>
  
 -#include <getopt/getopt.h>
 +#include <getopt.h>
  
  #include <utils/NameComponentManager.h>
- 
+ #include <utils/Log.h>
 diff --git a/samples/heightfield.cpp b/samples/heightfield.cpp
 index 855dabf..92c98ad 100644
 --- a/samples/heightfield.cpp
@@ -289,8 +381,86 @@ index 855dabf..92c98ad 100644
  
  #include <filamentapp/FilamentApp.h>
  
+diff --git a/samples/hellomorphing.cpp b/samples/hellomorphing.cpp
+index 54ce244..eb10396 100644
+--- a/samples/hellomorphing.cpp
++++ b/samples/hellomorphing.cpp
+@@ -29,7 +29,7 @@
+ #include <utils/EntityManager.h>
+ #include <utils/Path.h>
+ 
+-#include <getopt/getopt.h>
++#include <getopt.h>
+ 
+ #include <filamentapp/Config.h>
+ #include <filamentapp/FilamentApp.h>
+diff --git a/samples/hellopbr.cpp b/samples/hellopbr.cpp
+index f5cae37..08c63d8 100644
+--- a/samples/hellopbr.cpp
++++ b/samples/hellopbr.cpp
+@@ -29,7 +29,7 @@
+ #include <filamentapp/Config.h>
+ #include <filamentapp/FilamentApp.h>
+ 
+-#include <getopt/getopt.h>
++#include <getopt.h>
+ 
+ #include <iostream>
+ 
+diff --git a/samples/helloskinning.cpp b/samples/helloskinning.cpp
+index f3d5046..07ee5ab 100644
+--- a/samples/helloskinning.cpp
++++ b/samples/helloskinning.cpp
+@@ -35,7 +35,7 @@
+ #include <cmath>
+ #include <iostream>
+ 
+-#include <getopt/getopt.h>
++#include <getopt.h>
+ 
+ #include "generated/resources/resources.h"
+ 
+diff --git a/samples/helloskinningbuffer.cpp b/samples/helloskinningbuffer.cpp
+index 175c62c..59419e3 100644
+--- a/samples/helloskinningbuffer.cpp
++++ b/samples/helloskinningbuffer.cpp
+@@ -29,7 +29,7 @@
+ #include <utils/EntityManager.h>
+ #include <utils/Path.h>
+ 
+-#include <getopt/getopt.h>
++#include <getopt.h>
+ 
+ #include <filamentapp/Config.h>
+ #include <filamentapp/FilamentApp.h>
+diff --git a/samples/helloskinningbuffer_morebones.cpp b/samples/helloskinningbuffer_morebones.cpp
+index 184d799..2f7051c 100644
+--- a/samples/helloskinningbuffer_morebones.cpp
++++ b/samples/helloskinningbuffer_morebones.cpp
+@@ -29,7 +29,7 @@
+ #include <utils/EntityManager.h>
+ #include <utils/Path.h>
+ 
+-#include <getopt/getopt.h>
++#include <getopt.h>
+ 
+ #include <filamentapp/Config.h>
+ #include <filamentapp/FilamentApp.h>
+diff --git a/samples/hellostereo.cpp b/samples/hellostereo.cpp
+index fff1616..ef377d7 100644
+--- a/samples/hellostereo.cpp
++++ b/samples/hellostereo.cpp
+@@ -37,7 +37,7 @@
+ #include <filamentapp/Config.h>
+ #include <filamentapp/FilamentApp.h>
+ 
+-#include <getopt/getopt.h>
++#include <getopt.h>
+ 
+ #include <iostream>
+ #include <vector>
 diff --git a/samples/hellotriangle.cpp b/samples/hellotriangle.cpp
-index a36df69..590e35a 100644
+index 4477429..67959a5 100644
 --- a/samples/hellotriangle.cpp
 +++ b/samples/hellotriangle.cpp
 @@ -31,7 +31,7 @@
@@ -393,6 +563,19 @@ index 684b398..f31aa24 100644
  
  #include <utils/Path.h>
  
+diff --git a/samples/skinningtest.cpp b/samples/skinningtest.cpp
+index a2da0b1..3c173d2 100644
+--- a/samples/skinningtest.cpp
++++ b/samples/skinningtest.cpp
+@@ -30,7 +30,7 @@
+ #include <utils/EntityManager.h>
+ #include <utils/Path.h>
+ 
+-#include <getopt/getopt.h>
++#include <getopt.h>
+ 
+ #include <filamentapp/Config.h>
+ #include <filamentapp/FilamentApp.h>
 diff --git a/samples/suzanne.cpp b/samples/suzanne.cpp
 index dae42d3..9e695c7 100644
 --- a/samples/suzanne.cpp
@@ -472,7 +655,7 @@ index a6d2f56..4f79833 100644
  #include <fstream>
  #include <iostream>
 diff --git a/tools/matc/src/matc/CommandlineConfig.cpp b/tools/matc/src/matc/CommandlineConfig.cpp
-index 78460ad..85c4118 100644
+index 6ca6315..11b90b9 100644
 --- a/tools/matc/src/matc/CommandlineConfig.cpp
 +++ b/tools/matc/src/matc/CommandlineConfig.cpp
 @@ -18,7 +18,7 @@
@@ -485,20 +668,38 @@ index 78460ad..85c4118 100644
  #include <utils/Path.h>
  
 diff --git a/tools/matc/src/matc/MaterialCompiler.cpp b/tools/matc/src/matc/MaterialCompiler.cpp
-index 2785a73..3685dd8 100644
+index 93d0fed..b5f1795 100644
 --- a/tools/matc/src/matc/MaterialCompiler.cpp
 +++ b/tools/matc/src/matc/MaterialCompiler.cpp
-@@ -33,7 +33,7 @@
+@@ -34,10 +34,9 @@
  #include "JsonishParser.h"
  #include "ParametersProcessor.h"
  
 -#include <GlslangToSpv.h>
+-#include "glslang/Include/intermediate.h"
+-
+-#include "sca/builtinResource.h"
 +#include <glslang/SPIRV/GlslangToSpv.h>
++#include <glslang/Public/ShaderLang.h>
++#include <glslang/Include/ResourceLimits.h>
  
- #include "sca/builtinResource.h"
+ #include <smolv.h>
+ 
+diff --git a/tools/matedit/src/main.cpp b/tools/matedit/src/main.cpp
+index 50b4791..3632102 100644
+--- a/tools/matedit/src/main.cpp
++++ b/tools/matedit/src/main.cpp
+@@ -14,7 +14,7 @@
+  * limitations under the License.
+  */
+ 
+-#include <getopt/getopt.h>
++#include <getopt.h>
+ 
+ #include "ExternalCompile.h"
  
 diff --git a/tools/matinfo/src/main.cpp b/tools/matinfo/src/main.cpp
-index 15a4583..368d7a6 100644
+index ea2d1a0..d60f63d 100644
 --- a/tools/matinfo/src/main.cpp
 +++ b/tools/matinfo/src/main.cpp
 @@ -14,7 +14,7 @@
@@ -510,15 +711,6 @@ index 15a4583..368d7a6 100644
  
  #include <utils/Path.h>
  
-@@ -25,7 +25,7 @@
- #include <matdbg/ShaderInfo.h>
- #include <matdbg/TextWriter.h>
- 
--#include <spirv_glsl.hpp>
-+#include <spirv_cross/spirv_glsl.hpp>
- #include <spirv-tools/libspirv.h>
- 
- #include <chrono>
 diff --git a/tools/mipgen/src/main.cpp b/tools/mipgen/src/main.cpp
 index c7afabf..8a87dce 100644
 --- a/tools/mipgen/src/main.cpp
@@ -546,7 +738,7 @@ index e3cadf4..76ec57b 100644
  using namespace filament::math;
  using namespace image;
 diff --git a/tools/resgen/src/main.cpp b/tools/resgen/src/main.cpp
-index 8cae171..26b11ad 100644
+index 1f475c4..d97aaeb 100644
 --- a/tools/resgen/src/main.cpp
 +++ b/tools/resgen/src/main.cpp
 @@ -16,7 +16,7 @@
@@ -557,7 +749,7 @@ index 8cae171..26b11ad 100644
 +#include <getopt.h>
  
  #include <algorithm>
- #include <fstream>
+ #include <cstdint>
 diff --git a/tools/rgb-to-lmsr/src/main.cpp b/tools/rgb-to-lmsr/src/main.cpp
 index 8d4f3cd..07e8e6b 100644
 --- a/tools/rgb-to-lmsr/src/main.cpp
@@ -610,49 +802,3 @@ index 43e2005..365222b 100644
  
  #include <fstream>
  #include <iostream>
-diff --git a/filament/backend/test/ShaderGenerator.cpp b/filament/backend/test/ShaderGenerator.cpp
-index df67bee..7797c6b 100644
---- a/filament/backend/test/ShaderGenerator.cpp
-+++ b/filament/backend/test/ShaderGenerator.cpp
-@@ -17,10 +17,10 @@
- #include "ShaderGenerator.h"
- 
- #include <glslang/SPIRV/GlslangToSpv.h>
--#include <SPVRemapper.h>
-+#include <glslang/SPIRV/SPVRemapper.h>
- 
- #include <spirv_cross/spirv_glsl.hpp>
--#include <spirv_msl.hpp>
-+#include <spirv_cross/spirv_msl.hpp>
- 
- #include "../src/GLSLPostProcessor.h"
- 
-diff --git a/libs/filamentapp/src/FilamentApp.cpp b/libs/filamentapp/src/FilamentApp.cpp
-index 2e7bae9..125d565 100644
---- a/libs/filamentapp/src/FilamentApp.cpp
-+++ b/libs/filamentapp/src/FilamentApp.cpp
-@@ -51,6 +51,7 @@
- #include <filamentapp/Cube.h>
- #include <filamentapp/NativeWindowHelper.h>
- 
-+#define STB_IMAGE_IMPLEMENTATION
- #include <stb_image.h>
- 
- #include "generated/resources/filamentapp.h"
-diff --git a/libs/filamentapp/src/MeshAssimp.cpp b/libs/filamentapp/src/MeshAssimp.cpp
-index 5e3f403..2bf74af 100644
---- a/libs/filamentapp/src/MeshAssimp.cpp
-+++ b/libs/filamentapp/src/MeshAssimp.cpp
-@@ -51,7 +51,12 @@
- #include <assimp/postprocess.h>
- #include <assimp/cimport.h>
- #include <assimp/scene.h>
-+#include <assimp/material.h>
-+#include <assimp/GltfMaterial.h>
- #include <assimp/pbrmaterial.h>
-+#if !defined(_AI_MATKEY_GLTF_TEXTURE_TEXCOORD_BASE)
-+#define _AI_MATKEY_GLTF_TEXTURE_TEXCOORD_BASE "$tex.file.texCoord"
-+#endif
- 
- #include <stb_image.h>
- 
