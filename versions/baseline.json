@@ -74,7 +74,7 @@
     },
     "glslang": {
       "baseline": "15.0.0",
-      "port-version": 0
+      "port-version": 1
     },
     "godot": {
       "baseline": "4.3",
