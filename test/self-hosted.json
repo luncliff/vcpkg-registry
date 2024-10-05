@@ -75,6 +75,7 @@
       "description": "Install Vulkan related ports",
       "supports": "x64 & windows",
       "dependencies": [
+        "glslang",
         "smol-v",
         "vulkan",
         "vulkan-headers"
