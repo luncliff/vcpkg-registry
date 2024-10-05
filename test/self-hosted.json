@@ -92,6 +92,13 @@
       "dependencies": [
         "glslang",
         {
+          "name": "google-filament",
+          "features": [
+            "vulkan"
+          ],
+          "platform": "windows"
+        },
+        {
           "name": "llama-cpp",
           "features": [
             "vulkan"
