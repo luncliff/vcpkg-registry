@@ -1,9 +1,9 @@
 {
   "name": "google-filament",
-  "version": "1.40.0",
+  "version": "1.54.5",
   "description": "Filament is a real-time physically based rendering engine for Android, iOS, Windows, Linux, macOS, and WebGL2",
   "homepage": "https://github.com/google/filament",
-  "supports": "windows | osx | linux",
+  "supports": "windows",
   "dependencies": [
     "assimp",
     {
