@@ -65,6 +65,7 @@
       "name": "sdl2",
       "platform": "windows | osx"
     },
+    "smol-v",
     "spirv-cross",
     "spirv-tools",
     "stb",

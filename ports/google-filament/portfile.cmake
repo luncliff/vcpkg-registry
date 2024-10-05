@@ -1,25 +1,26 @@
 if(VCPKG_CROSSCOMPILING)
     message(WARNING "Cross compiling is NOT tested")
 endif()
-vcpkg_find_acquire_program(PKGCONFIG)
-message(STATUS "Using pkgconfig: ${PKGCONFIG}")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/filament
     REF v1.54.5
     SHA512 63f43987bd00fbc752f29755a49e0f65bc1ceeb0b6510d43d6da3964ccd06f20fe7f02f631dacd5c0387918e389416cf7818eaf1d3bcc70f7fb98ff2fbdbf59e
-    # PATCHES
-    #     fix-cmake.patch
-    #     fix-sources.patch
+    PATCHES
+        fix-cmake.patch
+        fix-sources.patch
 )
 
 message(STATUS "Editing third_party folder ...")
 function(edit_third_party SRC_PORT DST_NAME)
+    if(NOT DEFINED FILENAME)
+        set(FILENAME LICENSE)
+    endif()
     get_filename_component(DST_DIR "${SOURCE_PATH}/third_party/${DST_NAME}" ABSOLUTE)
     file(REMOVE_RECURSE "${DST_DIR}")
     file(MAKE_DIRECTORY "${DST_DIR}")
-    file(COPY_FILE "${CURRENT_INSTALLED_DIR}/share/${SRC_PORT}/copyright" "${DST_DIR}/LICENSE")
+    file(COPY_FILE "${CURRENT_INSTALLED_DIR}/share/${SRC_PORT}/copyright" "${DST_DIR}/${FILENAME}")
 endfunction()
 edit_third_party(glslang glslang)
 edit_third_party(assimp libassimp)
@@ -38,18 +39,26 @@ edit_third_party(cgltf cgltf)
 edit_third_party(imgui imgui)
 edit_third_party(jsmn jsmn)
 edit_third_party(robin-map robin-map)
-# edit_third_party(zlib libz)
+edit_third_party(smol-v smol-v)
 
 if(VCPKG_TARGET_IS_WINDOWS)
     edit_third_party(getopt-win32 getopt)
 endif()
 if("vulkan" IN_LIST FEATURES)
-    edit_third_party(vulkan-memory-allocator vkmemalloc)
+    edit_third_party(vulkan-memory-allocator vkmemalloc) # LICENSE.txt
 endif()
 if("test" IN_LIST FEATURES)
     edit_third_party(gtest libgtest)
     edit_third_party(benchmark benchmark)
 endif()
+
+function(copy_license DST_NAME FILE)
+    get_filename_component(DST_DIR "${SOURCE_PATH}/third_party/${DST_NAME}" ABSOLUTE)
+    file(REMOVE_RECURSE "${DST_DIR}")
+    file(MAKE_DIRECTORY "${DST_DIR}")
+    file(COPY_FILE "${FILE}" "${DST_DIR}/LICENSE")
+endfunction()
+copy_license(libz ${CMAKE_CURRENT_LIST_DIR}/copyrights/libz.txt)
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
@@ -63,7 +72,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)
-    list(APPEND GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+    # list(APPEND GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
 else()
     list(APPEND GENERATOR_OPTIONS GENERATOR Ninja)
 endif()
@@ -77,7 +86,6 @@ vcpkg_cmake_configure(
     OPTIONS
         ${FEATURE_OPTIONS}
         -DUSE_STATIC_CRT=${USE_STATIC_CRT}
-        -DPKG_CONFIG_EXECUTABLE:FILEPATH=${PKGCONFIG}
         -DCMAKE_CROSSCOMPILING=${VCPKG_CROSSCOMPILING}
         -DFILAMENT_SUPPORTS_XCB=${VCPKG_TARGET_IS_LINUX}
         -DFILAMENT_SUPPORTS_XLIB=${VCPKG_TARGET_IS_LINUX}
@@ -86,6 +94,7 @@ vcpkg_cmake_configure(
         -DFILAMENT_BUILD_FILAMAT=OFF
         -DFILAMENT_ENABLE_MATDBG=OFF # material debugger: matdbg, matdbg_resources
         -DFILAMENT_DISABLE_MATOPT=ON # material optimization
+        -DFILAMENT_SHORTEN_MSVC_COMPILATION=OFF # disable _ITERATOR_DEBUG_LEVEL customization
 )
 
 # some targets requires tools for resource generation
@@ -96,8 +105,8 @@ else()
     message(STATUS "Building shaders ...")
     vcpkg_cmake_build(TARGET shaders LOGFILE_BASE build-shaders ADD_BIN_TO_PATH)
 endif()
-message(STATUS "Building ...")
-# vcpkg_cmake_build(TARGET filament LOGFILE_BASE build-filament ADD_BIN_TO_PATH)
+message(STATUS "Building filament ...")
+vcpkg_cmake_build(TARGET filament LOGFILE_BASE build-filament ADD_BIN_TO_PATH)
 vcpkg_cmake_install(ADD_BIN_TO_PATH)
 vcpkg_copy_pdbs()
 
