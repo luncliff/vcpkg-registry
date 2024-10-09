@@ -2,7 +2,7 @@
   "default": {
     "abseil": {
       "baseline": "20240722.0",
-      "port-version": 0
+      "port-version": 1
     },
     "apple-crypto": {
       "baseline": "3.0.0",
@@ -146,7 +146,7 @@
     },
     "onnx": {
       "baseline": "1.16.2",
-      "port-version": 1
+      "port-version": 2
     },
     "onnxruntime": {
       "baseline": "1.19.2",
@@ -178,6 +178,10 @@
     },
     "openssl3": {
       "baseline": "3.3.2",
+      "port-version": 0
+    },
+    "protobuf": {
+      "baseline": "4.25.5",
       "port-version": 0
     },
     "psimd": {
