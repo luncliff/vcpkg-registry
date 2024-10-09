@@ -24,6 +24,7 @@
           ]
         },
         "nvidia-cnmem",
+        "nvidia-cudnn-frontend",
         "nvidia-cutlass",
         "nvidia-nvbench",
         "nvidia-tools-extension-sdk",
