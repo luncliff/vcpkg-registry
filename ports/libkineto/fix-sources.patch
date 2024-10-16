@@ -1,0 +1,31 @@
+diff --git a/libkineto/src/CuptiCallbackApi.cpp b/libkineto/src/CuptiCallbackApi.cpp
+index 9c8e0f4..e7e6226 100644
+--- a/libkineto/src/CuptiCallbackApi.cpp
++++ b/libkineto/src/CuptiCallbackApi.cpp
+@@ -100,10 +100,12 @@ void CuptiCallbackApi::__callback_switchboard(
+         if (cbInfo->callbackSite == CUPTI_API_EXIT) {
+           LOG(INFO) << "  Calling cuptiFinalize in exit callsite";
+           // Teardown CUPTI calling cuptiFinalize()
++#ifdef HAS_CUPTI
+           CUPTI_CALL(cuptiUnsubscribe(subscriber_));
+           CUPTI_CALL(cuptiFinalize());
+           initSuccess_ = false;
+           subscriber_ = nullptr;
++#endif
+           CuptiActivityApi::singleton().teardownCupti_ = 0;
+           CuptiActivityApi::singleton().finalizeCond_.notify_all();
+           return;
+diff --git a/libkineto/src/Logger.h b/libkineto/src/Logger.h
+index 3b9caaf..5b33b87 100644
+--- a/libkineto/src/Logger.h
++++ b/libkineto/src/Logger.h
+@@ -47,6 +47,9 @@
+ // unset a predefined ERROR (windows)
+ #undef ERROR
+ #endif // _MSC_VER
++#ifdef __linux__
++using libkineto::ERROR;
++#endif
+ 
+ namespace KINETO_NAMESPACE {
+ 

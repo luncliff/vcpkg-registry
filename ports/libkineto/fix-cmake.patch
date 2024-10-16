@@ -1,0 +1,37 @@
+diff --git a/libkineto/CMakeLists.txt b/libkineto/CMakeLists.txt
+index 140ee68..bc4d540 100644
+--- a/libkineto/CMakeLists.txt
++++ b/libkineto/CMakeLists.txt
+@@ -52,6 +52,13 @@ if (NOT ROCM_SOURCE_DIR)
+     message(INFO " ROCM_SOURCE_DIR = ${ROCM_SOURCE_DIR}")
+ endif()
+ 
++if(NOT LIBKINETO_NOCUPTI)
++  find_package(CUDAToolkit REQUIRED)
++  math(EXPR CUDA_VERSION "${CUDAToolkit_VERSION_MAJOR}000 + ${CUDAToolkit_VERSION_MINOR}0" OUTPUT_FORMAT DECIMAL)
++  add_compile_definitions(CUDA_VERSION=${CUDA_VERSION})
++  get_target_property(CUPTI_INCLUDE_DIR CUDA::cupti INTERFACE_INCLUDE_DIRECTORIES)
++  get_target_property(CUDA_cupti_LIBRARY CUDA::cupti IMPORTED_LOCATION)
++endif()
+ if (KINETO_BUILD_TESTS)
+   enable_testing()
+   if (NOT CUDA_SOURCE_DIR)
+@@ -193,7 +200,8 @@ endif()
+ target_compile_options(kineto_base PRIVATE "${KINETO_COMPILE_OPTIONS}")
+ target_compile_options(kineto_api PRIVATE "${KINETO_COMPILE_OPTIONS}")
+ 
+-if(NOT TARGET fmt)
++find_package(fmt CONFIG REQUIRED)
++if(FALSE)
+   if(NOT FMT_SOURCE_DIR)
+     set(FMT_SOURCE_DIR "${LIBKINETO_THIRDPARTY_DIR}/fmt"
+       CACHE STRING "fmt source directory from submodules")
+@@ -211,7 +219,7 @@ if(NOT TARGET fmt)
+   set(BUILD_SHARED_LIBS ${TEMP_BUILD_SHARED_LIBS} CACHE BOOL "Build shared libs" FORCE)
+ endif()
+ 
+-set(FMT_INCLUDE_DIR "${FMT_SOURCE_DIR}/include")
++find_path(FMT_INCLUDE_DIR NAMES "fmt/format.h" REQUIRED)
+ message(STATUS "Kineto: FMT_SOURCE_DIR = ${FMT_SOURCE_DIR}")
+ message(STATUS "Kineto: FMT_INCLUDE_DIR = ${FMT_INCLUDE_DIR}")
+ if (NOT CUPTI_INCLUDE_DIR)
