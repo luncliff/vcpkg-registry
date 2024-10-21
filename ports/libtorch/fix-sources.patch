@@ -1,0 +1,13 @@
+diff --git a/c10/util/Logging.cpp b/c10/util/Logging.cpp
+index 66a2498..b328d25 100644
+--- a/c10/util/Logging.cpp
++++ b/c10/util/Logging.cpp
+@@ -324,7 +324,7 @@ void UpdateLoggingLevelsFromFlags() {
+ 
+ void ShowLogInfoToStderr() {
+   FLAGS_logtostderr = 1;
+-  FLAGS_minloglevel = std::min(FLAGS_minloglevel, google::GLOG_INFO);
++  FLAGS_minloglevel = std::min<google::int32>(FLAGS_minloglevel, google::GLOG_INFO);
+ }
+ } // namespace c10
+ 

@@ -1,0 +1,263 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c4cd4b2..8d3253c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1215,8 +1215,7 @@ if(USE_MIMALLOC)
+   set(MI_BUILD_OBJECT OFF)
+   set(MI_BUILD_TESTS OFF)
+   add_definitions(-DUSE_MIMALLOC)
+-  add_subdirectory(third_party/mimalloc)
+-  include_directories(third_party/mimalloc/include)
++  find_package(mimalloc CONFIG REQUIRED)
+ endif()
+ 
+ # ---[ Main build
+diff --git a/aten/src/ATen/CMakeLists.txt b/aten/src/ATen/CMakeLists.txt
+index 0087dd9..257c0bd 100644
+--- a/aten/src/ATen/CMakeLists.txt
++++ b/aten/src/ATen/CMakeLists.txt
+@@ -461,7 +461,7 @@ if(NOT EMSCRIPTEN AND NOT INTERN_BUILD_MOBILE)
+     if(NOT SLEEF_LIBRARY)
+       message(FATAL_ERROR "Cannot find sleef")
+     endif()
+-    message("Found sleef: ${SLEEF_LIBRARY}")
++    message(STATIC "Found sleef: ${SLEEF_LIBRARY}")
+     set_target_properties(sleef PROPERTIES IMPORTED_LOCATION "${SLEEF_LIBRARY}")
+   endif()
+   list(APPEND ATen_CPU_DEPENDENCY_LIBS sleef)
+diff --git a/aten/src/ATen/native/quantized/cpu/qnnpack/CMakeLists.txt b/aten/src/ATen/native/quantized/cpu/qnnpack/CMakeLists.txt
+index fd6b7ff..12007a5 100644
+--- a/aten/src/ATen/native/quantized/cpu/qnnpack/CMakeLists.txt
++++ b/aten/src/ATen/native/quantized/cpu/qnnpack/CMakeLists.txt
+@@ -337,13 +337,8 @@ target_link_libraries(pytorch_qnnpack PUBLIC clog)
+ 
+ # ---[ Configure cpuinfo
+ if(NOT TARGET cpuinfo AND USE_SYSTEM_CPUINFO)
+-  add_library(cpuinfo SHARED IMPORTED)
+-  find_library(CPUINFO_LIBRARY cpuinfo)
+-  if(NOT CPUINFO_LIBRARY)
+-    message(FATAL_ERROR "Cannot find cpuinfo")
+-  endif()
+-  message("Found cpuinfo: ${CPUINFO_LIBRARY}")
+-  set_target_properties(cpuinfo PROPERTIES IMPORTED_LOCATION "${CPUINFO_LIBRARY}")
++  find_package(cpuinfo CONFIG REQUIRED)
++  add_library(cpuinfo ALIAS cpuinfo::cpuinfo)
+ elseif(NOT TARGET cpuinfo)
+   set(CPUINFO_BUILD_TOOLS OFF CACHE BOOL "")
+   set(CPUINFO_BUILD_UNIT_TESTS OFF CACHE BOOL "")
+diff --git a/caffe2/CMakeLists.txt b/caffe2/CMakeLists.txt
+index 89c31fa..c08ab68 100644
+--- a/caffe2/CMakeLists.txt
++++ b/caffe2/CMakeLists.txt
+@@ -1576,7 +1576,10 @@ if(USE_CUDA)
+     target_link_libraries(torch_cpu PRIVATE torch::cudart)
+   endif()
+   target_link_libraries(torch_cuda INTERFACE torch::cudart)
+-  target_link_libraries(torch_cuda PUBLIC c10_cuda torch::nvtoolsext)
++  target_link_libraries(torch_cuda PUBLIC c10_cuda)
++  if(TARGET torch::nvtoolsext)
++    target_link_libraries(torch_cuda PUBLIC torch::nvtoolsext)
++  endif()
+ 
+   target_include_directories(
+       torch_cuda INTERFACE $<INSTALL_INTERFACE:include>)
+@@ -1649,7 +1652,10 @@ if(BUILD_SHARED_LIBS)
+   # not find them, because they're usually in non-standard locations)
+   if(USE_CUDA)
+     target_link_libraries(torch_global_deps ${Caffe2_PUBLIC_CUDA_DEPENDENCY_LIBS})
+-    target_link_libraries(torch_global_deps torch::cudart torch::nvtoolsext)
++    target_link_libraries(torch_global_deps torch::cudart)
++    if(TARGET torch::nvtoolsext)
++      target_link_libraries(torch_global_deps torch::nvtoolsext)
++    endif()
+   endif()
+   install(TARGETS torch_global_deps DESTINATION "${TORCH_INSTALL_LIB_DIR}")
+ endif()
+diff --git a/cmake/Dependencies.cmake b/cmake/Dependencies.cmake
+index c4661e3..9d50b55 100644
+--- a/cmake/Dependencies.cmake
++++ b/cmake/Dependencies.cmake
+@@ -370,13 +370,8 @@ if(INTERN_BUILD_MOBILE OR NOT DISABLE_NNPACK_AND_FAMILY)
+ 
+   if(NOT TARGET pthreadpool)
+     if(USE_SYSTEM_PTHREADPOOL)
+-      add_library(pthreadpool SHARED IMPORTED)
+-      find_library(PTHREADPOOL_LIBRARY pthreadpool)
+-      set_property(TARGET pthreadpool PROPERTY IMPORTED_LOCATION "${PTHREADPOOL_LIBRARY}")
+-      if(NOT PTHREADPOOL_LIBRARY)
+-        message(FATAL_ERROR "Cannot find pthreadpool")
+-      endif()
+-      message("-- Found pthreadpool: ${PTHREADPOOL_LIBRARY}")
++      find_package(unofficial-pthreadpool CONFIG REQUIRED)
++      add_library(pthreadpool ALIAS unofficial::pthreadpool)
+     elseif(NOT USE_INTERNAL_PTHREADPOOL_IMPL)
+       if(NOT DEFINED PTHREADPOOL_SOURCE_DIR)
+         set(CAFFE2_THIRD_PARTY_ROOT "${PROJECT_SOURCE_DIR}/third_party")
+@@ -407,13 +402,8 @@ if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(s390x|ppc64le)$")
+   # ---[ Caffe2 uses cpuinfo library in the thread pool
+   # ---[ But it doesn't support s390x/powerpc and thus not used on s390x/powerpc
+   if(NOT TARGET cpuinfo AND USE_SYSTEM_CPUINFO)
+-    add_library(cpuinfo SHARED IMPORTED)
+-    find_library(CPUINFO_LIBRARY cpuinfo)
+-    if(NOT CPUINFO_LIBRARY)
+-      message(FATAL_ERROR "Cannot find cpuinfo")
+-    endif()
+-    message("Found cpuinfo: ${CPUINFO_LIBRARY}")
+-    set_target_properties(cpuinfo PROPERTIES IMPORTED_LOCATION "${CPUINFO_LIBRARY}")
++    find_package(cpuinfo CONFIG REQUIRED)
++    add_library(cpuinfo ALIAS cpuinfo::cpuinfo)
+   elseif(NOT TARGET cpuinfo)
+     if(NOT DEFINED CPUINFO_SOURCE_DIR)
+       set(CPUINFO_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../third_party/cpuinfo" CACHE STRING "cpuinfo source directory")
+@@ -569,8 +559,8 @@ elseif(NOT TARGET XNNPACK AND USE_SYSTEM_XNNPACK)
+   if(NOT XNNPACK_LIBRARY)
+     message(FATAL_ERROR "Cannot find XNNPACK")
+   endif()
+-  message("-- Found XNNPACK: ${XNNPACK_LIBRARY}")
+-  list(APPEND Caffe2_DEPENDENCY_LIBS XNNPACK)
++  message(STATUS "Found XNNPACK: ${XNNPACK_LIBRARY}")
++  list(APPEND Caffe2_DEPENDENCY_LIBS "${XNNPACK_LIBRARY}")
+ endif()
+ 
+ # ---[ Vulkan deps
+@@ -812,8 +802,9 @@ if(NOT TARGET fp16 AND NOT USE_SYSTEM_FP16)
+     "${FP16_SOURCE_DIR}"
+     "${CONFU_DEPENDENCIES_BINARY_DIR}/FP16")
+ elseif(NOT TARGET fp16 AND USE_SYSTEM_FP16)
+-  add_library(fp16 STATIC "/usr/include/fp16.h")
+-  set_target_properties(fp16 PROPERTIES LINKER_LANGUAGE C)
++  find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
++  add_library(fp16 INTERFACE)
++  set_target_properties(fp16 PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${FP16_INCLUDE_DIRS}")
+ endif()
+ list(APPEND Caffe2_DEPENDENCY_LIBS fp16)
+ 
+@@ -996,7 +987,7 @@ if(USE_CUDNN)
+   if(CUDNN_VERSION VERSION_LESS 8.5)
+     message(FATAL_ERROR "PyTorch needs CuDNN-8.5 or above, but found ${CUDNN_VERSION}. Builds are still possible with `USE_CUDNN=0`")
+   endif()
+-  set(CUDNN_FRONTEND_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/../third_party/cudnn_frontend/include)
++  find_path(CUDNN_FRONTEND_INCLUDE_DIR "cudnn_frontend.h" REQUIRED)
+   target_include_directories(torch::cudnn INTERFACE ${CUDNN_FRONTEND_INCLUDE_DIR})
+ endif()
+ 
+@@ -1207,7 +1198,7 @@ if(USE_GLOO)
+       if(NOT GLOO_LIBRARY)
+         message(FATAL_ERROR "Cannot find gloo")
+       endif()
+-      message("Found gloo: ${GLOO_LIBRARY}")
++      message(STATIC "Found gloo: ${GLOO_LIBRARY}")
+       set_target_properties(gloo PROPERTIES IMPORTED_LOCATION ${GLOO_LIBRARY})
+     endif()
+     # Here is a little bit hacky. We have to put PROJECT_BINARY_DIR in front
+@@ -1288,7 +1279,7 @@ if(CAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO AND NOT INTERN_DISABLE_ONNX)
+       set_target_properties(onnx_proto PROPERTIES CXX_STANDARD 17)
+     endif()
+   endif()
+-  add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../third_party/foxi EXCLUDE_FROM_ALL)
++  # add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../third_party/foxi EXCLUDE_FROM_ALL)
+ 
+   add_definitions(-DONNX_NAMESPACE=${ONNX_NAMESPACE})
+   if(NOT USE_SYSTEM_ONNX)
+@@ -1306,23 +1297,17 @@ if(CAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO AND NOT INTERN_DISABLE_ONNX)
+       target_compile_options(onnx PRIVATE -Wno-deprecated-declarations)
+     endif()
+   else()
+-    add_library(onnx SHARED IMPORTED)
+-    find_library(ONNX_LIBRARY onnx)
+-    if(NOT ONNX_LIBRARY)
+-      message(FATAL_ERROR "Cannot find onnx")
+-    endif()
+-    set_property(TARGET onnx PROPERTY IMPORTED_LOCATION ${ONNX_LIBRARY})
+-    add_library(onnx_proto SHARED IMPORTED)
+-    find_library(ONNX_PROTO_LIBRARY onnx_proto)
+-    if(NOT ONNX_PROTO_LIBRARY)
+-      message(FATAL_ERROR "Cannot find onnx")
+-    endif()
+-    set_property(TARGET onnx_proto PROPERTY IMPORTED_LOCATION ${ONNX_PROTO_LIBRARY})
+-    message("-- Found onnx: ${ONNX_LIBRARY} ${ONNX_PROTO_LIBRARY}")
++    find_package(ONNX CONFIG REQUIRED)
++    if(TARGET ONNX::onnx)
++      add_library(onnx ALIAS ONNX::onnx)
++    endif()
++    if(TARGET ONNX::onnx_proto)
++      add_library(onnx_proto ALIAS ONNX::onnx_proto)
++    endif()
+     list(APPEND Caffe2_DEPENDENCY_LIBS onnx_proto onnx)
+   endif()
+-  include_directories(${FOXI_INCLUDE_DIRS})
+-  list(APPEND Caffe2_DEPENDENCY_LIBS foxi_loader)
++  find_library(FOXI_LIBRARY foxi_loader REQUIRED)
++  list(APPEND Caffe2_DEPENDENCY_LIBS ${FOXI_LIBRARY})
+   # Recover the build shared libs option.
+   set(BUILD_SHARED_LIBS ${TEMP_BUILD_SHARED_LIBS})
+ endif()
+@@ -1530,7 +1515,7 @@ endif()
+ #
+ set(TEMP_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
+-add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/fmt)
++find_package(fmt CONFIG REQUIRED)
+ 
+ # Disable compiler feature checks for `fmt`.
+ #
+@@ -1539,7 +1524,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/fmt)
+ # CMAKE_CXX_FLAGS in ways that break feature checks. Since we already know
+ # `fmt` is compatible with a superset of the compilers that PyTorch is, it
+ # shouldn't be too bad to just disable the checks.
+-set_target_properties(fmt-header-only PROPERTIES INTERFACE_COMPILE_FEATURES "")
++# set_target_properties(fmt-header-only PROPERTIES INTERFACE_COMPILE_FEATURES "")
+ 
+ list(APPEND Caffe2_DEPENDENCY_LIBS fmt::fmt-header-only)
+ set(BUILD_SHARED_LIBS ${TEMP_BUILD_SHARED_LIBS} CACHE BOOL "Build shared libs" FORCE)
+@@ -1681,5 +1666,4 @@ endif()
+ include(${CMAKE_CURRENT_LIST_DIR}/FlatBuffers.cmake)
+ 
+ # Include cpp-httplib
+-add_library(httplib INTERFACE IMPORTED)
+-target_include_directories(httplib SYSTEM INTERFACE ${PROJECT_SOURCE_DIR}/third_party/cpp-httplib)
++find_package(httplib CONFIG REQUIRED) # httplib::httplib
+diff --git a/cmake/public/cuda.cmake b/cmake/public/cuda.cmake
+index b37036d..b988e1c 100644
+--- a/cmake/public/cuda.cmake
++++ b/cmake/public/cuda.cmake
+@@ -66,7 +66,7 @@ if(NOT CMAKE_CUDA_COMPILER_VERSION VERSION_EQUAL CUDAToolkit_VERSION)
+                       "V${CUDAToolkit_VERSION} in '${CUDAToolkit_INCLUDE_DIRS}'")
+ endif()
+ 
+-if(NOT TARGET CUDA::nvToolsExt)
++if(FALSE)
+   message(FATAL_ERROR "Failed to find nvToolsExt")
+ endif()
+ 
+@@ -183,10 +183,10 @@ else()
+ endif()
+ 
+ # nvToolsExt
+-add_library(torch::nvtoolsext INTERFACE IMPORTED)
+-set_property(
+-    TARGET torch::nvtoolsext PROPERTY INTERFACE_LINK_LIBRARIES
+-    CUDA::nvToolsExt)
++if(TARGET CUDA::nvToolsExt)
++  add_library(torch::nvtoolsext INTERFACE IMPORTED) # see CMakeLists.txt in caffe2, torch
++  set_property(TARGET torch::nvtoolsext PROPERTY INTERFACE_LINK_LIBRARIES CUDA::nvToolsExt)
++endif()
+ 
+ # cublas
+ add_library(caffe2::cublas INTERFACE IMPORTED)
+diff --git a/torch/CMakeLists.txt b/torch/CMakeLists.txt
+index 10a44af..3232f93 100644
+--- a/torch/CMakeLists.txt
++++ b/torch/CMakeLists.txt
+@@ -133,8 +133,9 @@ if(USE_CUDA)
+         list(APPEND TORCH_PYTHON_LINK_LIBRARIES torch::cudnn)
+         list(APPEND TORCH_PYTHON_COMPILE_DEFINITIONS USE_CUDNN)
+     endif()
+-
+-    list(APPEND TORCH_PYTHON_LINK_LIBRARIES torch::nvtoolsext)
++    if(TARGET torch::nvtoolsext)
++      list(APPEND TORCH_PYTHON_LINK_LIBRARIES torch::nvtoolsext)
++    endif()
+ endif()
+ 
+ if(USE_ROCM)
