@@ -32,6 +32,7 @@ vcpkg_cmake_configure(
         -DLIBKINETO_NOCUPTI=OFF # use CUDA::cupti
 )
 vcpkg_cmake_install()
+vcpkg_cmake_config_fixup(PACKAGE_NAME kinetoLibrary CONFIG_PATH "share/cmake/kineto")
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
