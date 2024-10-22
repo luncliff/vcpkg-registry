@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2024-11-17",
+  "version-date": "2024-11-24",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows",
@@ -17,6 +17,12 @@
       "supports": "x64 & windows",
       "dependencies": [
         "cuda",
+        {
+          "name": "libtorch",
+          "features": [
+            "cuda"
+          ]
+        },
         {
           "name": "llama-cpp",
           "features": [
@@ -76,6 +82,12 @@
       "description": "Install Vulkan related ports",
       "supports": "x64 & windows",
       "dependencies": [
+        {
+          "name": "libtorch",
+          "features": [
+            "vulkan"
+          ]
+        },
         "glslang",
         "smol-v",
         "vulkan",
