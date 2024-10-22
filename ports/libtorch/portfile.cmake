@@ -55,15 +55,10 @@ get_filename_component(pybind11_DIR "${SITE_PACKAGES_DIR}/pybind11/share/cmake/p
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
   FEATURES
     dist    USE_DISTRIBUTED # MPI, Gloo, TensorPipe
-    zstd    USE_ZSTD
     fbgemm  USE_FBGEMM
-    opencv  USE_OPENCV
     # These are alternatives !
-    # tbb     USE_TBB
-    # tbb     AT_PARALLEL_NATIVE_TBB # AT_PARALLEL_ are alternatives
     # openmp  USE_OPENMP
     # openmp  AT_PARALLEL_OPENMP # AT_PARALLEL_ are alternatives
-    leveldb USE_LEVELDB
     opencl  USE_OPENCL
     cuda    USE_CUDA
     cuda    USE_CUDNN
@@ -74,15 +69,14 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     cuda    AT_CUDNN_ENABLED
     cuda    USE_MAGMA
     vulkan  USE_VULKAN
-    #vulkan  USE_VULKAN_SHADERC_RUNTIME
     vulkan  USE_VULKAN_RELAXED_PRECISION
     rocm    USE_ROCM  # This is an alternative to cuda not a feature! (Not in vcpkg.json!) -> disabled
     llvm    USE_LLVM
     mpi     USE_MPI
     nnpack  USE_NNPACK  # todo: check use of `DISABLE_NNPACK_AND_FAMILY`
     nnpack  AT_NNPACK_ENABLED
-    qnnpack USE_QNNPACK # todo: check use of `USE_PYTORCH_QNNPACK`
-#   No feature in vcpkg yet so disabled. -> Requires numpy build by vcpkg itself
+    qnnpack USE_PYTORCH_QNNPACK
+    # No feature in vcpkg yet so disabled. -> Requires numpy build by vcpkg itself
     python  BUILD_PYTHON
     python  USE_NUMPY
 )
@@ -91,16 +85,16 @@ if("dist" IN_LIST FEATURES)
     if(VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_OSX)
         list(APPEND FEATURE_OPTIONS -DUSE_TENSORPIPE=ON)
     endif()
-    if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_OSX)
+    if(VCPKG_TARGET_IS_OSX)
         list(APPEND FEATURE_OPTIONS -DUSE_LIBUV=ON)
     endif()
     list(APPEND FEATURE_OPTIONS -DUSE_GLOO=${VCPKG_TARGET_IS_LINUX})
 endif()
 
 if(VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_IOS)
-    list(APPEND FEATURE_OPTIONS -DINTERN_BUILD_MOBILE=ON)
+    set(IS_MOBILE ON)
 else()
-    list(APPEND FEATURE_OPTIONS -DINTERN_BUILD_MOBILE=OFF)
+    set(IS_MOBILE OFF)
 endif()
 
 if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
@@ -114,61 +108,37 @@ string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     DISABLE_PARALLEL_CONFIGURE
-    # WINDOWS_USE_MSBUILD
     OPTIONS
         ${FEATURE_OPTIONS}
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         -DCAFFE2_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON3}
         -Dpybind11_DIR:PATH=${pybind11_DIR}
-        -DCAFFE2_STATIC_LINK_CUDA=ON
         -DCAFFE2_USE_MSVC_STATIC_RUNTIME=${USE_STATIC_RUNTIME}
         -DBUILD_CUSTOM_PROTOBUF=OFF
         -DUSE_LITE_PROTO=OFF
-        -DBUILD_TEST=OFF
-        -DATEN_NO_TEST=ON
         -DUSE_SYSTEM_LIBS=ON
-        -DUSE_METAL=${IS_APPLE}
         -DUSE_PYTORCH_METAL=${IS_APPLE}
         -DUSE_PYTORCH_METAL_EXPORT=${IS_APPLE}
         -DUSE_GFLAGS=ON
         -DUSE_GLOG=ON
-        -DUSE_LMDB=ON
+        -DUSE_XNNPACK=ON
         -DUSE_ITT=OFF
-        -DUSE_ROCKSDB=ON
         -DUSE_OBSERVERS=OFF
-        -DUSE_PYTORCH_QNNPACK=OFF
         -DUSE_KINETO=OFF
-        -DUSE_ROCM=OFF
-        -DUSE_NUMA=OFF
-        -DUSE_SYSTEM_ONNX=ON
-        -DUSE_SYSTEM_FP16=ON
-        -DUSE_SYSTEM_EIGEN_INSTALL=ON
-        -DUSE_SYSTEM_CPUINFO=ON
-        -DUSE_SYSTEM_PTHREADPOOL=ON
-        -DUSE_SYSTEM_XNNPACK=ON
-        -DUSE_SYSTEM_PYBIND11=ON
-        -DUSE_SYSTEM_ZSTD=ON
-        -DUSE_SYSTEM_GLOO=ON
-        -DUSE_SYSTEM_NCCL=ON
-        -DUSE_SYSTEM_LIBS=ON
-        -DUSE_SYSTEM_FXDIV=ON
-        -DUSE_SYSTEM_SLEEF=ON
+        -DUSE_LITE_INTERPRETER_PROFILER=OFF
+        -DUSE_NUMA=${VCPKG_TARGET_IS_LINUX}
+        -DUSE_MIMALLOC=${VCPKG_TARGET_IS_WINDOWS}
+        -DINTERN_BUILD_MOBILE=${IS_MOBILE}
         -DBUILD_JNI=${VCPKG_TARGET_IS_ANDROID}
         -DUSE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
-        ${BLAS_OPTIONS}
         # BLAS=MKL not supported in this port
         -DUSE_MKLDNN=OFF
         -DUSE_MKLDNN_CBLAS=OFF
-        #-DCAFFE2_USE_MKL=ON
-        #-DAT_MKL_ENABLED=ON
         -DAT_MKLDNN_ENABLED=OFF
-        -DUSE_OPENCL=ON
-        -DUSE_NUMPY=ON
     MAYBE_UNUSED_VARIABLES
+        PYTHON_EXECUTABLE
         USE_NUMA
-        USE_SYSTEM_BIND11
-        MKLDNN_CPU_RUNTIME
 )
 
 vcpkg_cmake_install()

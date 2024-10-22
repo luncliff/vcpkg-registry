@@ -26,6 +26,10 @@
     "libkineto",
     "lmdb",
     "mimalloc",
+    {
+      "name": "mimalloc",
+      "platform": "windows"
+    },
     "onnx",
     "onnx-optimizer",
     "opencl",
@@ -55,10 +59,8 @@
   "default-features": [
     {
       "name": "cuda",
-      "platform": "windows & !x86"
-    },
-    "opencv",
-    "zstd"
+      "platform": "windows & x64"
+    }
   ],
   "features": {
     "cuda": {
@@ -97,13 +99,6 @@
         }
       ]
     },
-    "leveldb": {
-      "description": "Build with LevelDB",
-      "dependencies": [
-        "leveldb",
-        "snappy"
-      ]
-    },
     "llvm": {
       "description": "Build with LLVM",
       "dependencies": [
@@ -117,16 +112,10 @@
       ]
     },
     "nnpack": {
-      "description": "Build with NNPack",
+      "description": "Build with NNPACK",
       "supports": "linux | osx",
       "dependencies": [
         "nnpack"
-      ]
-    },
-    "opencv": {
-      "description": "Build with OpenCV 3.x",
-      "dependencies": [
-        "opencv"
       ]
     },
     "vulkan": {
@@ -135,12 +124,6 @@
         "vulkan",
         "vulkan-loader",
         "vulkan-memory-allocator"
-      ]
-    },
-    "zstd": {
-      "description": "Build with ZSTD",
-      "dependencies": [
-        "zstd"
       ]
     }
   }
