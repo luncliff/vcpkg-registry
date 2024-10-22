@@ -12,6 +12,22 @@ index c4cd4b2..8d3253c 100644
  endif()
  
  # ---[ Main build
+diff --git a/aten/CMakeLists.txt b/aten/CMakeLists.txt
+index bda6aea..72ce416 100644
+--- a/aten/CMakeLists.txt
++++ b/aten/CMakeLists.txt
+@@ -59,7 +59,10 @@ set(TH_CPU_INCLUDE
+ list(APPEND ATen_CPU_INCLUDE ${TH_CPU_INCLUDE})
+ 
+ if(USE_VULKAN)
+-  list(APPEND ATen_CPU_INCLUDE ${CMAKE_BINARY_DIR}/vulkan ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/VulkanMemoryAllocator)
++  find_package(Vulkan REQUIRED)
++  find_package(VulkanMemoryAllocator CONFIG REQUIRED)
++  get_target_property(VulkanMemoryAllocator_INCLUDE_DIRS GPUOpen::VulkanMemoryAllocator INTERFACE_INCLUDE_DIRECTORIES)
++  list(APPEND ATen_CPU_INCLUDE ${Vulkan_INCLUDE_DIRS} ${VulkanMemoryAllocator_INCLUDE_DIRS})
+ endif()
+ 
+ # Find the HIP package, set the HIP paths, load the HIP CMake.
 diff --git a/aten/src/ATen/CMakeLists.txt b/aten/src/ATen/CMakeLists.txt
 index 0087dd9..257c0bd 100644
 --- a/aten/src/ATen/CMakeLists.txt
@@ -65,9 +81,20 @@ index fd6b7ff..ba6b7a3 100644
  if(PYTORCH_QNNPACK_CUSTOM_THREADPOOL)
    # Depend on pthreadpool interface, but not on implementation.
 diff --git a/caffe2/CMakeLists.txt b/caffe2/CMakeLists.txt
-index 89c31fa..c08ab68 100644
+index 89c31fa..b5aaeba 100644
 --- a/caffe2/CMakeLists.txt
 +++ b/caffe2/CMakeLists.txt
+@@ -1182,8 +1182,8 @@ target_include_directories(torch_cpu PRIVATE
+   ${TORCH_ROOT}/third_party/kineto/libkineto/include)
+ 
+ if(USE_KINETO)
+-  target_include_directories(torch_cpu PRIVATE
+-    ${TORCH_ROOT}/third_party/kineto/libkineto/src)
++  find_path(KINETO_INCLUDE_DIR NAMES "kineto/ActivityType.h" REQUIRED)
++  target_include_directories(torch_cpu PRIVATE ${KINETO_INCLUDE_DIR}/kineto)
+ endif()
+ 
+ target_include_directories(torch_cpu PRIVATE
 @@ -1576,7 +1576,10 @@ if(USE_CUDA)
      target_link_libraries(torch_cpu PRIVATE torch::cudart)
    endif()
@@ -289,3 +316,17 @@ index 10a44af..5460ce7 100644
  endif()
  
  if(USE_ROCM)
+diff --git a/cmake/Dependencies.cmake b/cmake/Dependencies.cmake
+index 6e51b7d..9aa1e35 100644
+--- a/cmake/Dependencies.cmake
++++ b/cmake/Dependencies.cmake
+@@ -1646,8 +1646,7 @@ if(USE_KINETO)
+   endif()
+ 
+   if(NOT TARGET kineto)
+-    add_subdirectory("${KINETO_SOURCE_DIR}")
+-    set_property(TARGET kineto PROPERTY POSITION_INDEPENDENT_CODE ON)
++    find_package(kinetoLibrary CONFIG REQUIRED)
+   endif()
+   list(APPEND Caffe2_DEPENDENCY_LIBS kineto)
+   string(APPEND CMAKE_CXX_FLAGS " -DUSE_KINETO")

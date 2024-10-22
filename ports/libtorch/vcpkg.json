@@ -24,6 +24,7 @@
     "glog",
     "lapack",
     "libkineto",
+    "libkineto",
     "lmdb",
     "mimalloc",
     {

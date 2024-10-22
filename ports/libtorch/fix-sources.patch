@@ -11,3 +11,40 @@ index 66a2498..b328d25 100644
  }
  } // namespace c10
  
+diff --git a/aten/src/ATen/native/vulkan/api/Allocator.h b/aten/src/ATen/native/vulkan/api/Allocator.h
+index 0b28bef..4621f0a 100644
+--- a/aten/src/ATen/native/vulkan/api/Allocator.h
++++ b/aten/src/ATen/native/vulkan/api/Allocator.h
+@@ -47,7 +47,7 @@
+ #pragma clang diagnostic ignored "-Wunused-variable"
+ #endif /* __clang__ */
+ 
+-#include <include/vk_mem_alloc.h>
++#include <vk_mem_alloc.h>
+ 
+ #ifdef __clang__
+ #pragma clang diagnostic pop
+diff --git a/aten/src/ATen/native/vulkan/api/QueryPool.cpp b/aten/src/ATen/native/vulkan/api/QueryPool.cpp
+index e74b743..e29d952 100644
+--- a/aten/src/ATen/native/vulkan/api/QueryPool.cpp
++++ b/aten/src/ATen/native/vulkan/api/QueryPool.cpp
+@@ -9,6 +9,7 @@
+ #include <iomanip>
+ #include <iostream>
+ #include <utility>
++#include <algorithm>
+ 
+ namespace at {
+ namespace native {
+diff --git a/aten/src/ATen/native/vulkan/ops/Clamp.cpp b/aten/src/ATen/native/vulkan/ops/Clamp.cpp
+index e336b01..e51554d 100644
+--- a/aten/src/ATen/native/vulkan/ops/Clamp.cpp
++++ b/aten/src/ATen/native/vulkan/ops/Clamp.cpp
+@@ -1,3 +1,7 @@
++#if defined(_WIN32)
++#define _USE_MATH_DEFINES
++#include <math.h>
++#endif
+ #include <ATen/native/vulkan/ops/Common.h>
+ #include <torch/library.h>
+ 
