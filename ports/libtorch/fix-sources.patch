@@ -48,3 +48,15 @@ index e336b01..e51554d 100644
  #include <ATen/native/vulkan/ops/Common.h>
  #include <torch/library.h>
  
+diff --git a/torch/csrc/profiler/standalone/execution_trace_observer.cpp b/torch/csrc/profiler/standalone/execution_trace_observer.cpp
+index 9e8a995..2c54558 100644
+--- a/torch/csrc/profiler/standalone/execution_trace_observer.cpp
++++ b/torch/csrc/profiler/standalone/execution_trace_observer.cpp
+@@ -10,6 +10,7 @@
+ #endif // _WIN32
+ 
+ #include <fmt/format.h>
++#include <fmt/ranges.h>
+ #include <chrono>
+ #include <cmath>
+ #include <fstream>

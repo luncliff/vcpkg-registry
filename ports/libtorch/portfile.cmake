@@ -51,6 +51,7 @@ find_path(SITE_PACKAGES_DIR
     REQUIRED
 )
 get_filename_component(pybind11_DIR "${SITE_PACKAGES_DIR}/pybind11/share/cmake/pybind11" ABSOLUTE)
+message(STATUS "Using pybind11: ${pybind11_DIR}")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
   FEATURES
@@ -141,18 +142,41 @@ vcpkg_cmake_configure(
         PYTHON_EXECUTABLE
         USE_NUMA
 )
-
+vcpkg_cmake_build(TARGET torch_cpu LOGFILE_BASE torch_cpu)
+if("cuda" IN_LIST FEATURES)
+    vcpkg_cmake_build(TARGET torch_cuda LOGFILE_BASE torch_cuda)
+endif()
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 
 vcpkg_cmake_config_fixup(PACKAGE_NAME Caffe2 CONFIG_PATH "share/cmake/Caffe2" DO_NOT_DELETE_PARENT_CONFIG_PATH)
 vcpkg_cmake_config_fixup(PACKAGE_NAME Torch CONFIG_PATH "share/cmake/Torch")
 
+set(VCPKG_POLICY_DLLS_WITHOUT_EXPORTS enabled) # torch_global_deps.dll is empty.c and just for linking deps
+
 # vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/Torch/TorchConfig.cmake" "/../../../" "/../../")
 # vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/Caffe2/Caffe2Config.cmake" "/../../../" "/../../")
 # vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/Caffe2/Caffe2Config.cmake"
 #   "set(Caffe2_MAIN_LIBS torch_library)"
 #   "set(Caffe2_MAIN_LIBS torch_library)\nfind_dependency(Eigen3)")
+
+# Cannot build python bindings yet
+#if("python" IN_LIST FEATURES)
+#  set(ENV{USE_SYSTEM_LIBS} 1)
+#  vcpkg_replace_string("${SOURCE_PATH}/setup.py" "@TARGET_TRIPLET@" "${TARGET_TRIPLET}-rel")
+#  vcpkg_replace_string("${SOURCE_PATH}/tools/setup_helpers/env.py" "@TARGET_TRIPLET@" "${TARGET_TRIPLET}-rel")
+#  vcpkg_replace_string("${SOURCE_PATH}/torch/utils/cpp_extension.py" "@TARGET_TRIPLET@" "${TARGET_TRIPLET}-rel")
+#  vcpkg_python_build_and_install_wheel(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -x)
+#endif()
+
+# set(config "${CURRENT_PACKAGES_DIR}/share/torch/TorchConfig.cmake")
+# file(READ "${config}" contents)
+# string(REGEX REPLACE "set\\\(NVTOOLEXT_HOME[^)]+" "set(NVTOOLEXT_HOME \"\$ENV{CUDA_PATH}\"" contents "${contents}")
+#string(REGEX REPLACE "set\\\(NVTOOLEXT_HOME[^)]+" "set(NVTOOLEXT_HOME \"\${CMAKE_CURRENT_LIST_DIR}/../../tools/cuda/\"" contents "${contents}")
+# string(REGEX REPLACE "\\\${NVTOOLEXT_HOME}/lib/x64/nvToolsExt64_1.lib" "" contents "${contents}")
+# file(WRITE "${config}" "${contents}")
+
+# vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/include/torch/csrc/autograd/custom_function.h" "struct TORCH_API Function" "struct Function")
 
 # Traverse the folder and remove "some" empty folders
 function(cleanup_once folder)
@@ -194,23 +218,3 @@ file(REMOVE_RECURSE
 )
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
-
-# Cannot build python bindings yet
-#if("python" IN_LIST FEATURES)
-#  set(ENV{USE_SYSTEM_LIBS} 1)
-#  vcpkg_replace_string("${SOURCE_PATH}/setup.py" "@TARGET_TRIPLET@" "${TARGET_TRIPLET}-rel")
-#  vcpkg_replace_string("${SOURCE_PATH}/tools/setup_helpers/env.py" "@TARGET_TRIPLET@" "${TARGET_TRIPLET}-rel")
-#  vcpkg_replace_string("${SOURCE_PATH}/torch/utils/cpp_extension.py" "@TARGET_TRIPLET@" "${TARGET_TRIPLET}-rel")
-#  vcpkg_python_build_and_install_wheel(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -x)
-#endif()
-
-set(VCPKG_POLICY_DLLS_WITHOUT_EXPORTS enabled) # torch_global_deps.dll is empty.c and just for linking deps
-
-set(config "${CURRENT_PACKAGES_DIR}/share/torch/TorchConfig.cmake")
-file(READ "${config}" contents)
-string(REGEX REPLACE "set\\\(NVTOOLEXT_HOME[^)]+" "set(NVTOOLEXT_HOME \"\$ENV{CUDA_PATH}\"" contents "${contents}")
-#string(REGEX REPLACE "set\\\(NVTOOLEXT_HOME[^)]+" "set(NVTOOLEXT_HOME \"\${CMAKE_CURRENT_LIST_DIR}/../../tools/cuda/\"" contents "${contents}")
-string(REGEX REPLACE "\\\${NVTOOLEXT_HOME}/lib/x64/nvToolsExt64_1.lib" "" contents "${contents}")
-file(WRITE "${config}" "${contents}")
-
-vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/include/torch/csrc/autograd/custom_function.h" "struct TORCH_API Function" "struct Function")
