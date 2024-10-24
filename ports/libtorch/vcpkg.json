@@ -23,14 +23,12 @@
     "gflags",
     "glog",
     "lapack",
-    "libkineto",
-    "libkineto",
+    {
+      "name": "libkineto",
+      "platform": "(windows & x64 & !uwp & !xbox) | (linux & x64) | (linux & arm64)"
+    },
     "lmdb",
     "mimalloc",
-    {
-      "name": "mimalloc",
-      "platform": "windows"
-    },
     "onnx",
     "onnx-optimizer",
     "opencl",
@@ -56,12 +54,6 @@
       "host": true
     },
     "xnnpack"
-  ],
-  "default-features": [
-    {
-      "name": "cuda",
-      "platform": "windows & x64"
-    }
   ],
   "features": {
     "cuda": {
