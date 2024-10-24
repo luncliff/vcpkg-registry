@@ -48,6 +48,7 @@ find_path(SITE_PACKAGES_DIR
     PATHS "${PYTHON_ROOT}/Lib/site-packages"
           "${PYTHON_ROOT}/lib/python3.11/site-packages"
           "${PYTHON_ROOT}/lib/python3.12/site-packages"
+          "${PYTHON_ROOT}/lib/python3.13/site-packages"
     REQUIRED
 )
 get_filename_component(pybind11_DIR "${SITE_PACKAGES_DIR}/pybind11/share/cmake/pybind11" ABSOLUTE)
@@ -104,6 +105,12 @@ else()
     set(IS_APPLE OFF)
 endif()
 
+if(VCPKG_TARGET_IS_OSX)
+    set(KINETO_AVAILABLE OFF)
+else()
+    set(KINETO_AVAILABLE ON)
+endif()
+
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
 
 vcpkg_cmake_configure(
@@ -126,7 +133,7 @@ vcpkg_cmake_configure(
         -DUSE_XNNPACK=ON
         -DUSE_ITT=OFF
         -DUSE_OBSERVERS=OFF
-        -DUSE_KINETO=ON
+        -DUSE_KINETO=${KINETO_AVAILABLE}
         -DUSE_LITE_INTERPRETER_PROFILER=OFF
         -DBUILD_LITE_INTERPRETER=OFF
         -DUSE_NUMA=${VCPKG_TARGET_IS_LINUX}

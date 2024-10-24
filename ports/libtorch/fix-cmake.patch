@@ -339,3 +339,42 @@ index 257c0bd..4788bcf 100644
  
    if(NOT MSVC)
      set(CMAKE_C_FLAGS_DEBUG ${OLD_CMAKE_C_FLAGS_DEBUG})
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8d3253c..7502685 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -781,7 +781,7 @@ if(NOT CMAKE_BUILD_TYPE)
+ endif()
+ 
+ # The below means we are cross compiling for arm64 or x86_64 on MacOSX
+-if(NOT IOS
++if(BUILD_CUSTOM_PROTOBUF AND NOT IOS
+    AND CMAKE_SYSTEM_NAME STREQUAL "Darwin"
+    AND CMAKE_OSX_ARCHITECTURES MATCHES "^(x86_64|arm64)$")
+   set(CROSS_COMPILING_MACOSX TRUE)
+diff --git a/caffe2/CMakeLists.txt b/caffe2/CMakeLists.txt
+index b5aaeba..d55ffe7 100644
+--- a/caffe2/CMakeLists.txt
++++ b/caffe2/CMakeLists.txt
+@@ -88,7 +88,7 @@ endif()
+ # addressed yet.
+ 
+ if(NOT MSVC AND USE_XNNPACK)
+-  if(NOT TARGET fxdiv)
++  if(NOT TARGET fxdiv AND NOT USE_SYSTEM_FXDIV)
+     set(FXDIV_BUILD_TESTS OFF CACHE BOOL "")
+     set(FXDIV_BUILD_BENCHMARKS OFF CACHE BOOL "")
+     add_subdirectory(
+@@ -399,6 +399,12 @@ list(APPEND LITE_PROFILER_SRCS "")
+ if(USE_LITE_INTERPRETER_PROFILER)
+   append_filelist("libtorch_edge_profiler_sources " LITE_PROFILER_SRCS)
+ endif()
++if(NOT USE_KINETO)
++  list(REMOVE_ITEM LITE_PROFILER_SRCS
++    "${TORCH_SRC_DIR}/csrc/profiler/kineto_shim.cpp"
++    "${TORCH_SRC_DIR}/csrc/autograd/profiler_kineto.cpp"
++  )
++endif()
+ 
+ # Switch between the full jit interpreter and lite interpreter
+ if(BUILD_LITE_INTERPRETER)
