@@ -214,7 +214,7 @@
     },
     "tensorpipe": {
       "baseline": "2022-05-14",
-      "port-version": 0
+      "port-version": 1
     },
     "winpixeventruntime": {
       "baseline": "1.0.240308001",
