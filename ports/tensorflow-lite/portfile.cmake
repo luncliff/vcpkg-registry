@@ -17,11 +17,9 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.17.0
-    SHA512 45061f075971cf2bc219a34b1cda2ee9851ba586e94046838e6e1fd26adcfb399d90e71e89a0f709d5282ff3be7cc3a82b81d62dce53db5010640ea41487a469
+    REF v2.18.0
+    SHA512 177decaafcdef27afee84a17268f473141d2d0c092d5f3fe33c9cdd3ce4fd52f6b4b83bc41b4b005c8889f5e65602a57ae3eba8f63e0c527feaf83917453f4e6
     PATCHES
-        tensorflow-pr-61381.patch
-        tensorflow-pr-62037.patch
         fix-cmake-vcpkg.patch
         fix-cmake-c-api.patch
         fix-sources.patch
@@ -47,107 +45,119 @@ find_program(PROTOC NAMES protoc
 # see https://protobuf.dev/overview/#syntax
 message(STATUS "Using protoc: ${PROTOC}")
 
+function(codegen_protoc)
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "DIRECTORY;LOGNAME" "SOURCES")
+    vcpkg_execute_required_process(
+        COMMAND "${PROTOC}" --cpp_out . ${arg_SOURCES}
+        LOGNAME "${arg_LOGNAME}"
+        WORKING_DIRECTORY "${arg_DIRECTORY}"
+    )
+endfunction()
+
+function(codegen_flatc_cpp)
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "DIRECTORY;LOGNAME" "SOURCES;FLATC_ARGS")
+    vcpkg_execute_required_process(
+        COMMAND "${FLATC}" --cpp ${arg_FLATC_ARGS} ${arg_SOURCES}
+        LOGNAME "${arg_LOGNAME}"
+        WORKING_DIRECTORY "${arg_DIRECTORY}"
+    )
+endfunction()
+
 # Run codegen with existing .fbs, .proto files
 set(TENSORFLOW_SOURCE_DIR "${SOURCE_PATH}")
 set(TFLITE_SOURCE_DIR "${SOURCE_PATH}/tensorflow/lite")
 
+# see ${ACCELERATION_CONFIGURATION_PATH}/BUILD
 set(ACCELERATION_CONFIGURATION_PATH "${TFLITE_SOURCE_DIR}/acceleration/configuration")
 vcpkg_execute_required_process(
     COMMAND ${FLATC} --proto configuration.proto
     LOGNAME codegen-flatc-configuration
     WORKING_DIRECTORY "${ACCELERATION_CONFIGURATION_PATH}"
 )
-# see ${ACCELERATION_CONFIGURATION_PATH}/BUILD
 vcpkg_replace_string("${ACCELERATION_CONFIGURATION_PATH}/configuration.fbs" "tflite.proto" "tflite")
 
-vcpkg_execute_required_process(
-    COMMAND ${PROTOC} --cpp_out . configuration.proto
+codegen_protoc(
+    DIRECTORY "${ACCELERATION_CONFIGURATION_PATH}"
+    SOURCES configuration.proto
     LOGNAME codegen-protoc-configuration
-    WORKING_DIRECTORY "${ACCELERATION_CONFIGURATION_PATH}"
 )
-vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --gen-compare configuration.fbs
-    LOGNAME codegen-flatc-cpp-configuration
-    WORKING_DIRECTORY "${ACCELERATION_CONFIGURATION_PATH}"
-)
-
-set(SCHEMA_PATH "${TFLITE_SOURCE_DIR}/stablehlo/schema")
-vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --gen-mutable --gen-object-api schema.fbs
-    LOGNAME codegen-flatc-stablehlo-schema
-    WORKING_DIRECTORY "${SCHEMA_PATH}"
+codegen_flatc_cpp(
+    DIRECTORY "${ACCELERATION_CONFIGURATION_PATH}"
+    SOURCES configuration.fbs
+    FLATC_ARGS --gen-compare
+    LOGNAME codegen-flatc-configuration
 )
 
-# download schema.fbs from the previous commit
-# see https://github.com/tensorflow/tensorflow/tree/v2.17.0/tensorflow/lite/schema
-vcpkg_download_distfile(TFLITE_SCHEMA_FBS_PATH
-    URLS "https://raw.githubusercontent.com/tensorflow/tensorflow/fcbcc19aa91748d2b506048cb450f95792f92254/tensorflow/lite/schema/schema.fbs?full_index=1"
-    FILENAME tensorflow-schema.fbs
-    SHA512 574f63957e01bd4ed4810d5218e80768a815b2713da689bb6907ef306546a9126cce77f75bcbd7222ed341fbee8bc11f83dc69d4b7dd7e184f640a2fc46634b8
+codegen_flatc_cpp(
+    DIRECTORY "${TFLITE_SOURCE_DIR}/stablehlo/schema"
+    SOURCES schema.fbs
+    FLATC_ARGS --gen-mutable --gen-object-api
+    LOGNAME codegen-flatc-stablehlo
 )
-set(SCHEMA_PATH "${TFLITE_SOURCE_DIR}/schema")
-file(COPY_FILE "${TFLITE_SCHEMA_FBS_PATH}" "${SCHEMA_PATH}/schema.fbs")
-vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --gen-mutable --gen-object-api
-        schema.fbs
-        conversion_metadata.fbs
-        schema_v0.fbs
-        schema_v1.fbs
-        schema_v2.fbs
-        schema_v3.fbs
-        schema_v3a.fbs
-        schema_v3b.fbs
-        schema_v3c.fbs
+
+codegen_flatc_cpp(
+    DIRECTORY "${TENSORFLOW_SOURCE_DIR}/tensorflow/compiler/mlir/lite/schema"
+    SOURCES schema.fbs
+            schema_v0.fbs
+            schema_v1.fbs
+            schema_v2.fbs
+            schema_v3.fbs
+            schema_v3a.fbs
+            schema_v3b.fbs
+            schema_v3c.fbs
+            conversion_metadata.fbs
+            debug_metadata.fbs
+    FLATC_ARGS --gen-mutable --gen-object-api
     LOGNAME codegen-flatc-schema
-    WORKING_DIRECTORY "${SCHEMA_PATH}"
-)
-vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp conversion_metadata.fbs
-    LOGNAME codegen-flatc-conversion_metadata
-    WORKING_DIRECTORY "${SCHEMA_PATH}"
 )
 
-set(DELEGATES_GPU_COMMON_TASK_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/common/task")
-vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --scoped-enums serialization_base.fbs
-    LOGNAME codegen-flatc-cpp-gl-task-serialization_base
-    WORKING_DIRECTORY "${DELEGATES_GPU_COMMON_TASK_PATH}"
+codegen_flatc_cpp(
+    DIRECTORY "${TFLITE_SOURCE_DIR}/delegates/xnnpack"
+    SOURCES weight_cache_schema.fbs
+    FLATC_ARGS --gen-mutable --gen-object-api
+    LOGNAME codegen-flatc-xnnpack
 )
 
-set(DELEGATES_GPU_COMMON_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/common")
-vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --scoped-enums -I ${TENSORFLOW_SOURCE_DIR} gpu_model.fbs
-    LOGNAME codegen-flatc-cpp-gl-task-gpu_model
-    WORKING_DIRECTORY "${DELEGATES_GPU_COMMON_PATH}"
+codegen_flatc_cpp(
+    DIRECTORY "${TFLITE_SOURCE_DIR}/delegates/gpu/common/task"
+    SOURCES serialization_base.fbs
+    FLATC_ARGS --scoped-enums
+    LOGNAME codegen-flatc-serialization_base
+)
+
+codegen_flatc_cpp(
+    DIRECTORY "${TFLITE_SOURCE_DIR}/delegates/gpu/common"
+    SOURCES gpu_model.fbs
+    FLATC_ARGS --scoped-enums -I "${TENSORFLOW_SOURCE_DIR}"
+    LOGNAME codegen-flatc-gpu_model
+)
+
+codegen_flatc_cpp(
+    DIRECTORY "${TFLITE_SOURCE_DIR}/delegates/gpu/cl"
+    SOURCES compiled_program_cache.fbs
+            serialization.fbs
+    FLATC_ARGS --scoped-enums -I "${TENSORFLOW_SOURCE_DIR}"
+    LOGNAME codegen-flatc-cl
 )
 
 if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
-    set(DELEGATES_GPU_METAL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/metal")
-    vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp --scoped-enums -I ${TENSORFLOW_SOURCE_DIR} inference_context.fbs
-        LOGNAME codegen-flatc-cpp-metal-common
-        WORKING_DIRECTORY "${DELEGATES_GPU_METAL_PATH}"
+    codegen_flatc_cpp(
+        DIRECTORY "${TFLITE_SOURCE_DIR}/delegates/gpu/metal"
+        SOURCES inference_context.fbs
+        FLATC_ARGS --scoped-enums -I "${TENSORFLOW_SOURCE_DIR}"
+        LOGNAME codegen-flatc-metal
     )
 else()
-    set(DELEGATES_GPU_GL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/gl")
-    vcpkg_execute_required_process(
-        COMMAND ${FLATC} --cpp --scoped-enums common.fbs metadata.fbs workgroups.fbs compiled_model.fbs
-        LOGNAME codegen-flatc-cpp-gl-common
-        WORKING_DIRECTORY "${DELEGATES_GPU_GL_PATH}"
+    codegen_flatc_cpp(
+        DIRECTORY "${TFLITE_SOURCE_DIR}/delegates/gpu/gl"
+        SOURCES common.fbs
+                metadata.fbs
+                workgroups.fbs
+                compiled_model.fbs
+        FLATC_ARGS --scoped-enums
+        LOGNAME codegen-flatc-gl
     )
 endif()
-
-set(DELEGATES_GPU_CL_PATH "${TFLITE_SOURCE_DIR}/delegates/gpu/cl")
-vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --scoped-enums compiled_program_cache.fbs
-    LOGNAME codegen-flatc-cpp-cl-compiled_program_cache
-    WORKING_DIRECTORY "${DELEGATES_GPU_CL_PATH}"
-)
-vcpkg_execute_required_process(
-    COMMAND ${FLATC} --cpp --scoped-enums -I ${TENSORFLOW_SOURCE_DIR} serialization.fbs
-    LOGNAME codegen-flatc-cpp-cl-serialization
-    WORKING_DIRECTORY "${DELEGATES_GPU_CL_PATH}"
-)
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
@@ -185,12 +195,14 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
         -DTFLITE_ENABLE_EXTERNAL_DELEGATE=ON
         -DTFLITE_ENABLE_INSTALL=ON
-        "-DTENSORFLOW_SOURCE_DIR:PATH=${SOURCE_PATH}"
+        -DCMAKE_CROSSCOMPILING=${VCPKG_CROSSCOMPILING}
+        "-DTFLITE_HOST_TOOLS_DIR:PATH=${CURRENT_HOST_INSTALLED_DIR}/tools"
         "-DFLATBUFFERS_FLATC_EXECUTABLE:FILEPATH=${FLATC}"
+        "-DTENSORFLOW_SOURCE_DIR:PATH=${SOURCE_PATH}"
     OPTIONS_DEBUG
         -DTFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION=${VCPKG_TARGET_IS_ANDROID}
     MAYBE_UNUSED_VARIABLES
-        FLATBUFFERS_FLATC_EXECUTABLE
+        TFLITE_HOST_TOOLS_DIR
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
