@@ -23,19 +23,30 @@ x_vcpkg_get_python_packages(
     PACKAGES numpy pybind11 sympy tqdm
     OUT_PYTHON_VAR PYTHON3
 )
-message(STATUS "Using python3: ${PYTHON3}")
-get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
-get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
-# ${PYTHON3} -m site --user-site
-find_path(SITE_PACKAGES_DIR
-    NAMES "isympy.py"
-    PATHS "${PYTHON_ROOT}/lib/python3.9/site-packages"
-          "${PYTHON_ROOT}/lib/python3.10/site-packages"
-          "${PYTHON_ROOT}/lib/python3.11/site-packages"
-          "${PYTHON_ROOT}/lib/python3.12/site-packages"
-          "${PYTHON_ROOT}/Lib/site-packages"
-    REQUIRED
-)
+
+function(get_python_version PYTHON OUT_VERSION)
+    execute_process(
+        COMMAND "${PYTHON}" --version
+        OUTPUT_VARIABLE output
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    string(REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" python_version "${output}")
+    set(${OUT_VERSION} ${python_version} PARENT_SCOPE)
+endfunction()
+get_python_version("${PYTHON3}" PYTHON_VERSION)
+
+message(STATUS "Using python3: ${PYTHON3} ${PYTHON_VERSION}")
+
+function(get_python_site_packages PYTHON OUT_PATH)
+    execute_process(
+        COMMAND "${PYTHON}" -c "import site; print(site.getsitepackages()[0])"
+        OUTPUT_VARIABLE output
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    set(${OUT_PATH} "${output}" PARENT_SCOPE)
+endfunction()
+
+get_python_site_packages("${PYTHON3}" SITE_PACKAGES_DIR)
 message(STATUS "  site-packages: ${SITE_PACKAGES_DIR}")
 
 if(VCPKG_CROSSCOMPILING)
