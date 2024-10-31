@@ -1,5 +1,5 @@
 diff --git a/mlmodel/src/Utils.hpp b/mlmodel/src/Utils.hpp
-index 94792ed..4bc7204 100644
+index 9daec54..a95100c 100644
 --- a/mlmodel/src/Utils.hpp
 +++ b/mlmodel/src/Utils.hpp
 @@ -62,7 +62,7 @@ namespace CoreML {
@@ -12,20 +12,20 @@ index 94792ed..4bc7204 100644
          if (!formatObj.ParseFromCodedStream(&codedInput)) {
              return Result(ResultType::FAILED_TO_DESERIALIZE,
 diff --git a/mlmodel/src/Validation/KNearestNeighborsClassifierValidator.cpp b/mlmodel/src/Validation/KNearestNeighborsClassifierValidator.cpp
-index dbbc90f..5a0067a 100644
+index fcc6e68..6838a82 100644
 --- a/mlmodel/src/Validation/KNearestNeighborsClassifierValidator.cpp
 +++ b/mlmodel/src/Validation/KNearestNeighborsClassifierValidator.cpp
 @@ -99,7 +99,7 @@ namespace CoreML {
          int intLabelCount = knnClassifier.has_int64classlabels() ? knnClassifier.int64classlabels().vector_size() : 0;
          int stringLabelCount = knnClassifier.has_stringclasslabels() ? knnClassifier.stringclasslabels().vector_size() : 0;
-         
+ 
 -        int labelCount = MAX(intLabelCount, stringLabelCount);
 +        int labelCount = std::max<int>(intLabelCount, stringLabelCount);
-         
+ 
          auto classLabelCase = knnClassifier.ClassLabels_case();
          auto defaultClassLabelIsInt64 = false;
 diff --git a/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp b/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp
-index a483f0a..178fc82 100644
+index c09864b..9bac6c2 100644
 --- a/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp
 +++ b/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp
 @@ -2851,9 +2851,8 @@ Result NeuralNetworkSpecValidator::validateLayerNormalizationLayer(const Specifi
