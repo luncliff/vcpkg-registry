@@ -24,7 +24,7 @@ workflows:
 jobs:
   x64_linux:
     machine:
-      image: ubuntu-2204:current
+      image: ubuntu-2404:current
     resource_class: large
     environment:
       VCPKG_DOWNLOADS: /tmp/vcpkg-caches
@@ -33,13 +33,13 @@ jobs:
       - checkout
       - aws-cli/setup # check project variables
       - run:
-          name: "Setup: microsoft/vcpkg(2024.08.23)"
+          name: "Setup: microsoft/vcpkg(2024.10.21)"
           command: |
             sudo apt-get update -y -q
             sudo apt-get install -y -q curl zip unzip tar
             mkdir -p $VCPKG_DOWNLOADS
             mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2024.08.23 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2024.10.21 --depth=1 https://github.com/microsoft/vcpkg
             pushd vcpkg
               ./bootstrap-vcpkg.sh
               ./vcpkg --version
@@ -47,9 +47,9 @@ jobs:
             pwd
       - restore_cache:
           keys:
-            - v2435-linux-{{ checksum ".circleci/config.yml" }}
-            - v2435-linux-{{ .Branch }}
-            - v2435-linux-main
+            - v2445-linux-{{ checksum ".circleci/config.yml" }}
+            - v2445-linux-{{ .Branch }}
+            - v2445-linux-main
       - run:
           name: "Install APT packages"
           command: |
@@ -72,11 +72,11 @@ jobs:
           working_directory: vcpkg
           no_output_timeout: 1h
       - save_cache:
-          key: v2435-linux-{{ .Branch }}
+          key: v2445-linux-{{ .Branch }}
           paths:
             - /tmp/vcpkg-caches
       - save_cache:
-          key: v2435-linux-{{ checksum ".circleci/config.yml" }}
+          key: v2445-linux-{{ checksum ".circleci/config.yml" }}
           paths:
             - /tmp/vcpkg-caches
       - store_artifacts:
@@ -85,7 +85,7 @@ jobs:
 
   arm64_android:
     docker: # https://circleci.com/developer/images/image/cimg/android
-      - image: cimg/android:2024.09.1-ndk # 27.0.12077973
+      - image: cimg/android:2024.11.1-ndk # 28.0.12433566
     resource_class: large
     environment:
       VCPKG_DOWNLOADS: /tmp/vcpkg-caches
@@ -95,13 +95,13 @@ jobs:
       - aws-cli/setup # check project variables
       - android/accept-licenses
       - run:
-          name: "Setup: microsoft/vcpkg(2024.08.23)"
+          name: "Setup: microsoft/vcpkg(2024.10.21)"
           command: |
             sudo apt-get update -y -q
             sudo apt-get install -y -q curl zip unzip tar
             mkdir -p $VCPKG_DOWNLOADS
             mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2024.08.23 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2024.10.21 --depth=1 https://github.com/microsoft/vcpkg
             pushd vcpkg
               ./bootstrap-vcpkg.sh
             popd

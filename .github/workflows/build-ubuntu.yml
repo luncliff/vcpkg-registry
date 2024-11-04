@@ -19,12 +19,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2024.06.15"
-            vcpkg_commit: "f7423ee180c4b7f40d43402c2feb3859161ef625"
-          - vcpkg_tag: "2024.07.12"
-            vcpkg_commit: "1de2026f28ead93ff1773e6e680387643e914ea1"
           - vcpkg_tag: "2024.08.23"
             vcpkg_commit: "3508985146f1b1d248c67ead13f8f54be5b4f5da"
+          - vcpkg_tag: "2024.09.30"
+            vcpkg_commit: "c82f74667287d3dc386bce81e44964370c91a289"
+          - vcpkg_tag: "2024.10.21"
+            vcpkg_commit: "10b7a178346f3f0abef60cecd5130e295afd8da4"
       fail-fast: false
     env:
       VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
@@ -40,7 +40,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - uses: actions/cache@v4.1.2
         with:
