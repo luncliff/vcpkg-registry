@@ -46,7 +46,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-      - uses: actions/cache@v4.0.2
+      - uses: actions/cache@v4.1.2
         with:
           key: "v2432-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
           path: |
