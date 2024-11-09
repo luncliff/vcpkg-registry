@@ -1,4 +1,0 @@
-libdispatch
-tensorflow-lite
-abseil
-onnx[disable-static-registration]

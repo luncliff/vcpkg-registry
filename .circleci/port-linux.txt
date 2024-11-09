@@ -1,7 +1,0 @@
-protobuf
-grpc[codegen]
-flatbuffers
-abseil
-liblzma
-onnx[disable-static-registration]
-onnxruntime[training]

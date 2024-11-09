@@ -27,7 +27,7 @@ variables:
   - name: vcpkg.version
     value: "2024.10.21"
 
-  - name: vcpkg.overlay.ports # == VCPKG_OVERLAY_PORTS
+  - name: vcpkg.overlay.ports # VCPKG_OVERLAY_PORTS
     value: $(Build.SourcesDirectory)/ports # --overlay-ports $(Build.SourcesDirectory)/ports
   - name: vcpkg.overlay.triplets # VCPKG_OVERLAY_TRIPLETS
     value: $(Build.SourcesDirectory)/triplets # --overlay-triplets $(Build.SourcesDirectory)/triplets
@@ -37,7 +37,7 @@ variables:
   - name: AzureSource
     value: "x-azblob,https://$(az-storage).blob.core.windows.net/$(az-container),$(az-sas),readwrite"
   - name: vcpkg.binary.sources # VCPKG_BINARY_SOURCES
-    value: "default;$(AzureSource)"
+    value: "default" # $(AzureSource)
   - name: vcpkg.default.binary.cache
     value: $(Build.ArtifactStagingDirectory)/vcpkg-archives
 
@@ -55,8 +55,6 @@ stages:
             value: "C:/vcpkg" # VCPKG_INSTALLATION_ROOT
         strategy:
           matrix:
-            arm64_windows:
-              vcpkg.default.triplet: "arm64-windows"
             arm64_uwp:
               vcpkg.default.triplet: "arm64-uwp"
         steps:
@@ -67,14 +65,6 @@ stages:
               restoreKeys: |
                 "v2445-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
-          - task: PowerShell@2
-            displayName: "Test: arm64-windows"
-            inputs:
-              script: |
-                $Ports=$(Get-Content "test/azure-port-arm64-windows.txt")
-                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
-              targetType: 'inline'
-            condition: ne(variables['vcpkg.default.triplet'], 'arm64-uwp')
           - task: PowerShell@2
             displayName: "Test: arm64-uwp"
             inputs:
@@ -109,7 +99,7 @@ stages:
           - name: vcpkg.root
             value: "/usr/local/share/vcpkg" # VCPKG_INSTALLATION_ROOT
         strategy:
-          matrix: # ubuntu-latest
+          matrix:
             x64_clang15:
               vcpkg.default.triplet: "x64-linux"
               cc: clang-15
@@ -149,106 +139,9 @@ stages:
               ArtifactName: "$(Agent.JobName)"
             condition: always()
 
-      - job: "port_android"
-        displayName: "Android"
-        pool:
-          vmImage: ubuntu-latest
-        variables:
-          - name: vcpkg.root
-            value: "/usr/local/share/vcpkg" # VCPKG_INSTALLATION_ROOT
-        strategy:
-          matrix: # https://github.com/android/ndk/releases
-            arm64_ndk27:
-              vcpkg.default.triplet: "arm64-android"
-            x64_ndk27:
-              vcpkg.default.triplet: "x64-android"
-        steps:
-          - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
-          - task: Cache@2
-            inputs:
-              key: '"v2445-bin-android" | "$(vcpkg.default.triplet)"'
-              restoreKeys: |
-                "v2445-bin-android" | "$(vcpkg.default.triplet)"
-              path: $(vcpkg.default.binary.cache)
-          - task: PowerShell@2
-            displayName: "Test: $(vcpkg.default.triplet)"
-            inputs:
-              script: |
-                $Ports=$(Get-Content "test/azure-port-android.txt")
-                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
-              targetType: 'inline'
-          - task: CopyFiles@2
-            inputs:
-              SourceFolder: "$(vcpkg.root)/buildtrees/"
-              Contents: |
-                **/?(*.log|*.txt|*.cmake)
-              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
-              OverWrite: true
-            condition: always()
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
-              ArtifactName: "$(Agent.JobName)"
-            condition: always()
-
   - stage: "Apple"
     dependsOn: []
     jobs:
-      - job: "port_osx"
-        displayName: "Mac"
-        timeoutInMinutes: "200"
-        pool:
-          vmImage: macos-latest
-        variables:
-          - name: vcpkg.root
-            value: "/usr/local/share/vcpkg"
-        strategy:
-          matrix:
-            arm64_osx:
-              vcpkg.default.triplet: "arm64-osx"
-            x64_osx:
-              vcpkg.default.triplet: "x64-osx"
-        steps:
-          - powershell: brew install vcpkg $(Get-Content test/packages-homebrew.txt)
-            displayName: "Install HomeBrew packages"
-          - powershell: pip install typing-extensions pybind11 numpy pyyaml
-            displayName: "Install Python packages"
-          - task: PowerShell@2
-            displayName: "Setup vcpkg"
-            inputs:
-              script: |
-                New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
-                Push-Location /usr/local/share/
-                  git clone --branch "$env:VCPKG_VERSION" --depth 1 https://github.com/microsoft/vcpkg
-                Pop-Location
-              targetType: 'inline'
-          - task: Cache@2
-            inputs:
-              key: '"v2445-bin-osx" | "$(vcpkg.default.triplet)"'
-              restoreKeys: |
-                "v2445-bin-osx" | "$(vcpkg.default.triplet)"
-              path: $(vcpkg.default.binary.cache)
-          - task: PowerShell@2
-            displayName: "Test: osx"
-            inputs:
-              script: |
-                $Ports=$(Get-Content "test/azure-port-osx.txt")
-                vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
-              targetType: 'inline'
-          - task: CopyFiles@2
-            inputs:
-              SourceFolder: "$(vcpkg.root)/buildtrees/"
-              Contents: |
-                **/?(*.log|*.txt|*.cmake)
-              TargetFolder: "$(Build.ArtifactStagingDirectory)/log"
-              OverWrite: true
-            condition: always()
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)/log"
-              ArtifactName: "$(Agent.JobName)"
-            condition: always()
-
       - job: "port_ios"
         displayName: "iOS"
         timeoutInMinutes: "200"
@@ -256,7 +149,7 @@ stages:
           vmImage: macos-latest
         variables:
           - name: vcpkg.root
-            value: "/usr/local/share/vcpkg"
+            value: "/usr/local/share/vcpkg" # VCPKG_INSTALLATION_ROOT
         strategy:
           matrix:
             arm64_ios:

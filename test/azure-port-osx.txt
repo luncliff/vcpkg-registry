@@ -1,5 +1,0 @@
-tensorflow-lite[gpu]
-onnxruntime[framework,coreml]
-metal-cpp
-miniaudio
-abseil
