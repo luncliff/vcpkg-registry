@@ -225,7 +225,7 @@
       "port-version": 0
     },
     "xnnpack": {
-      "baseline": "2024-05-06",
+      "baseline": "2024-11-09",
       "port-version": 0
     },
     "xnvctrl": {

@@ -37,6 +37,8 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         test    XNNPACK_BUILD_TESTS
         test    XNNPACK_BUILD_BENCHMARKS
+        test    XNNPACK_BUILD_ALL_MICROKERNELS
+        kleidi  XNNPACK_ENABLE_KLEIDIAI
 )
 
 vcpkg_cmake_configure(
