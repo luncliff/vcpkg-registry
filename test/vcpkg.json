@@ -1,20 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2024-08-11",
+  "version-date": "2024-11-12",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows | linux | osx | ios",
   "dependencies": [
     "abseil",
-    {
-      "name": "apple-crypto",
-      "platform": "osx | ios"
-    },
-    {
-      "name": "apple-nio-ssl",
-      "platform": "osx | ios"
-    },
     {
       "name": "coreml-tools",
       "platform": "osx | ios"
