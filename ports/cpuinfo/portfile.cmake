@@ -6,8 +6,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/cpuinfo
-    REF fa1c679da8d19e1d87f20175ae1ec10995cd3dd3
-    SHA512 02e14115b2f91dc555b6181b7f9b422506e8db8ca0858e936045711cc93e0313bc2416298cf0f9619ced6c497a34fd4a4a4bcadcacfc0fe68a1c1ced2bd00558
+    REF dff2616ddd49122b63abcf44d2c097483b77f861
+    SHA512 de681a8cdc0e33cac7b875fabcb05aef8f41cfdeeeb3a1231ae145e6c39c2d5b2b96ad768dc55141b34e0d60291f1e4ef4283bbc2678d04155629a05e9c0f9b0
     HEAD_REF main
 )
 
