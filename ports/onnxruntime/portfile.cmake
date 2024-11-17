@@ -9,9 +9,10 @@ vcpkg_from_github(
     REF ${ORT_GIT_BRANCH}
     SHA512 49d1feb5a45ce73d6c6bcf0f7b126928da1d48b8b454c2c37959ea70460d398db8070602a0157ba1866110dff3805201b7433566d684ccc5418e563cf3dba90e
     PATCHES
+        fix-cmake.patch
         fix-cmake-cuda.patch
         fix-cmake-training.patch
-        # fix-cmake-tensorrt.patch
+        fix-cmake-tensorrt.patch
         fix-cmake-coreml.patch
         # fix-clang-cl-simd-compile.patch
 )
@@ -104,14 +105,12 @@ string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 # see tools/ci_build/build.py
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
-    ${GENERATOR_OPTIONS}
     OPTIONS
         ${FEATURE_OPTIONS}
         "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
         "-DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
         "-DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
         -DBUILD_PKGCONFIG_FILES=ON
-        -Donnxruntime_USE_VCPKG=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
         -Donnxruntime_BUILD_WEBASSEMBLY=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
