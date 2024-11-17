@@ -2,18 +2,6 @@ if(NOT VCPKG_TARGET_IS_IOS)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
 
-# check https://github.com/tensorflow/tensorflow/pull/61381
-# vcpkg_download_distfile(TENSORFLOW_PR_61381_PATCH
-#     URLS "https://github.com/tensorflow/tensorflow/pull/61381.diff?full_index=1"
-#     FILENAME tensorflow-pr-61381.patch  SHA512 0
-# )
-
-# check https://github.com/tensorflow/tensorflow/pull/62037
-# vcpkg_download_distfile(TENSORFLOW_PR_62037_PATCH
-#     URLS "https://github.com/tensorflow/tensorflow/pull/62037.diff?full_index=1"
-#     FILENAME tensorflow-pr-62037.patch  SHA512 0
-# )
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
@@ -196,13 +184,15 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_EXTERNAL_DELEGATE=ON
         -DTFLITE_ENABLE_INSTALL=ON
         -DCMAKE_CROSSCOMPILING=${VCPKG_CROSSCOMPILING}
-        "-DTFLITE_HOST_TOOLS_DIR:PATH=${CURRENT_HOST_INSTALLED_DIR}/tools"
+        "-DTFLITE_HOST_TOOLS_DIR:PATH=${CURRENT_HOST_INSTALLED_DIR}/tools"        
+        "-DFLATC_BIN:FILEPATH=${FLATC}"
         "-DFLATBUFFERS_FLATC_EXECUTABLE:FILEPATH=${FLATC}"
         "-DTENSORFLOW_SOURCE_DIR:PATH=${SOURCE_PATH}"
     OPTIONS_DEBUG
         -DTFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION=${VCPKG_TARGET_IS_ANDROID}
     MAYBE_UNUSED_VARIABLES
         TFLITE_HOST_TOOLS_DIR
+        FLATC_BIN
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
