@@ -57,10 +57,14 @@
     },
     {
       "name": "onnxruntime",
+      "platform": "linux"
+    },
+    {
+      "name": "onnxruntime",
       "features": [
-        "test"
+        "coreml"
       ],
-      "platform": "osx | linux"
+      "platform": "osx | ios"
     },
     {
       "name": "opencl",

@@ -1,4 +1,3 @@
 tensorflow-lite[gpu]
 onnx[disable-static-registration]
-onnxruntime[training]
 abseil

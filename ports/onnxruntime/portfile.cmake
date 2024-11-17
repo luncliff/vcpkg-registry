@@ -1,37 +1,21 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 
-set(ORT_GIT_COMMIT "ffceed9d44f2f3efb9dd69fa75fea51163c91d91")
+set(ORT_GIT_COMMIT "c4fb724e810bb496165b9015c77f402727392933")
 set(ORT_GIT_BRANCH "v${VERSION}")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
     REF ${ORT_GIT_BRANCH}
-    SHA512 3bf25e431d175c61953d28b1bf8f6871376684263992451a5b2a66e670768fc66e7027f141c6e3f4d1eddeebeda51f31ea0adf4749e50d99ee89d0a26bec77ce
+    SHA512 49d1feb5a45ce73d6c6bcf0f7b126928da1d48b8b454c2c37959ea70460d398db8070602a0157ba1866110dff3805201b7433566d684ccc5418e563cf3dba90e
     PATCHES
         fix-cmake.patch
         fix-cmake-cuda.patch
         fix-cmake-training.patch
         fix-cmake-tensorrt.patch
         fix-cmake-coreml.patch
-        fix-sources.patch
-        fix-clang-cl-simd-compile.patch
+        # fix-clang-cl-simd-compile.patch
 )
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/onnxruntime_external_deps.cmake" DESTINATION "${SOURCE_PATH}/cmake/external")
-
-# todo: remove when release branch contains the files
-vcpkg_download_distfile(EXTERNAL_ABSEIL_CPP_CMAKE_PATH
-    URLS "https://raw.githubusercontent.com/microsoft/onnxruntime/main/cmake/external/abseil-cpp.cmake?full_index=1"
-    FILENAME onnxruntime-external-abseil.cmake
-    SKIP_SHA512
-)
-vcpkg_download_distfile(EXTERNAL_CUDNN_CMAKE_PATH
-    URLS "https://raw.githubusercontent.com/microsoft/onnxruntime/main/cmake/external/cuDNN.cmake?full_index=1"
-    FILENAME onnxruntime-external-cuDNN.cmake
-    SKIP_SHA512
-)
-file(COPY_FILE "${EXTERNAL_ABSEIL_CPP_CMAKE_PATH}" "${SOURCE_PATH}/cmake/external/abseil-cpp.cmake" ONLY_IF_DIFFERENT)
-file(COPY_FILE "${EXTERNAL_CUDNN_CMAKE_PATH}"      "${SOURCE_PATH}/cmake/external/cuDNN.cmake"      ONLY_IF_DIFFERENT)
 
 find_program(PROTOC NAMES protoc
     PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
@@ -52,7 +36,12 @@ vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
 
 vcpkg_execute_required_process(
     COMMAND "${PYTHON3}" onnxruntime/core/flatbuffers/schema/compile_schema.py --flatc "${FLATC}"
-    LOGNAME compile_schema
+    LOGNAME compile_schema_core
+    WORKING_DIRECTORY "${SOURCE_PATH}"
+)
+vcpkg_execute_required_process(
+    COMMAND "${PYTHON3}" onnxruntime/lora/adapter_format/compile_schema.py --flatc "${FLATC}"
+    LOGNAME compile_schema_lora
     WORKING_DIRECTORY "${SOURCE_PATH}"
 )
 
@@ -97,25 +86,18 @@ if("training" IN_LIST FEATURES)
     list(APPEND FEATURE_OPTIONS "-DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}")
 endif()
 
-if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_UWP)
-    set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
-    if("cuda" IN_LIST FEATURES)
-        unset(GENERATOR_OPTIONS) # use Ninja for CUDA build
-    endif()
-elseif(VCPKG_TARGET_IS_OSX)
-    set(GENERATOR_OPTIONS GENERATOR Xcode)
-endif()
-
 if("tensorrt" IN_LIST FEATURES)
     if(DEFINED TENSORRT_ROOT)
         message(STATUS "Using TensorRT: ${TENSORRT_ROOT}")
         list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_ROOT}")
+    else()
+        message(WARNING "Define TENSORRT_ROOT in the triplet for onnxruntime_TENSORRT_HOME")
     endif()
 endif()
 if("coreml" IN_LIST FEATURES)
     list(APPEND FEATURE_OPTIONS
         -D_enable_ML_PROGRAM=OFF # do not build CoreML Tools program
-        "-Dcoreml_INCLUDE_DIRS:PATH=${CURRENT_INSTALLED_DIR}/include"
+        "-DCOREML_PROTO_ROOT:PATH=${CURRENT_INSTALLED_DIR}/include/mlmodel/format"
     )
 endif()
 
@@ -128,7 +110,6 @@ string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 # see tools/ci_build/build.py
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/cmake"
-    ${GENERATOR_OPTIONS}
     OPTIONS
         ${FEATURE_OPTIONS}
         "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"

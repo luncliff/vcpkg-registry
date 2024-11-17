@@ -7,4 +7,3 @@ nsync
 ruy
 tensorflow-lite
 dlpack
-onnxruntime
