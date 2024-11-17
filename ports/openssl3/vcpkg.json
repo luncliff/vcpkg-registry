@@ -1,9 +1,16 @@
 {
   "name": "openssl3",
   "version-semver": "3.3.2",
+  "port-version": 1,
   "description": "TLS/SSL and crypto library",
   "homepage": "https://www.openssl.org/",
   "license": "Apache-2.0",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
   "features": {
     "tools": {
       "description": "Buind/Install OpenSSL CLI tools",
