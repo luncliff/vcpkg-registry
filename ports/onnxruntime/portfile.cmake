@@ -36,7 +36,12 @@ vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
 
 vcpkg_execute_required_process(
     COMMAND "${PYTHON3}" onnxruntime/core/flatbuffers/schema/compile_schema.py --flatc "${FLATC}"
-    LOGNAME compile_schema
+    LOGNAME compile_schema_core
+    WORKING_DIRECTORY "${SOURCE_PATH}"
+)
+vcpkg_execute_required_process(
+    COMMAND "${PYTHON3}" onnxruntime/lora/adapter_format/compile_schema.py --flatc "${FLATC}"
+    LOGNAME compile_schema_lora
     WORKING_DIRECTORY "${SOURCE_PATH}"
 )
 
