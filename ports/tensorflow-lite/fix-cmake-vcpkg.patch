@@ -94,7 +94,7 @@ index bce9627f..a2a9f334 100644
      ${TFLITE_SOURCE_DIR}/delegates/gpu/common/task
    )
 -  if(TFLITE_ENABLE_METAL AND "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-+  if(TFLITE_ENABLE_METAL)
++  if(TFLITE_ENABLE_METAL AND APPLE)
      #
      # libmetal_delegate library
      #
