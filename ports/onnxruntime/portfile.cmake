@@ -97,7 +97,7 @@ endif()
 if("coreml" IN_LIST FEATURES)
     list(APPEND FEATURE_OPTIONS
         -D_enable_ML_PROGRAM=OFF # do not build CoreML Tools program
-        "-Dcoreml_INCLUDE_DIRS:PATH=${CURRENT_INSTALLED_DIR}/include"
+        "-DCOREML_PROTO_ROOT:PATH=${CURRENT_INSTALLED_DIR}/include/mlmodel/format"
     )
 endif()
 
