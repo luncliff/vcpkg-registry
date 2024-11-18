@@ -177,8 +177,8 @@
       "port-version": 1
     },
     "openssl3": {
-      "baseline": "3.3.2",
-      "port-version": 1
+      "baseline": "3.4.0",
+      "port-version": 0
     },
     "psimd": {
       "baseline": "2020-05-17",
