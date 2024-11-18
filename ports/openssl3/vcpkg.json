@@ -1,7 +1,6 @@
 {
   "name": "openssl3",
-  "version-semver": "3.3.2",
-  "port-version": 1,
+  "version-semver": "3.4.0",
   "description": "TLS/SSL and crypto library",
   "homepage": "https://www.openssl.org/",
   "license": "Apache-2.0",
