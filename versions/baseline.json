@@ -77,7 +77,7 @@
       "port-version": 0
     },
     "google-jni-bind": {
-      "baseline": "1.1.0-beta",
+      "baseline": "1.1.2-beta",
       "port-version": 0
     },
     "libdispatch": {
