@@ -84,6 +84,10 @@
       "baseline": "5.10.1",
       "port-version": 0
     },
+    "libkineto": {
+      "baseline": "2024-11-22",
+      "port-version": 0
+    },
     "liblzma": {
       "baseline": "5.6.2",
       "port-version": 0

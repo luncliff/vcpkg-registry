@@ -1,6 +1,6 @@
 {
   "name": "libkineto",
-  "version-date": "2024-10-24",
+  "version-date": "2024-11-22",
   "description": "A CPU+GPU Profiling library that provides access to timeline traces and hardware performance counters",
   "homepage": "https://github.com/pytorch/kineto",
   "license": "BSD-3-Clause",

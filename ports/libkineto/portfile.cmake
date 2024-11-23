@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/kineto
-    REF 660b5838acdf9d26c4259621b69fa2920903dfdc
-    SHA512 652bf0380613e836da68f6edc8df361de68f04b0c80c1a6eed0403e55dafa55d458d10d288f98a87357eda39e293760a2d22a10a5c79c2bd53c47f42d0fb08f6
+    REF 596126cba98181ce4a88e06aa1d602b6afd966dd
+    SHA512 5f7916a914e78afba56d47c6589eccf7303a7bdf9a55fcbbeef8733f49e554bce00a4829fb50813736913433a35cdedcccd942c79b1ebb9cae6c76693aae6648
     HEAD_REF main
     PATCHES
         fix-cmake.patch
@@ -14,8 +14,8 @@ vcpkg_from_github(
 vcpkg_from_github(
     OUT_SOURCE_PATH DYNOLOG_SOURCE_PATH
     REPO facebookincubator/dynolog
-    REF b428ad3aaa86c7d8bdbb71e3e9dd2b8a4d4eab3f
-    SHA512 d8a16e04655dcde9a654b8125e458000455ecf04f6eb4fb93b7773b166351a409a26358f0fa6c3845aab8bda922e8e9098d91cbb4b4c3b3879f5654b79e1414f
+    REF 7570766213484a926908c884888cfb701577a9cb # 2024-11-12
+    SHA512 548b51276dfc924ab513406810b90a19de7e0557bfc185cc6e1e285dbaefa685fb8664524c0a04b5802f87911e68e30db675cb1d6bbecc269b441c5972b9dea2
     HEAD_REF main
 )
 file(REMOVE_RECURSE "${SOURCE_PATH}/libkineto/third_party/dynolog")
