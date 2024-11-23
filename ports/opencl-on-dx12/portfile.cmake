@@ -7,6 +7,7 @@ vcpkg_from_github(
     SHA512 7053cee9db381b55bab74729fa445b485e70f6c71f3358824ffae5aa4dfc6e869825196c029d94582a8b1d88029a508e7e38a24ffe9adafb242725a790f7f3e5
     PATCHES
         fix-cmake.patch
+        fix-d3d12transitionlayer.patch
     HEAD_REF master
 )
 
