@@ -1,8 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/jni-bind
-    REF Release-1.1.0-beta
-    SHA512 ffc011eb1d812360b844ff413ead8eb2c98080264655f7e1e30d9cf8f869875da02882559f147156279f6aa86ceba8a4660ca9fda637ac59d417ceaf4d76330d
+    REF Release-${VERSION}
+    SHA512 ef96ea568857ff562d2d55c6d62f5fbe7b2d914beaeea0246af3da881a6b6a39925d4ac48754cc87683b48bf8673e8fe1bca57ad71a5e789e8fb76c192eb0801
     HEAD_REF main
 )
 # Install headers and a shim library with JackWeakAPI.c
