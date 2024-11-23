@@ -10,6 +10,37 @@ vcpkg_from_github(
         fix-cmakelists.patch
 )
 
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+        python  BUILD_ONNX_PYTHON
+)
+
+if("python" IN_LIST FEATURES)
+    x_vcpkg_get_python_packages(
+        PYTHON_VERSION 3
+        PACKAGES typing-extensions pyyaml numpy pybind11
+        OUT_PYTHON_VAR PYTHON3
+    )
+    message(STATUS "Using Python3: ${PYTHON3}")
+
+    function(get_python_site_packages PYTHON OUT_PATH)
+        execute_process(
+            COMMAND "${PYTHON}" -c "import site; print(site.getsitepackages()[0])"
+            OUTPUT_VARIABLE output OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        set(${OUT_PATH} "${output}" PARENT_SCOPE)
+    endfunction()
+    get_python_site_packages("${PYTHON3}" SITE_PACKAGES_DIR)
+
+    get_filename_component(pybind11_DIR "${SITE_PACKAGES_DIR}/pybind11/share/cmake/pybind11" ABSOLUTE)
+    message(STATUS "Using pybind11: ${pybind11_DIR}")
+
+    list(APPEND FEATURE_OPTIONS
+        "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
+        "-Dpybind11_DIR:PATH=${pybind11_DIR}"
+    )
+endif()
+
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
 
 vcpkg_cmake_configure(
@@ -18,7 +49,9 @@ vcpkg_cmake_configure(
         -DONNX_USE_MSVC_STATIC_RUNTIME=${USE_STATIC_RUNTIME}
         -DONNX_OPT_USE_SYSTEM_PROTOBUF=ON
         -DONNX_TARGET_NAME=ONNX::onnx
-        -DBUILD_ONNX_PYTHON=OFF
+        ${FEATURE_OPTIONS}
+    MAYBE_UNUSED_VARIABLES
+        ONNX_USE_MSVC_STATIC_RUNTIME # use in add_msvc_runtime_flag
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
