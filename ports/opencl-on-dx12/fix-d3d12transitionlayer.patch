@@ -1,0 +1,12 @@
+diff --git a/src/d3d12translationlayer/ImmediateContext.cpp b/src/d3d12translationlayer/ImmediateContext.cpp
+index 77351d0..38e6486 100644
+--- a/src/d3d12translationlayer/ImmediateContext.cpp
++++ b/src/d3d12translationlayer/ImmediateContext.cpp
+@@ -5,6 +5,7 @@
+ #include "ImmediateContext.inl"
+ #include "FormatDesc.hpp"
+ #include "View.inl"
++#include <algorithm>
+ 
+ namespace D3D12TranslationLayer
+ {

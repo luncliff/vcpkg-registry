@@ -162,7 +162,7 @@
     },
     "opencl-on-dx12": {
       "baseline": "1.2404.1.0",
-      "port-version": 0
+      "port-version": 1
     },
     "openjdk": {
       "baseline": "jdk-23+10",
