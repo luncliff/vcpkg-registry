@@ -5,6 +5,8 @@ file(GLOB CONFIG_FILES "${_DIR}/TensorpipeConfig-*.cmake")
 foreach(f ${CONFIG_FILES})
   include(${f})
 endforeach()
+include(CMakeFindDependencyMacro)
+find_dependency(libuv)
 
 # ${_DIR}/TensorpipeTargets-*.cmake will be included here
 include("${_DIR}/TensorpipeTargets.cmake")
