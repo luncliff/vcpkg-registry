@@ -159,7 +159,7 @@ stages:
               vcpkg.default.triplet: "arm64-ios-simulator"
               vcpkg.overlay.triplets: "$(Build.SourcesDirectory)/triplets"
         steps:
-          - powershell: brew install vcpkg $(Get-Content test/packages-homebrew.txt)
+          - powershell: brew install $(Get-Content test/packages-homebrew.txt)
             displayName: "Install HomeBrew packages"
           - task: PowerShell@2
             displayName: "Setup vcpkg"
@@ -168,6 +168,7 @@ stages:
                 New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
                 Push-Location /usr/local/share/
                   git clone --branch "$env:VCPKG_VERSION" --depth 1 https://github.com/microsoft/vcpkg
+                  ./bootstrap-vcpkg.sh -disableMetrics
                 Pop-Location
               targetType: 'inline'
           - task: Cache@2
@@ -180,6 +181,7 @@ stages:
             displayName: "Test: $(vcpkg.default.triplet)"
             inputs:
               script: |
+                $env:PATH="/usr/local/share/vcpkg:$env:PATH"
                 $Ports=$(Get-Content "test/azure-port-ios.txt")
                 vcpkg install --keep-going $Ports --clean-buildtrees-after-build --clean-packages-after-build
               targetType: 'inline'
