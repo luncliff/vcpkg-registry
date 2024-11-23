@@ -159,7 +159,8 @@ stages:
               vcpkg.default.triplet: "arm64-ios-simulator"
               vcpkg.overlay.triplets: "$(Build.SourcesDirectory)/triplets"
         steps:
-          - powershell: brew install $(Get-Content test/packages-homebrew.txt)
+          - script: brew install $(cat test/packages-homebrew.txt)
+            continueOnError: true
             displayName: "Install HomeBrew packages"
           - task: PowerShell@2
             displayName: "Setup vcpkg"
