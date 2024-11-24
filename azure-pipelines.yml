@@ -164,10 +164,11 @@ stages:
             displayName: "Install HomeBrew packages"
           - script: |
               mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
-              pushd /usr/local/share/
-                git clone --branch "$VCPKG_VERSION" --depth 1 https://github.com/microsoft/vcpkg
+              git clone --branch "$VCPKG_VERSION" --depth 1 https://github.com/microsoft/vcpkg
+              pushd vcpkg
                 ./bootstrap-vcpkg.sh -disableMetrics
               popd
+            workingDirectory: /usr/local/share/
             displayName: "Setup vcpkg"
           - task: Cache@2
             inputs:
