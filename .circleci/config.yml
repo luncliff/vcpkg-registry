@@ -46,9 +46,9 @@ jobs:
             VCPKG_ROOT: /tmp/vcpkg
       - restore_cache:
           keys:
-            - v2445-android-{{ checksum ".circleci/config.yml" }}
-            - v2445-android-{{ .Branch }}
-            - v2445-android-main
+            - v2447-android-{{ checksum ".circleci/config.yml" }}
+            - v2447-android-{{ .Branch }}
+            - v2447-android-main
       - run:
           name: "Install: port-android.txt"
           command: |
@@ -67,11 +67,11 @@ jobs:
             VCPKG_MAX_CONCURRENCY: 2
           no_output_timeout: 1h
       - save_cache:
-          key: v2445-android-{{ .Branch }}
+          key: v2447-android-{{ .Branch }}
           paths:
             - /tmp/vcpkg-caches
       - save_cache:
-          key: v2445-android-{{ checksum ".circleci/config.yml" }}
+          key: v2447-android-{{ checksum ".circleci/config.yml" }}
           paths:
             - /tmp/vcpkg-caches
       - store_artifacts:

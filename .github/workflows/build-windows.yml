@@ -43,7 +43,7 @@ jobs:
 
       - uses: actions/cache@v4.1.2
         with:
-          key: "v2432-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
+          key: "v2447-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
           path: |
             ${{ runner.temp }}/vcpkg-downloads
 

@@ -61,9 +61,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2445-bin-uwp" | "$(vcpkg.default.triplet)"'
+              key: '"v2447-bin-uwp" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2445-bin-uwp" | "$(vcpkg.default.triplet)"
+                "v2447-bin-uwp" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: arm64-uwp"
@@ -114,9 +114,9 @@ stages:
           - powershell: New-Item -Type Directory -Force "$env:VCPKG_DEFAULT_BINARY_CACHE"
           - task: Cache@2
             inputs:
-              key: '"v2445-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
+              key: '"v2447-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"'
               restoreKeys: |
-                "v2445-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
+                "v2447-bin-ubuntu" | "$(vcpkg.default.triplet)_$(cc)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(cxx)"
@@ -172,9 +172,9 @@ stages:
             displayName: "Setup vcpkg"
           - task: Cache@2
             inputs:
-              key: '"v2445-bin-ios" | "$(vcpkg.default.triplet)"'
+              key: '"v2447-bin-ios" | "$(vcpkg.default.triplet)"'
               restoreKeys: |
-                "v2445-bin-ios" | "$(vcpkg.default.triplet)"
+                "v2447-bin-ios" | "$(vcpkg.default.triplet)"
               path: $(vcpkg.default.binary.cache)
           - task: PowerShell@2
             displayName: "Test: $(vcpkg.default.triplet)"
