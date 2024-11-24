@@ -49,8 +49,7 @@
     {
       "name": "vcpkg-get-python-packages",
       "host": true
-    },
-    "xnnpack"
+    }
   ],
   "features": {
     "cuda": {

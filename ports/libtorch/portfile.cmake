@@ -9,7 +9,6 @@ vcpkg_from_github(
     PATCHES
         fix-cmake.patch
         fix-sources.patch
-        # todo: XNNPACK version update
 )
 
 file(REMOVE_RECURSE "${SOURCE_PATH}/caffe2/core/macros.h") # We must use generated header files
@@ -21,6 +20,16 @@ file(REMOVE
   "${SOURCE_PATH}/cmake/Modules/FindCUDAToolkit.cmake"
   "${SOURCE_PATH}/cmake/Modules/Findpybind11.cmake"
 )
+
+vcpkg_from_github(
+    OUT_SOURCE_PATH XNNPACK_SOURCE_PATH
+    REPO google/xnnpack
+    REF fcbf55af6cf28a4627bcd1f703ab7ad843f0f3a2 # https://github.com/pytorch/pytorch/tree/v2.4.1/third_party
+    SHA512 8063e27686f7b71cfba05b0c004c46db4506638689ffb112f013b3886de58653b60ca5487978c3f96275c17bb1136883ca4c93ddb2241a2c31925a950cb51759
+    HEAD_REF master
+)
+file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/XNNPACK")
+file(RENAME "${XNNPACK_SOURCE_PATH}" "${SOURCE_PATH}/third_party/XNNPACK")
 
 find_program(FLATC NAMES flatc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
 message(STATUS "Using flatc: ${FLATC}")
@@ -118,7 +127,23 @@ vcpkg_cmake_configure(
         -DCAFFE2_USE_MSVC_STATIC_RUNTIME=${USE_STATIC_RUNTIME}
         -DBUILD_CUSTOM_PROTOBUF=OFF
         -DUSE_LITE_PROTO=OFF
-        -DUSE_SYSTEM_LIBS=ON
+        # -DUSE_SYSTEM_LIBS=ON
+        -DUSE_SYSTEM_CPUINFO=ON
+        -DUSE_SYSTEM_SLEEF=ON
+        -DUSE_SYSTEM_GLOO=ON
+        -DUSE_SYSTEM_EIGEN_INSTALL=ON
+        -DUSE_SYSTEM_FP16=ON
+        -DUSE_SYSTEM_PYBIND11=ON
+        -DUSE_SYSTEM_PTHREADPOOL=ON
+        -DUSE_SYSTEM_PSIMD=ON
+        -DUSE_SYSTEM_FXDIV=ON
+        -DUSE_SYSTEM_BENCHMARK=ON
+        -DUSE_SYSTEM_ONNX=ON
+        -DUSE_SYSTEM_XNNPACK=OFF # see above
+            -DXNNPACK_LIBRARY_TYPE=static
+            -DXNNPACK_USE_SYSTEM_LIBS=ON
+            -DXNNPACK_BUILD_TESTS=OFF
+            -DXNNPACK_BUILD_BENCHMARKS=OFF
         -DUSE_PYTORCH_METAL=${IS_APPLE}
         -DUSE_PYTORCH_METAL_EXPORT=${IS_APPLE}
         -DUSE_GFLAGS=ON
@@ -142,6 +167,7 @@ vcpkg_cmake_configure(
         PYTHON_EXECUTABLE
         USE_NUMA
 )
+vcpkg_cmake_build(TARGET XNNPACK LOGFILE_BASE xnnpack)
 vcpkg_cmake_build(TARGET torch_cpu LOGFILE_BASE torch_cpu)
 if("cuda" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET torch_cuda LOGFILE_BASE torch_cuda)
