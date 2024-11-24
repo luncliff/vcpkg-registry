@@ -1,0 +1,19 @@
+{
+  "name": "libkineto",
+  "version-date": "2024-11-22",
+  "description": "A CPU+GPU Profiling library that provides access to timeline traces and hardware performance counters",
+  "homepage": "https://github.com/pytorch/kineto",
+  "license": "BSD-3-Clause",
+  "dependencies": [
+    "fmt",
+    "glog",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
