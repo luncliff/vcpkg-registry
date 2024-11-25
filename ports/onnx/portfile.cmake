@@ -19,6 +19,17 @@ find_program(PROTOC NAMES protoc
 )
 message(STATUS "Using protoc: ${PROTOC}")
 
+find_file(PROTOBUF_BIN NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}protobuf${CMAKE_SHARED_LIBRARY_SUFFIX} libprotobuf${CMAKE_SHARED_LIBRARY_SUFFIX}
+    PATHS "${CURRENT_INSTALLED_DIR}/bin" "${CURRENT_INSTALLED_DIR}/lib"
+    NO_DEFAULT_PATH NO_CMAKE_PATH
+)
+if(PROTOBUF_BIN)
+    message(STATUS "Using protobuf(shared): ${PROTOBUF_BIN}")
+    set(PROTOBUF_SHARED_LIBS ON)
+else()
+    set(PROTOBUF_SHARED_LIBS OFF)
+endif()
+
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         test    ONNX_BUILD_TESTS
@@ -48,6 +59,7 @@ vcpkg_cmake_configure(
         "-D_PROTOBUF_INSTALL_PREFIX=${CURRENT_INSTALLED_DIR}"
         "-DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
         "-DONNX_CUSTOM_PROTOC_EXECUTABLE=${PROTOC}"
+        -DONNX_USE_PROTOBUF_SHARED_LIBS=${PROTOBUF_SHARED_LIBS}
         -DONNX_VERIFY_PROTO3=ON # --protoc_path for gen_proto.py
         -DONNX_ML=ON
         -DONNX_GEN_PB_TYPE_STUBS=ON
