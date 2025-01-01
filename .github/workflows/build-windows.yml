@@ -41,7 +41,7 @@ jobs:
       - name: "Enalbe LongPath"
         run: git config --system core.longpaths true
 
-      - uses: actions/cache@v4.1.2
+      - uses: actions/cache@v4.2.0
         with:
           key: "v2432-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
           path: |
