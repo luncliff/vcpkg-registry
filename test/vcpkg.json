@@ -56,17 +56,6 @@
       ]
     },
     {
-      "name": "onnxruntime",
-      "platform": "linux"
-    },
-    {
-      "name": "onnxruntime",
-      "features": [
-        "coreml"
-      ],
-      "platform": "osx | ios"
-    },
-    {
       "name": "opencl",
       "platform": "windows | linux"
     },
