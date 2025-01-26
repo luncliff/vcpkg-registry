@@ -19,8 +19,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2024.10.21"
-            vcpkg_commit: "10b7a178346f3f0abef60cecd5130e295afd8da4"
+          - vcpkg_tag: "2025.01.13"
+            vcpkg_commit: "6f29f12e82a8293156836ad81cc9bf5af41fe836"
       fail-fast: false
     env:
       VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
@@ -43,7 +43,7 @@ jobs:
 
       - uses: actions/cache@v4.2.0
         with:
-          key: "v2432-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
+          key: "v2504-${{ runner.os }}-${{ matrix.vcpkg_tag }}"
           path: |
             ${{ runner.temp }}/vcpkg-downloads
 

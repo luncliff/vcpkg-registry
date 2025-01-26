@@ -18,7 +18,7 @@ workflows:
 jobs:
   arm64_android:
     docker: # https://circleci.com/developer/images/image/cimg/android
-      - image: cimg/android:2024.11.1-ndk # 28.0.12433566
+      - image: cimg/android:2025.01.1-ndk # 28.0.12674087
     resource_class: large
     environment:
       VCPKG_DOWNLOADS: /tmp/vcpkg-caches
@@ -30,13 +30,13 @@ jobs:
       - android/change_java_version:
           java_version: 17
       - run:
-          name: "Setup: microsoft/vcpkg(2024.10.21)"
+          name: "Setup: microsoft/vcpkg(2025.01.13)"
           command: |
             sudo apt-get update -y -q
             sudo apt-get install -y -q curl zip unzip tar
             mkdir -p $VCPKG_DOWNLOADS
             mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2024.10.21 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2025.01.13 --depth=1 https://github.com/microsoft/vcpkg
             pushd vcpkg
               ./bootstrap-vcpkg.sh
             popd
@@ -46,9 +46,9 @@ jobs:
             VCPKG_ROOT: /tmp/vcpkg
       - restore_cache:
           keys:
-            - v2445-android-{{ checksum ".circleci/config.yml" }}
-            - v2445-android-{{ .Branch }}
-            - v2445-android-main
+            - 2504-android-{{ checksum ".circleci/config.yml" }}
+            - 2504-android-{{ .Branch }}
+            - 2504-android-main
       - run:
           name: "Install: port-android.txt"
           command: |
@@ -67,11 +67,11 @@ jobs:
             VCPKG_MAX_CONCURRENCY: 2
           no_output_timeout: 1h
       - save_cache:
-          key: v2445-android-{{ .Branch }}
+          key: 2504-android-{{ .Branch }}
           paths:
             - /tmp/vcpkg-caches
       - save_cache:
-          key: v2445-android-{{ checksum ".circleci/config.yml" }}
+          key: 2504-android-{{ checksum ".circleci/config.yml" }}
           paths:
             - /tmp/vcpkg-caches
       - store_artifacts:
