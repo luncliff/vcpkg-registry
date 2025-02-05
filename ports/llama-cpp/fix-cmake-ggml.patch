@@ -1,0 +1,22 @@
+diff --git a/ggml/CMakeLists.txt b/ggml/CMakeLists.txt
+index 75b5ea3..96b5423 100644
+--- a/ggml/CMakeLists.txt
++++ b/ggml/CMakeLists.txt
+@@ -17,7 +17,7 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+     # configure project version
+     # TODO
+ else()
+-    set(GGML_STANDALONE OFF)
++    option(GGML_STANDALONE "ggml: standalone build" OFF)
+ endif()
+ 
+ if (EMSCRIPTEN)
+@@ -259,7 +259,7 @@ set_target_properties(ggml PROPERTIES PUBLIC_HEADER "${GGML_PUBLIC_HEADERS}")
+ install(TARGETS ggml LIBRARY PUBLIC_HEADER)
+ install(TARGETS ggml-base LIBRARY)
+ 
+-if (GGML_STANDALONE)
++if (FALSE)
+     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ggml.pc.in
+         ${CMAKE_CURRENT_BINARY_DIR}/ggml.pc
+         @ONLY)
