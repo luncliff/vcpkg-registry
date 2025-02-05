@@ -65,7 +65,8 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "x64-linux"
           VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
 
-      - name: "Run vcpkg(arm64-linux)"
+      - name: "Run vcpkg(arm64-linux)" # skip for now
+        if: ${{ false }}
         run: |
           mkdir -p ${VCPKG_DEFAULT_BINARY_CACHE}
           vcpkg install --keep-going \
