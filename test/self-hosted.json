@@ -67,5 +67,11 @@
         "vulkan-headers"
       ]
     }
-  }
+  },
+  "overrides": [
+    {
+      "name": "fmt",
+      "version": "9.1.0#1"
+    }
+  ]
 }
