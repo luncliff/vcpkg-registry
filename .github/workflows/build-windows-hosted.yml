@@ -21,14 +21,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2024.07.12"
-            vcpkg_commit: "1de2026f28ead93ff1773e6e680387643e914ea1"
-          - vcpkg_tag: "2024.08.23"
-            vcpkg_commit: "3508985146f1b1d248c67ead13f8f54be5b4f5da"
-          - vcpkg_tag: "2024.09.30"
-            vcpkg_commit: "c82f74667287d3dc386bce81e44964370c91a289"
           - vcpkg_tag: "2024.10.21"
             vcpkg_commit: "10b7a178346f3f0abef60cecd5130e295afd8da4"
+          - vcpkg_tag: "2025.01.13"
+            vcpkg_commit: "6f29f12e82a8293156836ad81cc9bf5af41fe836"
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -39,16 +35,6 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - uses: ConorMacBride/install-package@v1.1.0
-        with:
-          choco: awscli
-
-      - name: "Update environment"
-        run: |
-          Write-Output "PATH=$env:PATH;C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          New-Item -Type Directory -Force C:/vcpkg-caches
-        shell: pwsh
-
       - name: "Enable LongPath"
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
@@ -57,7 +43,9 @@ jobs:
         continue-on-error: true
 
       - name: "Change vcpkg.json"
-        run: Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+        run: |
+          New-Item -Type Directory -Force C:/vcpkg-caches
+          Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.5
@@ -103,10 +91,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2024.09.30"
-            vcpkg_commit: "c82f74667287d3dc386bce81e44964370c91a289"
-          - vcpkg_tag: "2024.10.21"
-            vcpkg_commit: "10b7a178346f3f0abef60cecd5130e295afd8da4"
+          - vcpkg_tag: "2025.01.13"
+            vcpkg_commit: "6f29f12e82a8293156836ad81cc9bf5af41fe836"
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -117,16 +103,6 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - uses: ConorMacBride/install-package@v1.1.0
-        with:
-          choco: awscli
-
-      - name: "Update environment"
-        run: |
-          Write-Output "PATH=$env:PATH;C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          New-Item -Type Directory -Force C:/vcpkg-caches
-        shell: pwsh
-
       - name: "Enable LongPath"
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
@@ -135,7 +111,9 @@ jobs:
         continue-on-error: true
 
       - name: "Change vcpkg.json"
-        run: Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+        run: |
+          New-Item -Type Directory -Force C:/vcpkg-caches
+          Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.5
@@ -166,10 +144,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2024.09.30"
-            vcpkg_commit: "c82f74667287d3dc386bce81e44964370c91a289"
-          - vcpkg_tag: "2024.10.21"
-            vcpkg_commit: "10b7a178346f3f0abef60cecd5130e295afd8da4"
+          - vcpkg_tag: "2025.01.13"
+            vcpkg_commit: "6f29f12e82a8293156836ad81cc9bf5af41fe836"
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -179,16 +155,6 @@ jobs:
       - uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: x64
-
-      - uses: ConorMacBride/install-package@v1.1.0
-        with:
-          choco: awscli
-
-      - name: "Update environment"
-        run: |
-          Write-Output "PATH=$env:PATH;C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          New-Item -Type Directory -Force C:/vcpkg-caches
-        shell: pwsh
 
       - uses: humbletim/install-vulkan-sdk@v1.1.1 # install Vulkan sdk if env.VULKAN_SDK is empty
         if: env.VULKAN_SDK == ''
@@ -205,7 +171,9 @@ jobs:
         continue-on-error: true
 
       - name: "Change vcpkg.json"
-        run: Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+        run: |
+          New-Item -Type Directory -Force C:/vcpkg-caches
+          Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.5
