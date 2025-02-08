@@ -20,7 +20,7 @@
         {
           "name": "llama-cpp",
           "features": [
-            "cublas"
+            "cuda"
           ]
         },
         "nvidia-cnmem",
@@ -45,6 +45,12 @@
         },
         "liblzma",
         {
+          "name": "llama-cpp",
+          "features": [
+            "opencl"
+          ]
+        },
+        {
           "name": "onnx",
           "features": [
             "disable-static-registration",
@@ -62,6 +68,12 @@
       "supports": "x64 & windows",
       "dependencies": [
         "glslang",
+        {
+          "name": "llama-cpp",
+          "features": [
+            "vulkan"
+          ]
+        },
         "smol-v",
         "vulkan",
         "vulkan-headers"
