@@ -46,10 +46,17 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
     list(APPEND ARCH_OPTIONS
         -DGGML_AARCH64=ON
     )
+    if(VCPKG_TARGET_IS_WINDOWS)
+        # ggml-cpu: MSVC is not supported for ARM, use clang
+        # Visual Studio with ClangCL
+        set(VCPKG_PLATFORM_TOOLSET ClangCL) # see CMAKE_GENERATOR_TOOLSET
+        set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+    endif()
 endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
+    ${GENERATOR_OPTIONS}
     OPTIONS
         ${FEATURE_OPTIONS}
         ${ARCH_OPTIONS}
