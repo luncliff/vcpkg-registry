@@ -1,0 +1,18 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 04f7772..157219f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -92,11 +92,11 @@ install(
+ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR OPENCL_HEADERS_BUILD_TESTING)
+   include(CTest)
+ endif()
+-if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR OPENCL_HEADERS_BUILD_TESTING) AND BUILD_TESTING)
++if((OPENCL_HEADERS_BUILD_TESTING) AND BUILD_TESTING)
+   add_subdirectory(tests)
+ endif()
+ 
+-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
++if(FALSE)
+     find_package(Python3 COMPONENTS Interpreter)
+     set(OPENCL_HEADERS_XML_PATH CACHE FILEPATH "Path to cl.xml for OpenCL Header genereration")
+     set(OPENCL_HEADERS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated)

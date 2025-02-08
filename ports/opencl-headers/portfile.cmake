@@ -5,6 +5,8 @@ vcpkg_from_github(
     REF v2024.05.08
     SHA512 2f1a46d58a5a9329470bab4c3662f17e81aab9558bfd9e1aafa14d3e1ab129513ab9493eeeb3cc48f0f91f0bc6b61bd54e28d7083eed58af9f34cd973cc93de1
     HEAD_REF main
+    PATCHES
+        fix-headers.patch
 )
 
 vcpkg_cmake_configure(
