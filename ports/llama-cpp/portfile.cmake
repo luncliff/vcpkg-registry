@@ -21,15 +21,46 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         server  LLAMA_BUILD_SERVER
         server  LLAMA_BUILD_EXAMPLES
-        cuda    LLAMA_CUBLAS
         cuda    GGML_CUDA
-        cuda    GGML_CUDA_GRAPHS_DEFAULT
+        cuda    GGML_CUDA_GRAPHS
+        cuda    GGML_CUDA_FORCE_MMQ
+        cuda    GGML_CUDA_FORCE_CUBLAS
+        cuda    GGML_CUDA_NO_VMM
+        cuda    GGML_CUDA_F16
+        cuda    GGML_CUDA_DMMV_F16
+        cuda    GGML_CUDA_NO_PEER_COPY
         opencl  GGML_OPENCL
+        opencl  GGML_OPENCL_EMBED_KERNELS
+        # opencl  GGML_OPENCL_PROFILING
         openmp  GGML_OPENMP
         vulkan  GGML_VULKAN
         vulkan  GGML_VULKAN_CHECK_RESULTS
-        # vulkan  GGML_VULKAN_VALIDATE 
+        # vulkan  GGML_VULKAN_DEBUG
+        # vulkan  GGML_VULKAN_VALIDATE
+        # vulkan  GGML_VULKAN_MEMORY_DEBUG
+        # vulkan  GGML_VULKAN_SHADER_DEBUG_INFO
+        # vulkan  GGML_VULKAN_PERF
 )
+
+if("vulkan" IN_LIST FEATURES)
+    list(APPEND TOOL_PATHS "${VCPKG_HOST_INSTALLED_DIR}/tools/glslang")
+    if(DEFINED ENV{VULKAN_SDK})
+        list(APPEND TOOL_PATHS "$ENV{VULKAN_SDK}/Bin")
+    endif()
+    if(DEFINED ENV{VK_SDK_PATH})
+        list(APPEND TOOL_PATHS "$ENV{VK_SDK_PATH}/Bin")
+    endif()
+    find_program(GLSLC NAMES glslc PATHS ${TOOL_PATHS} REQUIRED)
+    message(STATUS "Using glslc: ${GLSLC}")
+    find_program(GLSLANG_VALIDATOR NAMES glslangValidator PATHS ${TOOL_PATHS} REQUIRED)
+    message(STATUS "Using glslangValidator: ${GLSLANG_VALIDATOR}")
+    list(APPEND FEATURE_OPTIONS
+        "-DVulkan_GLSLC_EXECUTABLE:FILEPATH=${GLSLC}"
+        "-DVulkan_GLSLANG_VALIDATOR_EXECUTABLE=${GLSLANG_VALIDATOR}"
+    )
+    get_filename_component(GLSL_TOOL_DIR "${GLSLC}" PATH)
+    vcpkg_add_to_path(PREPEND "${GLSL_TOOL_DIR}")
+endif()
 
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC)
 
@@ -48,7 +79,6 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
     )
     if(VCPKG_TARGET_IS_WINDOWS)
         # ggml-cpu: MSVC is not supported for ARM, use clang
-        # Visual Studio with ClangCL
         set(VCPKG_PLATFORM_TOOLSET ClangCL) # see CMAKE_GENERATOR_TOOLSET
         set(GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
     endif()
