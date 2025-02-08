@@ -5,7 +5,11 @@
   "homepage": "https://github.com/ggerganov/llama.cpp",
   "license": "MIT",
   "dependencies": [
-    "curl",
+    {
+      "name": "curl",
+      "default-features": false
+    },
+    "nlohmann-json",
     {
       "name": "vcpkg-cmake",
       "host": true

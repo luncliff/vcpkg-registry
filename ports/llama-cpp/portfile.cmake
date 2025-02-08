@@ -11,7 +11,9 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-cmake-ggml.patch
+        fix-3rdparty.patch
 )
+file(REMOVE "${SOURCE_PATH}/common/json.hpp") # use nlohmann-json
 
 vcpkg_find_acquire_program(GIT)
 message(STATUS "Using git: ${GIT}")
