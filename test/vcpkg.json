@@ -22,7 +22,6 @@
       "name": "d3d12-transition-layer",
       "platform": "windows"
     },
-    "etcpak",
     {
       "name": "fbgemm",
       "platform": "x64"
