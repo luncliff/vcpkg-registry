@@ -32,7 +32,12 @@
       "name": "libdispatch",
       "platform": "windows | android"
     },
-    "llama-cpp",
+    {
+      "name": "llama-cpp",
+      "features": [
+        "server"
+      ]
+    },
     {
       "name": "metal-cpp",
       "platform": "osx | ios"
