@@ -140,7 +140,7 @@ vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/ggml" PACKAGE_NAME "ggml" DO_NOT
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/llama" PACKAGE_NAME "llama")
 
 if("server" IN_LIST FEATURES)
-    vcpkg_copy_tools(TOOL_NAMES llama-server DESTINATION "${CURRENT_PACKAGES_DIR}/tools/llama.cpp")
+    vcpkg_copy_tools(TOOL_NAMES llama-server DESTINATION "${CURRENT_PACKAGES_DIR}/tools/llama.cpp" AUTO_CLEAN)
     file(INSTALL
         "${SOURCE_PATH}/examples/server/public"
         "${SOURCE_PATH}/examples/server/public_simplechat"
