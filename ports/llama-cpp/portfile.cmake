@@ -151,7 +151,6 @@ if("server" IN_LIST FEATURES)
         DESTINATION "${CURRENT_PACKAGES_DIR}/tools/llama.cpp"
     )
 endif()
-vcpkg_copy_tools(TOOL_NAMES convert_hf_to_gguf.py DESTINATION "${CURRENT_PACKAGES_DIR}/tools/llama.cpp" AUTO_CLEAN)
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
