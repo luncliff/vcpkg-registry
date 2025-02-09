@@ -78,3 +78,29 @@ jobs:
           VCPKG_DEFAULT_BINARY_CACHE: "${{ runner.temp }}/vcpkg-caches"
           VCPKG_DEFAULT_TRIPLET: "arm64-linux"
           VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+
+  overlay_emscripten:
+    runs-on: "ubuntu-latest"
+    container:
+      image: "emscripten/emsdk:3.1.74" # https://hub.docker.com/r/emscripten/emsdk
+      env:
+        EMSDK_NODE: /emsdk/node/20.18.0_64bit/bin/node
+        EMCC_CFLAGS: "-mbulk-memory -matomics -pthread"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Change vcpkg.json"
+        run: mv test/test-emsdk.json test/vcpkg.json
+
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "C:/vcpkg"
+          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          vcpkgJsonGlob: "test/vcpkg.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+          runVcpkgInstall: true
+        env:
+          VCPKG_DEFAULT_TRIPLET: "wasm32-emscripten"
+          VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
