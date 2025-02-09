@@ -17,7 +17,7 @@
       "port-version": 0
     },
     "basis-universal": {
-      "baseline": "1.16.4",
+      "baseline": "1.50.0",
       "port-version": 0
     },
     "coreml-tools": {
