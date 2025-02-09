@@ -1,14 +1,15 @@
 {
   "name": "llama-cpp",
-  "version-string": "b1695",
-  "description": "Port of Facebook's LLaMA model in C/C++",
+  "version": "4644",
+  "description": "LLM inference in C/C++",
   "homepage": "https://github.com/ggerganov/llama.cpp",
-  "supports": "windows | linux | osx",
+  "license": "MIT",
   "dependencies": [
     {
-      "name": "openblas",
-      "platform": "windows"
+      "name": "curl",
+      "default-features": false
     },
+    "nlohmann-json",
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -18,34 +19,60 @@
       "host": true
     }
   ],
+  "default-features": [
+    {
+      "name": "metal",
+      "platform": "osx | ios"
+    }
+  ],
   "features": {
-    "clblast": {
-      "description": "Use CLBlast",
-      "dependencies": [
-        "clblast"
-      ]
-    },
-    "cublas": {
+    "cuda": {
       "description": "Use CUDA",
       "dependencies": [
         "cudnn"
       ]
     },
-    "mpi": {
-      "description": "Use MPI",
+    "metal": {
+      "description": "Use Metal",
+      "supports": "osx | ios"
+    },
+    "opencl": {
+      "description": "Use OpenCL",
       "dependencies": [
-        {
-          "name": "msmpi",
-          "platform": "windows"
-        },
-        {
-          "name": "openmpi",
-          "platform": "!windows"
-        }
+        "opencl"
       ]
     },
-    "test": {
-      "description": "Build tests"
+    "openmp": {
+      "description": "Use OpenMP",
+      "dependencies": [
+        "openmp"
+      ]
+    },
+    "server": {
+      "description": "Build llama server",
+      "supports": "windows | linux | osx",
+      "dependencies": [
+        {
+          "name": "curl",
+          "features": [
+            "ssl"
+          ]
+        },
+        "openssl"
+      ]
+    },
+    "vulkan": {
+      "description": "Use Vulkan",
+      "dependencies": [
+        {
+          "name": "glslang",
+          "host": true,
+          "features": [
+            "tools"
+          ]
+        },
+        "vulkan"
+      ]
     }
   }
 }

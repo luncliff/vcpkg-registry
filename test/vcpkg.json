@@ -35,9 +35,8 @@
     {
       "name": "llama-cpp",
       "features": [
-        "test"
-      ],
-      "platform": "windows | osx | linux"
+        "server"
+      ]
     },
     {
       "name": "metal-cpp",

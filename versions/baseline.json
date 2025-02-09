@@ -93,7 +93,7 @@
       "port-version": 0
     },
     "llama-cpp": {
-      "baseline": "b1695",
+      "baseline": "4644",
       "port-version": 0
     },
     "metal-cpp": {

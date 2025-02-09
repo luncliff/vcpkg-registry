@@ -1,0 +1,137 @@
+diff --git a/common/CMakeLists.txt b/common/CMakeLists.txt
+index e61015d..3bfac20 100644
+--- a/common/CMakeLists.txt
++++ b/common/CMakeLists.txt
+@@ -64,7 +64,6 @@ add_library(${TARGET} STATIC
+     console.cpp
+     console.h
+     json-schema-to-grammar.cpp
+-    json.hpp
+     llguidance.cpp
+     log.cpp
+     log.h
+@@ -77,6 +76,9 @@ add_library(${TARGET} STATIC
+     speculative.h
+     )
+ 
++find_package(nlohmann_json CONFIG REQUIRED)
++target_link_libraries(${TARGET} PRIVATE nlohmann_json::nlohmann_json)
++
+ if (BUILD_SHARED_LIBS)
+     set_target_properties(${TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+ endif()
+diff --git a/common/chat-template.hpp b/common/chat-template.hpp
+index 0e88fb3..1be8519 100644
+--- a/common/chat-template.hpp
++++ b/common/chat-template.hpp
+@@ -9,7 +9,7 @@
+ #pragma once
+ 
+ #include "minja.hpp"
+-#include <json.hpp>
++#include <nlohmann/json.hpp>
+ #include <string>
+ #include <vector>
+ 
+diff --git a/common/chat.hpp b/common/chat.hpp
+index 33e64a4..7e2f658 100644
+--- a/common/chat.hpp
++++ b/common/chat.hpp
+@@ -3,7 +3,7 @@
+ #pragma once
+ 
+ #include "common.h"
+-#include <json.hpp>
++#include <nlohmann/json.hpp>
+ #include <optional>
+ #include <string>
+ #include <vector>
+diff --git a/common/common.cpp b/common/common.cpp
+index 8661e16..6b9d80a 100644
+--- a/common/common.cpp
++++ b/common/common.cpp
+@@ -9,7 +9,7 @@
+ #include "log.h"
+ // Change JSON_ASSERT from assert() to GGML_ASSERT:
+ #define JSON_ASSERT GGML_ASSERT
+-#include "json.hpp"
++#include <nlohmann/json.hpp>
+ #include "json-schema-to-grammar.h"
+ #include "llama.h"
+ #include "chat.hpp"
+diff --git a/common/json-schema-to-grammar.h b/common/json-schema-to-grammar.h
+index 62a3b0a..81fdcff 100644
+--- a/common/json-schema-to-grammar.h
++++ b/common/json-schema-to-grammar.h
+@@ -3,7 +3,7 @@
+ #include "ggml.h"
+ // Change JSON_ASSERT from assert() to GGML_ASSERT:
+ #define JSON_ASSERT GGML_ASSERT
+-#include "json.hpp"
++#include <nlohmann/json.hpp>
+ 
+ std::string json_schema_to_grammar(const nlohmann::ordered_json & schema,
+                                    bool force_gbnf = false);
+diff --git a/common/minja.hpp b/common/minja.hpp
+index c304b5c..1480087 100644
+--- a/common/minja.hpp
++++ b/common/minja.hpp
+@@ -16,7 +16,7 @@
+ #include <stdexcept>
+ #include <sstream>
+ #include <unordered_set>
+-#include <json.hpp>
++#include <nlohmann/json.hpp>
+ 
+ using json = nlohmann::ordered_json;
+ 
+diff --git a/examples/server/CMakeLists.txt b/examples/server/CMakeLists.txt
+index 1b7cc8c..e1a9cad 100644
+--- a/examples/server/CMakeLists.txt
++++ b/examples/server/CMakeLists.txt
+@@ -12,7 +12,6 @@ endif()
+ set(TARGET_SRCS
+     server.cpp
+     utils.hpp
+-    httplib.h
+ )
+ set(PUBLIC_ASSETS
+     index.html.gz
+@@ -34,7 +33,10 @@ endforeach()
+ add_executable(${TARGET} ${TARGET_SRCS})
+ install(TARGETS ${TARGET} RUNTIME)
+ 
+-target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR})
++# find_path(CPPHTTPLIB_INCLUDE_DIRS NAMES "httplib.h" REQUIRED)
++target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR} ${CPPHTTPLIB_INCLUDE_DIRS})
++find_package(CURL REQUIRED)
++target_link_libraries(${TARGET} PRIVATE CURL::libcurl)
+ target_link_libraries(${TARGET} PRIVATE common ${CMAKE_THREAD_LIBS_INIT})
+ 
+ if (LLAMA_SERVER_SSL)
+diff --git a/examples/server/server.cpp b/examples/server/server.cpp
+index 9cdf205..bfc05bc 100644
+--- a/examples/server/server.cpp
++++ b/examples/server/server.cpp
+@@ -10,7 +10,7 @@
+ 
+ // Change JSON_ASSERT from assert() to GGML_ASSERT:
+ #define JSON_ASSERT GGML_ASSERT
+-#include "json.hpp"
++#include <nlohmann/json.hpp>
+ // mime type for sending response
+ #define MIMETYPE_JSON "application/json; charset=utf-8"
+ 
+diff --git a/examples/server/utils.hpp b/examples/server/utils.hpp
+index 5f97df5..db2a42f 100644
+--- a/examples/server/utils.hpp
++++ b/examples/server/utils.hpp
+@@ -11,7 +11,7 @@
+ 
+ // Change JSON_ASSERT from assert() to GGML_ASSERT:
+ #define JSON_ASSERT GGML_ASSERT
+-#include "json.hpp"
++#include <nlohmann/json.hpp>
+ #include "minja.hpp"
+ #include "chat.hpp"
+ #include "chat-template.hpp"
