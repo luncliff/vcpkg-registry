@@ -11,9 +11,13 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-cmake-ggml.patch
+        fix-cmake-llama.patch
         fix-3rdparty.patch
 )
-file(REMOVE "${SOURCE_PATH}/common/json.hpp") # use nlohmann-json
+file(REMOVE
+    "${SOURCE_PATH}/common/json.hpp" # nlohmann-json
+    # "${SOURCE_PATH}/examples/server/httplib.h" # todo: use cpp-httplib[openssl]
+)
 
 vcpkg_find_acquire_program(GIT)
 message(STATUS "Using git: ${GIT}")
@@ -22,7 +26,7 @@ message(STATUS "Using git: ${GIT}")
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         server  LLAMA_BUILD_SERVER
-        server  LLAMA_BUILD_EXAMPLES
+        server  LLAMA_SERVER_SSL
         cuda    GGML_CUDA
         cuda    GGML_CUDA_GRAPHS
         cuda    GGML_CUDA_FORCE_MMQ
@@ -33,16 +37,24 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         cuda    GGML_CUDA_NO_PEER_COPY
         opencl  GGML_OPENCL
         opencl  GGML_OPENCL_EMBED_KERNELS
-        # opencl  GGML_OPENCL_PROFILING
         openmp  GGML_OPENMP
         vulkan  GGML_VULKAN
         vulkan  GGML_VULKAN_CHECK_RESULTS
-        # vulkan  GGML_VULKAN_DEBUG
-        # vulkan  GGML_VULKAN_VALIDATE
-        # vulkan  GGML_VULKAN_MEMORY_DEBUG
-        # vulkan  GGML_VULKAN_SHADER_DEBUG_INFO
         # vulkan  GGML_VULKAN_PERF
+        metal   GGML_METAL_USE_BF16
+        metal   GGML_METAL_EMBED_LIBRARY
 )
+
+if(VCPKG_TARGET_IS_OSX)
+    # compiler flag -mmacosx-version-min
+    if(NOT DEFINED VCPKG_CMAKE_SYSTEM_VERSION)
+        set(VCPKG_CMAKE_SYSTEM_VERSION 11.0)
+    endif()
+    list(APPEND FEATURE_OPTIONS
+        -DGGML_METAL_MACOSX_VERSION_MIN=${VCPKG_CMAKE_SYSTEM_VERSION}
+        -DGGML_METAL_STD=17
+    )
+endif()
 
 if("vulkan" IN_LIST FEATURES)
     list(APPEND TOOL_PATHS "${VCPKG_HOST_INSTALLED_DIR}/tools/glslang")
@@ -63,8 +75,6 @@ if("vulkan" IN_LIST FEATURES)
     get_filename_component(GLSL_TOOL_DIR "${GLSLC}" PATH)
     vcpkg_add_to_path(PREPEND "${GLSL_TOOL_DIR}")
 endif()
-
-string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC)
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
     list(APPEND ARCH_OPTIONS
@@ -94,34 +104,54 @@ vcpkg_cmake_configure(
         ${ARCH_OPTIONS}
         # see cmake/build-info.cmake
         "-DGIT_EXECUTABLE:FILEPATH=${GIT}"
-        "-DBUILD_NUMBER=${VERSION}"
-        "-DBUILD_COMMIT:STRING=d774ab3acc4fee41fbed6dbfc192b57d5f79f34b"
+        "-DBUILD_NUMBER:STRING=${VERSION}"
+        "-DBUILD_COMMIT:STRING=b${VERSION}"
         # ${SOURCE_PATH}/CMakeLists.txt
         -DLLAMA_STANDALONE=ON
         -DLLAMA_CURL=ON
         -DLLAMA_LLGUIDANCE=OFF
         -DLLAMA_ALL_WARNINGS=OFF
         -DLLAMA_BUILD_TESTS=OFF
+        -DLLAMA_BUILD_EXAMPLES=OFF
         # ${SOURCE_PATH}/ggml/CMakeLists.txt
         -DGGML_STANDALONE=ON
         -DGGML_BUILD_NUMBER=${VERSION}
         -DGGML_LLAMAFILE_DEFAULT=OFF
-        -DGGML_FATAL_WARNINGS=OFF
         -DGGML_CPU_ALL_VARIANTS=OFF
         -DGGML_BACKEND_DL=OFF
-        -DGGML_METAL_USE_BF16=ON
-        -DGGML_METAL_EMBED_LIBRARY=ON
-        -DGGML_OPENMP=OFF
+        -DGGML_OPENCL_PROFILING=OFF
+        -DGGML_FATAL_WARNINGS=OFF
         -DGGML_BUILD_TESTS=OFF
         -DGGML_BUILD_EXAMPLES=OFF
+    OPTIONS_DEBUG
+        -DGGML_VULKAN_DEBUG=ON
+        -DGGML_VULKAN_VALIDATE=ON
+        -DGGML_VULKAN_MEMORY_DEBUG=ON
+        -DGGML_VULKAN_SHADER_DEBUG_INFO=ON
+        -DGGML_METAL_SHADER_DEBUG=ON
     OPTIONS_RELEASE
         -DGGML_METAL_NDEBUG=ON
+        -DGGML_METAL_SHADER_DEBUG=OFF
 )
 vcpkg_cmake_install()
 
 vcpkg_fixup_pkgconfig()
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/ggml" PACKAGE_NAME "ggml" DO_NOT_DELETE_PARENT_CONFIG_PATH)
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/llama" PACKAGE_NAME "llama")
+
+if("server" IN_LIST FEATURES)
+    vcpkg_copy_tools(TOOL_NAMES llama-server DESTINATION "${CURRENT_PACKAGES_DIR}/tools/llama.cpp")
+    file(INSTALL
+        "${SOURCE_PATH}/examples/server/public"
+        "${SOURCE_PATH}/examples/server/public_simplechat"
+        "${SOURCE_PATH}/examples/server/chat.mjs"
+        "${SOURCE_PATH}/examples/server/chat.sh"
+        "${SOURCE_PATH}/examples/server/chat-llama2.sh"
+        "${SOURCE_PATH}/examples/server/README.md"
+        DESTINATION "${CURRENT_PACKAGES_DIR}/tools/llama.cpp"
+    )
+endif()
+vcpkg_copy_tools(TOOL_NAMES convert_hf_to_gguf.py DESTINATION "${CURRENT_PACKAGES_DIR}/tools/llama.cpp" AUTO_CLEAN)
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"

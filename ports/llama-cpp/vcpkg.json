@@ -19,12 +19,22 @@
       "host": true
     }
   ],
+  "default-features": [
+    {
+      "name": "metal",
+      "platform": "osx | ios"
+    }
+  ],
   "features": {
     "cuda": {
       "description": "Use CUDA",
       "dependencies": [
         "cudnn"
       ]
+    },
+    "metal": {
+      "description": "Use Metal",
+      "supports": "osx | ios"
     },
     "opencl": {
       "description": "Use OpenCL",
@@ -42,7 +52,13 @@
       "description": "Build llama server",
       "supports": "windows | linux | osx",
       "dependencies": [
-        "curl"
+        {
+          "name": "curl",
+          "features": [
+            "ssl"
+          ]
+        },
+        "openssl"
       ]
     },
     "vulkan": {
