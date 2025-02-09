@@ -33,8 +33,8 @@ file(REMOVE_RECURSE
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        opencl  OPENCL
-        zstd    ZSTD
+        opencl  USE_OPENCL
+        zstd    USE_ZSTD
 )
 
 vcpkg_cmake_configure(
