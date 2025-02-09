@@ -1,0 +1,100 @@
+name: "Check"
+
+on:
+  push:
+    branches-ignore:
+      - docs
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  VCPKG_ENABLE_METRICS: 0
+  VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
+
+jobs:
+  overlay:
+    name: "Install(Classic)"
+    # https://learn.microsoft.com/en-us/vcpkg/commands/install
+    # https://learn.microsoft.com/en-us/vcpkg/concepts/classic-mode
+    runs-on: ${{ matrix.runner_image }}
+    strategy:
+      matrix:
+        include:
+          - runner_image: "ubuntu-latest"
+            triplet: "x64-linux"
+          - runner_image: "macos-13"
+            triplet: "x64-osx"
+          - runner_image: "windows-latest"
+            triplet: "x64-windows"
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          runVcpkgInstall: false
+
+      - name: "Run apt"
+        if: runner.os == 'Linux'
+        run: |
+          # sudo apt update -y
+          sudo apt install -y nasm libnuma-dev libopenmpi-dev libx11-dev libxi-
+
+      - name: "Run homebrew"
+        if: runner.os == 'macOS'
+        run: brew install autoconf automake libtool
+
+      - uses: mobiledevops/xcode-select-version-action@v1.0.0
+        if: runner.os == 'macOS'
+        with:
+          xcode-select-version: "15.2"
+
+      - uses: microsoft/setup-msbuild@v2
+        if: runner.os == 'Windows'
+        with:
+          msbuild-architecture: x64
+
+      - name: "Enable LongPath"
+        if: runner.os == 'Windows'
+        continue-on-error: true
+        run: |
+          git config --system core.longpaths true
+          New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+        shell: pwsh
+
+      - name: "Run vcpkg(${{matrix.triplet}})"
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        run: |
+          vcpkg install --keep-going --triplet "${{matrix.triplet}}" \
+            --clean-buildtrees-after-build \
+            --clean-packages-after-build \
+            --x-manifest-root test \
+            --x-feature test
+        shell: bash
+        env:
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
+
+      - name: "Run vcpkg(${{matrix.triplet}})"
+        if: runner.os == 'Windows'
+        run: |
+          vcpkg install --keep-going --triplet "${{matrix.triplet}}" `
+            --clean-buildtrees-after-build `
+            --clean-packages-after-build `
+            --x-manifest-root test `
+            --x-feature test
+        shell: pwsh
+        env:
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
