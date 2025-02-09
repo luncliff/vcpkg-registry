@@ -109,6 +109,52 @@ jobs:
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
           VCPKG_DEFAULT_TRIPLET: "${{matrix.triplet}}"
 
+  android:
+    name: "Android"
+    runs-on: "ubuntu-latest"
+    container: # https://circleci.com/developer/images/image/cimg/android
+      image: cimg/android:2025.01.1-ndk # 28.0.12674087
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          runVcpkgInstall: false
+
+      - name: "Run vcpkg(arm64-android)"
+        run: |
+          vcpkg install --keep-going \
+            --clean-buildtrees-after-build \
+            --clean-packages-after-build \
+            --x-manifest-root test \
+            --x-feature test
+        shell: bash
+        env:
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
+          VCPKG_DEFAULT_TRIPLET: "arm64-android"
+
+      - name: "Run vcpkg(x64-android)"
+        run: |
+          vcpkg install --keep-going \
+            --clean-buildtrees-after-build \
+            --clean-packages-after-build \
+            --x-manifest-root test \
+            --x-feature test
+        shell: bash
+        env:
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
+          VCPKG_DEFAULT_TRIPLET: "x64-android"
+
   vulkan:
     name: Vulkan
     runs-on: "windows-latest"
