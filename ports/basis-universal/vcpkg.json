@@ -1,7 +1,7 @@
 {
   "name": "basis-universal",
   "version": "1.50.0",
-  "description": "Low-precision matrix multiplication",
+  "description": "Basis Universal GPU Texture Codec",
   "homepage": "https://github.com/BinomialLLC/basis_universal",
   "license": "Apache-2.0",
   "dependencies": [
