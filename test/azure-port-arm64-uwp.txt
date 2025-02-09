@@ -1,2 +1,0 @@
-abseil
-onnx[disable-static-registration]
