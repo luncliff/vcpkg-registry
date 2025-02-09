@@ -1,0 +1,224 @@
+name: "Check"
+
+on:
+  push:
+    branches-ignore:
+      - docs
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  VCPKG_ENABLE_METRICS: 0
+  VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
+
+jobs:
+  # https://learn.microsoft.com/en-us/vcpkg/commands/install
+  # https://learn.microsoft.com/en-us/vcpkg/concepts/classic-mode
+  overlay:
+    name: "Overlay"
+    runs-on: ${{ matrix.runner_image }} # https://github.com/actions/runner-images
+    strategy:
+      matrix:
+        include:
+          - runner_image: "ubuntu-latest"
+            triplet: "x64-linux"
+          - runner_image: "macos-13"
+            triplet: "x64-osx"
+          - runner_image: "macos-13"
+            triplet: "x64-ios-simulator"
+          - runner_image: "macos-13"
+            triplet: "arm64-osx"
+          - runner_image: "macos-13"
+            triplet: "arm64-ios"
+          - runner_image: "windows-latest"
+            triplet: "x64-windows"
+          - runner_image: "windows-latest"
+            triplet: "arm64-windows"
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          runVcpkgInstall: false
+
+      - name: "Run apt"
+        if: runner.os == 'Linux'
+        run: |
+          # sudo apt update -y
+          sudo apt install -y nasm libnuma-dev libopenmpi-dev libx11-dev libxi-dev libxext-dev libx11-xcb-dev
+
+      - name: "Run homebrew"
+        if: runner.os == 'macOS'
+        run: brew install autoconf automake libtool
+
+      - uses: mobiledevops/xcode-select-version-action@v1.0.0
+        if: matrix.runner_image == 'macos-13'
+        with:
+          xcode-select-version: "15.2"
+
+      - uses: microsoft/setup-msbuild@v2
+        if: runner.os == 'Windows'
+        with:
+          msbuild-architecture: x64
+
+      - name: "Enable LongPath"
+        if: runner.os == 'Windows'
+        continue-on-error: true
+        run: |
+          git config --system core.longpaths true
+          New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+        shell: pwsh
+
+      - name: "Run vcpkg(${{matrix.triplet}})"
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        run: |
+          vcpkg install --keep-going \
+            --clean-buildtrees-after-build \
+            --clean-packages-after-build \
+            --x-manifest-root test \
+            --x-feature test
+        shell: bash
+        env:
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
+          VCPKG_DEFAULT_TRIPLET: "${{matrix.triplet}}"
+
+      - name: "Run vcpkg(${{matrix.triplet}})"
+        if: runner.os == 'Windows'
+        run: |
+          vcpkg install --keep-going `
+            --clean-buildtrees-after-build `
+            --clean-packages-after-build `
+            --x-manifest-root test `
+            --x-feature test
+        shell: pwsh
+        env:
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
+          VCPKG_DEFAULT_TRIPLET: "${{matrix.triplet}}"
+
+  android:
+    name: "Android"
+    runs-on: "ubuntu-latest" # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#environment-variables-2
+    # container: # https://circleci.com/developer/images/image/cimg/android
+    #   image: cimg/android:2025.01.1-ndk # 28.0.12674087
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          runVcpkgInstall: false
+
+      - name: "Run vcpkg(arm64-android)"
+        run: |
+          vcpkg install --keep-going \
+            --clean-buildtrees-after-build \
+            --clean-packages-after-build \
+            --x-manifest-root test \
+            --x-feature test
+        shell: bash
+        env:
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
+          VCPKG_DEFAULT_TRIPLET: "arm64-android"
+
+      - name: "Run vcpkg(x64-android)"
+        run: |
+          vcpkg install --keep-going \
+            --clean-buildtrees-after-build \
+            --clean-packages-after-build \
+            --x-manifest-root test \
+            --x-feature test
+        shell: bash
+        env:
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
+          VCPKG_DEFAULT_TRIPLET: "x64-android"
+
+  vulkan:
+    name: Vulkan
+    runs-on: "windows-latest"
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - uses: humbletim/install-vulkan-sdk@v1.1.1
+        with:
+          version: "1.3.296.0"
+          cache: true
+
+      - uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "C:/vcpkg"
+          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          vcpkgJsonGlob: "test/self-hosted.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+          runVcpkgInstall: true
+          runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `vulkan`]'
+        env:
+          VCPKG_DEFAULT_TRIPLET: "x64-windows"
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
+
+  emscripten:
+    name: "Emscripten"
+    runs-on: "ubuntu-latest"
+    container:
+      image: "emscripten/emsdk:3.1.74" # https://hub.docker.com/r/emscripten/emsdk
+      env:
+        EMSDK_NODE: /emsdk/node/20.18.0_64bit/bin/node
+        EMCC_CFLAGS: "-mbulk-memory -matomics -pthread"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Run apt"
+        run: |
+          sudo apt update -y
+          sudo apt install -y pkg-config python3-pip
+
+      - name: "Run git config"
+        run: |
+          git config --global --add safe.directory /__w/vcpkg-registry/vcpkg-registry
+
+      - name: "Change vcpkg.json"
+        run: mv test/test-emsdk.json test/vcpkg.json
+
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgJsonGlob: "test/vcpkg.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+          runVcpkgInstall: true
+        env:
+          VCPKG_DEFAULT_TRIPLET: "wasm32-emscripten"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"

@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2024-11-12",
+  "version-date": "2025-02-09",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows | linux | osx | ios",
@@ -22,7 +22,6 @@
       "name": "d3d12-transition-layer",
       "platform": "windows"
     },
-    "etcpak",
     {
       "name": "fbgemm",
       "platform": "x64"
@@ -32,11 +31,13 @@
       "name": "libdispatch",
       "platform": "windows | android"
     },
+    "llama-cpp",
     {
       "name": "llama-cpp",
       "features": [
         "server"
-      ]
+      ],
+      "platform": "windows | linux | osx"
     },
     {
       "name": "metal-cpp",
