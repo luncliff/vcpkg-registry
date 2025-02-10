@@ -1,0 +1,35 @@
+name: "Cleanup"
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  clean-cache:
+    name: "Cleanup Cache"
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: "Run gh-cleanup-cache.ps1"
+        run: |
+          ./scripts/gh-cleanup-cache.ps1 `
+            -Branch ${{ github.event.pull_request.head.ref }}
+        shell: pwsh
+
+  clean-runs:
+    name: "Cleanup Workflow Runs"
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: "Run gh-cleanup-runs.ps1"
+        run: |
+          ./scripts/gh-cleanup-runs.ps1 `
+            -Workflow "build.yml" `
+            -Branch ${{ github.event.pull_request.head.ref }}
+        shell: pwsh
+      - name: "Run gh-cleanup-runs.ps1"
+        run: |
+          ./scripts/gh-cleanup-runs.ps1 `
+            -Workflow "build-windows-hosted.yml" `
+            -Branch ${{ github.event.pull_request.head.ref }}
+        shell: pwsh
