@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO triton-inference-server/core
-    REF a9048db96d270ec0adb75e27b00997f8e9e383cd
-    SHA512 44f428c937b827ea5e43be70b285d5d9a04fead354a1511e3cce3d6ce1fdc64fac67ee1cf15663378195a7d30c71d2d1307b3620e1c63a53c7bfb095707089d5
+    REF 236e461dabfdd7897543f3c77576fcd572e2787b
+    SHA512 5436f279e6c366e1f79deaab9515a79a0c0558013523da4a4fb40639e2bba928fdd497caa72a924b775c38f51c88892fa19ba60ab81dddbbf92032bf4f23bd49
     HEAD_REF main
     PATCHES
         fix-cmake.patch
