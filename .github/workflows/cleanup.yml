@@ -14,8 +14,12 @@ jobs:
   clean-cache:
     name: "Cleanup Cache"
     runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - uses: actions/checkout@v4.2.2
+      - name: "Run gh(auth)"
+        run: gh auth status
       - name: "Run gh-cleanup-cache.ps1"
         run: |
           $branch = "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
@@ -25,8 +29,12 @@ jobs:
   clean-runs:
     name: "Cleanup Runs"
     runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - uses: actions/checkout@v4.2.2
+      - name: "Run gh(auth)"
+        run: gh auth status
       - name: "Run gh-cleanup-runs.ps1"
         run: |
           $branch = "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
