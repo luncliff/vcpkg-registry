@@ -1,0 +1,49 @@
+name: "Cleanup"
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Name of the Git branch'
+        required: true
+        default: 'main'
+
+jobs:
+  clean-cache:
+    name: "Cleanup Cache"
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: "Run gh(auth)"
+        run: gh auth status
+      - name: "Run gh-cleanup-cache.ps1"
+        run: |
+          $branch = "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
+          ./scripts/gh-cleanup-cache.ps1 -Branch "$branch"
+        shell: pwsh
+
+  clean-runs:
+    name: "Cleanup Runs"
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: "Run gh(auth)"
+        run: gh auth status
+      - name: "Run gh-cleanup-runs.ps1"
+        run: |
+          $branch = "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
+          ./scripts/gh-cleanup-runs.ps1 -Branch "$branch" `
+            -Workflow "build.yml" `
+        shell: pwsh
+      - name: "Run gh-cleanup-runs.ps1"
+        run: |
+          $branch = "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
+          ./scripts/gh-cleanup-runs.ps1 -Branch "$branch" `
+            -Workflow "build-windows-hosted.yml" `
+        shell: pwsh
