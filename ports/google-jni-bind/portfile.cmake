@@ -1,28 +1,12 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/jni-bind
-    REF Release-${VERSION}
-    SHA512 ef96ea568857ff562d2d55c6d62f5fbe7b2d914beaeea0246af3da881a6b6a39925d4ac48754cc87683b48bf8673e8fe1bca57ad71a5e789e8fb76c192eb0801
+    REF Release-1.2.0
+    SHA512 ef1274b649d3cc46346a71cdf1269f5022983633feea2ec85200ea5dc7cc7fab8cac987aa3ca7514c1b8a3dcd7deea6f152b432d9d16ab230bf20bb16ff14a56
     HEAD_REF main
 )
-# Install headers and a shim library with JackWeakAPI.c
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")
 
-if(DEFINED ENV{JAVA_HOME})
-    message(STATUS "Using JAVA_HOME: $ENV{JAVA_HOME}")
-endif()
-
-vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
-    FEATURES
-        test    BUILD_TESTING
-)
-
-vcpkg_cmake_configure(
-    SOURCE_PATH "${SOURCE_PATH}"
-    OPTIONS
-        ${FEATURE_OPTIONS}
-)
-vcpkg_cmake_install()
+file(INSTALL "${SOURCE_PATH}/jni_bind_release.h" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug"
