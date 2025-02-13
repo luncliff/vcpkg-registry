@@ -1,0 +1,178 @@
+diff --git a/spine-c/CMakeLists.txt b/spine-c/CMakeLists.txt
+index b7e4d2a..1862c17 100644
+--- a/spine-c/CMakeLists.txt
++++ b/spine-c/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ cmake_minimum_required(VERSION 3.10)
+ project(spine-c)
+ 
+-include(${CMAKE_CURRENT_LIST_DIR}/../flags.cmake)
++# include(${CMAKE_CURRENT_LIST_DIR}/../flags.cmake)
+ 
+ include_directories(include)
+ file(GLOB INCLUDES "spine-c/include/**/*.h")
+@@ -10,5 +10,5 @@ file(GLOB SOURCES "spine-c/src/**/*.c")
+ add_library(spine-c STATIC ${SOURCES} ${INCLUDES})
+ target_include_directories(spine-c PUBLIC spine-c/include)
+ 
+-install(TARGETS spine-c DESTINATION dist/lib)
+-install(FILES ${INCLUDES} DESTINATION dist/include)
+\ No newline at end of file
++install(TARGETS spine-c DESTINATION lib)
++install(FILES ${INCLUDES} DESTINATION include/spine-c/spine)
+\ No newline at end of file
+diff --git a/spine-cpp/CMakeLists.txt b/spine-cpp/CMakeLists.txt
+index 9829b42..0669684 100644
+--- a/spine-cpp/CMakeLists.txt
++++ b/spine-cpp/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ cmake_minimum_required(VERSION 3.10)
+ project(spine-cpp)
+ 
+-include(${CMAKE_CURRENT_LIST_DIR}/../flags.cmake)
++# include(${CMAKE_CURRENT_LIST_DIR}/../flags.cmake)
+ 
+ include_directories(include)
+ file(GLOB INCLUDES "spine-cpp/include/**/*.h")
+@@ -14,8 +14,9 @@ add_library(spine-cpp-lite STATIC ${SOURCES} ${INCLUDES} spine-cpp-lite/spine-cp
+ target_include_directories(spine-cpp-lite PUBLIC spine-cpp/include spine-cpp-lite)
+ 
+ # Install target
+-install(TARGETS spine-cpp EXPORT spine-cpp_TARGETS DESTINATION dist/lib)
+-install(FILES ${INCLUDES} DESTINATION dist/include)
++install(TARGETS spine-cpp EXPORT spine-cpp_TARGETS DESTINATION lib)
++install(FILES ${INCLUDES} DESTINATION include/spine)
++install(FILES spine-cpp-lite/spine-cpp-lite.h DESTINATION include)
+ 
+ # Export target
+ export(
+diff --git a/spine-glfw/CMakeLists.txt b/spine-glfw/CMakeLists.txt
+index 9f1a99c..0555ea4 100644
+--- a/spine-glfw/CMakeLists.txt
++++ b/spine-glfw/CMakeLists.txt
+@@ -3,48 +3,34 @@ project(spine-glfw)
+ 
+ include(FetchContent)
+ # Fetch GLFW
+-FetchContent_Declare(
+-        glfw
+-        GIT_REPOSITORY https://github.com/glfw/glfw.git
+-        GIT_TAG latest
+-        GIT_SHALLOW 1
+-)
+-FetchContent_MakeAvailable(glfw)
+-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
+-set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
+-set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
+-set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
++find_package(glfw3 CONFIG REQUIRED) # glfw
+ 
+ # Fetch glbinding
+-FetchContent_Declare(
+-        glbinding
+-        GIT_REPOSITORY https://github.com/cginternals/glbinding.git
+-        GIT_TAG v3.3.0
+-        GIT_SHALLOW 1
+-)
+-FetchContent_MakeAvailable(glbinding)
+-set(OPTION_BUILD_DOCS OFF CACHE BOOL " " FORCE)
+-set(OPTION_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
+-set(OPTION_BUILD_TEST OFF CACHE BOOL " " FORCE)
+-set(OPTION_BUILD_TOOLS OFF CACHE BOOL " " FORCE)
++find_package(glbinding CONFIG REQUIRED) # glbinding::glbinding glbinding::glbinding-aux
+ 
+ include_directories(${glbinding_SOURCE_DIR}/include)
+ include_directories(src)
+ 
++find_path(STB_INCLUDE_DIR NAMES stb_image.h REQUIRED)
++include_directories(${STB_INCLUDE_DIR})
++
+ # Find local OpenGL lib
+ find_package(OpenGL REQUIRED)
+ 
+ # Default flags
+-include(${CMAKE_SOURCE_DIR}/../flags.cmake)
++# include(${CMAKE_SOURCE_DIR}/../flags.cmake)
+ 
+ # Add spine-cpp
+-add_subdirectory(${CMAKE_SOURCE_DIR}/../spine-cpp ${CMAKE_BINARY_DIR}/spine-cpp-build)
++# add_subdirectory(${CMAKE_SOURCE_DIR}/../spine-cpp ${CMAKE_BINARY_DIR}/spine-cpp-build)
+ 
+ # spine-glfw library
+-add_library(spine-glfw STATIC src/spine-glfw.cpp src/spine-glfw.h src/stb_image.h)
++add_library(spine-glfw STATIC src/spine-glfw.cpp src/spine-glfw.h)
+ target_link_libraries(spine-glfw PRIVATE glbinding::glbinding)
+ target_link_libraries(spine-glfw LINK_PUBLIC spine-cpp-lite)
+ 
++install(TARGETS spine-glfw DESTINATION lib)
++install(FILES src/spine-glfw.h DESTINATION include)
++return()
+ # Example
+ add_executable(spine-glfw-example example/main.cpp)
+ target_link_libraries(spine-glfw-example PRIVATE glfw)
+diff --git a/spine-sdl/CMakeLists.txt b/spine-sdl/CMakeLists.txt
+index ad1cba9..d18ae73 100644
+--- a/spine-sdl/CMakeLists.txt
++++ b/spine-sdl/CMakeLists.txt
+@@ -2,43 +2,35 @@ cmake_minimum_required(VERSION 3.10)
+ project(spine-sdl)
+ 
+ # Default flags
+-include(${CMAKE_SOURCE_DIR}/../flags.cmake)
++# include(${CMAKE_SOURCE_DIR}/../flags.cmake)
+ 
+ # Add spine-cpp and spine-c
+-add_subdirectory(${CMAKE_SOURCE_DIR}/../spine-cpp ${CMAKE_BINARY_DIR}/spine-cpp-build)
+-add_subdirectory(${CMAKE_SOURCE_DIR}/../spine-c ${CMAKE_BINARY_DIR}/spine-c)
++# add_subdirectory(${CMAKE_SOURCE_DIR}/../spine-cpp ${CMAKE_BINARY_DIR}/spine-cpp-build)
++# add_subdirectory(${CMAKE_SOURCE_DIR}/../spine-c ${CMAKE_BINARY_DIR}/spine-c)
+ 
+ # SDL
+-include(FetchContent)
+-FetchContent_Declare(SDL GIT_REPOSITORY https://github.com/libsdl-org/SDL GIT_TAG release-2.30.2)
+-set(FETCHCONTENT_QUIET NO)
+-set(SDL_SHARED OFF)
+-set(SDL_STATIC ON)
+-set(SDL_TEST OFF)
+-set(SDL_EXAMPLES OFF)
+-set(SDL_INSTALL OFF)
+-set(SDL_TESTS OFF)
+-set(SDL_TESTS_BUILD OFF)
+-set(SDL_TESTS_BUILD_C OFF)
+-set(SDL_TESTS_BUILD_CPP OFF)
+-set(SDL_TESTS_BUILD_JOYSTICK OFF)
+-set(SDL_TESTS_BUILD_RENDERER OFF)
+-FetchContent_MakeAvailable(SDL)
++find_package(SDL2 CONFIG REQUIRED)
++if((NOT TARGET SDL2::SDL2) AND (TARGET SDL2::SDL2-static))
++	add_library(SDL2::SDL2 ALIAS SDL2::SDL2-static)
++endif()
+ 
+ include_directories(src)
++find_path(STB_INCLUDE_DIR NAMES stb_image.h REQUIRED)
++include_directories(${STB_INCLUDE_DIR})
+ 
+ # spine-sdl-c library
+-add_library(spine-sdl-c STATIC src/spine-sdl-c.c src/spine-sdl-c.h src/stb_image.h)
+-target_link_libraries(spine-sdl-c LINK_PUBLIC SDL2-static spine-c)
+-install(TARGETS spine-sdl-c DESTINATION dist/lib)
+-install(FILES src/spine-sdl-c.h src/stb_image.h DESTINATION dist/include)
++add_library(spine-sdl-c STATIC src/spine-sdl-c.c src/spine-sdl-c.h)
++target_link_libraries(spine-sdl-c LINK_PUBLIC SDL2::SDL2 spine-c)
++install(TARGETS spine-sdl-c DESTINATION lib)
++install(FILES src/spine-sdl-c.h DESTINATION include/spine-c)
+ 
+ # spine-sdl-cpp library
+-add_library(spine-sdl-cpp STATIC src/spine-sdl-cpp.cpp src/spine-sdl-cpp.h src/stb_image.h)
+-target_link_libraries(spine-sdl-cpp LINK_PUBLIC SDL2-static spine-cpp)
+-install(TARGETS spine-sdl-cpp DESTINATION dist/lib)
+-install(FILES src/spine-sdl-cpp.h src/stb_image.h DESTINATION dist/include)
++add_library(spine-sdl-cpp STATIC src/spine-sdl-cpp.cpp src/spine-sdl-cpp.h)
++target_link_libraries(spine-sdl-cpp LINK_PUBLIC SDL2::SDL2 spine-cpp)
++install(TARGETS spine-sdl-cpp DESTINATION lib)
++install(FILES src/spine-sdl-cpp.h DESTINATION include)
+ 
++return()
+ # Example (spine-sdl-c)
+ add_executable(spine-sdl-c-example example/main.c)
+ target_link_libraries(spine-sdl-c-example SDL2-static spine-sdl-c)

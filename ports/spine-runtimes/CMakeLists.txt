@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.10)
+project(spine-vcpkg-build C CXX)
+include(GNUInstallDirs)
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
+if(MSVC)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+endif()
+
+add_subdirectory(spine-cpp)
+add_subdirectory(spine-c)
+if(BUILD_GLFW)
+    add_subdirectory(spine-glfw)
+endif()
+if(BUILD_SDL)
+    add_subdirectory(spine-sdl)
+endif()
