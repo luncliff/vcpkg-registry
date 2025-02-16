@@ -74,9 +74,15 @@
     {
       "name": "spine-runtimes",
       "features": [
-        "glfw",
         "sdl2"
       ]
+    },
+    {
+      "name": "spine-runtimes",
+      "features": [
+        "glfw"
+      ],
+      "platform": "native"
     },
     {
       "name": "sse2neon",
