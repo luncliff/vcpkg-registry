@@ -58,7 +58,7 @@ jobs:
           sudo apt install -y pkg-config nasm \
             libnuma-dev libopenmpi-dev \
             libx11-dev libxi-dev libxext-dev libx11-xcb-dev \
-            xinerama xcursor xorg libglu1-mesa
+            libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa
 
       - name: "Run homebrew"
         if: runner.os == 'macOS'
