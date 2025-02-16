@@ -1,0 +1,30 @@
+{
+  "name": "spine-runtimes",
+  "version": "2025-02-11",
+  "description": "2D skeletal animation runtimes for Spine",
+  "homepage": "https://github.com/EsotericSoftware/spine-runtimes",
+  "license": null,
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ],
+  "features": {
+    "glfw": {
+      "description": "Build spine-glfw",
+      "dependencies": [
+        "glbinding",
+        "glfw3",
+        "stb"
+      ]
+    },
+    "sdl2": {
+      "description": "Build spine-sdl",
+      "dependencies": [
+        "sdl2",
+        "stb"
+      ]
+    }
+  }
+}
