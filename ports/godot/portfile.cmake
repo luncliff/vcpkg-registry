@@ -20,11 +20,8 @@ vcpkg_from_github(
         "${GODOT_PR_96167_PATCH}"
 )
 
-# https://scons.org/
-x_vcpkg_get_python_packages(
-    PYTHON_VERSION 3
+x_vcpkg_get_python_packages(PYTHON_VERSION 3 OUT_PYTHON_VAR PYTHON3
     PACKAGES SCons
-    OUT_PYTHON_VAR PYTHON3
 )
 
 function(get_python_site_packages PYTHON OUT_PATH)
@@ -36,25 +33,23 @@ function(get_python_site_packages PYTHON OUT_PATH)
 endfunction()
 get_python_site_packages("${PYTHON3}" SITE_PACKAGES_DIR)
 message(STATUS "Using site-packages: ${SITE_PACKAGES_DIR}")
+get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
 
-find_program(SCONS NAMES scons PATHS "${SITE_PACKAGES_DIR}/Scripts" NO_DEFAULT_PATH REQUIRED)
+# https://scons.org/
+find_program(SCONS NAMES scons PATHS "${SITE_PACKAGES_DIR}/Scripts" "${PYTHON_PATH}" NO_DEFAULT_PATH REQUIRED)
 message(STATUS "Using scons: ${SCONS}")
 
-function(scons_msvc_build)
-    cmake_parse_arguments(PARSE_ARGV 0 arg "TESTS;DEBUG_SYMBOLS" "TARGET;DIRECTORY" "SCONS_FLAGS")
+# see ${SOURCE_PATH}/SConstruct
+function(scons_build)
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "TARGET;DIRECTORY" "SCONS_FLAGS")
     if(NOT arg_DIRECTORY)
         set(arg_DIRECTORY "${SOURCE_PATH}")
     endif()
     set(TEST_OPT "tests=false")
-    if(arg_TESTS)
-        set(TEST_OPT "tests=true")
-    endif()
     set(DEBUG_SYMBOLS_OPT "debug_symbols=no")
-    if(arg_DEBUG_SYMBOLS)
-        set(DEBUG_SYMBOLS_OPT "debug_symbols=yes")
-    endif()
+    message(STATUS "Building target ${arg_TARGET}")
     vcpkg_execute_required_process(
-        COMMAND "${SCONS}" platform=windows vsproj=yes vsproj_gen_only=no
+        COMMAND "${SCONS}"
             target=${arg_TARGET} ${arg_SCONS_FLAGS} ${TEST_OPT} ${DEBUG_SYMBOLS_OPT}
         LOGNAME "build-${arg_TARGET}"
         WORKING_DIRECTORY "${arg_DIRECTORY}"
@@ -67,22 +62,35 @@ set(ENV{SCONSFLAGS} "--jobs=${VCPKG_CONCURRENCY}")
 
 # https://github.com/godotengine/godot/blob/4.3-stable/.github/workflows/runner.yml
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
-    set(ARCH_OPT "arch=x86_64")
+    set(ARCH_NAME "x86_64")
 elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-    set(ARCH_OPT "arch=arm64")
+    set(ARCH_NAME "arm64")
 endif()
 
-if(VCPKG_TARGET_IS_WINDOWS)
-    message(STATUS "Building target=template_release")
-    scons_msvc_build(TARGET template_release
-        SCONS_FLAGS "${ARCH_OPT}"
+# ${SOURCE_PATH}/.github/workflows
+# todo: linux, android, ios, web
+if(VCPKG_TARGET_IS_WINDOWS) # windows_build.yml
+    scons_build(TARGET template_release
+        SCONS_FLAGS platform=windows arch=${ARCH_NAME} vsproj=yes vsproj_gen_only=no
     )
-    message(STATUS "Building target=editor")
-    scons_msvc_build(TARGET editor
-        SCONS_FLAGS "${ARCH_OPT}" windows_subsystem=console
+    scons_build(TARGET editor
+        SCONS_FLAGS platform=windows arch=${ARCH_NAME} vsproj=yes vsproj_gen_only=no windows_subsystem=console
     )
     file(GLOB EXE_FILES "${SOURCE_PATH}/bin/*.exe")
     file(INSTALL ${EXE_FILES} DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}")
+
+elseif(VCPKG_TARGET_IS_OSX) # macos_build.yml
+    scons_build(TARGET template_release
+        SCONS_FLAGS platform=macos arch=${ARCH_NAME} optimize=size vulkan=false
+    )
+    scons_build(TARGET editor
+        SCONS_FLAGS platform=macos arch=${ARCH_NAME} optimize=size vulkan=false
+    )
+    vcpkg_copy_tools(
+        TOOL_NAMES godot.macos.template_release.${ARCH_NAME} godot.macos.editor.${ARCH_NAME}
+        SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
+    )
+
 endif()
 
 file(INSTALL "${SOURCE_PATH}/README.md" "${SOURCE_PATH}/CHANGELOG.md" "${SOURCE_PATH}/AUTHORS.md"

@@ -1,10 +1,10 @@
 {
   "name": "godot",
   "version": "4.3",
-  "description": "Godot Engine – Multi-platform 2D and 3D game engine",
+  "description": "Godot Engine - Multi-platform 2D and 3D game engine",
   "homepage": "https://godotengine.org/",
   "license": "MIT",
-  "supports": "windows",
+  "supports": "windows | osx",
   "dependencies": [
     {
       "name": "vcpkg-get-python-packages",
