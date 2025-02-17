@@ -4,7 +4,7 @@
   "description": "Godot Engine - Multi-platform 2D and 3D game engine",
   "homepage": "https://godotengine.org/",
   "license": "MIT",
-  "supports": "windows | osx",
+  "supports": "windows | osx | linux",
   "dependencies": [
     {
       "name": "vcpkg-get-python-packages",

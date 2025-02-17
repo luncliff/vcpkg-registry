@@ -29,7 +29,7 @@
     "glslang",
     {
       "name": "godot",
-      "platform": "osx"
+      "platform": "osx | linux"
     },
     {
       "name": "libdispatch",

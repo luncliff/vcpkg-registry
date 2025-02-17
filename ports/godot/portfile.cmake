@@ -45,12 +45,10 @@ function(scons_build)
     if(NOT arg_DIRECTORY)
         set(arg_DIRECTORY "${SOURCE_PATH}")
     endif()
-    set(TEST_OPT "tests=false")
-    set(DEBUG_SYMBOLS_OPT "debug_symbols=no")
     message(STATUS "Building target ${arg_TARGET}")
     vcpkg_execute_required_process(
-        COMMAND "${SCONS}"
-            target=${arg_TARGET} ${arg_SCONS_FLAGS} ${TEST_OPT} ${DEBUG_SYMBOLS_OPT}
+        COMMAND "${SCONS}" target=${arg_TARGET} ${arg_SCONS_FLAGS}
+            tests=false deprecated=no debug_symbols=no
         LOGNAME "build-${arg_TARGET}"
         WORKING_DIRECTORY "${arg_DIRECTORY}"
     )
@@ -68,7 +66,7 @@ elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
 endif()
 
 # ${SOURCE_PATH}/.github/workflows
-# todo: linux, android, ios, web
+# todo: android, ios, web
 if(VCPKG_TARGET_IS_WINDOWS) # windows_build.yml
     scons_build(TARGET template_release
         SCONS_FLAGS platform=windows arch=${ARCH_NAME} vsproj=yes vsproj_gen_only=no
@@ -76,8 +74,11 @@ if(VCPKG_TARGET_IS_WINDOWS) # windows_build.yml
     scons_build(TARGET editor
         SCONS_FLAGS platform=windows arch=${ARCH_NAME} vsproj=yes vsproj_gen_only=no windows_subsystem=console
     )
-    file(GLOB EXE_FILES "${SOURCE_PATH}/bin/*.exe")
-    file(INSTALL ${EXE_FILES} DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}")
+    vcpkg_copy_tools(
+        TOOL_NAMES  godot.windows.template_release.${ARCH_NAME}
+                    godot.windows.editor.${ARCH_NAME}
+        SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
+    )
 
 elseif(VCPKG_TARGET_IS_OSX) # macos_build.yml
     scons_build(TARGET template_release
@@ -87,7 +88,21 @@ elseif(VCPKG_TARGET_IS_OSX) # macos_build.yml
         SCONS_FLAGS platform=macos arch=${ARCH_NAME} optimize=size vulkan=false
     )
     vcpkg_copy_tools(
-        TOOL_NAMES godot.macos.template_release.${ARCH_NAME} godot.macos.editor.${ARCH_NAME}
+        TOOL_NAMES  godot.macos.template_release.${ARCH_NAME}
+                    godot.macos.editor.${ARCH_NAME}
+        SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
+    )
+
+elseif(VCPKG_TARGET_IS_LINUX) # linux_build.yml
+    scons_build(TARGET template_release
+        SCONS_FLAGS platform=linuxbsd arch=${ARCH_NAME} optimize=size
+    )
+    scons_build(TARGET editor
+        SCONS_FLAGS platform=linuxbsd arch=${ARCH_NAME} optimize=size
+    )
+    vcpkg_copy_tools(
+        TOOL_NAMES  godot.linuxbsd.template_release.${ARCH_NAME}
+                    godot.linuxbsd.editor.${ARCH_NAME}
         SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
     )
 
