@@ -1,6 +1,6 @@
 {
   "name": "coreml-tools",
-  "version": "8.1",
+  "version": "8.2",
   "description": "Core ML tools contain supporting tools for Core ML model conversion, editing, and validation.",
   "homepage": "https://coremltools.readme.io/",
   "license": "BSD-3-Clause",

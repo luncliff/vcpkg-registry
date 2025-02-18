@@ -2,9 +2,9 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO apple/coremltools
-    REF 8.1
-    SHA512 666f93eb29abdebba93e686486f4cd92f8e9e1a07e835b8e6cb652e6d0ba3ab2bd62d8743e7b121375abcb5f26939c0ac57f0262c28ac3b3aa8c17b75b93fbfd
-    HEAD_REF master
+    REF ${VERSION}
+    SHA512 4d2e61c39cb23d7cef1942d3117ca644d8046f952c484317e4a30ac2a16c04ea5d6defd029c4a04654a4d02a72c394186835c55d477ee89a1d9010307fa9aa81
+    HEAD_REF main
     PATCHES
         fix-cmake.patch
         fix-sources.patch
