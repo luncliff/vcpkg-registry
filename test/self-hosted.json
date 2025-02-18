@@ -37,6 +37,10 @@
       "description": "Default ports to test",
       "dependencies": [
         {
+          "name": "godot",
+          "platform": "x64 & windows"
+        },
+        {
           "name": "d3d12-transition-layer",
           "features": [
             "pix"

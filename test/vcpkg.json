@@ -28,6 +28,10 @@
     },
     "glslang",
     {
+      "name": "godot",
+      "platform": "osx | linux"
+    },
+    {
       "name": "libdispatch",
       "platform": "windows | android"
     },
