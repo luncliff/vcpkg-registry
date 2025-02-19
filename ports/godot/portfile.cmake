@@ -1,6 +1,10 @@
 set(VCPKG_POLICY_EMPTY_INCLUDE_FOLDER enabled)
 # set(VCPKG_POLICY_ALLOW_EXES_IN_BIN enabled)
 # set(VCPKG_POLICY_CMAKE_HELPER_PORT enabled)
+if(VCPKG_TARGET_IS_OSX AND (NOT VCPKG_FIXUP_MACHO_RPATH))
+    message(WARNING "VCPKG_FIXUP_MACHO_RPATH is required to run the installed executables")
+    set(VCPKG_FIXUP_MACHO_RPATH ON)
+endif()
 
 # https://www.reddit.com/r/godot/comments/1gw220q/latest_visual_studio_update_1712_broke_scons/
 # https://github.com/godotengine/godot issue 95861
