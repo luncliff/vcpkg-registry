@@ -10,5 +10,13 @@
       "name": "vcpkg-get-python-packages",
       "host": true
     }
-  ]
+  ],
+  "features": {
+    "spine-runtimes": {
+      "description": "https://esotericsoftware.com/spine-godot",
+      "dependencies": [
+        "spine-runtimes"
+      ]
+    }
+  }
 }

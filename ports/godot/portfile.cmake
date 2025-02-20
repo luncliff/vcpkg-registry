@@ -20,6 +20,19 @@ vcpkg_from_github(
         "${GODOT_PR_96167_PATCH}"
 )
 
+if("spine-runtimes" IN_LIST FEATURES)
+    vcpkg_from_github(
+        OUT_SOURCE_PATH SPINE_SOURCE_PATH
+        REPO EsotericSoftware/spine-runtimes
+        REF 1cdbf9be1a92e0a3015af8e0f0e1b05b872e33c9
+        SHA512 444c8409c25e92b6c02a4d05f3ec84fced9622b62fbe68a4c4ce813b1451da5188b08be6df37dacde7da7a0bd01cb7d476afc531574793871b850025ec3c505a
+        HEAD_REF 4.2
+    )
+    get_filename_component(SPINE_GODOT_PATH "${SPINE_SOURCE_PATH}/spine-godot" ABSOLUTE)
+    # comma separated list
+    set(CUSTOM_MODULE_OPTIONS "custom_modules=${SPINE_GODOT_PATH}")
+endif()
+
 x_vcpkg_get_python_packages(PYTHON_VERSION 3 OUT_PYTHON_VAR PYTHON3
     PACKAGES SCons
 )
@@ -54,9 +67,12 @@ function(scons_build)
     )
 endfunction()
 
-# https://scons.org/doc/latest/HTML/scons-user/index.html
+# https://scons.org/doc/production/TEXT/scons-man.txt
 set(ENV{SCONS_CACHE} "${CURRENT_BUILDTREES_DIR}/scons-cache")
 set(ENV{SCONSFLAGS} "--jobs=${VCPKG_CONCURRENCY}")
+
+set(ENV{CPPPATH} "${CURRENT_INSTALLED_DIR}/include")
+set(ENV{LIBPATH} "${CURRENT_INSTALLED_DIR}/lib")
 
 # https://github.com/godotengine/godot/blob/4.3-stable/.github/workflows/runner.yml
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
@@ -70,9 +86,11 @@ endif()
 if(VCPKG_TARGET_IS_WINDOWS) # windows_build.yml
     scons_build(TARGET template_release
         SCONS_FLAGS platform=windows arch=${ARCH_NAME} vsproj=yes vsproj_gen_only=no
+            ${CUSTOM_MODULE_OPTIONS}
     )
     scons_build(TARGET editor
         SCONS_FLAGS platform=windows arch=${ARCH_NAME} vsproj=yes vsproj_gen_only=no windows_subsystem=console
+            ${CUSTOM_MODULE_OPTIONS}
     )
     vcpkg_copy_tools(
         TOOL_NAMES  godot.windows.template_release.${ARCH_NAME}
@@ -83,9 +101,11 @@ if(VCPKG_TARGET_IS_WINDOWS) # windows_build.yml
 elseif(VCPKG_TARGET_IS_OSX) # macos_build.yml
     scons_build(TARGET template_release
         SCONS_FLAGS platform=macos arch=${ARCH_NAME} optimize=size vulkan=false
+            ${CUSTOM_MODULE_OPTIONS}
     )
     scons_build(TARGET editor
         SCONS_FLAGS platform=macos arch=${ARCH_NAME} optimize=size vulkan=false
+            ${CUSTOM_MODULE_OPTIONS}
     )
     vcpkg_copy_tools(
         TOOL_NAMES  godot.macos.template_release.${ARCH_NAME}
@@ -96,9 +116,11 @@ elseif(VCPKG_TARGET_IS_OSX) # macos_build.yml
 elseif(VCPKG_TARGET_IS_LINUX) # linux_build.yml
     scons_build(TARGET template_release
         SCONS_FLAGS platform=linuxbsd arch=${ARCH_NAME} optimize=size
+            ${CUSTOM_MODULE_OPTIONS}
     )
     scons_build(TARGET editor
         SCONS_FLAGS platform=linuxbsd arch=${ARCH_NAME} optimize=size
+            ${CUSTOM_MODULE_OPTIONS}
     )
     vcpkg_copy_tools(
         TOOL_NAMES  godot.linuxbsd.template_release.${ARCH_NAME}
