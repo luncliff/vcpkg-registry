@@ -43,10 +43,21 @@ if(DEFINED CUSTOM_MODULES)
     string(REPLACE ";" "," CUSTOM_MODULE_OPTIONS "${CUSTOM_MODULE_OPTIONS}")
 endif()
 
-x_vcpkg_get_python_packages(PYTHON_VERSION 3 OUT_PYTHON_VAR PYTHON3
-    PACKAGES SCons
-)
+if(VCPKG_TARGET_IS_WINDOWS)
+    # https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category
+    # https://learn.microsoft.com/en-us/cpp/build/reference/linker-options
+    set(CCFLAGS "ccflags=/I${CURRENT_INSTALLED_DIR}/include")
+    set(LINKFLAGS "linkflags=/LIBPATH:${CURRENT_INSTALLED_DIR}/lib ${REQUIRED_LIBS}")
+    string(REPLACE ";" " " LINKFLAGS "${LINKFLAGS}")
+else()
+    set(CCFLAGS "ccflags=-I${CURRENT_INSTALLED_DIR}/include")
+    set(LINKFLAGS "linkflags=-L${CURRENT_INSTALLED_DIR}/lib;${REQUIRED_LIBS}")
+    string(REPLACE ";" " -l" LINKFLAGS "${LINKFLAGS}")
+endif()
+message(STATUS "Using CCFLAGS: ${CCFLAGS}")
+message(STATUS "Using LINKFLAGS: ${LINKFLAGS}")
 
+x_vcpkg_get_python_packages(PYTHON_VERSION 3 OUT_PYTHON_VAR PYTHON3 PACKAGES SCons)
 function(get_python_site_packages PYTHON OUT_PATH)
     execute_process(
         COMMAND "${PYTHON}" -c "import site; print(site.getsitepackages()[0])"
@@ -67,17 +78,6 @@ function(scons_build)
     cmake_parse_arguments(PARSE_ARGV 0 arg "" "TARGET;DIRECTORY" "SCONS_FLAGS")
     if(NOT arg_DIRECTORY)
         set(arg_DIRECTORY "${SOURCE_PATH}")
-    endif()
-    if(VCPKG_TARGET_IS_WINDOWS)
-        # https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category
-        # https://learn.microsoft.com/en-us/cpp/build/reference/linker-options
-        set(CCFLAGS "ccflags=/I${CURRENT_INSTALLED_DIR}/include")
-        set(LINKFLAGS "linkflags=/LIBPATH:${CURRENT_INSTALLED_DIR}/lib ${REQUIRED_LIBS}")
-        string(REPLACE ";" " " LINKFLAGS "${LINKFLAGS}")
-    else()
-        set(CCFLAGS "ccflags=-I${CURRENT_INSTALLED_DIR}/include")
-        set(LINKFLAGS "linkflags=-L${CURRENT_INSTALLED_DIR}/lib;${REQUIRED_LIBS}")
-        string(REPLACE ";" " -l" LINKFLAGS "${LINKFLAGS}")
     endif()
     message(STATUS "Building target ${arg_TARGET}")
     vcpkg_execute_required_process(
