@@ -28,9 +28,19 @@ if("spine-runtimes" IN_LIST FEATURES)
         SHA512 444c8409c25e92b6c02a4d05f3ec84fced9622b62fbe68a4c4ce813b1451da5188b08be6df37dacde7da7a0bd01cb7d476afc531574793871b850025ec3c505a
         HEAD_REF 4.2
     )
+    # using 'spine-runtimes' port. exclude the sources from the build
+    file(REMOVE_RECURSE "${SPINE_SOURCE_PATH}/spine-cpp")
+    # path to the custom module. see SCsub file
     get_filename_component(SPINE_GODOT_PATH "${SPINE_SOURCE_PATH}/spine-godot" ABSOLUTE)
-    # comma separated list
-    set(CUSTOM_MODULE_OPTIONS "custom_modules=${SPINE_GODOT_PATH}")
+    list(APPEND CUSTOM_MODULES "${SPINE_GODOT_PATH}")
+    # see linkflags in scons_build function
+    find_library(SPINE_CPP_LIBRARY NAMES spine-cpp PATHS "${CURRENT_INSTALLED_DIR}/lib" NO_DEFAULT_PATH REQUIRED)
+    get_filename_component(LIBNAME "${SPINE_CPP_LIBRARY}" NAME)
+    list(APPEND REQUIRED_LIBS "${LIBNAME}")
+endif()
+if(DEFINED CUSTOM_MODULES)
+    set(CUSTOM_MODULE_OPTIONS "custom_modules=${CUSTOM_MODULES}")
+    string(REPLACE ";" "," CUSTOM_MODULE_OPTIONS "${CUSTOM_MODULE_OPTIONS}")
 endif()
 
 x_vcpkg_get_python_packages(PYTHON_VERSION 3 OUT_PYTHON_VAR PYTHON3
@@ -58,10 +68,21 @@ function(scons_build)
     if(NOT arg_DIRECTORY)
         set(arg_DIRECTORY "${SOURCE_PATH}")
     endif()
+    if(VCPKG_TARGET_IS_WINDOWS)
+        # https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category
+        # https://learn.microsoft.com/en-us/cpp/build/reference/linker-options
+        set(CCFLAGS "ccflags=/I${CURRENT_INSTALLED_DIR}/include")
+        set(LINKFLAGS "linkflags=/LIBPATH:${CURRENT_INSTALLED_DIR}/lib ${REQUIRED_LIBS}")
+        string(REPLACE ";" " " LINKFLAGS "${LINKFLAGS}")
+    else()
+        set(CCFLAGS "ccflags=-I${CURRENT_INSTALLED_DIR}/include")
+        set(LINKFLAGS "linkflags=-L${CURRENT_INSTALLED_DIR}/lib;${REQUIRED_LIBS}")
+        string(REPLACE ";" " -l" LINKFLAGS "${LINKFLAGS}")
+    endif()
     message(STATUS "Building target ${arg_TARGET}")
     vcpkg_execute_required_process(
-        COMMAND "${SCONS}" target=${arg_TARGET} ${arg_SCONS_FLAGS}
-            tests=false deprecated=no debug_symbols=no
+        COMMAND "${SCONS}" target=${arg_TARGET} ${arg_SCONS_FLAGS} ${CCFLAGS} ${LINKFLAGS}
+            tests=false deprecated=no debug_symbols=no optimize=size
         LOGNAME "build-${arg_TARGET}"
         WORKING_DIRECTORY "${arg_DIRECTORY}"
     )
@@ -71,64 +92,62 @@ endfunction()
 set(ENV{SCONS_CACHE} "${CURRENT_BUILDTREES_DIR}/scons-cache")
 set(ENV{SCONSFLAGS} "--jobs=${VCPKG_CONCURRENCY}")
 
-set(ENV{CPPPATH} "${CURRENT_INSTALLED_DIR}/include")
-set(ENV{LIBPATH} "${CURRENT_INSTALLED_DIR}/lib")
-
-# https://github.com/godotengine/godot/blob/4.3-stable/.github/workflows/runner.yml
+# see detect.py scripts
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
-    set(ARCH_NAME "x86_64")
+    set(ARCH "x86_64")
 elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-    set(ARCH_NAME "arm64")
+    set(ARCH "arm64")
+elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
+    set(ARCH "x86_32")
+elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
+    set(ARCH "arm32")
+elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "wasm32")
+    set(ARCH "wasm32")
+else()
+    message(FATAL_ERROR "Unknown arch: ${VCPKG_TARGET_ARCHITECTURE}")
 endif()
 
 # ${SOURCE_PATH}/.github/workflows
 # todo: android, ios, web
 if(VCPKG_TARGET_IS_WINDOWS) # windows_build.yml
+    set(PLATFORM windows)
+    if(VCPKG_CRT_LINKAGE STREQUAL "static")
+        set(CRT_FLAG "use_static_cpp=true") # /MT
+    else()
+        set(CRT_FLAG "use_static_cpp=false") # /MD            
+    endif()
     scons_build(TARGET template_release
-        SCONS_FLAGS platform=windows arch=${ARCH_NAME} vsproj=yes vsproj_gen_only=no
-            ${CUSTOM_MODULE_OPTIONS}
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} vsproj=yes vsproj_gen_only=no ${CRT_FLAG} ${CUSTOM_MODULE_OPTIONS}
     )
     scons_build(TARGET editor
-        SCONS_FLAGS platform=windows arch=${ARCH_NAME} vsproj=yes vsproj_gen_only=no windows_subsystem=console
-            ${CUSTOM_MODULE_OPTIONS}
-    )
-    vcpkg_copy_tools(
-        TOOL_NAMES  godot.windows.template_release.${ARCH_NAME}
-                    godot.windows.editor.${ARCH_NAME}
-        SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} vsproj=yes vsproj_gen_only=no windows_subsystem=console ${CRT_FLAG} ${CUSTOM_MODULE_OPTIONS}
     )
 
 elseif(VCPKG_TARGET_IS_OSX) # macos_build.yml
+    set(PLATFORM macos)
     scons_build(TARGET template_release
-        SCONS_FLAGS platform=macos arch=${ARCH_NAME} optimize=size vulkan=false
-            ${CUSTOM_MODULE_OPTIONS}
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} vulkan=false ${CUSTOM_MODULE_OPTIONS}
     )
     scons_build(TARGET editor
-        SCONS_FLAGS platform=macos arch=${ARCH_NAME} optimize=size vulkan=false
-            ${CUSTOM_MODULE_OPTIONS}
-    )
-    vcpkg_copy_tools(
-        TOOL_NAMES  godot.macos.template_release.${ARCH_NAME}
-                    godot.macos.editor.${ARCH_NAME}
-        SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} vulkan=false ${CUSTOM_MODULE_OPTIONS}
     )
 
 elseif(VCPKG_TARGET_IS_LINUX) # linux_build.yml
+    set(PLATFORM linuxbsd)
     scons_build(TARGET template_release
-        SCONS_FLAGS platform=linuxbsd arch=${ARCH_NAME} optimize=size
-            ${CUSTOM_MODULE_OPTIONS}
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} ${CUSTOM_MODULE_OPTIONS}
     )
     scons_build(TARGET editor
-        SCONS_FLAGS platform=linuxbsd arch=${ARCH_NAME} optimize=size
-            ${CUSTOM_MODULE_OPTIONS}
-    )
-    vcpkg_copy_tools(
-        TOOL_NAMES  godot.linuxbsd.template_release.${ARCH_NAME}
-                    godot.linuxbsd.editor.${ARCH_NAME}
-        SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} ${CUSTOM_MODULE_OPTIONS}
     )
 
 endif()
+
+vcpkg_copy_tools(
+    TOOL_NAMES  godot.${PLATFORM}.template_release.${ARCH}
+                godot.${PLATFORM}.editor.${ARCH}
+    SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
+)
 
 file(INSTALL "${SOURCE_PATH}/README.md" "${SOURCE_PATH}/CHANGELOG.md" "${SOURCE_PATH}/AUTHORS.md"
              "${SOURCE_PATH}/LOGO_LICENSE.txt" "${SOURCE_PATH}/logo.png" "${SOURCE_PATH}/icon.png"

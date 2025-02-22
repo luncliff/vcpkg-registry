@@ -1,6 +1,7 @@
 {
   "name": "godot",
   "version": "4.3",
+  "port-version": 1,
   "description": "Godot Engine - Multi-platform 2D and 3D game engine",
   "homepage": "https://godotengine.org/",
   "license": "MIT",
