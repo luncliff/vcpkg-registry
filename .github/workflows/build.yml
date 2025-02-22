@@ -82,7 +82,7 @@ jobs:
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
         shell: pwsh
 
-      - name: "Run vcpkg(${{matrix.triplet}})"
+      - name: "Run vcpkg(${{ matrix.triplet }})"
         if: runner.os == 'Linux' || runner.os == 'macOS'
         run: |
           vcpkg install --keep-going \
@@ -95,9 +95,9 @@ jobs:
           VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
           VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
-          VCPKG_DEFAULT_TRIPLET: "${{matrix.triplet}}"
+          VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
 
-      - name: "Run vcpkg(${{matrix.triplet}})"
+      - name: "Run vcpkg(${{ matrix.triplet }})"
         if: runner.os == 'Windows'
         run: |
           vcpkg install --keep-going `
@@ -110,7 +110,7 @@ jobs:
           VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
           VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
-          VCPKG_DEFAULT_TRIPLET: "${{matrix.triplet}}"
+          VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
 
   android:
     name: "Android"
