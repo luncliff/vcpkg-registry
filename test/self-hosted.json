@@ -38,6 +38,9 @@
       "dependencies": [
         {
           "name": "godot",
+          "features": [
+            "spine-runtimes"
+          ],
           "platform": "x64 & windows"
         },
         {

@@ -29,6 +29,9 @@
     "glslang",
     {
       "name": "godot",
+      "features": [
+        "spine-runtimes"
+      ],
       "platform": "osx | linux"
     },
     {
