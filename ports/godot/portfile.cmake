@@ -20,6 +20,18 @@ vcpkg_from_github(
         "${GODOT_PR_96167_PATCH}"
 )
 
+function(make_linker_flag LIBNAME OUTPUT)
+    if(VCPKG_TARGET_IS_WINDOWS)
+        # for MSVC linker, use the library file's name
+        find_library(LIBRARY NAMES ${LIBNAME} PATHS "${CURRENT_INSTALLED_DIR}/lib" NO_DEFAULT_PATH REQUIRED)
+        get_filename_component(OPTION "${LIBRARY}" NAME)
+    else()
+        # for other linkers, use -l${LIBNAME}
+        set(OPTION "-l${LIBNAME}")    
+    endif()
+    set(${OUTPUT} "${OPTION}" PARENT_SCOPE)
+endfunction()
+
 if("spine-runtimes" IN_LIST FEATURES)
     vcpkg_from_github(
         OUT_SOURCE_PATH SPINE_SOURCE_PATH
@@ -34,9 +46,8 @@ if("spine-runtimes" IN_LIST FEATURES)
     get_filename_component(SPINE_GODOT_PATH "${SPINE_SOURCE_PATH}/spine-godot" ABSOLUTE)
     list(APPEND CUSTOM_MODULES "${SPINE_GODOT_PATH}")
     # see linkflags in scons_build function
-    find_library(SPINE_CPP_LIBRARY NAMES spine-cpp PATHS "${CURRENT_INSTALLED_DIR}/lib" NO_DEFAULT_PATH REQUIRED)
-    get_filename_component(LIBNAME "${SPINE_CPP_LIBRARY}" NAME)
-    list(APPEND REQUIRED_LIBS "${LIBNAME}")
+    make_linker_flag("spine-cpp" SPINE_FLAG)
+    list(APPEND LINKER_FLAGS ${SPINE_FLAG})
 endif()
 if(DEFINED CUSTOM_MODULES)
     set(CUSTOM_MODULE_OPTIONS "custom_modules=${CUSTOM_MODULES}")
@@ -47,13 +58,13 @@ if(VCPKG_TARGET_IS_WINDOWS)
     # https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category
     # https://learn.microsoft.com/en-us/cpp/build/reference/linker-options
     set(CCFLAGS "ccflags=/I${CURRENT_INSTALLED_DIR}/include")
-    set(LINKFLAGS "linkflags=/LIBPATH:${CURRENT_INSTALLED_DIR}/lib ${REQUIRED_LIBS}")
-    string(REPLACE ";" " " LINKFLAGS "${LINKFLAGS}")
+    set(LINKFLAGS "linkflags=/LIBPATH:${CURRENT_INSTALLED_DIR}/lib ${LINKER_FLAGS}")
 else()
     set(CCFLAGS "ccflags=-I${CURRENT_INSTALLED_DIR}/include")
-    set(LINKFLAGS "linkflags=-L${CURRENT_INSTALLED_DIR}/lib;${REQUIRED_LIBS}")
-    string(REPLACE ";" " -l" LINKFLAGS "${LINKFLAGS}")
+    set(LINKFLAGS "linkflags=-L${CURRENT_INSTALLED_DIR}/lib;${LINKER_FLAGS}")
 endif()
+string(REPLACE ";" " " LINKFLAGS "${LINKFLAGS}")
+
 message(STATUS "Using CCFLAGS: ${CCFLAGS}")
 message(STATUS "Using LINKFLAGS: ${LINKFLAGS}")
 
