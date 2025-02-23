@@ -1,0 +1,13 @@
+diff --git a/src/model_config_utils.cc b/src/model_config_utils.cc
+index a182fe3..d618249 100644
+--- a/src/model_config_utils.cc
++++ b/src/model_config_utils.cc
+@@ -2161,7 +2161,7 @@ ModelConfigToJson(
+   std::string config_json_str;
+   ::google::protobuf::util::JsonPrintOptions options;
+   options.preserve_proto_field_names = true;
+-  options.always_print_primitive_fields = true;
++  // options.always_print_primitive_fields = true; // deprecated and removed
+   ::google::protobuf::util::MessageToJsonString(
+       config, &config_json_str, options);
+ 
