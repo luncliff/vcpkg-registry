@@ -1,6 +1,6 @@
 {
   "name": "nvidia-triton-client",
-  "version-date": "2024-07-26",
+  "version-date": "2025-01-17",
   "description": "Triton Python, C++ and Java client libraries, and GRPC-generated client examples for go, java and scala.",
   "homepage": "https://github.com/triton-inference-server/client",
   "license": "BSD-3-Clause",
