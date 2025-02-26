@@ -3,7 +3,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO triton-inference-server/client
     REF 3d9424956ba14660f9447575928601d449919abd
-    SHA512 0
+    SHA512 53a19801bcabf579011ddd9f682cf49f2e2e472816d7ff6cb0790eb404c2b9b19ce9c22e71d0bda9f21f7211deab80b94d6401b6ddf62c1e7839fb88b01e4d88
     HEAD_REF main
     PATCHES
         fix-cmake.patch
