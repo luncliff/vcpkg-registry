@@ -1,13 +1,11 @@
 diff --git a/src/c++/CMakeLists.txt b/src/c++/CMakeLists.txt
-index a542531..7fc7041 100644
+index 71c4338..e5e0ff4 100644
 --- a/src/c++/CMakeLists.txt
 +++ b/src/c++/CMakeLists.txt
-@@ -57,19 +57,7 @@ endif()
+@@ -58,17 +58,7 @@ endif()
  #
- # Dependencies
- #
--include(FetchContent)
--
+ include(FetchContent)
+ 
 -FetchContent_Declare(
 -  repo-common
 -  GIT_REPOSITORY ${TRITON_REPO_ORGANIZATION}/common.git
@@ -21,10 +19,10 @@ index a542531..7fc7041 100644
 -)
 +find_package(TritonCommon CONFIG REQUIRED)
  
- if(TRITON_ENABLE_CC_GRPC OR TRITON_ENABLE_PERF_ANALYZER)
+ if(TRITON_ENABLE_CC_GRPC)
    set(TRITON_COMMON_ENABLE_PROTOBUF ON)
-@@ -93,7 +81,6 @@ endif()
- if(TRITON_ENABLE_TESTS OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -82,7 +72,6 @@ endif()
+ if(TRITON_ENABLE_TESTS)
    FetchContent_MakeAvailable(googletest)
  endif()
 -FetchContent_MakeAvailable(repo-common)
@@ -32,11 +30,11 @@ index a542531..7fc7041 100644
  if(TRITON_ENABLE_TESTS)
    include_directories(
 diff --git a/src/c++/library/CMakeLists.txt b/src/c++/library/CMakeLists.txt
-index cdee03e..6033ec9 100644
+index d44cd57..6d2e641 100644
 --- a/src/c++/library/CMakeLists.txt
 +++ b/src/c++/library/CMakeLists.txt
 @@ -48,7 +48,7 @@ target_include_directories(
- if(TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_PERF_ANALYZER OR TRITON_ENABLE_EXAMPLES)
+ if(TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_EXAMPLES)
    find_package(RapidJSON CONFIG REQUIRED)
    add_library(
 -      json-utils-library EXCLUDE_FROM_ALL OBJECT
@@ -44,7 +42,7 @@ index cdee03e..6033ec9 100644
        json_utils.h json_utils.cc
    )
    target_include_directories(
-@@ -93,20 +93,14 @@ if(TRITON_ENABLE_CC_GRPC OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -196,20 +196,14 @@ if(TRITON_ENABLE_CC_GRPC)
    )
  
    add_library(
@@ -66,7 +64,7 @@ index cdee03e..6033ec9 100644
    )
    add_library(
        TritonClient::grpcclient_static ALIAS grpcclient_static
-@@ -122,6 +116,8 @@ if(TRITON_ENABLE_CC_GRPC OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -225,6 +219,8 @@ if(TRITON_ENABLE_CC_GRPC)
        grpcclient_static
        PRIVATE gRPC::grpc++
        PRIVATE gRPC::grpc
@@ -75,7 +73,7 @@ index cdee03e..6033ec9 100644
        PUBLIC protobuf::libprotobuf
        PUBLIC Threads::Threads
    )
-@@ -129,8 +125,6 @@ if(TRITON_ENABLE_CC_GRPC OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -232,8 +228,6 @@ if(TRITON_ENABLE_CC_GRPC)
    # libgrpcclient.so
    add_library(
        grpcclient SHARED
@@ -84,7 +82,7 @@ index cdee03e..6033ec9 100644
        $<TARGET_OBJECTS:grpc-client-library>
    )
    add_library(
-@@ -150,6 +144,8 @@ if(TRITON_ENABLE_CC_GRPC OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -253,6 +247,8 @@ if(TRITON_ENABLE_CC_GRPC)
        grpcclient
        PRIVATE gRPC::grpc++
        PRIVATE gRPC::grpc
@@ -93,7 +91,7 @@ index cdee03e..6033ec9 100644
        PUBLIC protobuf::libprotobuf
        PUBLIC Threads::Threads
    )
-@@ -169,13 +165,13 @@ if(TRITON_ENABLE_CC_GRPC OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -272,13 +268,13 @@ if(TRITON_ENABLE_CC_GRPC)
          POSITION_INDEPENDENT_CODE ON
      )
  
@@ -109,7 +107,7 @@ index cdee03e..6033ec9 100644
        PRIVATE
          ${CMAKE_CURRENT_SOURCE_DIR}
      )
-@@ -234,20 +230,12 @@ if(TRITON_ENABLE_CC_GRPC OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -335,20 +331,12 @@ if(TRITON_ENABLE_CC_GRPC)
        )
      endif() # NOT WIN32
  
@@ -129,27 +127,27 @@ index cdee03e..6033ec9 100644
 -      DESTINATION include
 +      DESTINATION include/triton
    )
- endif() # TRITON_ENABLE_CC_GRPC OR TRITON_ENABLE_PERF_ANALYZER
+ endif() # TRITON_ENABLE_CC_GRPC
  
-@@ -272,7 +260,7 @@ if(TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -373,7 +361,7 @@ if(TRITON_ENABLE_CC_HTTP)
    )
  
    add_library(
 -      http-client-library EXCLUDE_FROM_ALL OBJECT
-+      http-client-library STATIC
++      http-client-library OBJECT
        ${REQUEST_SRCS} ${REQUEST_HDRS}
    )
  
-@@ -286,7 +274,7 @@ if(TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -387,7 +375,7 @@ if(TRITON_ENABLE_CC_HTTP)
    target_link_libraries(
      http-client-library
      PUBLIC
 -      triton-common-json        # from repo-common
-+      TritonCommon::triton-common-json # from repo-common
++      TritonCommon::triton-common-json
    )
  
    # libhttpclient_static.a
-@@ -300,7 +288,7 @@ if(TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -401,7 +389,7 @@ if(TRITON_ENABLE_CC_HTTP)
  
    target_link_libraries(
        httpclient_static
@@ -158,7 +156,7 @@ index cdee03e..6033ec9 100644
        PUBLIC CURL::libcurl
        PUBLIC Threads::Threads
    )
-@@ -332,7 +320,7 @@ if(TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -433,7 +421,7 @@ if(TRITON_ENABLE_CC_HTTP)
  
    target_link_libraries(
        httpclient
@@ -167,19 +165,19 @@ index cdee03e..6033ec9 100644
        PUBLIC CURL::libcurl
        PUBLIC Threads::Threads
    )
-@@ -391,7 +379,7 @@ if(TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_PERF_ANALYZER)
+@@ -490,7 +478,7 @@ if(TRITON_ENABLE_CC_HTTP)
    install(
        FILES
        ${CMAKE_CURRENT_SOURCE_DIR}/http_client.h
 -      DESTINATION include
 +      DESTINATION include/triton
    )
- endif() # TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_PERF_ANALYZER
+ endif() # TRITON_ENABLE_CC_HTTP
  
-@@ -400,7 +388,7 @@ if(TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_CC_GRPC OR TRITON_ENABLE_PERF_ANALYZER
-       FILES
+@@ -500,7 +488,7 @@ if(TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_CC_GRPC)
        ${CMAKE_CURRENT_SOURCE_DIR}/common.h
        ${CMAKE_CURRENT_SOURCE_DIR}/ipc.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/cencode.h
 -      DESTINATION include
 +      DESTINATION include/triton
    )

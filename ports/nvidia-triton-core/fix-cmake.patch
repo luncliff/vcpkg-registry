@@ -82,3 +82,29 @@ index ba027a5..afe7c02 100644
  install(
    TARGETS
      triton-core
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 16aca67..bafd41a 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -63,6 +63,8 @@ message(STATUS "Using Boost ${Boost_VERSION}")
+ set(protobuf_MODULE_COMPATIBLE TRUE CACHE BOOL "protobuf_MODULE_COMPATIBLE" FORCE)
+ find_package(Protobuf CONFIG REQUIRED)
+ message(STATUS "Using protobuf ${Protobuf_VERSION}")
++find_package(absl CONFIG REQUIRED)
++message(STATUS "Using absl ${absl_VERSION}")
+ 
+ #
+ # Prometheus
+@@ -458,6 +460,12 @@ target_link_libraries(
+     protobuf::libprotobuf
+     re2::re2
+ )
++if(TARGET absl::abseil_dll)
++  target_link_libraries(triton-core PRIVATE absl::abseil_dll)
++  target_compile_definitions(triton-core PRIVATE ABSL_CONSUME_DLL=1)
++elseif(TARGET absl::log_internal_nullguard)
++  target_link_libraries(triton-core PRIVATE absl::log_internal_nullguard)
++endif()
+ 
+ if (NOT WIN32)
+   target_link_libraries(

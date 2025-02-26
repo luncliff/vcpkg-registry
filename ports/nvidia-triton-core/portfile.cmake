@@ -3,11 +3,12 @@ vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO triton-inference-server/core
-    REF a9048db96d270ec0adb75e27b00997f8e9e383cd
-    SHA512 44f428c937b827ea5e43be70b285d5d9a04fead354a1511e3cce3d6ce1fdc64fac67ee1cf15663378195a7d30c71d2d1307b3620e1c63a53c7bfb095707089d5
+    REF d53c1f7f8bceb891041e85f0bbf96837fd5cd0bf
+    SHA512 4cde77607512fa05f78830b4aa1cbc549d9fefef6088ec3f49b994f1ac0b12f6675e7d0d485ec1d8d768cccfd79e8382fdbeb3a1bd7cdbfcf924150043b97724
     HEAD_REF main
     PATCHES
         fix-cmake.patch
+        fix-sources.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -30,6 +31,8 @@ vcpkg_cmake_configure(
         -DTRITON_ENABLE_NVTX=ON
         -DTRITON_ENABLE_GPU=ON
         -DTRITON_MIN_COMPUTE_CAPABILITY:STRING="6.0"
+    OPTIONS_DEBUG
+        -DTRITON_ENABLE_TRACING=ON
     MAYBE_UNUSED_VARIABLES
         TRITON_CORE_HEADERS_ONLY
 )

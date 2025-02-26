@@ -1,9 +1,8 @@
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO triton-inference-server/client
-    REF 442915d806a9a6170f1ac138681a48200ec93899
-    SHA512 63a29643d1bf46244cfb670c36f53fdafda17fb2e2365b9e6bd78088b7d83e3c69c4a2d28ef25f0cc6c9d522140b290574e53b33b2b00ddbf7a9179bf370fc92
+    REF 3d9424956ba14660f9447575928601d449919abd
+    SHA512 53a19801bcabf579011ddd9f682cf49f2e2e472816d7ff6cb0790eb404c2b9b19ce9c22e71d0bda9f21f7211deab80b94d6401b6ddf62c1e7839fb88b01e4d88
     HEAD_REF main
     PATCHES
         fix-cmake.patch
@@ -24,7 +23,7 @@ vcpkg_cmake_configure(
         -DTRITON_ENABLE_EXAMPLES=OFF
         -DTRITON_ENABLE_TESTS=OFF
         -DTRITON_ENABLE_ZLIB=OFF
-        -DTRITON_ENABLE_PERF_ANALYZER=OFF
+        # -DTRITON_ENABLE_PERF_ANALYZER=OFF
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/TritonClient PACKAGE_NAME TritonClient)
