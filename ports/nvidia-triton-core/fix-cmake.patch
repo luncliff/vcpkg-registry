@@ -95,12 +95,13 @@ index 16aca67..bafd41a 100644
  
  #
  # Prometheus
-@@ -458,6 +460,11 @@ target_link_libraries(
+@@ -458,6 +460,12 @@ target_link_libraries(
      protobuf::libprotobuf
      re2::re2
  )
 +if(TARGET absl::abseil_dll)
 +  target_link_libraries(triton-core PRIVATE absl::abseil_dll)
++  target_compile_definitions(triton-core PRIVATE ABSL_CONSUME_DLL=1)
 +elseif(TARGET absl::log_internal_nullguard)
 +  target_link_libraries(triton-core PRIVATE absl::log_internal_nullguard)
 +endif()
