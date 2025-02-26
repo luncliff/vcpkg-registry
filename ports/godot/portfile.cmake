@@ -118,6 +118,11 @@ else()
     message(FATAL_ERROR "Unknown arch: ${VCPKG_TARGET_ARCHITECTURE}")
 endif()
 
+vcpkg_find_acquire_program(PKGCONFIG)
+message(STATUS "Using pkgconfig: ${PKGCONFIG}")
+get_filename_component(PKGCONFIG_PATH "${PKGCONFIG}" PATH)
+vcpkg_add_to_path(PREPEND "${PKGCONFIG_PATH}")
+
 # ${SOURCE_PATH}/.github/workflows
 # todo: android, ios, web
 if(VCPKG_TARGET_IS_WINDOWS) # windows_build.yml

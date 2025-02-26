@@ -15,7 +15,6 @@
   "features": {
     "spine-runtimes": {
       "description": "https://esotericsoftware.com/spine-godot",
-      "supports": "windows | osx",
       "dependencies": [
         "spine-runtimes"
       ]
