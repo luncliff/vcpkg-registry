@@ -20,10 +20,55 @@ vcpkg_from_github(
         "${GODOT_PR_96167_PATCH}"
 )
 
-x_vcpkg_get_python_packages(PYTHON_VERSION 3 OUT_PYTHON_VAR PYTHON3
-    PACKAGES SCons
-)
+function(make_linker_flag LIBNAME OUTPUT)
+    if(VCPKG_TARGET_IS_WINDOWS)
+        # for MSVC linker, use the library file's name
+        find_library(LIBRARY NAMES ${LIBNAME} PATHS "${CURRENT_INSTALLED_DIR}/lib" NO_DEFAULT_PATH REQUIRED)
+        get_filename_component(OPTION "${LIBRARY}" NAME)
+    else()
+        # for other linkers, use -l${LIBNAME}
+        set(OPTION "-l${LIBNAME}")    
+    endif()
+    set(${OUTPUT} "${OPTION}" PARENT_SCOPE)
+endfunction()
 
+if("spine-runtimes" IN_LIST FEATURES)
+    vcpkg_from_github(
+        OUT_SOURCE_PATH SPINE_SOURCE_PATH
+        REPO EsotericSoftware/spine-runtimes
+        REF 1cdbf9be1a92e0a3015af8e0f0e1b05b872e33c9
+        SHA512 444c8409c25e92b6c02a4d05f3ec84fced9622b62fbe68a4c4ce813b1451da5188b08be6df37dacde7da7a0bd01cb7d476afc531574793871b850025ec3c505a
+        HEAD_REF 4.2
+    )
+    # using 'spine-runtimes' port. exclude the sources from the build
+    file(REMOVE_RECURSE "${SPINE_SOURCE_PATH}/spine-cpp")
+    # path to the custom module. see SCsub file
+    get_filename_component(SPINE_GODOT_PATH "${SPINE_SOURCE_PATH}/spine-godot" ABSOLUTE)
+    list(APPEND CUSTOM_MODULES "${SPINE_GODOT_PATH}")
+    # see linkflags in scons_build function
+    make_linker_flag("spine-cpp" SPINE_FLAG)
+    list(APPEND LINKER_FLAGS ${SPINE_FLAG})
+endif()
+if(DEFINED CUSTOM_MODULES)
+    set(CUSTOM_MODULE_OPTIONS "custom_modules=${CUSTOM_MODULES}")
+    string(REPLACE ";" "," CUSTOM_MODULE_OPTIONS "${CUSTOM_MODULE_OPTIONS}")
+endif()
+
+if(VCPKG_TARGET_IS_WINDOWS)
+    # https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category
+    # https://learn.microsoft.com/en-us/cpp/build/reference/linker-options
+    set(CCFLAGS "ccflags=/I${CURRENT_INSTALLED_DIR}/include")
+    set(LINKFLAGS "linkflags=/LIBPATH:${CURRENT_INSTALLED_DIR}/lib ${LINKER_FLAGS}")
+else()
+    set(CCFLAGS "ccflags=-I${CURRENT_INSTALLED_DIR}/include")
+    set(LINKFLAGS "linkflags=-L${CURRENT_INSTALLED_DIR}/lib;${LINKER_FLAGS}")
+endif()
+string(REPLACE ";" " " LINKFLAGS "${LINKFLAGS}")
+
+message(STATUS "Using CCFLAGS: ${CCFLAGS}")
+message(STATUS "Using LINKFLAGS: ${LINKFLAGS}")
+
+x_vcpkg_get_python_packages(PYTHON_VERSION 3 OUT_PYTHON_VAR PYTHON3 PACKAGES SCons)
 function(get_python_site_packages PYTHON OUT_PATH)
     execute_process(
         COMMAND "${PYTHON}" -c "import site; print(site.getsitepackages()[0])"
@@ -47,66 +92,78 @@ function(scons_build)
     endif()
     message(STATUS "Building target ${arg_TARGET}")
     vcpkg_execute_required_process(
-        COMMAND "${SCONS}" target=${arg_TARGET} ${arg_SCONS_FLAGS}
-            tests=false deprecated=no debug_symbols=no
+        COMMAND "${SCONS}" target=${arg_TARGET} ${arg_SCONS_FLAGS} ${CCFLAGS} ${LINKFLAGS}
+            tests=false deprecated=no debug_symbols=no optimize=size
         LOGNAME "build-${arg_TARGET}"
         WORKING_DIRECTORY "${arg_DIRECTORY}"
     )
 endfunction()
 
-# https://scons.org/doc/latest/HTML/scons-user/index.html
+# https://scons.org/doc/production/TEXT/scons-man.txt
 set(ENV{SCONS_CACHE} "${CURRENT_BUILDTREES_DIR}/scons-cache")
 set(ENV{SCONSFLAGS} "--jobs=${VCPKG_CONCURRENCY}")
 
-# https://github.com/godotengine/godot/blob/4.3-stable/.github/workflows/runner.yml
+# see detect.py scripts
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
-    set(ARCH_NAME "x86_64")
+    set(ARCH "x86_64")
 elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-    set(ARCH_NAME "arm64")
+    set(ARCH "arm64")
+elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
+    set(ARCH "x86_32")
+elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
+    set(ARCH "arm32")
+elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "wasm32")
+    set(ARCH "wasm32")
+else()
+    message(FATAL_ERROR "Unknown arch: ${VCPKG_TARGET_ARCHITECTURE}")
 endif()
+
+vcpkg_find_acquire_program(PKGCONFIG)
+message(STATUS "Using pkgconfig: ${PKGCONFIG}")
+get_filename_component(PKGCONFIG_PATH "${PKGCONFIG}" PATH)
+vcpkg_add_to_path(PREPEND "${PKGCONFIG_PATH}")
 
 # ${SOURCE_PATH}/.github/workflows
 # todo: android, ios, web
 if(VCPKG_TARGET_IS_WINDOWS) # windows_build.yml
+    set(PLATFORM windows)
+    if(VCPKG_CRT_LINKAGE STREQUAL "static")
+        set(CRT_FLAG "use_static_cpp=true") # /MT
+    else()
+        set(CRT_FLAG "use_static_cpp=false") # /MD            
+    endif()
     scons_build(TARGET template_release
-        SCONS_FLAGS platform=windows arch=${ARCH_NAME} vsproj=yes vsproj_gen_only=no
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} vsproj=yes vsproj_gen_only=no ${CRT_FLAG} ${CUSTOM_MODULE_OPTIONS}
     )
     scons_build(TARGET editor
-        SCONS_FLAGS platform=windows arch=${ARCH_NAME} vsproj=yes vsproj_gen_only=no windows_subsystem=console
-    )
-    vcpkg_copy_tools(
-        TOOL_NAMES  godot.windows.template_release.${ARCH_NAME}
-                    godot.windows.editor.${ARCH_NAME}
-        SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} vsproj=yes vsproj_gen_only=no windows_subsystem=console ${CRT_FLAG} ${CUSTOM_MODULE_OPTIONS}
     )
 
 elseif(VCPKG_TARGET_IS_OSX) # macos_build.yml
+    set(PLATFORM macos)
     scons_build(TARGET template_release
-        SCONS_FLAGS platform=macos arch=${ARCH_NAME} optimize=size vulkan=false
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} vulkan=false ${CUSTOM_MODULE_OPTIONS}
     )
     scons_build(TARGET editor
-        SCONS_FLAGS platform=macos arch=${ARCH_NAME} optimize=size vulkan=false
-    )
-    vcpkg_copy_tools(
-        TOOL_NAMES  godot.macos.template_release.${ARCH_NAME}
-                    godot.macos.editor.${ARCH_NAME}
-        SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} vulkan=false ${CUSTOM_MODULE_OPTIONS}
     )
 
 elseif(VCPKG_TARGET_IS_LINUX) # linux_build.yml
+    set(PLATFORM linuxbsd)
     scons_build(TARGET template_release
-        SCONS_FLAGS platform=linuxbsd arch=${ARCH_NAME} optimize=size
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} ${CUSTOM_MODULE_OPTIONS}
     )
     scons_build(TARGET editor
-        SCONS_FLAGS platform=linuxbsd arch=${ARCH_NAME} optimize=size
-    )
-    vcpkg_copy_tools(
-        TOOL_NAMES  godot.linuxbsd.template_release.${ARCH_NAME}
-                    godot.linuxbsd.editor.${ARCH_NAME}
-        SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
+        SCONS_FLAGS platform=${PLATFORM} arch=${ARCH} ${CUSTOM_MODULE_OPTIONS}
     )
 
 endif()
+
+vcpkg_copy_tools(
+    TOOL_NAMES  godot.${PLATFORM}.template_release.${ARCH}
+                godot.${PLATFORM}.editor.${ARCH}
+    SEARCH_DIR "${SOURCE_PATH}/bin" AUTO_CLEAN
+)
 
 file(INSTALL "${SOURCE_PATH}/README.md" "${SOURCE_PATH}/CHANGELOG.md" "${SOURCE_PATH}/AUTHORS.md"
              "${SOURCE_PATH}/LOGO_LICENSE.txt" "${SOURCE_PATH}/logo.png" "${SOURCE_PATH}/icon.png"

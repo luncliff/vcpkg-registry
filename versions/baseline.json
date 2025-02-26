@@ -2,7 +2,7 @@
   "default": {
     "abseil": {
       "baseline": "20240722.0",
-      "port-version": 0
+      "port-version": 1
     },
     "apple-crypto": {
       "baseline": "3.0.0",
@@ -74,7 +74,7 @@
     },
     "godot": {
       "baseline": "4.3",
-      "port-version": 0
+      "port-version": 1
     },
     "google-filament": {
       "baseline": "1.40.0",
