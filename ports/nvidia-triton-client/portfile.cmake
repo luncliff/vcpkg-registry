@@ -1,4 +1,3 @@
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO triton-inference-server/client
@@ -24,7 +23,7 @@ vcpkg_cmake_configure(
         -DTRITON_ENABLE_EXAMPLES=OFF
         -DTRITON_ENABLE_TESTS=OFF
         -DTRITON_ENABLE_ZLIB=OFF
-        -DTRITON_ENABLE_PERF_ANALYZER=OFF
+        # -DTRITON_ENABLE_PERF_ANALYZER=OFF
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/TritonClient PACKAGE_NAME TritonClient)
