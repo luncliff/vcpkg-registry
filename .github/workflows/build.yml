@@ -55,10 +55,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           # sudo apt update -y
-          sudo apt install -y pkg-config nasm \
-            libnuma-dev libopenmpi-dev \
-            libx11-dev libxi-dev libxext-dev libx11-xcb-dev \
-            libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa
+          sudo apt install -y $(cat test/packages-apt.txt)
 
       - name: "Run homebrew"
         if: runner.os == 'macOS'
@@ -111,6 +108,57 @@ jobs:
           VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
           VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
+
+  host-tools:
+    name: "Host Tools"
+    runs-on: ${{ matrix.runner_image }} # https://github.com/actions/runner-images
+    strategy:
+      matrix:
+        include:
+          - runner_image: "ubuntu-latest"
+          - runner_image: "macos-latest"
+          # - runner_image: "windows-latest"
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          runVcpkgInstall: false
+
+      - name: "Run apt"
+        if: runner.os == 'Linux'
+        run: |
+          # sudo apt update -y
+          sudo apt install -y $(cat test/packages-apt.txt)
+
+      - name: "Run homebrew"
+        if: runner.os == 'macOS'
+        run: brew install autoconf automake libtool
+
+      - uses: microsoft/setup-msbuild@v2
+        if: runner.os == 'Windows'
+        with:
+          msbuild-architecture: x64
+
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          runVcpkgInstall: true
+          runVcpkgFormatString: '[`install`, `--x-feature`, `host-tools`, `--clean-after-build`]'
+          vcpkgJsonGlob: "test/vcpkg.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+        env:
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
 
   android:
     name: "Android"
