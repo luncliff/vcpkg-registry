@@ -5,3 +5,10 @@ libx11-dev
 libxi-dev
 libxext-dev
 libx11-xcb-dev
+python3-pip
+python3-venv
+pkg-config
+libxinerama-dev
+libxcursor-dev
+xorg-dev
+libglu1-mesa

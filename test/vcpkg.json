@@ -1,113 +1,143 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2025-02-14",
+  "version-date": "2025-02-26",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows | linux | osx | ios",
   "dependencies": [
-    "abseil",
     {
-      "name": "coreml-tools",
-      "platform": "osx | ios"
+      "name": "vcpkg-cmake",
+      "host": true
     },
     {
-      "name": "cpuinfo",
-      "features": [
-        "tools"
-      ],
-      "platform": "linux"
-    },
-    {
-      "name": "d3d12-transition-layer",
-      "platform": "windows"
-    },
-    {
-      "name": "fbgemm",
-      "platform": "x64"
-    },
-    "glslang",
-    {
-      "name": "godot",
-      "platform": "osx | linux"
-    },
-    {
-      "name": "libdispatch",
-      "platform": "windows | android"
-    },
-    "llama-cpp",
-    {
-      "name": "llama-cpp",
-      "features": [
-        "server"
-      ],
-      "platform": "windows | linux | osx"
-    },
-    {
-      "name": "metal-cpp",
-      "platform": "osx | ios"
-    },
-    {
-      "name": "metal-cpp",
-      "platform": "osx | ios"
-    },
-    "miniaudio",
-    {
-      "name": "onnx",
-      "features": [
-        "disable-static-registration",
-        "test"
+      "name": "vcpkg-get-python-packages",
+      "host": true
+    }
+  ],
+  "features": {
+    "host-tools": {
+      "description": "install tool ports, with host: true option",
+      "supports": "native",
+      "dependencies": [
+        {
+          "name": "godot",
+          "host": true,
+          "features": [
+            "spine-runtimes"
+          ],
+          "platform": "osx"
+        },
+        {
+          "name": "godot",
+          "host": true,
+          "platform": "linux"
+        }
       ]
     },
-    {
-      "name": "opencl",
-      "platform": "windows | linux"
-    },
-    {
-      "name": "opencl-on-dx12",
-      "platform": "windows"
-    },
-    "openssl3",
-    {
-      "name": "openssl3",
-      "features": [
-        "tools"
-      ],
-      "platform": "windows"
-    },
-    {
-      "name": "spine-runtimes",
-      "features": [
-        "sdl2"
+    "test": {
+      "description": "install library ports",
+      "dependencies": [
+        "abseil",
+        {
+          "name": "coreml-tools",
+          "platform": "osx | ios"
+        },
+        {
+          "name": "cpuinfo",
+          "features": [
+            "tools"
+          ],
+          "platform": "linux"
+        },
+        {
+          "name": "d3d12-transition-layer",
+          "platform": "windows"
+        },
+        {
+          "name": "fbgemm",
+          "platform": "x64"
+        },
+        "glslang",
+        {
+          "name": "libdispatch",
+          "platform": "windows | android"
+        },
+        "llama-cpp",
+        {
+          "name": "llama-cpp",
+          "features": [
+            "server"
+          ],
+          "platform": "windows | linux | osx"
+        },
+        {
+          "name": "metal-cpp",
+          "platform": "osx | ios"
+        },
+        {
+          "name": "metal-cpp",
+          "platform": "osx | ios"
+        },
+        "miniaudio",
+        {
+          "name": "onnx",
+          "features": [
+            "disable-static-registration",
+            "test"
+          ]
+        },
+        {
+          "name": "opencl",
+          "platform": "windows | linux"
+        },
+        {
+          "name": "opencl-on-dx12",
+          "platform": "windows"
+        },
+        "openssl3",
+        {
+          "name": "openssl3",
+          "features": [
+            "tools"
+          ],
+          "platform": "windows"
+        },
+        {
+          "name": "spine-runtimes",
+          "features": [
+            "sdl2"
+          ]
+        },
+        {
+          "name": "spine-runtimes",
+          "features": [
+            "glfw"
+          ],
+          "platform": "native"
+        },
+        {
+          "name": "sse2neon",
+          "platform": "x86"
+        },
+        {
+          "name": "tensorflow-lite",
+          "platform": "windows"
+        },
+        {
+          "name": "tensorflow-lite",
+          "features": [
+            "gpu"
+          ],
+          "platform": "windows & !arm"
+        },
+        "xatlas",
+        {
+          "name": "xnnpack",
+          "platform": "linux"
+        },
+        "zlib-ng"
       ]
-    },
-    {
-      "name": "spine-runtimes",
-      "features": [
-        "glfw"
-      ],
-      "platform": "native"
-    },
-    {
-      "name": "sse2neon",
-      "platform": "x86"
-    },
-    {
-      "name": "tensorflow-lite",
-      "platform": "windows"
-    },
-    {
-      "name": "tensorflow-lite",
-      "features": [
-        "gpu"
-      ],
-      "platform": "windows & !arm"
-    },
-    "xatlas",
-    {
-      "name": "xnnpack",
-      "platform": "linux"
-    },
-    "zlib-ng"
-  ]
+    }
+  }
 }
