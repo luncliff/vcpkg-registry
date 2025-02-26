@@ -11,6 +11,8 @@ vcpkg_from_github(
     PATCHES
         fix-zstd-import.patch
 )
+# check https://gcc.gnu.org/onlinedocs/
+# check https://www.gnu.org/software/libc/manual/html_node/Feature-Test-Macros.html
 # todo: support basisu_tool.cpp build
 # todo: support EMSCRIPTEN for ${SOURCE_PATH}/webgl sources
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")

@@ -29,15 +29,30 @@ if(MSVC)
     check_cxx_compiler_flag("/arch:SSE" USE_SSE)
 
 else()
-    set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
+    set(CMAKE_CXX_VISIBILITY_PRESET "default") # use hidden?
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
     add_compile_definitions(
-        -fno-strict-aliasing
+        # -fno-strict-aliasing
         _LARGEFILE64_SOURCE=1
         -D_FILE_OFFSET_BITS=64
     )
-    check_cxx_compiler_flag("-msse4.1" USE_SSE)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES x86)
+        check_cxx_compiler_flag("-msse4" USE_SSE4)
+        if(USE_SSE4)
+            add_compile_options("-msse4")
+        endif()
+        check_cxx_compiler_flag("-msse4.1" USE_SSE41)
+        if(USE_SSE41)
+            add_compile_options("-msse4.1")
+        endif()
+        check_cxx_compiler_flag("-msse4.2" USE_SSE42)
+        if(USE_SSE42)
+            add_compile_options("-msse4.2")
+        endif()
+        if(USE_SSE4 OR USE_SSE41 OR USE_SSE42)
+            set(USE_SSE ON)
+        endif()
+    endif()
 endif()
 
 if(USE_SSE)
