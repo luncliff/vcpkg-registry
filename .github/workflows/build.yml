@@ -116,7 +116,7 @@ jobs:
       matrix:
         include:
           - runner_image: "ubuntu-latest"
-          - runner_image: "macos-latest"
+          - runner_image: "macos-13"
           # - runner_image: "windows-latest"
       fail-fast: false
     steps:
