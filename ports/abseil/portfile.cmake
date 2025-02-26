@@ -28,4 +28,12 @@ file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
 )
 
+if(VCPKG_TARGET_IS_WINDOWS AND (VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic"))
+    message(WARNING "macro 'ABSL_CONSUME_DLL' may needed in the abseil-cpp importing sources")
+    vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/include/absl/base/config.h"
+                         "defined(ABSL_CONSUME_DLL)" "1")
+    vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/include/absl/base/internal/thread_identity.h"
+                         "defined(ABSL_CONSUME_DLL)" "1")
+endif()
+
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
