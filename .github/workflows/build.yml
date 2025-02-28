@@ -17,15 +17,14 @@ env:
 jobs:
   validate:
     name: "Validate"
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
-      - uses: lukka/run-vcpkg@v11.5
-        with:
-          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
       - name: "Run registry-format.ps1"
-        run: scripts/registry-format.ps1 -VcpkgRoot "${env:VCPKG_ROOT}" -RegistryRoot ${{ github.workspace }}
+        run: |
+          $env:VCPKG_ROOT="$env:VCPKG_INSTALLATION_ROOT"
+          $env:PATH="$env:VCPKG_ROOT:$env:PATH" # We are in Ubuntu!
+          scripts/registry-format.ps1 -VcpkgRoot "${env:VCPKG_ROOT}" -RegistryRoot ${{ github.workspace }}
         shell: pwsh
       - name: "Run git diff"
         run: git diff --exit-code
