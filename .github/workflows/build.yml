@@ -15,11 +15,25 @@ env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
 
 jobs:
-  # https://learn.microsoft.com/en-us/vcpkg/commands/install
-  # https://learn.microsoft.com/en-us/vcpkg/concepts/classic-mode
+  validate:
+    name: "Validate"
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+      - name: "Run registry-format.ps1"
+        run: scripts/registry-format.ps1 -VcpkgRoot "${env:VCPKG_ROOT}" -RegistryRoot ${{ github.workspace }}
+        shell: pwsh
+      - name: "Run git diff"
+        run: git diff --exit-code
+
   overlay:
     name: "Overlay"
     runs-on: ${{ matrix.runner_image }} # https://github.com/actions/runner-images
+    needs: validate
     strategy:
       matrix:
         include:
@@ -112,6 +126,7 @@ jobs:
   host-tools:
     name: "Host Tools"
     runs-on: ${{ matrix.runner_image }} # https://github.com/actions/runner-images
+    needs: validate
     strategy:
       matrix:
         include:
@@ -163,6 +178,7 @@ jobs:
   android:
     name: "Android"
     runs-on: "ubuntu-latest" # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#environment-variables-2
+    needs: validate
     # container: # https://circleci.com/developer/images/image/cimg/android
     #   image: cimg/android:2025.01.1-ndk # 28.0.12674087
     steps:
@@ -209,6 +225,7 @@ jobs:
   vulkan:
     name: Vulkan
     runs-on: "windows-latest"
+    needs: validate
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: aws-actions/configure-aws-credentials@v4
@@ -243,6 +260,7 @@ jobs:
   emscripten:
     name: "Emscripten"
     runs-on: "ubuntu-latest"
+    needs: validate
     container:
       image: "emscripten/emsdk:3.1.74" # https://hub.docker.com/r/emscripten/emsdk
       env:
