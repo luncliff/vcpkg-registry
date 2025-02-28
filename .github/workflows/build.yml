@@ -38,20 +38,13 @@ jobs:
       matrix:
         include:
           - runner_image: "ubuntu-latest"
-            triplet: "x64-linux"
           - runner_image: "macos-13"
-            triplet: "x64-osx"
-          - runner_image: "macos-13"
-            triplet: "x64-ios-simulator"
-          - runner_image: "macos-13"
-            triplet: "arm64-osx"
-          - runner_image: "macos-13"
-            triplet: "arm64-ios"
           - runner_image: "windows-latest"
-            triplet: "x64-windows"
-          - runner_image: "windows-latest"
-            triplet: "arm64-windows"
       fail-fast: false
+    env:
+      VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+      VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+      VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: aws-actions/configure-aws-credentials@v4
@@ -93,40 +86,78 @@ jobs:
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
         shell: pwsh
 
-      - name: "Run vcpkg(${{ matrix.triplet }})"
-        if: runner.os == 'Linux' || runner.os == 'macOS'
+      - name: "Run vcpkg(x64-osx)"
+        if: runner.os == 'macOS'
         run: |
           vcpkg install --keep-going \
-            --clean-buildtrees-after-build \
-            --clean-packages-after-build \
+            --clean-buildtrees-after-build --clean-packages-after-build \
             --x-manifest-root test \
             --x-feature test
         shell: bash
         env:
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
-          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
-          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
-          VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
+          VCPKG_DEFAULT_TRIPLET: "x64-osx"
 
-      - name: "Run vcpkg(${{ matrix.triplet }})"
+      - name: "Run vcpkg(arm64-ios)"
+        if: runner.os == 'macOS'
+        run: |
+          vcpkg install --keep-going \
+            --clean-buildtrees-after-build --clean-packages-after-build \
+            --x-manifest-root test \
+            --x-feature test
+        shell: bash
+        env:
+          VCPKG_DEFAULT_TRIPLET: "arm64-ios"
+
+      - name: "Run vcpkg(arm64-ios-simulator)"
+        if: runner.os == 'macOS'
+        run: |
+          vcpkg install --keep-going \
+            --clean-buildtrees-after-build --clean-packages-after-build \
+            --x-manifest-root test \
+            --x-feature test
+        shell: bash
+        env:
+          VCPKG_DEFAULT_TRIPLET: "arm64-ios-simulator"
+        continue-on-error: true
+
+      - name: "Run vcpkg(x64-linux)"
+        if: runner.os == 'Linux'
+        run: |
+          vcpkg install --keep-going \
+            --clean-buildtrees-after-build --clean-packages-after-build \
+            --x-manifest-root test \
+            --x-feature test
+        shell: bash
+        env:
+          VCPKG_DEFAULT_TRIPLET: "x64-linux"
+
+      - name: "Run vcpkg(x64-windows)"
         if: runner.os == 'Windows'
         run: |
           vcpkg install --keep-going `
-            --clean-buildtrees-after-build `
-            --clean-packages-after-build `
+            --clean-buildtrees-after-build --clean-packages-after-build `
             --x-manifest-root test `
             --x-feature test
         shell: pwsh
         env:
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
-          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
-          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
-          VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
+          VCPKG_DEFAULT_TRIPLET: "x64-windows"
+
+      - name: "Run vcpkg(arm64-windows)"
+        if: runner.os == 'Windows'
+        run: |
+          vcpkg install --keep-going `
+            --clean-buildtrees-after-build --clean-packages-after-build `
+            --x-manifest-root test `
+            --x-feature test
+        shell: pwsh
+        env:
+          VCPKG_DEFAULT_TRIPLET: "arm64-windows"
+        continue-on-error: true
 
   host-tools:
     name: "Host Tools"
     runs-on: ${{ matrix.runner_image }} # https://github.com/actions/runner-images
-    needs: validate
+    needs: [validate, overlay]
     strategy:
       matrix:
         include:
@@ -197,8 +228,7 @@ jobs:
       - name: "Run vcpkg(arm64-android)"
         run: |
           vcpkg install --keep-going \
-            --clean-buildtrees-after-build \
-            --clean-packages-after-build \
+            --clean-buildtrees-after-build --clean-packages-after-build \
             --x-manifest-root test \
             --x-feature test
         shell: bash
@@ -211,8 +241,7 @@ jobs:
       - name: "Run vcpkg(x64-android)"
         run: |
           vcpkg install --keep-going \
-            --clean-buildtrees-after-build \
-            --clean-packages-after-build \
+            --clean-buildtrees-after-build --clean-packages-after-build \
             --x-manifest-root test \
             --x-feature test
         shell: bash
@@ -225,7 +254,7 @@ jobs:
   vulkan:
     name: Vulkan
     runs-on: "windows-latest"
-    needs: validate
+    needs: overlay
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: aws-actions/configure-aws-credentials@v4
@@ -260,7 +289,7 @@ jobs:
   emscripten:
     name: "Emscripten"
     runs-on: "ubuntu-latest"
-    needs: validate
+    needs: overlay
     container:
       image: "emscripten/emsdk:3.1.74" # https://hub.docker.com/r/emscripten/emsdk
       env:
