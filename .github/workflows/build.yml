@@ -153,6 +153,14 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
         continue-on-error: true
 
+      - uses: actions/upload-artifact@v4.6.1
+        if: failure()
+        with:
+          name: log-${{ runner.os }}
+          path: |
+            buildtrees/*/*.txt
+            buildtrees/*/*.log
+
   host-tools:
     name: "Host Tools"
     runs-on: ${{ matrix.runner_image }} # https://github.com/actions/runner-images
