@@ -4,20 +4,13 @@ set(VCPKG_POLICY_EMPTY_INCLUDE_FOLDER enabled)
 
 # https://www.reddit.com/r/godot/comments/1gw220q/latest_visual_studio_update_1712_broke_scons/
 # https://github.com/godotengine/godot issue 95861
-vcpkg_download_distfile(GODOT_PR_96167_PATCH
-    URLS "https://github.com/godotengine/godot/pull/96167.diff?full_index=1"
-    FILENAME "godot-fix-pr-96167.patch"
-    SHA512 c0438cd49b0d7f2a39b95f4064e89ccea79e6ff4a9d5b3291af5f1c11f5bd4935b8b4b99c332947ad65e1d3f172adc03979717b74db0ea389da692b494fd8061
-)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO godotengine/godot
     REF "${VERSION}-stable"
-    SHA512 ce20235f1a5f8a5dc22f4bec6c4b5ab7c66aa3b35733f9fc26f905e564c4671df370c68db1ea65b205e00f29863d6d6f5ea6878996a4d69d32f728ecc91c8726
-    HEAD_REF 4.3
-    PATCHES
-        "${GODOT_PR_96167_PATCH}"
+    SHA512 a0412d005f40f1df4fbb9ec496c0ca12cdd47d03fb2e935769b01072a9370faccbf974ab4269f99b754c9543f2036ad5d77347531c88faa87efd39620235e298
+    HEAD_REF 4.4
 )
 
 function(make_linker_flag LIBNAME OUTPUT)
