@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - docs
+      - support/*
   workflow_dispatch:
 
 concurrency:
