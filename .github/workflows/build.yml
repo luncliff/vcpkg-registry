@@ -89,9 +89,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           vcpkg install --keep-going \
-            --clean-buildtrees-after-build --clean-packages-after-build \
-            --x-manifest-root test \
-            --x-feature test
+            --clean-packages-after-build \
+            --x-manifest-root test --x-feature test
         shell: bash
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-osx"
@@ -100,9 +99,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           vcpkg install --keep-going \
-            --clean-buildtrees-after-build --clean-packages-after-build \
-            --x-manifest-root test \
-            --x-feature test
+            --clean-packages-after-build \
+            --x-manifest-root test --x-feature test
         shell: bash
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-ios"
@@ -111,9 +109,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           vcpkg install --keep-going \
-            --clean-buildtrees-after-build --clean-packages-after-build \
-            --x-manifest-root test \
-            --x-feature test
+            --clean-packages-after-build \
+            --x-manifest-root test --x-feature test
         shell: bash
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-ios-simulator"
@@ -123,9 +120,8 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           vcpkg install --keep-going \
-            --clean-buildtrees-after-build --clean-packages-after-build \
-            --x-manifest-root test \
-            --x-feature test
+            --clean-packages-after-build \
+            --x-manifest-root test --x-feature test
         shell: bash
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-linux"
@@ -134,9 +130,8 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           vcpkg install --keep-going `
-            --clean-buildtrees-after-build --clean-packages-after-build `
-            --x-manifest-root test `
-            --x-feature test
+            --clean-packages-after-build `
+            --x-manifest-root test --x-feature test
         shell: pwsh
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
@@ -145,13 +140,20 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           vcpkg install --keep-going `
-            --clean-buildtrees-after-build --clean-packages-after-build `
-            --x-manifest-root test `
-            --x-feature test
+            --clean-packages-after-build `
+            --x-manifest-root test --x-feature test
         shell: pwsh
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
         continue-on-error: true
+
+      - uses: actions/upload-artifact@v4.6.1
+        if: failure()
+        with:
+          name: log-${{ runner.os }}
+          path: |
+            buildtrees/*/*.txt
+            buildtrees/*/*.log
 
   host-tools:
     name: "Host Tools"
@@ -227,9 +229,8 @@ jobs:
       - name: "Run vcpkg(arm64-android)"
         run: |
           vcpkg install --keep-going \
-            --clean-buildtrees-after-build --clean-packages-after-build \
-            --x-manifest-root test \
-            --x-feature test
+            --clean-packages-after-build \
+            --x-manifest-root test --x-feature test
         shell: bash
         env:
           VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
@@ -240,9 +241,8 @@ jobs:
       - name: "Run vcpkg(x64-android)"
         run: |
           vcpkg install --keep-going \
-            --clean-buildtrees-after-build --clean-packages-after-build \
-            --x-manifest-root test \
-            --x-feature test
+            --clean-packages-after-build \
+            --x-manifest-root test --x-feature test
         shell: bash
         env:
           VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
