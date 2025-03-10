@@ -40,6 +40,13 @@
       "dependencies": [
         "abseil",
         {
+          "name": "basis-universal",
+          "features": [
+            "opencl",
+            "zstd"
+          ]
+        },
+        {
           "name": "coreml-tools",
           "platform": "osx | ios"
         },
