@@ -1,12 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2025-02-08",
+  "version-date": "2025-03-21",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "emscripten",
   "dependencies": [
     "abseil",
+    "xnnpack",
     {
       "name": "curl",
       "default-features": false
