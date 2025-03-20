@@ -7,7 +7,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggerganov/llama.cpp
     REF "b${VERSION}"
-    SHA512 d939bb35e492dba06068e49dd0b28e8352fcbf598c1d7198fdedb405893b4c3a90b3709f0c57e57ffe3e92860d7c5ad21a2cc1129d50c07f27470b8b37d87183
+    SHA512 4a885ee74d12141aadc233c4c64aa4666e5be7ac937f9c072d5d4ed783d89766c479f8fc851aa9337fe184bc0f2c36a8e83666f6c1dfc165b3f0bfa32c38cdd7
     HEAD_REF master
     PATCHES
         fix-cmake-ggml.patch
