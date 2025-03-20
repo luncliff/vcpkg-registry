@@ -5,10 +5,9 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO Maratyszcza/pthreadpool
-    REF 178e3e0646cc671708bf78e77c273940130ac637
-    SHA512 160f4beba1ccbb73eb2a8c51eb0719da0d981934492fdd1b795fc9adf36200870887bee29eca3c398aea197c6a047cd81f9aec133adf9c48f101fdd340e59660
+    REF 560c60d342a76076f0557a3946924c6478470044
+    SHA512 d23e764e9a02f34210b3b9c5a66dae3b9e8211de6f78ec9b2672c19c48f364f4edb268ab77b1adf2802a3c35c6857deba81e48a658caa1a587fe8f3493a07f59
     PATCHES
-        # fix-cmake-uwp.patch
         fix-cmake.patch
 )
 

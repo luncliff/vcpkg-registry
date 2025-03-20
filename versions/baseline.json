@@ -197,7 +197,7 @@
       "port-version": 0
     },
     "pthreadpool": {
-      "baseline": "2024-01-22",
+      "baseline": "2024-06-17",
       "port-version": 0
     },
     "ruy": {
