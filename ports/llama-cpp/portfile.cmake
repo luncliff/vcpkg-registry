@@ -3,11 +3,12 @@ if(VCPKG_TARGET_IS_WINDOWS)
 endif()
 set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
+# https://github.com/ggml-org/llama.cpp/releases/tag/b4936
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggerganov/llama.cpp
     REF "b${VERSION}"
-    SHA512 d939bb35e492dba06068e49dd0b28e8352fcbf598c1d7198fdedb405893b4c3a90b3709f0c57e57ffe3e92860d7c5ad21a2cc1129d50c07f27470b8b37d87183
+    SHA512 76a1bed0fa543651a90003245a7947d4cf80a172f3198a364260b37fd825e0f1d7e2222eaeb6226a322a8e2ba5a7e0243ecc9bcca576699c13bde7d61a4b8d57
     HEAD_REF master
     PATCHES
         fix-cmake-ggml.patch
@@ -16,7 +17,7 @@ vcpkg_from_github(
 )
 file(REMOVE
     "${SOURCE_PATH}/common/json.hpp" # nlohmann-json
-    # "${SOURCE_PATH}/examples/server/httplib.h" # todo: use cpp-httplib[openssl]
+    "${SOURCE_PATH}/examples/server/httplib.h" # cpp-httplib
 )
 
 vcpkg_find_acquire_program(GIT)
@@ -132,6 +133,8 @@ vcpkg_cmake_configure(
     OPTIONS_RELEASE
         -DGGML_METAL_NDEBUG=ON
         -DGGML_METAL_SHADER_DEBUG=OFF
+    MAYBE_UNUSED_VARIABLES
+        LLAMA_SERVER_SSL
 )
 vcpkg_cmake_install()
 
