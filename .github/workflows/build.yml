@@ -207,6 +207,14 @@ jobs:
           VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
 
+      - uses: actions/upload-artifact@v4.6.1
+        if: failure()
+        with:
+          name: log-host-tools
+          path: |
+            buildtrees/*/*.txt
+            buildtrees/*/*.log
+
   android:
     name: "Android"
     runs-on: "ubuntu-latest" # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#environment-variables-2
@@ -229,7 +237,7 @@ jobs:
       - name: "Run vcpkg(arm64-android)"
         run: |
           vcpkg install --keep-going \
-            --clean-packages-after-build --x-buildtrees-root buildtrees \\
+            --clean-packages-after-build --x-buildtrees-root buildtrees \
             --x-manifest-root test --x-feature test
         shell: bash
         env:
@@ -241,7 +249,7 @@ jobs:
       - name: "Run vcpkg(x64-android)"
         run: |
           vcpkg install --keep-going \
-            --clean-packages-after-build --x-buildtrees-root buildtrees \\
+            --clean-packages-after-build --x-buildtrees-root buildtrees \
             --x-manifest-root test --x-feature test
         shell: bash
         env:
@@ -249,6 +257,14 @@ jobs:
           VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
           VCPKG_DEFAULT_TRIPLET: "x64-android"
+
+      - uses: actions/upload-artifact@v4.6.1
+        if: failure()
+        with:
+          name: log-Android
+          path: |
+            buildtrees/*/*.txt
+            buildtrees/*/*.log
 
   vulkan:
     name: Vulkan
