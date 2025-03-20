@@ -89,7 +89,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           vcpkg install --keep-going \
-            --clean-packages-after-build \
+            --clean-packages-after-build --x-buildtrees-root buildtrees \
             --x-manifest-root test --x-feature test
         shell: bash
         env:
@@ -99,7 +99,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           vcpkg install --keep-going \
-            --clean-packages-after-build \
+            --clean-packages-after-build --x-buildtrees-root buildtrees \
             --x-manifest-root test --x-feature test
         shell: bash
         env:
@@ -109,7 +109,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           vcpkg install --keep-going \
-            --clean-packages-after-build \
+            --clean-packages-after-build --x-buildtrees-root buildtrees \
             --x-manifest-root test --x-feature test
         shell: bash
         env:
@@ -120,7 +120,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           vcpkg install --keep-going \
-            --clean-packages-after-build \
+            --clean-packages-after-build --x-buildtrees-root buildtrees \
             --x-manifest-root test --x-feature test
         shell: bash
         env:
@@ -130,7 +130,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           vcpkg install --keep-going `
-            --clean-packages-after-build `
+            --clean-packages-after-build --x-buildtrees-root buildtrees `
             --x-manifest-root test --x-feature test
         shell: pwsh
         env:
@@ -140,7 +140,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           vcpkg install --keep-going `
-            --clean-packages-after-build `
+            --clean-packages-after-build --x-buildtrees-root buildtrees `
             --x-manifest-root test --x-feature test
         shell: pwsh
         env:
@@ -229,7 +229,7 @@ jobs:
       - name: "Run vcpkg(arm64-android)"
         run: |
           vcpkg install --keep-going \
-            --clean-packages-after-build \
+            --clean-packages-after-build --x-buildtrees-root buildtrees \\
             --x-manifest-root test --x-feature test
         shell: bash
         env:
@@ -241,7 +241,7 @@ jobs:
       - name: "Run vcpkg(x64-android)"
         run: |
           vcpkg install --keep-going \
-            --clean-packages-after-build \
+            --clean-packages-after-build --x-buildtrees-root buildtrees \\
             --x-manifest-root test --x-feature test
         shell: bash
         env:
