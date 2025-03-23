@@ -1,8 +1,8 @@
 # see https://github.com/bkaradzic/metal-cpp
 vcpkg_download_distfile(ARCHIVE
-    URLS "https://developer.apple.com/metal/cpp/files/metal-cpp_macOS15_iOS18-beta.zip"
-    FILENAME metal-cpp_macOS15_iOS18-beta.zip
-    SHA512 401a38c9268a772c2586da9269e9eab42f8d5643d36b7bce07fe815c1efc56ae1fd1742513e2c5126487dd5326e25e6a503830347de17cc0c563e493dff709a4
+    URLS "https://developer.apple.com/metal/cpp/files/metal-cpp_${VERSION}.zip"
+    FILENAME metal-cpp_${VERSION}.zip
+    SHA512 5b24953eb70f128062faca8f0a0130fcb6e0b837427c75d32930f6a4146b87413b5c4195cffbbbf13024f878ea2883817113df54550885daa90238ab372ffe4c
 )
 
 vcpkg_extract_source_archive_ex(
