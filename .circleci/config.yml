@@ -30,13 +30,13 @@ jobs:
       - android/change_java_version:
           java_version: 17
       - run:
-          name: "Setup: microsoft/vcpkg(2025.01.13)"
+          name: "Setup: microsoft/vcpkg(2025.03.19)"
           command: |
             sudo apt-get update -y -q
             sudo apt-get install -y -q curl zip unzip tar
             mkdir -p $VCPKG_DOWNLOADS
             mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
-            git clone --branch=2025.01.13 --depth=1 https://github.com/microsoft/vcpkg
+            git clone --branch=2025.03.19 --depth=1 https://github.com/microsoft/vcpkg
             pushd vcpkg
               ./bootstrap-vcpkg.sh
             popd

@@ -21,10 +21,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2024.10.21"
-            vcpkg_commit: "10b7a178346f3f0abef60cecd5130e295afd8da4"
-          - vcpkg_tag: "2025.01.13"
-            vcpkg_commit: "6f29f12e82a8293156836ad81cc9bf5af41fe836"
+          - vcpkg_tag: "2025.03.19"
+            vcpkg_commit: "b02e341c927f16d991edbd915d8ea43eac52096c"
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -91,8 +89,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2025.01.13"
-            vcpkg_commit: "6f29f12e82a8293156836ad81cc9bf5af41fe836"
+          - vcpkg_tag: "2025.03.19"
+            vcpkg_commit: "b02e341c927f16d991edbd915d8ea43eac52096c"
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
