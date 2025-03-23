@@ -1,6 +1,8 @@
 # References
 #
 # - https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
+# - https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs
+# - https://docs.github.com/en/codespaces/developing-in-a-codespace/default-environment-variables-for-your-codespace
 #
 name: "Request Port Update"
 
@@ -64,5 +66,7 @@ jobs:
           token: ${{ github.token }}
           title: ${{ steps.make_title.outputs.issue_title }}
           body: |
+            Requested from ${{ github.server_url }}/$${{ github.repository }}/actions/runs/${{ github.run_id }}
+
             ## References
             * ${{ github.event.inputs.release_url }}
