@@ -105,7 +105,7 @@
       "port-version": 0
     },
     "metal-cpp": {
-      "baseline": "macOS15_iOS18-beta",
+      "baseline": "macOS15_iOS18",
       "port-version": 0
     },
     "miniaudio": {
