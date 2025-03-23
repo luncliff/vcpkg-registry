@@ -37,16 +37,16 @@
       "description": "Default ports to test",
       "dependencies": [
         {
-          "name": "godot",
+          "name": "d3d12-transition-layer",
           "features": [
-            "spine-runtimes"
+            "pix"
           ],
           "platform": "x64 & windows"
         },
         {
-          "name": "d3d12-transition-layer",
+          "name": "godot",
           "features": [
-            "pix"
+            "spine-runtimes"
           ],
           "platform": "x64 & windows"
         },
@@ -54,7 +54,9 @@
         {
           "name": "llama-cpp",
           "features": [
-            "opencl"
+            "opencl",
+            "openmp",
+            "server"
           ]
         },
         {
