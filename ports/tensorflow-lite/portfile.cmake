@@ -5,8 +5,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.18.0
-    SHA512 177decaafcdef27afee84a17268f473141d2d0c092d5f3fe33c9cdd3ce4fd52f6b4b83bc41b4b005c8889f5e65602a57ae3eba8f63e0c527feaf83917453f4e6
+    REF v${VERSION}
+    SHA512 cff53ba33981166e1ae412afe54051b84e13c35071bca05c61d5115fa08db4b2a383be448d78a9917e356884e5a24d922e731d5d00ce8a5723788a4036044699
     PATCHES
         fix-cmake-vcpkg.patch
         fix-cmake-c-api.patch
@@ -19,33 +19,25 @@ file(REMOVE_RECURSE
 )
 file(COPY "${CURRENT_INSTALLED_DIR}/include/eigen3" DESTINATION "${SOURCE_PATH}/third_party")
 
-find_program(FLATC NAMES flatc
-    PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers"
-    REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
-)
-# see https://flatbuffers.dev/flatbuffers_guide_using_schema_compiler.html
+find_program(FLATC NAMES flatc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
 message(STATUS "Using flatc: ${FLATC}")
 
-find_program(PROTOC NAMES protoc
-    PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
-    REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
-)
-# see https://protobuf.dev/overview/#syntax
-message(STATUS "Using protoc: ${PROTOC}")
-
-function(codegen_protoc)
-    cmake_parse_arguments(PARSE_ARGV 0 arg "" "DIRECTORY;LOGNAME" "SOURCES")
+function(codegen_flatc_cpp) # https://flatbuffers.dev/flatc/
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "DIRECTORY;LOGNAME" "SOURCES;FLATC_ARGS")
     vcpkg_execute_required_process(
-        COMMAND "${PROTOC}" --cpp_out . ${arg_SOURCES}
+        COMMAND "${FLATC}" --cpp ${arg_FLATC_ARGS} ${arg_SOURCES}
         LOGNAME "${arg_LOGNAME}"
         WORKING_DIRECTORY "${arg_DIRECTORY}"
     )
 endfunction()
 
-function(codegen_flatc_cpp)
-    cmake_parse_arguments(PARSE_ARGV 0 arg "" "DIRECTORY;LOGNAME" "SOURCES;FLATC_ARGS")
+find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
+message(STATUS "Using protoc: ${PROTOC}")
+
+function(codegen_protoc) # https://protobuf.dev/reference/cpp/cpp-generated/
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "DIRECTORY;LOGNAME" "SOURCES")
     vcpkg_execute_required_process(
-        COMMAND "${FLATC}" --cpp ${arg_FLATC_ARGS} ${arg_SOURCES}
+        COMMAND "${PROTOC}" --cpp_out . ${arg_SOURCES}
         LOGNAME "${arg_LOGNAME}"
         WORKING_DIRECTORY "${arg_DIRECTORY}"
     )
@@ -83,6 +75,7 @@ codegen_flatc_cpp(
     LOGNAME codegen-flatc-stablehlo
 )
 
+# ${SOURCE_PATH}/tensorflow/compiler/mlir/lite/schema
 codegen_flatc_cpp(
     DIRECTORY "${TENSORFLOW_SOURCE_DIR}/tensorflow/compiler/mlir/lite/schema"
     SOURCES schema.fbs
@@ -183,6 +176,7 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
         -DTFLITE_ENABLE_EXTERNAL_DELEGATE=ON
         -DTFLITE_ENABLE_INSTALL=ON
+        -DTFLITE_C_OUTPUT_NAME=tensorflow-lite # see fix-cmake-c-api.patch
         -DCMAKE_CROSSCOMPILING=${VCPKG_CROSSCOMPILING}
         "-DTFLITE_HOST_TOOLS_DIR:PATH=${CURRENT_HOST_INSTALLED_DIR}/tools"        
         "-DFLATC_BIN:FILEPATH=${FLATC}"

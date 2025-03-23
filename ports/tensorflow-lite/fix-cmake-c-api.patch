@@ -6,8 +6,7 @@ index 635e4a80..729e5b36 100644
  )
  add_library(${PROJECT_NAME}::tensorflowlite ALIAS tensorflow-lite)
  
-+# see tensorflow/lite/c/CMakeLists.txt
-+target_sources(tensorflow-lite PRIVATE
++target_sources(tensorflow-lite PRIVATE # see tensorflow/lite/c/CMakeLists.txt
 +  ${TFLITE_SOURCE_DIR}/core/c/c_api.cc
 +  ${TFLITE_SOURCE_DIR}/core/c/c_api_experimental.cc
 +  ${TFLITE_SOURCE_DIR}/core/c/common.cc
@@ -25,10 +24,11 @@ index 635e4a80..729e5b36 100644
 +  c/common_internal.h
 +)
 +target_include_directories(tensorflow-lite PRIVATE c)
-+# set_target_properties(tensorflow-lite PROPERTEIS
-+#   OUTPUT_NAME tensorflowlite_c
-+# )
 +
++set(TFLITE_C_OUTPUT_NAME "tensorflowlite_c" CACHE STRING "Output name for the C API library")
++set_target_properties(tensorflow-lite PROPERTIES
++  OUTPUT_NAME ${TFLITE_C_OUTPUT_NAME}
++)
 +if (BUILD_SHARED_LIBS)
 +  if (WIN32)
 +    target_compile_definitions(tensorflow-lite PRIVATE TFL_COMPILE_LIBRARY)
