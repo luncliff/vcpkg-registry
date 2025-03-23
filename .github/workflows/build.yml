@@ -54,7 +54,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          vcpkgGitCommitId: "b02e341c927f16d991edbd915d8ea43eac52096c" # 2025.03.19
           runVcpkgInstall: false
 
       - name: "Run apt"
@@ -176,7 +176,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          vcpkgGitCommitId: "b02e341c927f16d991edbd915d8ea43eac52096c" # 2025.03.19
           runVcpkgInstall: false
 
       - name: "Run apt"
@@ -197,7 +197,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          vcpkgGitCommitId: "b02e341c927f16d991edbd915d8ea43eac52096c" # 2025.03.19
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--x-feature`, `host-tools`, `--clean-after-build`]'
           vcpkgJsonGlob: "test/vcpkg.json"
@@ -231,7 +231,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          vcpkgGitCommitId: "b02e341c927f16d991edbd915d8ea43eac52096c" # 2025.03.19
           runVcpkgInstall: false
 
       - name: "Run vcpkg(arm64-android)"
@@ -290,7 +290,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13
+          vcpkgGitCommitId: "b02e341c927f16d991edbd915d8ea43eac52096c" # 2025.03.19
           vcpkgJsonGlob: "test/self-hosted.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
