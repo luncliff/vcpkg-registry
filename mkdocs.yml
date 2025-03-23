@@ -44,7 +44,7 @@ theme:
       language: "ko"
   font:
     text: "Nanum Gothic"
-    code: "Nanum Gothic Coding"
+    code: "Cascade Mono"
   icon:
     repo: fontawesome/brands/github
     admonition:
