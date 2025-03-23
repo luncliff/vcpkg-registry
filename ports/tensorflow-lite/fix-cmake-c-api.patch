@@ -24,7 +24,6 @@ index 635e4a80..729e5b36 100644
 +  c/common_internal.h
 +)
 +target_include_directories(tensorflow-lite PRIVATE c)
-+
 +set(TFLITE_C_OUTPUT_NAME "tensorflowlite_c" CACHE STRING "Output name for the C API library")
 +set_target_properties(tensorflow-lite PROPERTIES
 +  OUTPUT_NAME ${TFLITE_C_OUTPUT_NAME}
@@ -32,6 +31,7 @@ index 635e4a80..729e5b36 100644
 +if (BUILD_SHARED_LIBS)
 +  if (WIN32)
 +    target_compile_definitions(tensorflow-lite PRIVATE TFL_COMPILE_LIBRARY)
++    target_compile_definitions(xnnpack-delegate PRIVATE TFL_COMPILE_LIBRARY)
 +  elseif (APPLE)
 +    target_link_options(tensorflow-lite PRIVATE "-Wl,-exported_symbols_list,${TFLITE_SOURCE_DIR}/c/exported_symbols.lds")
 +  else ()

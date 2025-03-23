@@ -281,3 +281,21 @@ index bce9627f..a2a9f334 100644
  # The kernel tests.
  if(TFLITE_KERNEL_TEST)
    enable_testing()
+diff --git a/tensorflow/lite/tools/cmake/tensorflow-liteConfig.cmake.in b/tensorflow/lite/tools/cmake/tensorflow-liteConfig.cmake.in
+index e49f6356..31cacd43 100644
+--- a/tensorflow/lite/tools/cmake/tensorflow-liteConfig.cmake.in
++++ b/tensorflow/lite/tools/cmake/tensorflow-liteConfig.cmake.in
+@@ -15,13 +15,6 @@
+ 
+ include(CMakeFindDependencyMacro)
+ 
+-find_dependency(absl)
+-find_dependency(Eigen3)
+-find_dependency(FlatBuffers)
+-find_dependency(NEON_2_SSE)
+-find_dependency(cpuinfo)
+-find_dependency(ruy)
+-find_dependency(gemmlowp)
+ 
+ @PACKAGE_INIT@
+ 
