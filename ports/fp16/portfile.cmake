@@ -8,11 +8,10 @@ vcpkg_from_github(
 file(INSTALL    "${SOURCE_PATH}/include/fp16.h"
     DESTINATION "${CURRENT_PACKAGES_DIR}/include"
 )
-file(INSTALL    "${SOURCE_PATH}/include/fp16/fp16.h"
-                "${SOURCE_PATH}/include/fp16/bitcasts.h"
-                "${SOURCE_PATH}/include/fp16/macros.h"
-    DESTINATION "${CURRENT_PACKAGES_DIR}/include/fp16"
-)
+
+# https://learn.microsoft.com/en-us/cpp/intrinsics/
+file(GLOB HEADERS "${SOURCE_PATH}/include/fp16/*.h")
+file(INSTALL ${HEADERS} DESTINATION "${CURRENT_PACKAGES_DIR}/include/fp16")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
