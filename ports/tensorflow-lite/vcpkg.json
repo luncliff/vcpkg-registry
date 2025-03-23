@@ -1,8 +1,8 @@
 {
   "name": "tensorflow-lite",
   "version-semver": "2.18.1",
-  "description": "Open standard for machine learning interoperability",
-  "homepage": "https://www.tensorflow.org/",
+  "description": "An Open Source Machine Learning Framework for Everyone",
+  "homepage": "https://github.com/tensorflow/tensorflow",
   "license": "Apache-2.0",
   "dependencies": [
     "abseil",

@@ -176,7 +176,7 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
         -DTFLITE_ENABLE_EXTERNAL_DELEGATE=ON
         -DTFLITE_ENABLE_INSTALL=ON
-        -DTFLITE_C_OUTPUT_NAME=tensorflow-lite # see fix-cmake-c-api.patch
+        -DTFLITE_C_OUTPUT_NAME=${PORT} # see fix-cmake-c-api.patch
         -DCMAKE_CROSSCOMPILING=${VCPKG_CROSSCOMPILING}
         "-DTFLITE_HOST_TOOLS_DIR:PATH=${CURRENT_HOST_INSTALLED_DIR}/tools"        
         "-DFLATC_BIN:FILEPATH=${FLATC}"
@@ -190,7 +190,7 @@ vcpkg_cmake_configure(
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
-vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/${PORT}")
+vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/${PORT}" PACKAGE_NAME tensorflow-lite)
 
 file(INSTALL "${SOURCE_PATH}/tensorflow/core/public/version.h" DESTINATION "${CURRENT_PACKAGES_DIR}/include/tensorflow/core/public")
 
