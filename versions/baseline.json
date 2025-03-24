@@ -105,7 +105,7 @@
       "port-version": 0
     },
     "metal-cpp": {
-      "baseline": "macOS15_iOS18-beta",
+      "baseline": "macOS15.2_iOS18.2",
       "port-version": 0
     },
     "miniaudio": {
@@ -229,7 +229,7 @@
       "port-version": 0
     },
     "tensorflow-lite": {
-      "baseline": "2.18.0",
+      "baseline": "2.18.1",
       "port-version": 0
     },
     "tensorpipe": {
