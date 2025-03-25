@@ -1,13 +1,13 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 
-set(ORT_GIT_COMMIT "c4fb724e810bb496165b9015c77f402727392933")
+set(ORT_GIT_COMMIT "e0b66cad282043d4377cea5269083f17771b6dfc")
 set(ORT_GIT_BRANCH "v${VERSION}")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
     REF ${ORT_GIT_BRANCH}
-    SHA512 49d1feb5a45ce73d6c6bcf0f7b126928da1d48b8b454c2c37959ea70460d398db8070602a0157ba1866110dff3805201b7433566d684ccc5418e563cf3dba90e
+    SHA512 028a7f48f41d2e8a453aae25ebc4cd769db389401937928b7d452fab5f8d7af8cb63eb4150daf79589845528f0e4c3bdfefa27af70d3630398990c9e8b85387b
     PATCHES
         fix-cmake.patch
         fix-cmake-cuda.patch
@@ -17,16 +17,10 @@ vcpkg_from_github(
         # fix-clang-cl-simd-compile.patch
 )
 
-find_program(PROTOC NAMES protoc
-    PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
-    REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
-)
+find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
 message(STATUS "Using protoc: ${PROTOC}")
 
-find_program(FLATC NAMES flatc
-    PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers"
-    REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
-)
+find_program(FLATC NAMES flatc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
 message(STATUS "Using flatc: ${FLATC}")
 
 vcpkg_find_acquire_program(PYTHON3)
