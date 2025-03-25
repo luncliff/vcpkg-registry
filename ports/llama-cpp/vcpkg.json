@@ -1,6 +1,6 @@
 {
   "name": "llama-cpp",
-  "version": "4644",
+  "version": "4936",
   "description": "LLM inference in C/C++",
   "homepage": "https://github.com/ggerganov/llama.cpp",
   "license": "MIT",
@@ -43,15 +43,18 @@
       ]
     },
     "openmp": {
-      "description": "Use OpenMP",
-      "dependencies": [
-        "openmp"
-      ]
+      "description": "Use OpenMP"
     },
     "server": {
       "description": "Build llama server",
       "supports": "windows | linux | osx",
       "dependencies": [
+        {
+          "name": "cpp-httplib",
+          "features": [
+            "openssl"
+          ]
+        },
         {
           "name": "curl",
           "features": [
