@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "git-tree": "19026ef18081c8bb23a9c2449ab7025f5c187c96",
+      "version-string": "macOS15.2_iOS18.2",
+      "port-version": 0
+    },
+    {
+      "git-tree": "c2089d6a29ba21ed7cca1b7ba927c69ff076c274",
+      "version-string": "macOS15_iOS18",
+      "port-version": 0
+    },
+    {
       "git-tree": "45d5dc22fc5eb964a7f0186f19cf28003fef166f",
       "version-string": "macOS15_iOS18-beta",
       "port-version": 0

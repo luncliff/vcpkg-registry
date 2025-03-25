@@ -1,3 +1,9 @@
+# References
+#
+# - https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs
+# - https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs
+# - https://docs.github.com/en/codespaces/developing-in-a-codespace/default-environment-variables-for-your-codespace
+#
 name: "Request Port Update"
 
 on:
@@ -30,9 +36,9 @@ jobs:
           org_name=$(echo $release_url | awk -F '/' '{print $4}')
           repo_name=$(echo $release_url | awk -F '/' '{print $5}')
           release_name=$(echo $release_url | awk -F '/' '{print $8}')
-          echo "::set-output name=org_name::$org_name"
-          echo "::set-output name=repo_name::$repo_name"
-          echo "::set-output name=release_name::$release_name"
+          echo "org_name=$org_name" >> $GITHUB_OUTPUT
+          echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
+          echo "release_name=$release_name" >> $GITHUB_OUTPUT
 
       - name: "Parse GitLab URL"
         id: parse1
@@ -42,9 +48,9 @@ jobs:
           org_name=$(echo $release_url | awk -F '/' '{print $4}')
           repo_name=$(echo $release_url | awk -F '/' '{print $5}')
           release_name=$(echo $release_url | awk -F '/' '{print $8}')
-          echo "::set-output name=org_name::$org_name"
-          echo "::set-output name=repo_name::$repo_name"
-          echo "::set-output name=release_name::$release_name"
+          echo "org_name=$org_name" >> $GITHUB_OUTPUT
+          echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
+          echo "release_name=$release_name" >> $GITHUB_OUTPUT
 
       - name: "Generate Issue Title"
         id: make_title
@@ -53,12 +59,14 @@ jobs:
           repo_name="${{ steps.parse0.outputs.repo_name || steps.parse1.outputs.repo_name }}"
           release_name="${{ steps.parse0.outputs.release_name || steps.parse1.outputs.release_name }}"
           issue_title="Port Update - $org_name/$repo_name $release_name"
-          echo "::set-output name=issue_title::$issue_title"
+          echo "issue_title=$issue_title" >> $GITHUB_OUTPUT
 
       - uses: dacbd/create-issue-action@v2.0.0
         with:
           token: ${{ github.token }}
           title: ${{ steps.make_title.outputs.issue_title }}
           body: |
+            Requested from ${{ github.server_url }}/$${{ github.repository }}/actions/runs/${{ github.run_id }}
+
             ## References
             * ${{ github.event.inputs.release_url }}
