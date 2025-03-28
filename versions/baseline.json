@@ -28,6 +28,10 @@
       "baseline": "2024-10-23",
       "port-version": 0
     },
+    "cudnn-frontend": {
+      "baseline": "1.11.0",
+      "port-version": 0
+    },
     "d3d12-transition-layer": {
       "baseline": "2024-09-14",
       "port-version": 0
