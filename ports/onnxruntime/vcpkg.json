@@ -15,6 +15,10 @@
       "version>=": "1.82.0"
     },
     "cpuinfo",
+    {
+      "name": "cpuinfo",
+      "platform": "!osx"
+    },
     "cxxopts",
     "date",
     "dlpack",
@@ -31,15 +35,7 @@
     "ms-gsl",
     "nlohmann-json",
     {
-      "name": "nsync",
-      "platform": "!windows",
-      "version>=": "1.26.0"
-    },
-    {
       "name": "onnx",
-      "features": [
-        "disable-static-registration"
-      ],
       "version>=": "1.16.0"
     },
     "optional-lite",
@@ -63,7 +59,10 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
-    "wil"
+    {
+      "name": "wil",
+      "platform": "windows"
+    }
   ],
   "features": {
     "coreml": {

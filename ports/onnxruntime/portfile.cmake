@@ -9,12 +9,13 @@ vcpkg_from_github(
     REF ${ORT_GIT_BRANCH}
     SHA512 028a7f48f41d2e8a453aae25ebc4cd769db389401937928b7d452fab5f8d7af8cb63eb4150daf79589845528f0e4c3bdfefa27af70d3630398990c9e8b85387b
     PATCHES
-        fix-cmake.patch
-        fix-cmake-cuda.patch
-        fix-cmake-training.patch
-        fix-cmake-tensorrt.patch
-        fix-cmake-coreml.patch
-        # fix-clang-cl-simd-compile.patch
+        fix-sources.patch
+    #     fix-cmake.patch
+    #     fix-cmake-cuda.patch
+    #     fix-cmake-training.patch
+    #     fix-cmake-tensorrt.patch
+    #     fix-cmake-coreml.patch
+    #     fix-clang-cl-simd-compile.patch
 )
 
 find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
@@ -58,7 +59,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         xnnpack   onnxruntime_USE_XNNPACK
         nnapi     onnxruntime_USE_NNAPI_BUILTIN
         azure     onnxruntime_USE_AZURE
-        llvm      onnxruntime_USE_LLVM
         test      onnxruntime_BUILD_UNIT_TESTS
         test      onnxruntime_BUILD_BENCHMARKS
         test      onnxruntime_RUN_ONNX_TESTS
@@ -111,7 +111,6 @@ vcpkg_cmake_configure(
         "-DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
-        -Donnxruntime_BUILD_WEBASSEMBLY=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_NNAPI_BUILTIN=${VCPKG_TARGET_IS_ANDROID}
@@ -136,7 +135,6 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
         -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=1
     MAYBE_UNUSED_VARIABLES
-        onnxruntime_BUILD_WEBASSEMBLY
         onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         onnxruntime_USE_CUSTOM_DIRECTML
         onnxruntime_NVCC_THREADS
