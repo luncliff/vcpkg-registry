@@ -76,7 +76,7 @@
       "description": "Build with CUDA support",
       "dependencies": [
         "cuda",
-        "cudnn",
+        "nvidia-cudnn-frontend",
         "nvidia-cutlass"
       ]
     },
@@ -117,13 +117,6 @@
             "cuda"
           ]
         }
-      ]
-    },
-    "test": {
-      "description": "Build ONNXRuntime unit tests",
-      "dependencies": [
-        "benchmark",
-        "gtest"
       ]
     },
     "training": {

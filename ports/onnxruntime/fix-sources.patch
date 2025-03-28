@@ -2,20 +2,6 @@ diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
 index 2714e6f..c800455 100644
 --- a/cmake/CMakeLists.txt
 +++ b/cmake/CMakeLists.txt
-@@ -947,11 +947,11 @@ if (onnxruntime_USE_JSEP)
-     list(APPEND ONNXRUNTIME_PROVIDER_NAMES js)
- endif()
- if (onnxruntime_USE_QNN OR onnxruntime_USE_QNN_INTERFACE)
--    
-+
-     if(onnxruntime_USE_QNN)
-         list(APPEND ORT_PROVIDER_FLAGS -DUSE_QNN=1)
-     else()
--        list(APPEND ORT_EXTRA_INTERFACE_FLAGS -DUSE_QNN=1) 
-+        list(APPEND ORT_EXTRA_INTERFACE_FLAGS -DUSE_QNN=1)
-     endif()
- 
-     list(APPEND ONNXRUNTIME_PROVIDER_NAMES qnn)
 @@ -1140,7 +1140,7 @@ function(onnxruntime_set_compile_flags target_name)
        target_compile_definitions(${target_name} PRIVATE ENABLE_ATEN)
      endif()
@@ -47,3 +33,16 @@ index c65dd2a..b33b1f1 100644
                                                 bytes_per_iteration);
      auto dst = output_span.subspan(i * bytes_per_iteration, bytes_per_iteration);
      gsl::copy(src, dst);
+diff --git a/cmake/external/abseil-cpp.cmake b/cmake/external/abseil-cpp.cmake
+index cd93a8d..0e48bcd 100644
+--- a/cmake/external/abseil-cpp.cmake
++++ b/cmake/external/abseil-cpp.cmake
+@@ -28,7 +28,7 @@ onnxruntime_fetchcontent_declare(
+     URL_HASH SHA1=${DEP_SHA1_abseil_cpp}
+     EXCLUDE_FROM_ALL
+     PATCH_COMMAND ${ABSL_PATCH_COMMAND}
+-    FIND_PACKAGE_ARGS 20240722 NAMES absl
++    FIND_PACKAGE_ARGS NAMES absl CONFIG
+ )
+ 
+ onnxruntime_fetchcontent_makeavailable(abseil_cpp)
