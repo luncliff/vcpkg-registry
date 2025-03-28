@@ -1,43 +1,13 @@
 diff --git a/cmake/tensorboard/compat/proto/CMakeLists.txt b/cmake/tensorboard/compat/proto/CMakeLists.txt
-index ad31e40..3e80a6e 100644
+index ad31e40..ece628b 100644
 --- a/cmake/tensorboard/compat/proto/CMakeLists.txt
 +++ b/cmake/tensorboard/compat/proto/CMakeLists.txt
-@@ -1,14 +1,21 @@
- # Copyright (c) Microsoft Corporation. All rights reserved.
- # Licensed under the MIT License.
- 
--FetchContent_Declare(
--  tensorboard
--  URL ${DEP_URL_tensorboard}
--  URL_HASH SHA1=${DEP_SHA1_tensorboard}
--)
--FetchContent_MakeAvailable(tensorboard)
--
--set(TENSORBOARD_ROOT ${tensorboard_SOURCE_DIR})
-+if(onnxruntime_USE_VCPKG)
-+  if(NOT DEFINED TENSORBOARD_ROOT)
-+    message(FATAL_ERROR "TENSORBOARD_ROOT not defined")
-+  endif()
-+  find_path(PROTOBUF_IMPORT_DIR NAMES "google/protobuf/api.proto" REQUIRED)
-+else()
-+  FetchContent_Declare(
-+    tensorboard
-+    URL ${DEP_URL_tensorboard}
-+    URL_HASH SHA1=${DEP_SHA1_tensorboard}
-+  )
-+  FetchContent_MakeAvailable(tensorboard)
-+  set(TENSORBOARD_ROOT ${tensorboard_SOURCE_DIR})
-+  set(PROTOBUF_IMPORT_DIR ${protobuf_SOURCE_DIR}/src)
-+endif()
- 
- # tensorboard protos
- file(GLOB_RECURSE tensorboard_proto_srcs CONFIGURE_DEPENDS
-@@ -16,7 +23,7 @@ file(GLOB_RECURSE tensorboard_proto_srcs CONFIGURE_DEPENDS
+@@ -16,7 +16,7 @@ file(GLOB_RECURSE tensorboard_proto_srcs CONFIGURE_DEPENDS
  )
  
  add_library(tensorboard STATIC ${tensorboard_proto_srcs})
 -onnxruntime_protobuf_generate(APPEND_PATH IMPORT_DIRS ${tensorboard_SOURCE_DIR} ${protobuf_SOURCE_DIR}/src TARGET tensorboard)
-+onnxruntime_protobuf_generate(APPEND_PATH IMPORT_DIRS ${TENSORBOARD_ROOT} ${PROTOBUF_IMPORT_DIR} TARGET tensorboard)
++onnxruntime_protobuf_generate(APPEND_PATH IMPORT_DIRS ${tensorboard_SOURCE_DIR} TARGET tensorboard)
  onnxruntime_add_include_to_target(tensorboard ${PROTOBUF_LIB})
  target_include_directories(tensorboard PRIVATE ${PROJECT_BINARY_DIR})
  add_dependencies(tensorboard ${onnxruntime_EXTERNAL_DEPENDENCIES})

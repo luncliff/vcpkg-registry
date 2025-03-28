@@ -10,12 +10,10 @@ vcpkg_from_github(
     SHA512 028a7f48f41d2e8a453aae25ebc4cd769db389401937928b7d452fab5f8d7af8cb63eb4150daf79589845528f0e4c3bdfefa27af70d3630398990c9e8b85387b
     PATCHES
         fix-sources.patch
-    #     fix-cmake.patch
-    #     fix-cmake-cuda.patch
-    #     fix-cmake-training.patch
-    #     fix-cmake-tensorrt.patch
-    #     fix-cmake-coreml.patch
-    #     fix-clang-cl-simd-compile.patch
+        fix-cmake-cuda.patch
+        # fix-cmake-training.patch
+        # fix-cmake-tensorrt.patch
+        # fix-cmake-coreml.patch
 )
 
 find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
@@ -77,7 +75,7 @@ if("training" IN_LIST FEATURES)
         REF 2.16.2
         SHA512 0dc57928d55ebd46386d0f0852b3b4e9078222bd4378655abb16f6bc0e5ed2969600071d5d2ae9a3f2aa6bb327fe567869a01a69fdda35c261dc44a1eadd18ce
     )
-    list(APPEND FEATURE_OPTIONS "-DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}")
+    list(APPEND FEATURE_OPTIONS "-Dtensorboard_SOURCE_DIR:PATH=${TENSORBOARD_SOURCE_PATH}")
 endif()
 
 if("tensorrt" IN_LIST FEATURES)
@@ -160,30 +158,19 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxrunt
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
 
 # cmake function which relocates the onnxruntime_providers_* library before vcpkg_copy_pdbs()
-function(relocate_ort_providers PROVIDER_NAME)
+function(reolocate_ort_providers)
     if(VCPKG_TARGET_IS_WINDOWS AND (VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic"))
         # the target is expected to be used without the .lib files
-        file(RENAME "${CURRENT_PACKAGES_DIR}/debug/lib/${PROVIDER_NAME}.dll"
-                    "${CURRENT_PACKAGES_DIR}/debug/bin/${PROVIDER_NAME}.dll")
-        file(RENAME "${CURRENT_PACKAGES_DIR}/lib/${PROVIDER_NAME}.dll"
-                    "${CURRENT_PACKAGES_DIR}/bin/${PROVIDER_NAME}.dll")
+        file(GLOB PROVIDE_BINS_DBG  "${CURRENT_PACKAGES_DIR}/debug/lib/onnxruntime_providers_*.dll")
+        file(COPY ${PROVIDE_BINS_DBG} DESTINATION "${CURRENT_PACKAGES_DIR}/debug/bin")
+        file(GLOB PROVIDE_BINS_REL "${CURRENT_PACKAGES_DIR}/lib/onnxruntime_providers_*.dll")
+        file(COPY ${PROVIDE_BINS_REL} DESTINATION "${CURRENT_PACKAGES_DIR}/bin")
+        file(REMOVE ${PROVIDE_BINS_DBG} ${PROVIDE_BINS_REL})
     endif()
 endfunction()
 
-if("cuda" IN_LIST FEATURES)
-    relocate_ort_providers(onnxruntime_providers_cuda)
-endif()
-if("tensorrt" IN_LIST FEATURES)
-    relocate_ort_providers(onnxruntime_providers_tensorrt)
-endif()
-if("directml" IN_LIST FEATURES)
-    relocate_ort_providers(onnxruntime_providers_dml)
-endif()
+reolocate_ort_providers()
 vcpkg_copy_pdbs()
-
-if("test" IN_LIST FEATURES)
-    vcpkg_copy_tools(TOOL_NAMES onnx_test_runner AUTO_CLEAN)
-endif()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
