@@ -1,7 +1,7 @@
 {
   "name": "basis-universal",
-  "version": "1.16.4",
-  "description": "Low-precision matrix multiplication",
+  "version": "1.50.0",
+  "description": "Basis Universal GPU Texture Codec",
   "homepage": "https://github.com/BinomialLLC/basis_universal",
   "license": "Apache-2.0",
   "dependencies": [
@@ -10,13 +10,9 @@
       "host": true
     }
   ],
-  "default-features": [
-    "zstd"
-  ],
   "features": {
     "opencl": {
       "description": "OpenCL support in encoder",
-      "supports": "!windows",
       "dependencies": [
         "opencl"
       ]
