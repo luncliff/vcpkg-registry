@@ -5,11 +5,6 @@
   "homepage": "https://github.com/NVIDIA/cudnn-frontend",
   "license": "MIT",
   "dependencies": [
-    "cuda",
-    "nlohmann-json",
-    {
-      "name": "vcpkg-cmake",
-      "host": true
-    }
+    "nvidia-cudnn-frontend"
   ]
 }
