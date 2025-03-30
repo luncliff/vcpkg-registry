@@ -11,8 +11,8 @@ vcpkg_from_github(
     PATCHES
         fix-sources.patch
         fix-cmake-cuda.patch
-        # fix-cmake-training.patch
-        # fix-cmake-tensorrt.patch
+        fix-cmake-training.patch
+        fix-cmake-tensorrt.patch
         # fix-cmake-coreml.patch
 )
 
@@ -75,15 +75,15 @@ if("training" IN_LIST FEATURES)
         REF 2.16.2
         SHA512 0dc57928d55ebd46386d0f0852b3b4e9078222bd4378655abb16f6bc0e5ed2969600071d5d2ae9a3f2aa6bb327fe567869a01a69fdda35c261dc44a1eadd18ce
     )
-    list(APPEND FEATURE_OPTIONS "-Dtensorboard_SOURCE_DIR:PATH=${TENSORBOARD_SOURCE_PATH}")
+    list(APPEND FEATURE_OPTIONS "-DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}")
 endif()
 
 if("tensorrt" IN_LIST FEATURES)
-    if(DEFINED TENSORRT_ROOT)
-        message(STATUS "Using TensorRT: ${TENSORRT_ROOT}")
-        list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_ROOT}")
+    if(DEFINED TENSORRT_HOME)
+        message(STATUS "Using TensorRT: ${TENSORRT_HOME}")
+        list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_HOME}")
     else()
-        message(WARNING "Define TENSORRT_ROOT in the triplet for onnxruntime_TENSORRT_HOME")
+        message(WARNING "Define TENSORRT_HOME in the triplet for onnxruntime_TENSORRT_HOME")
     endif()
 endif()
 if("coreml" IN_LIST FEATURES)
