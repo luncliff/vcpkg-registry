@@ -2,8 +2,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH CL_SOURCE_PATH
     REPO KhronosGroup/OpenCL-Headers
-    REF v2024.05.08
-    SHA512 2f1a46d58a5a9329470bab4c3662f17e81aab9558bfd9e1aafa14d3e1ab129513ab9493eeeb3cc48f0f91f0bc6b61bd54e28d7083eed58af9f34cd973cc93de1
+    REF ${VERSION}
+    SHA512 9d2ed2a8346bc3f967989091d8cc36148ffe5ff13fe30e12354cc8321c09328bbe23e74817526b99002729c884438a3b1834e175a271f6d36e8341fd86fc1ad5
     HEAD_REF main
     PATCHES
         fix-headers.patch
@@ -22,8 +22,8 @@ vcpkg_fixup_pkgconfig() # OpenCL-Headers
 vcpkg_from_github(
     OUT_SOURCE_PATH CLHPP_SOURCE_PATH
     REPO KhronosGroup/OpenCL-CLHPP
-    REF v2024.05.08
-    SHA512 6396cd67a2edef6a76695857e3e45f7eeb8cdaa8c729197357c6374ac58b41caa37bbe8c3b7a1724d43d3805f8cd5edd53a8ed833d6415bf072745800b744572
+    REF ${VERSION}
+    SHA512 7cdadc8ef182d1556346bd34b5a9ffe6e239ab61ec527e5609d69e1bcaf81a88f3fc534f5bdeed037236e1b0e61f1544d2a95c06df55f9cd8e03e13baf4143ba
     HEAD_REF main
 )
 
