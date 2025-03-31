@@ -130,7 +130,7 @@
     },
     "nvidia-cnmem": {
       "baseline": "2018-11-28",
-      "port-version": 0
+      "port-version": 1
     },
     "nvidia-cudnn-frontend": {
       "baseline": "1.11.0",
