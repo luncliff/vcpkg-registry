@@ -23,6 +23,9 @@ file(REMOVE
 vcpkg_find_acquire_program(GIT)
 message(STATUS "Using git: ${GIT}")
 
+vcpkg_find_acquire_program(PYTHON3)
+message(STATUS "Using python3: ${PYTHON3}")
+
 # for BLAS, see https://cmake.org/cmake/help/latest/module/FindBLAS.html#blas-lapack-vendors
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
@@ -105,6 +108,7 @@ vcpkg_cmake_configure(
         ${ARCH_OPTIONS}
         # see cmake/build-info.cmake
         "-DGIT_EXECUTABLE:FILEPATH=${GIT}"
+        "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}"
         "-DBUILD_NUMBER:STRING=${VERSION}"
         "-DBUILD_COMMIT:STRING=b${VERSION}"
         # ${SOURCE_PATH}/CMakeLists.txt
