@@ -1,8 +1,8 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.20.0",
+  "version-semver": "1.21.0",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
-  "homepage": "https://onnxruntime.ai/",
+  "homepage": "https://github.com/microsoft/onnxruntime",
   "license": "MIT",
   "dependencies": [
     "abseil",
@@ -31,15 +31,7 @@
     "ms-gsl",
     "nlohmann-json",
     {
-      "name": "nsync",
-      "platform": "!windows",
-      "version>=": "1.26.0"
-    },
-    {
       "name": "onnx",
-      "features": [
-        "disable-static-registration"
-      ],
       "version>=": "1.16.0"
     },
     "optional-lite",
@@ -63,21 +55,17 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
-    "wil"
+    {
+      "name": "wil",
+      "platform": "windows"
+    }
   ],
   "features": {
-    "coreml": {
-      "description": "Build with CoreML support",
-      "supports": "osx | ios",
-      "dependencies": [
-        "coreml-tools"
-      ]
-    },
     "cuda": {
       "description": "Build with CUDA support",
       "dependencies": [
         "cuda",
-        "cudnn",
+        "nvidia-cudnn-frontend",
         "nvidia-cutlass"
       ]
     },
@@ -118,13 +106,6 @@
             "cuda"
           ]
         }
-      ]
-    },
-    "test": {
-      "description": "Build ONNXRuntime unit tests",
-      "dependencies": [
-        "benchmark",
-        "gtest"
       ]
     },
     "training": {
