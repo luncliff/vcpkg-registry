@@ -106,7 +106,7 @@
     },
     "llama-cpp": {
       "baseline": "4936",
-      "port-version": 0
+      "port-version": 1
     },
     "metal-cpp": {
       "baseline": "macOS15.2_iOS18.2",
