@@ -13,7 +13,6 @@ vcpkg_from_github(
         fix-cmake-cuda.patch
         fix-cmake-training.patch
         fix-cmake-tensorrt.patch
-        # fix-cmake-coreml.patch
 )
 
 find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
@@ -86,12 +85,6 @@ if("tensorrt" IN_LIST FEATURES)
         message(WARNING "Define TENSORRT_HOME in the triplet for onnxruntime_TENSORRT_HOME")
     endif()
 endif()
-if("coreml" IN_LIST FEATURES)
-    list(APPEND FEATURE_OPTIONS
-        -D_enable_ML_PROGRAM=OFF # do not build CoreML Tools program
-        "-DCOREML_PROTO_ROOT:PATH=${CURRENT_INSTALLED_DIR}/include/mlmodel/format"
-    )
-endif()
 
 # see vcpkg_check_linkage above ...
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
@@ -146,9 +139,6 @@ if("tensorrt" IN_LIST FEATURES)
 endif()
 if("directml" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_providers_dml LOGFILE_BASE build-directml)
-endif()
-if("coreml" IN_LIST FEATURES)
-    vcpkg_cmake_build(TARGET onnxruntime_providers_coreml LOGFILE_BASE build-coreml)
 endif()
 if("training" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET tensorboard LOGFILE_BASE build-tensorboard)

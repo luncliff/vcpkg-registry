@@ -15,10 +15,6 @@
       "version>=": "1.82.0"
     },
     "cpuinfo",
-    {
-      "name": "cpuinfo",
-      "platform": "!osx"
-    },
     "cxxopts",
     "date",
     "dlpack",
@@ -65,13 +61,6 @@
     }
   ],
   "features": {
-    "coreml": {
-      "description": "Build with CoreML support",
-      "supports": "osx | ios",
-      "dependencies": [
-        "coreml-tools"
-      ]
-    },
     "cuda": {
       "description": "Build with CUDA support",
       "dependencies": [
