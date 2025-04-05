@@ -1,0 +1,48 @@
+diff --git a/addon/doxyapp/CMakeLists.txt b/addon/doxyapp/CMakeLists.txt
+index 2f901d4..617a717 100644
+--- a/addon/doxyapp/CMakeLists.txt
++++ b/addon/doxyapp/CMakeLists.txt
+@@ -39,7 +39,7 @@ endif()
+ target_link_libraries(doxyapp
+ doxymain
+ md5
+-sqlite3
++SQLite::SQLite3
+ xml
+ lodepng
+ mscgen
+diff --git a/addon/doxyparse/CMakeLists.txt b/addon/doxyparse/CMakeLists.txt
+index be86b2d..ecd31d4 100644
+--- a/addon/doxyparse/CMakeLists.txt
++++ b/addon/doxyparse/CMakeLists.txt
+@@ -28,7 +28,7 @@ endif()
+ target_link_libraries(doxyparse
+ doxymain
+ md5
+-sqlite3
++SQLite::SQLite3
+ xml
+ lodepng
+ mscgen
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index d33a96b..0716afb 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -7,7 +7,7 @@ include_directories(
+     ${PROJECT_SOURCE_DIR}/deps/liblodepng
+     ${PROJECT_SOURCE_DIR}/deps/libmscgen
+     ${PROJECT_SOURCE_DIR}/libversion
+-    ${PROJECT_SOURCE_DIR}/libxml
++    # ${PROJECT_SOURCE_DIR}/libxml
+     ${PROJECT_SOURCE_DIR}/vhdlparser
+     ${PROJECT_SOURCE_DIR}/src
+     ${CLANG_INCLUDEDIR}
+@@ -389,7 +389,7 @@ target_link_libraries(doxygen PRIVATE
+     doxymain
+     doxycfg
+     md5
+-    sqlite3
++    SQLite::SQLite3
+     lodepng
+     mscgen
+     xml
