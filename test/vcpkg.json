@@ -94,6 +94,20 @@
           ]
         },
         {
+          "name": "onnxruntime",
+          "features": [
+            "training"
+          ],
+          "platform": "linux"
+        },
+        {
+          "name": "onnxruntime",
+          "features": [
+            "framework"
+          ],
+          "platform": "osx | ios"
+        },
+        {
           "name": "opencl",
           "platform": "windows | linux"
         },

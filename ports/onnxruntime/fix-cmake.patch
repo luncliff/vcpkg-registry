@@ -1,0 +1,13 @@
+diff --git a/cmake/onnxruntime.cmake b/cmake/onnxruntime.cmake
+index 6c1d448..69eef03 100644
+--- a/cmake/onnxruntime.cmake
++++ b/cmake/onnxruntime.cmake
+@@ -289,7 +289,7 @@ install(TARGETS onnxruntime
+         ARCHIVE   DESTINATION ${CMAKE_INSTALL_LIBDIR}
+         LIBRARY   DESTINATION ${CMAKE_INSTALL_LIBDIR}
+         RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR}
+-        FRAMEWORK DESTINATION ${CMAKE_INSTALL_BINDIR})
++        FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ 
+ 
+ if (WIN32 AND NOT CMAKE_CXX_STANDARD_LIBRARIES MATCHES kernel32.lib)
