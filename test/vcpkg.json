@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2025-02-26",
+  "version-date": "2025-04-06",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows | linux | osx | ios",
@@ -81,10 +81,6 @@
           "name": "metal-cpp",
           "platform": "osx | ios"
         },
-        {
-          "name": "metal-cpp",
-          "platform": "osx | ios"
-        },
         "miniaudio",
         {
           "name": "onnx",
@@ -96,16 +92,23 @@
         {
           "name": "onnxruntime",
           "features": [
-            "training"
+            "framework"
           ],
-          "platform": "linux"
+          "platform": "ios"
         },
         {
           "name": "onnxruntime",
           "features": [
-            "framework"
+            "training"
           ],
-          "platform": "osx | ios"
+          "platform": "osx"
+        },
+        {
+          "name": "onnxruntime",
+          "features": [
+            "training"
+          ],
+          "platform": "linux"
         },
         {
           "name": "opencl",
