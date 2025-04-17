@@ -47,3 +47,5 @@ jobs:
             echo "Found vcpkg.json file: $vcpkg_json_path"
             echo "echo vcpkg_json_path=$vcpkg_json_path" >> $GITHUB_OUTPUT
           fi
+
+      # https://github.com/marketplace/actions/add-commit
