@@ -26,9 +26,9 @@ jobs:
           org_name=$(echo "$title" | sed -n 's/.* - \([^\/]*\)\/.*/\1/p')
           repo_name=$(echo "$title" | sed -n 's/.* - [^\/]*\/\([^ ]*\).*/\1/p')
           project_name="$org_name/$repo_name"
-          echo "::set-output name=org_name::$org_name"
-          echo "::set-output name=repo_name::$repo_name"
-          echo "::set-output name=project_name::$project_name"
+          echo "org_name=${org_name}" >> $GITHUB_OUTPUT
+          echo "repo_name=${repo_name}" >> $GITHUB_OUTPUT
+          echo "project_name=${project_name}" >> $GITHUB_OUTPUT
 
       - name: "Find vcpkg.json"
         id: find_vcpkg_json
@@ -45,5 +45,5 @@ jobs:
             exit 1
           else
             echo "Found vcpkg.json file: $vcpkg_json_path"
-            echo "::set-output name=vcpkg_json_path::$vcpkg_json_path"
+            echo "echo vcpkg_json_path=$vcpkg_json_path" >> $GITHUB_OUTPUT
           fi
