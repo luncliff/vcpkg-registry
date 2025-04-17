@@ -85,7 +85,7 @@
       "port-version": 0
     },
     "google-jni-bind": {
-      "baseline": "1.2.0-beta",
+      "baseline": "1.2.1-beta",
       "port-version": 0
     },
     "google-pthreadpool": {
