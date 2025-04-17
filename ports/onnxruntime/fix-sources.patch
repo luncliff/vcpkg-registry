@@ -1,0 +1,48 @@
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 2714e6f..c800455 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -1140,7 +1140,7 @@ function(onnxruntime_set_compile_flags target_name)
+       target_compile_definitions(${target_name} PRIVATE ENABLE_ATEN)
+     endif()
+ 
+-    set_target_properties(${target_name} PROPERTIES COMPILE_WARNING_AS_ERROR ON)
++    set_target_properties(${target_name} PROPERTIES COMPILE_WARNING_AS_ERROR ON) # OFF?
+     if (onnxruntime_USE_CUDA)
+       # Suppress a "conversion_function_not_usable" warning in gsl/span
+       target_compile_options(${target_name} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe \"--diag_suppress=conversion_function_not_usable\">")
+diff --git a/onnxruntime/core/providers/cpu/controlflow/loop.cc b/onnxruntime/core/providers/cpu/controlflow/loop.cc
+index c65dd2a..b33b1f1 100644
+--- a/onnxruntime/core/providers/cpu/controlflow/loop.cc
++++ b/onnxruntime/core/providers/cpu/controlflow/loop.cc
+@@ -244,7 +244,7 @@ static Status ConcatenateCpuOutput(void* /*stream*/,
+ 
+   // we can't easily use a C++ template for the tensor element type,
+   // so use a span for some protection but work in bytes
+-  gsl::span<gsl::byte> output_span = gsl::make_span<gsl::byte>(static_cast<gsl::byte*>(output),
++  gsl::span<std::byte> output_span = gsl::make_span<std::byte>(static_cast<std::byte*>(output),
+                                                                output_size_in_bytes);
+ 
+   for (size_t i = 0, num_iterations = per_iteration_output.size(); i < num_iterations; ++i) {
+@@ -257,7 +257,7 @@ static Status ConcatenateCpuOutput(void* /*stream*/,
+                              " Expected:", per_iteration_shape, " Got:", iteration_data.Shape());
+     }
+ 
+-    auto src = gsl::make_span<const gsl::byte>(static_cast<const gsl::byte*>(iteration_data.DataRaw()),
++    auto src = gsl::make_span<const std::byte>(static_cast<const std::byte*>(iteration_data.DataRaw()),
+                                                bytes_per_iteration);
+     auto dst = output_span.subspan(i * bytes_per_iteration, bytes_per_iteration);
+     gsl::copy(src, dst);
+diff --git a/cmake/external/abseil-cpp.cmake b/cmake/external/abseil-cpp.cmake
+index cd93a8d..0e48bcd 100644
+--- a/cmake/external/abseil-cpp.cmake
++++ b/cmake/external/abseil-cpp.cmake
+@@ -28,7 +28,7 @@ onnxruntime_fetchcontent_declare(
+     URL_HASH SHA1=${DEP_SHA1_abseil_cpp}
+     EXCLUDE_FROM_ALL
+     PATCH_COMMAND ${ABSL_PATCH_COMMAND}
+-    FIND_PACKAGE_ARGS 20240722 NAMES absl
++    FIND_PACKAGE_ARGS NAMES absl CONFIG
+ )
+ 
+ onnxruntime_fetchcontent_makeavailable(abseil_cpp)

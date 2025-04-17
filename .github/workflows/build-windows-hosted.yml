@@ -17,6 +17,7 @@ env:
 
 jobs:
   overlay:
+    name: "Overlay"
     runs-on: ["self-hosted", "Windows"]
     timeout-minutes: 300
     strategy:
@@ -83,8 +84,9 @@ jobs:
         if: always()
 
   overlay_cuda:
-    runs-on: ["self-hosted", "Windows", "CUDA"]
-    # needs: ["overlay"]
+    name: "CUDA"
+    runs-on: ["self-hosted", "x64", "Windows", "CUDA"]
+    needs: ["overlay"]
     continue-on-error: true
     timeout-minutes: 300
     strategy:
@@ -134,3 +136,38 @@ jobs:
         with:
           additional-path: "C:/vcpkg/buildtrees,C:/vcpkg/packages"
         if: always()
+
+  overlay_vulkan:
+    name: "Vulkan"
+    runs-on: ["self-hosted", "x64", "Windows", "Vulkan"]
+    needs: overlay
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # - uses: humbletim/install-vulkan-sdk@v1.2
+      #   with:
+      #     version: "1.4.304.0"
+      #     cache: true
+
+      - uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "C:/vcpkg"
+          vcpkgGitCommitId: "b02e341c927f16d991edbd915d8ea43eac52096c" # 2025.03.19
+          vcpkgJsonGlob: "test/self-hosted.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+          runVcpkgInstall: true
+          runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `vulkan`]'
+        env:
+          VCPKG_DEFAULT_TRIPLET: "x64-windows"
+          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"

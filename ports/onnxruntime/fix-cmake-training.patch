@@ -1,5 +1,5 @@
 diff --git a/cmake/tensorboard/compat/proto/CMakeLists.txt b/cmake/tensorboard/compat/proto/CMakeLists.txt
-index ad31e40..3e80a6e 100644
+index ad31e40..04ed1ce 100644
 --- a/cmake/tensorboard/compat/proto/CMakeLists.txt
 +++ b/cmake/tensorboard/compat/proto/CMakeLists.txt
 @@ -1,14 +1,21 @@
@@ -16,7 +16,7 @@ index ad31e40..3e80a6e 100644
 -set(TENSORBOARD_ROOT ${tensorboard_SOURCE_DIR})
 +if(onnxruntime_USE_VCPKG)
 +  if(NOT DEFINED TENSORBOARD_ROOT)
-+    message(FATAL_ERROR "TENSORBOARD_ROOT not defined")
++    message(FATAL_ERROR "TENSORBOARD_ROOT is not defined. Please set the value in the CMake command.")
 +  endif()
 +  find_path(PROTOBUF_IMPORT_DIR NAMES "google/protobuf/api.proto" REQUIRED)
 +else()

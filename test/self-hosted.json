@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2025-01-26",
+  "version-date": "2025-04-06",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows",
@@ -30,7 +30,14 @@
         "nvidia-tools-extension-sdk",
         "nvidia-triton-client",
         "nvidia-triton-common",
-        "nvidia-triton-core"
+        "nvidia-triton-core",
+        {
+          "name": "onnxruntime",
+          "features": [
+            "cuda",
+            "tensorrt"
+          ]
+        }
       ]
     },
     "test": {
@@ -67,6 +74,13 @@
           ]
         },
         {
+          "name": "onnxruntime",
+          "features": [
+            "directml"
+          ],
+          "platform": "windows"
+        },
+        {
           "name": "winpixeventruntime",
           "platform": "x64 & windows"
         }
@@ -93,6 +107,10 @@
     {
       "name": "fmt",
       "version": "9.1.0#1"
+    },
+    {
+      "name": "flatbuffers",
+      "version": "23.5.26#1"
     }
   ]
 }

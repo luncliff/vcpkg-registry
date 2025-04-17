@@ -1,32 +1,25 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 
-set(ORT_GIT_COMMIT "c4fb724e810bb496165b9015c77f402727392933")
+set(ORT_GIT_COMMIT "e0b66cad282043d4377cea5269083f17771b6dfc")
 set(ORT_GIT_BRANCH "v${VERSION}")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
     REF ${ORT_GIT_BRANCH}
-    SHA512 49d1feb5a45ce73d6c6bcf0f7b126928da1d48b8b454c2c37959ea70460d398db8070602a0157ba1866110dff3805201b7433566d684ccc5418e563cf3dba90e
+    SHA512 028a7f48f41d2e8a453aae25ebc4cd769db389401937928b7d452fab5f8d7af8cb63eb4150daf79589845528f0e4c3bdfefa27af70d3630398990c9e8b85387b
     PATCHES
+        fix-sources.patch
         fix-cmake.patch
         fix-cmake-cuda.patch
         fix-cmake-training.patch
         fix-cmake-tensorrt.patch
-        fix-cmake-coreml.patch
-        # fix-clang-cl-simd-compile.patch
 )
 
-find_program(PROTOC NAMES protoc
-    PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf"
-    REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
-)
+find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
 message(STATUS "Using protoc: ${PROTOC}")
 
-find_program(FLATC NAMES flatc
-    PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers"
-    REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH
-)
+find_program(FLATC NAMES flatc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
 message(STATUS "Using flatc: ${FLATC}")
 
 vcpkg_find_acquire_program(PYTHON3)
@@ -64,7 +57,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         xnnpack   onnxruntime_USE_XNNPACK
         nnapi     onnxruntime_USE_NNAPI_BUILTIN
         azure     onnxruntime_USE_AZURE
-        llvm      onnxruntime_USE_LLVM
         test      onnxruntime_BUILD_UNIT_TESTS
         test      onnxruntime_BUILD_BENCHMARKS
         test      onnxruntime_RUN_ONNX_TESTS
@@ -87,18 +79,12 @@ if("training" IN_LIST FEATURES)
 endif()
 
 if("tensorrt" IN_LIST FEATURES)
-    if(DEFINED TENSORRT_ROOT)
-        message(STATUS "Using TensorRT: ${TENSORRT_ROOT}")
-        list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_ROOT}")
+    if(DEFINED TENSORRT_HOME)
+        message(STATUS "Using TensorRT: ${TENSORRT_HOME}")
+        list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_HOME}")
     else()
-        message(WARNING "Define TENSORRT_ROOT in the triplet for onnxruntime_TENSORRT_HOME")
+        message(WARNING "Define TENSORRT_HOME in the triplet for onnxruntime_TENSORRT_HOME")
     endif()
-endif()
-if("coreml" IN_LIST FEATURES)
-    list(APPEND FEATURE_OPTIONS
-        -D_enable_ML_PROGRAM=OFF # do not build CoreML Tools program
-        "-DCOREML_PROTO_ROOT:PATH=${CURRENT_INSTALLED_DIR}/include/mlmodel/format"
-    )
 endif()
 
 # see vcpkg_check_linkage above ...
@@ -117,7 +103,6 @@ vcpkg_cmake_configure(
         "-DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
-        -Donnxruntime_BUILD_WEBASSEMBLY=OFF
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
         -Donnxruntime_USE_EXTENSIONS=OFF
         -Donnxruntime_USE_NNAPI_BUILTIN=${VCPKG_TARGET_IS_ANDROID}
@@ -142,7 +127,6 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
         -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=1
     MAYBE_UNUSED_VARIABLES
-        onnxruntime_BUILD_WEBASSEMBLY
         onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
         onnxruntime_USE_CUSTOM_DIRECTML
         onnxruntime_NVCC_THREADS
@@ -157,9 +141,6 @@ endif()
 if("directml" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_providers_dml LOGFILE_BASE build-directml)
 endif()
-if("coreml" IN_LIST FEATURES)
-    vcpkg_cmake_build(TARGET onnxruntime_providers_coreml LOGFILE_BASE build-coreml)
-endif()
 if("training" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET tensorboard LOGFILE_BASE build-tensorboard)
 endif()
@@ -168,30 +149,19 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxrunt
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
 
 # cmake function which relocates the onnxruntime_providers_* library before vcpkg_copy_pdbs()
-function(relocate_ort_providers PROVIDER_NAME)
+function(reolocate_ort_providers)
     if(VCPKG_TARGET_IS_WINDOWS AND (VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic"))
         # the target is expected to be used without the .lib files
-        file(RENAME "${CURRENT_PACKAGES_DIR}/debug/lib/${PROVIDER_NAME}.dll"
-                    "${CURRENT_PACKAGES_DIR}/debug/bin/${PROVIDER_NAME}.dll")
-        file(RENAME "${CURRENT_PACKAGES_DIR}/lib/${PROVIDER_NAME}.dll"
-                    "${CURRENT_PACKAGES_DIR}/bin/${PROVIDER_NAME}.dll")
+        file(GLOB PROVIDE_BINS_DBG  "${CURRENT_PACKAGES_DIR}/debug/lib/onnxruntime_providers_*.dll")
+        file(COPY ${PROVIDE_BINS_DBG} DESTINATION "${CURRENT_PACKAGES_DIR}/debug/bin")
+        file(GLOB PROVIDE_BINS_REL "${CURRENT_PACKAGES_DIR}/lib/onnxruntime_providers_*.dll")
+        file(COPY ${PROVIDE_BINS_REL} DESTINATION "${CURRENT_PACKAGES_DIR}/bin")
+        file(REMOVE ${PROVIDE_BINS_DBG} ${PROVIDE_BINS_REL})
     endif()
 endfunction()
 
-if("cuda" IN_LIST FEATURES)
-    relocate_ort_providers(onnxruntime_providers_cuda)
-endif()
-if("tensorrt" IN_LIST FEATURES)
-    relocate_ort_providers(onnxruntime_providers_tensorrt)
-endif()
-if("directml" IN_LIST FEATURES)
-    relocate_ort_providers(onnxruntime_providers_dml)
-endif()
+reolocate_ort_providers()
 vcpkg_copy_pdbs()
-
-if("test" IN_LIST FEATURES)
-    vcpkg_copy_tools(TOOL_NAMES onnx_test_runner AUTO_CLEAN)
-endif()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
