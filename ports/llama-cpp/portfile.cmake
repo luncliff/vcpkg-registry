@@ -3,12 +3,12 @@ if(VCPKG_TARGET_IS_WINDOWS)
 endif()
 set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
-# https://github.com/ggml-org/llama.cpp/releases/tag/b4936
+# https://github.com/ggml-org/llama.cpp/releases/tag/b5158
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggerganov/llama.cpp
     REF "b${VERSION}"
-    SHA512 76a1bed0fa543651a90003245a7947d4cf80a172f3198a364260b37fd825e0f1d7e2222eaeb6226a322a8e2ba5a7e0243ecc9bcca576699c13bde7d61a4b8d57
+    SHA512 796e5b641f1cb88f085b6a96d428f363fa32d11c1bc426042fbc266ceab834aa53c510cd1d91f856042c2bc3078f5eda6e27a9341510458859962c0d0c9dabc0
     HEAD_REF master
     PATCHES
         fix-cmake-ggml.patch
@@ -47,6 +47,11 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         # vulkan  GGML_VULKAN_PERF
         metal   GGML_METAL_USE_BF16
         metal   GGML_METAL_EMBED_LIBRARY
+        # todo: support these in native environment?
+        test    LLAMA_BUILD_TESTS
+        test    GGML_BUILD_TESTS
+        example LLAMA_BUILD_EXAMPLES
+        example GGML_BUILD_EXAMPLES
 )
 
 if(VCPKG_TARGET_IS_OSX)
@@ -100,6 +105,8 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
     endif()
 endif()
 
+string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     ${GENERATOR_OPTIONS}
@@ -116,18 +123,14 @@ vcpkg_cmake_configure(
         -DLLAMA_CURL=ON
         -DLLAMA_LLGUIDANCE=OFF
         -DLLAMA_ALL_WARNINGS=OFF
-        -DLLAMA_BUILD_TESTS=OFF
-        -DLLAMA_BUILD_EXAMPLES=OFF
         # ${SOURCE_PATH}/ggml/CMakeLists.txt
         -DGGML_STANDALONE=ON
         -DGGML_BUILD_NUMBER=${VERSION}
         -DGGML_LLAMAFILE_DEFAULT=OFF
         -DGGML_CPU_ALL_VARIANTS=OFF
-        -DGGML_BACKEND_DL=OFF
+        -DGGML_BACKEND_DL=${BUILD_SHARED} # requires BUILD_SHARED_LIBS
         -DGGML_OPENCL_PROFILING=OFF
         -DGGML_FATAL_WARNINGS=OFF
-        -DGGML_BUILD_TESTS=OFF
-        -DGGML_BUILD_EXAMPLES=OFF
     OPTIONS_DEBUG
         -DGGML_VULKAN_DEBUG=ON
         -DGGML_VULKAN_VALIDATE=ON

@@ -1,5 +1,5 @@
 diff --git a/common/CMakeLists.txt b/common/CMakeLists.txt
-index 17146ff..c53e1b9 100644
+index 43533fc..a2e23c6 100644
 --- a/common/CMakeLists.txt
 +++ b/common/CMakeLists.txt
 @@ -63,7 +63,7 @@ add_library(${TARGET} STATIC
@@ -20,19 +20,6 @@ index 17146ff..c53e1b9 100644
  
  # Use curl to download model url
  if (LLAMA_CURL)
-diff --git a/common/common.cpp b/common/common.cpp
-index 18ffb4e..2d0b6b1 100644
---- a/common/common.cpp
-+++ b/common/common.cpp
-@@ -9,7 +9,7 @@
- #include "log.h"
- // Change JSON_ASSERT from assert() to GGML_ASSERT:
- #define JSON_ASSERT GGML_ASSERT
--#include "json.hpp"
-+#include <nlohmann/json.hpp>
- #include "llama.h"
- 
- #include <algorithm>
 diff --git a/common/json-schema-to-grammar.h b/common/json-schema-to-grammar.h
 index 4613f5d..6763e6d 100644
 --- a/common/json-schema-to-grammar.h
@@ -46,34 +33,21 @@ index 4613f5d..6763e6d 100644
  
  std::string json_schema_to_grammar(const nlohmann::ordered_json & schema,
                                     bool force_gbnf = false);
-diff --git a/common/minja/chat-template.hpp b/common/minja/chat-template.hpp
-index 882ba41..6ed9d4d 100644
---- a/common/minja/chat-template.hpp
-+++ b/common/minja/chat-template.hpp
-@@ -9,7 +9,7 @@
- #pragma once
+diff --git a/examples/run/run.cpp b/examples/run/run.cpp
+index e63c2aa..6a0faa2 100644
+--- a/examples/run/run.cpp
++++ b/examples/run/run.cpp
+@@ -26,7 +26,7 @@
  
- #include "minja.hpp"
--#include <json.hpp>
+ #include "chat.h"
+ #include "common.h"
+-#include "json.hpp"
 +#include <nlohmann/json.hpp>
- #include <string>
- #include <vector>
- 
-diff --git a/common/minja/minja.hpp b/common/minja/minja.hpp
-index fa4c34d..47aa4ac 100644
---- a/common/minja/minja.hpp
-+++ b/common/minja/minja.hpp
-@@ -16,7 +16,7 @@
- #include <stdexcept>
- #include <sstream>
- #include <unordered_set>
--#include <json.hpp>
-+#include <nlohmann/json.hpp>
- 
- using json = nlohmann::ordered_json;
- 
+ #include "linenoise.cpp/linenoise.h"
+ #include "llama-cpp.h"
+ #include "log.h"
 diff --git a/examples/server/CMakeLists.txt b/examples/server/CMakeLists.txt
-index aee9038..294a18b 100644
+index aee9038..27edf13 100644
 --- a/examples/server/CMakeLists.txt
 +++ b/examples/server/CMakeLists.txt
 @@ -12,7 +12,7 @@ endif()
@@ -85,7 +59,7 @@ index aee9038..294a18b 100644
  )
  set(PUBLIC_ASSETS
      index.html.gz
-@@ -37,6 +37,13 @@ install(TARGETS ${TARGET} RUNTIME)
+@@ -37,6 +37,14 @@ install(TARGETS ${TARGET} RUNTIME)
  target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR})
  target_link_libraries(${TARGET} PRIVATE common ${CMAKE_THREAD_LIBS_INIT})
  
@@ -96,11 +70,12 @@ index aee9038..294a18b 100644
 +    find_library(SYSTEMCONFIGURATION SystemConfiguration REQUIRED)
 +    target_link_libraries(${TARGET} PRIVATE ${SYSTEMCONFIGURATION})
 +endif()
++
  if (LLAMA_SERVER_SSL)
      find_package(OpenSSL REQUIRED)
      target_link_libraries(${TARGET} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 diff --git a/examples/server/server.cpp b/examples/server/server.cpp
-index c2f1afe..d9625ee 100644
+index c580ec1..6e33367 100644
 --- a/examples/server/server.cpp
 +++ b/examples/server/server.cpp
 @@ -10,7 +10,7 @@
@@ -113,7 +88,7 @@ index c2f1afe..d9625ee 100644
  #define MIMETYPE_JSON "application/json; charset=utf-8"
  
 diff --git a/examples/server/utils.hpp b/examples/server/utils.hpp
-index 58cdd6a..2898e62 100644
+index aba2f27..ee7330c 100644
 --- a/examples/server/utils.hpp
 +++ b/examples/server/utils.hpp
 @@ -9,11 +9,11 @@
@@ -130,3 +105,55 @@ index 58cdd6a..2898e62 100644
  #include "chat.h"
  
  #include <random>
+diff --git a/examples/tts/tts.cpp b/examples/tts/tts.cpp
+index 0f04798..8c831cd 100644
+--- a/examples/tts/tts.cpp
++++ b/examples/tts/tts.cpp
+@@ -5,7 +5,7 @@
+ #include "sampling.h"
+ #include "log.h"
+ #include "llama.h"
+-#include "json.hpp"
++#include <nlohmann/json.hpp>
+ 
+ #include <algorithm>
+ #include <cmath>
+diff --git a/common/minja/chat-template.hpp b/common/minja/chat-template.hpp
+index 237a762..60d998d 100644
+--- a/common/minja/chat-template.hpp
++++ b/common/minja/chat-template.hpp
+@@ -20,7 +20,7 @@
+ #include <string>
+ #include <vector>
+ 
+-#include <json.hpp>
++#include <nlohmann/json.hpp>
+ 
+ using json = nlohmann::ordered_json;
+ 
+diff --git a/common/minja/minja.hpp b/common/minja/minja.hpp
+index e52e792..f1fd579 100644
+--- a/common/minja/minja.hpp
++++ b/common/minja/minja.hpp
+@@ -28,7 +28,7 @@
+ #include <utility>
+ #include <vector>
+ 
+-#include <json.hpp>
++#include <nlohmann/json.hpp>
+ 
+ using json = nlohmann::ordered_json;
+ 
+diff --git a/tests/test-chat.cpp b/tests/test-chat.cpp
+index a0bf6af..586d692 100644
+--- a/tests/test-chat.cpp
++++ b/tests/test-chat.cpp
+@@ -7,7 +7,7 @@
+ //
+ #include <fstream>
+ #include <iostream>
+-#include <json.hpp>
++#include <nlohmann/json.hpp>
+ #include <string>
+ 
+ #include "chat.h"
