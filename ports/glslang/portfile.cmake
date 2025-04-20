@@ -4,7 +4,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO KhronosGroup/glslang
     REF ${VERSION}
-    SHA512 b246c6f280891b7c9b6cd0b5e85e03ccf1fe173cdfc40e566339a5698176cbcfe23eb7aeaba277f071222d76b9f2a00376d790d4d604aedad82e6196fab7fc70
+    SHA512 8ba7e5f73746b221ff39387282e2d929d1142c60d1c79019f4c21c84b105fb59253e88f2f649a25e9bb7ab01094e455f002c7412aeea882548fac4a426eee809
     HEAD_REF main
     PATCHES
         private-headers.patch
@@ -28,10 +28,10 @@ vcpkg_cmake_configure(
         -DENABLE_SPIRV=ON
         -DENABLE_RTTI=OFF
         -DENABLE_EXCEPTIONS=OFF
-        -DENABLE_OPT=OFF # requires spirv-tools
+        -DALLOW_EXTERNAL_SPIRV_TOOLS=ON # requires spirv-tools
         -DENABLE_GLSLANG_JS=OFF
         -DGLSLANG_TESTS=OFF
-        -DGLSLANG_ENABLE_INSTALL=ON
+        -DGLSLANG_ENABLE_INSTALL=ON       
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/glslang)
