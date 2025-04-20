@@ -148,7 +148,7 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
         continue-on-error: true
 
-      - uses: actions/upload-artifact@v4.6.1
+      - uses: actions/upload-artifact@v4.6.2
         if: failure()
         with:
           name: log-${{ runner.os }}
@@ -208,7 +208,7 @@ jobs:
           VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
 
-      - uses: actions/upload-artifact@v4.6.1
+      - uses: actions/upload-artifact@v4.6.2
         if: failure()
         with:
           name: log-host-tools
@@ -259,7 +259,7 @@ jobs:
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
           VCPKG_DEFAULT_TRIPLET: "x64-android"
 
-      - uses: actions/upload-artifact@v4.6.1
+      - uses: actions/upload-artifact@v4.6.2
         if: failure()
         with:
           name: log-Android
