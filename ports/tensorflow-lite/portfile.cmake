@@ -6,11 +6,10 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
     REF v${VERSION}
-    SHA512 cff53ba33981166e1ae412afe54051b84e13c35071bca05c61d5115fa08db4b2a383be448d78a9917e356884e5a24d922e731d5d00ce8a5723788a4036044699
+    SHA512 f9647621c93b6a7d3c43d92b7cfa0ec481de0f43e4936c0d946e305b440aa1caa72a48cbf4ccef7efc270f1e6d7926c2c327dfd2af9f649707e52bb10bd86235
     PATCHES
         fix-cmake-vcpkg.patch
         fix-cmake-c-api.patch
-        fix-sources.patch
 )
 
 file(REMOVE_RECURSE
