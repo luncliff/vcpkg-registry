@@ -36,6 +36,12 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/glslang)
 
+# see https://github.com/microsoft/vcpkg/blob/master/ports/glslang/portfile.cmake
+vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/${PORT}/glslang-config.cmake"
+    [[${PACKAGE_PREFIX_DIR}/lib/cmake/glslang/glslang-targets.cmake]]
+    [[${CMAKE_CURRENT_LIST_DIR}/glslang-targets.cmake]]
+)
+
 if("tools" IN_LIST FEATURES)
     vcpkg_copy_tools(TOOL_NAMES glslang glslangValidator spirv-remap AUTO_CLEAN)
 endif()

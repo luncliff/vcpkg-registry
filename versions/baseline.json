@@ -74,7 +74,7 @@
     },
     "glslang": {
       "baseline": "15.0.0",
-      "port-version": 0
+      "port-version": 1
     },
     "godot": {
       "baseline": "4.3",
@@ -249,7 +249,7 @@
       "port-version": 0
     },
     "xnnpack": {
-      "baseline": "2024-12-18",
+      "baseline": "2025-04-19",
       "port-version": 0
     },
     "xnvctrl": {
