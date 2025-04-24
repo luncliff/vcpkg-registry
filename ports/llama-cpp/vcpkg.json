@@ -1,7 +1,6 @@
 {
   "name": "llama-cpp",
-  "version": "4936",
-  "port-version": 1,
+  "version": "5158",
   "description": "LLM inference in C/C++",
   "homepage": "https://github.com/ggerganov/llama.cpp",
   "license": "MIT",
@@ -62,7 +61,13 @@
             "ssl"
           ]
         },
-        "openssl"
+        "openssl",
+        {
+          "name": "zlib-ng",
+          "features": [
+            "zlib-compat"
+          ]
+        }
       ]
     },
     "vulkan": {
