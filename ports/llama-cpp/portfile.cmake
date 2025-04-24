@@ -107,6 +107,12 @@ endif()
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
+if(VCPKG_CROSSCOMPILING)
+    set(BUILD_NATIVE OFF)
+else()
+    set(BUILD_NATIVE ON)
+endif()
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     ${GENERATOR_OPTIONS}
@@ -125,10 +131,11 @@ vcpkg_cmake_configure(
         -DLLAMA_ALL_WARNINGS=OFF
         # ${SOURCE_PATH}/ggml/CMakeLists.txt
         -DGGML_STANDALONE=ON
+        -DGGML_NATIVE=${BUILD_NATIVE}
         -DGGML_BUILD_NUMBER=${VERSION}
         -DGGML_LLAMAFILE_DEFAULT=OFF
         -DGGML_CPU_ALL_VARIANTS=OFF
-        -DGGML_BACKEND_DL=${BUILD_SHARED} # requires BUILD_SHARED_LIBS
+        -DGGML_BACKEND_DL=OFF # requires BUILD_SHARED_LIBS
         -DGGML_OPENCL_PROFILING=OFF
         -DGGML_FATAL_WARNINGS=OFF
     OPTIONS_DEBUG
@@ -142,6 +149,7 @@ vcpkg_cmake_configure(
         -DGGML_METAL_SHADER_DEBUG=OFF
     MAYBE_UNUSED_VARIABLES
         LLAMA_SERVER_SSL
+        Python3_EXECUTABLE
 )
 vcpkg_cmake_install()
 

@@ -61,7 +61,13 @@
             "ssl"
           ]
         },
-        "openssl"
+        "openssl",
+        {
+          "name": "zlib-ng",
+          "features": [
+            "zlib-compat"
+          ]
+        }
       ]
     },
     "vulkan": {
