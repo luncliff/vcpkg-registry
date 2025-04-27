@@ -1,5 +1,5 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index bce9627f..a2a9f334 100644
+index cf06e2a7..c8c96cfa 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
 @@ -52,14 +52,6 @@ set(TF_SOURCE_DIR "${TENSORFLOW_SOURCE_DIR}/tensorflow")
@@ -17,7 +17,7 @@ index bce9627f..a2a9f334 100644
  include(GNUInstallDirs)
  include(CMakeDependentOption)
  option(TFLITE_ENABLE_INSTALL "Enable install rule" OFF)
-@@ -97,11 +89,10 @@ if(${CMAKE_CROSSCOMPILING})
+@@ -97,8 +89,7 @@ if(${CMAKE_CROSSCOMPILING})
      set(FLATBUFFERS_FLATC_EXECUTABLE "${FLATC_BIN}")
    endif()
  else()
@@ -26,21 +26,17 @@ index bce9627f..a2a9f334 100644
 +  find_program(FLATBUFFERS_FLATC_EXECUTABLE NAMES flatc PATHS ${FLATC_PATHS} REQUIRED)
  endif()
  
--set(CMAKE_CXX_STANDARD 17)
-+set(CMAKE_CXX_STANDARD 20)
- set(CMAKE_CXX_STANDARD_REQUIRED ON)
- set(_TFLITE_ENABLE_RUY "${TFLITE_ENABLE_RUY}")
- if("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
+ set(CMAKE_CXX_STANDARD 20)
 @@ -204,7 +195,7 @@ if(TFLITE_ENABLE_XNNPACK)
        "${PTHREADPOOL_SOURCE_DIR}"
        "${CMAKE_BINARY_DIR}/pthreadpool")
    endif()
 -  list(APPEND TFLITE_TARGET_DEPENDENCIES pthreadpool)
 +  list(APPEND TFLITE_TARGET_DEPENDENCIES "${PTHREADPOOL_LIB}")
- endif()
- set(TF_TARGET_PRIVATE_OPTIONS "")
- if(CMAKE_CXX_COMPILER_ID MATCHES "Clang$")
-@@ -227,6 +218,11 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+ 
+   IF(NOT DEFINED FP16_SOURCE_DIR)
+     MESSAGE(STATUS "Downloading FP16 to ${CMAKE_BINARY_DIR}/FP16-source (define FP16_SOURCE_DIR to avoid it)")
+@@ -237,6 +228,11 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
    # Use NOGDI to ERROR macro which breaks TensorFlow logging.
    # Disable mmap, which is not available on Windows.
    list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "-DNOMINMAX" "-DNOGDI" "-DTFLITE_MMAP_DISABLED")
@@ -48,11 +44,11 @@ index bce9627f..a2a9f334 100644
 +    "_CRT_SECURE_NO_WARNINGS"
 +    "_SILENCE_CXX20_IS_POD_DEPRECATION_WARNING" "_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING" "_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING"
 +  )
-+  list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "/Zc:__cplusplus")
++  list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "/Zc:__cplusplus")  
    # lite/kernels/conv.cc has more than 64k sections so enable /bigobj to
    # support compilation with MSVC2015.
    if(MSVC)
-@@ -289,8 +285,15 @@ populate_tflite_source_vars("core" TFLITE_CORE_SRCS)
+@@ -299,8 +295,15 @@ populate_tflite_source_vars("core" TFLITE_CORE_SRCS)
  populate_tflite_source_vars(
    "core/acceleration/configuration" TFLITE_CORE_ACCELERATION_SRCS
    FILTER "xnnpack_plugin.*"
@@ -68,7 +64,7 @@ index bce9627f..a2a9f334 100644
  populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
  populate_tflite_source_vars("core/async" TFLITE_CORE_ASYNC_SRCS)
  populate_tflite_source_vars("core/async/c" TFLITE_CORE_ASYNC_C_SRCS)
-@@ -303,13 +306,15 @@ populate_tflite_source_vars("core/tools" TFLITE_CORE_TOOLS_SRCS)
+@@ -313,13 +316,15 @@ populate_tflite_source_vars("core/tools" TFLITE_CORE_TOOLS_SRCS)
  populate_tflite_source_vars("c" TFLITE_C_SRCS)
  populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
  if(TFLITE_ENABLE_GPU)
@@ -89,22 +85,18 @@ index bce9627f..a2a9f334 100644
    endif()
    populate_tflite_source_vars(
      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-@@ -392,11 +397,13 @@ if(TFLITE_ENABLE_GPU)
+@@ -403,7 +408,9 @@ if(TFLITE_ENABLE_GPU)
      ${TFLITE_SOURCE_DIR}/delegates/gpu/common
      ${TFLITE_SOURCE_DIR}/delegates/gpu/common/task
    )
 -  if(TFLITE_ENABLE_METAL AND "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
 +  if(TFLITE_ENABLE_METAL AND APPLE)
++    cmake_policy(SET CMP0119 NEW) # Enforce source language with the compiler's option
++    set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES") # Xcode will apply -fobjc-arc 
      #
      # libmetal_delegate library
      #
-     enable_language(OBJCXX)
-+    cmake_policy(SET CMP0119 NEW) # Enforce source language with the compiler's option
-+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES") # Xcode will apply -fobjc-arc
-     list(APPEND TFLITE_DELEGATES_METAL_SRCS
-       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal_delegate.mm
-       ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/buffer.cc
-@@ -411,11 +418,11 @@ if(TFLITE_ENABLE_GPU)
+@@ -422,11 +429,11 @@ if(TFLITE_ENABLE_GPU)
      add_library(metal_delegate STATIC
        ${TFLITE_DELEGATES_METAL_SRCS}
      )
@@ -114,14 +106,14 @@ index bce9627f..a2a9f334 100644
 -      PRIVATE ${TENSORFLOW_SOURCE_DIR}
 -    )
 +    target_include_directories(metal_delegate PRIVATE ${TENSORFLOW_SOURCE_DIR})
-+    target_link_libraries(metal_delegate PUBLIC absl::status absl::strings flatbuffers::flatbuffers "-framework Foundation" "-framework Metal")
++    target_link_libraries(metal_delegate PUBLIC absl::status absl::strings absl::log flatbuffers::flatbuffers "-framework Foundation" "-framework Metal")
 +    # some sources need Objective-C++ types
 +    set_source_files_properties(${TFLITE_DELEGATES_METAL_SRCS} PROPERTIES LANGUAGE OBJCXX)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES metal_delegate)
      #
      # generate flatbuffers header for inference_context
      #
-@@ -447,40 +454,36 @@ if(TFLITE_ENABLE_GPU)
+@@ -458,40 +465,34 @@ if(TFLITE_ENABLE_GPU)
          metal_device
          metal_spatial_tensor
      )
@@ -151,14 +143,12 @@ index bce9627f..a2a9f334 100644
 -     target_link_libraries(${lib_name})
 -   endforeach()
 +    SET(METAL_DELEGATE_PATH ${TFLITE_SOURCE_DIR}/delegates/gpu/metal/)
-+
 +    foreach(lib_name ${CC_SRCS})
 +      add_library(${lib_name} STATIC ${METAL_DELEGATE_PATH}${lib_name}.cc)
 +      target_include_directories(${lib_name} PRIVATE ${TENSORFLOW_SOURCE_DIR})
 +      set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE OBJCXX) # requires CMP0119
-+      target_link_libraries(${lib_name} PUBLIC absl::status absl::strings flatbuffers::flatbuffers)
++      target_link_libraries(${lib_name} PUBLIC absl::status absl::strings absl::log flatbuffers::flatbuffers)
 +    endforeach()
-+
 +    list(APPEND MM_SRCS
 +      buffer_convert
 +      common
@@ -185,7 +175,7 @@ index bce9627f..a2a9f334 100644
    populate_tflite_source_vars("delegates/nnapi"
      TFLITE_DELEGATES_NNAPI_SRCS
      FILTER "(_test_list|_disabled)\\.(cc|h)$"
-@@ -490,8 +493,18 @@ if(_TFLITE_ENABLE_NNAPI)
+@@ -501,9 +502,17 @@ if(_TFLITE_ENABLE_NNAPI)
    )
  
    list(APPEND TFLITE_NNAPI_SRCS
@@ -193,18 +183,18 @@ index bce9627f..a2a9f334 100644
 +    "${TSL_SOURCE_DIR}/tsl/platform/default/mutex.cc"
      "${TFLITE_SOURCE_DIR}/nnapi/sl/SupportLibrary.cc"
    )
+-
 +  # tsl::mutex requires nsync_cpp
 +  find_package(nsync_cpp CONFIG REQUIRED)
 +  list(APPEND TFLITE_TARGET_DEPENDENCIES nsync_cpp)
-+
 +  # disable ml_dtypes/float8.h which requries libeigen3 master branch ...
 +  set_source_files_properties(${TFLITE_NNAPI_SRCS} PROPERTIES
 +    COMPILE_DEFINITIONS "TENSORFLOW_TSL_PLATFORM_FLOAT8_H_;TENSORFLOW_CORE_PLATFORM_FLOAT8_H_"
 +  )
- 
    if(${TFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION})
      list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DNNAPI_VERBOSE_VALIDATION")
-@@ -505,8 +518,8 @@ else()
+   endif()
+@@ -516,8 +525,8 @@ else()
    )
  endif()
  if(TFLITE_ENABLE_XNNPACK)
@@ -212,10 +202,10 @@ index bce9627f..a2a9f334 100644
 -  find_package(XNNPACK REQUIRED)
 +  find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
 +  find_library(XNNPACK_LIBRARY NAMES XNNPACK REQUIRED)
-   populate_tflite_source_vars("delegates/xnnpack"
-     TFLITE_DELEGATES_XNNPACK_SRCS
-     FILTER ".*(_test|_tester)\\.(cc|h)"
-@@ -522,7 +535,7 @@ if(TFLITE_ENABLE_XNNPACK)
+   set(XNNPACK_NEON_2_SSE "")
+   if (NOT CMAKE_SYSTEM_PROCESSOR OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86")
+     find_package(NEON_2_SSE REQUIRED)
+@@ -538,7 +547,7 @@ if(TFLITE_ENABLE_XNNPACK)
  
    add_library(xnnpack-delegate STATIC
      "${TFLITE_DELEGATES_XNNPACK_SRCS}"
@@ -224,7 +214,7 @@ index bce9627f..a2a9f334 100644
    )
    target_include_directories(xnnpack-delegate
      PUBLIC $<BUILD_INTERFACE:${TENSORFLOW_SOURCE_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-@@ -543,7 +556,7 @@ if(TFLITE_ENABLE_XNNPACK)
+@@ -560,7 +569,7 @@ if(TFLITE_ENABLE_XNNPACK)
  
    list(APPEND TFLITE_TARGET_DEPENDENCIES
      xnnpack-delegate
@@ -233,7 +223,7 @@ index bce9627f..a2a9f334 100644
    )
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DXNNPACK_DELEGATE_ENABLE_QS8")
-@@ -706,7 +719,7 @@ target_include_directories(tensorflow-lite
+@@ -727,7 +736,7 @@ target_include_directories(tensorflow-lite
    PUBLIC $<BUILD_INTERFACE:${TENSORFLOW_SOURCE_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
  )
  target_link_libraries(tensorflow-lite
@@ -242,17 +232,17 @@ index bce9627f..a2a9f334 100644
      Eigen3::Eigen
      absl::flags
      absl::hash
-@@ -732,6 +745,9 @@ target_compile_options(tensorflow-lite
-   PUBLIC ${TFLITE_TARGET_PUBLIC_OPTIONS}
-   PRIVATE ${TFLITE_TARGET_PRIVATE_OPTIONS}
+@@ -744,6 +753,9 @@ target_link_libraries(tensorflow-lite
+     ${CMAKE_DL_LIBS}
+     ${TFLITE_TARGET_DEPENDENCIES}
  )
 +target_compile_definitions(tensorflow-lite
 +  PRIVATE ${TFLITE_TARGET_PRIVATE_DEFINITIONS}
 +)
- add_library(${PROJECT_NAME}::tensorflowlite ALIAS tensorflow-lite)
  
- # The install targets.
-@@ -751,6 +767,20 @@ if(TFLITE_ENABLE_INSTALL)
+ if (NOT BUILD_SHARED_LIBS)
+   list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFL_STATIC_LIBRARY_BUILD")
+@@ -772,6 +784,20 @@ if(TFLITE_ENABLE_INSTALL)
        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/${dir}"
      )
    endforeach()
@@ -273,7 +263,7 @@ index bce9627f..a2a9f334 100644
  
    install(
      EXPORT ${PROJECT_NAME}Targets
-@@ -773,6 +803,7 @@ if(TFLITE_ENABLE_INSTALL)
+@@ -794,6 +820,7 @@ if(TFLITE_ENABLE_INSTALL)
    )
  endif()
  
@@ -282,10 +272,10 @@ index bce9627f..a2a9f334 100644
  if(TFLITE_KERNEL_TEST)
    enable_testing()
 diff --git a/tensorflow/lite/tools/cmake/tensorflow-liteConfig.cmake.in b/tensorflow/lite/tools/cmake/tensorflow-liteConfig.cmake.in
-index e49f6356..31cacd43 100644
+index e49f6356..87882f88 100644
 --- a/tensorflow/lite/tools/cmake/tensorflow-liteConfig.cmake.in
 +++ b/tensorflow/lite/tools/cmake/tensorflow-liteConfig.cmake.in
-@@ -15,13 +15,6 @@
+@@ -15,14 +15,6 @@
  
  include(CMakeFindDependencyMacro)
  
@@ -296,6 +286,7 @@ index e49f6356..31cacd43 100644
 -find_dependency(cpuinfo)
 -find_dependency(ruy)
 -find_dependency(gemmlowp)
- 
+-
  @PACKAGE_INIT@
  
+ include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")

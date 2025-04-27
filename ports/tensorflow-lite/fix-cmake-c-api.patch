@@ -1,8 +1,8 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index 635e4a80..729e5b36 100644
+index c8c96cfa..fc2a6b39 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -750,6 +750,39 @@ target_compile_definitions(tensorflow-lite
+@@ -767,6 +767,38 @@ target_compile_options(tensorflow-lite
  )
  add_library(${PROJECT_NAME}::tensorflowlite ALIAS tensorflow-lite)
  
@@ -11,23 +11,22 @@ index 635e4a80..729e5b36 100644
 +  ${TFLITE_SOURCE_DIR}/core/c/c_api_experimental.cc
 +  ${TFLITE_SOURCE_DIR}/core/c/common.cc
 +  ${TFLITE_SOURCE_DIR}/core/c/operator.cc
++  # ${TF_SOURCE_DIR}/tensorflow/compiler/mlir/lite/core/c/tflite_types.h
 +  c/builtin_op_data.h
 +  c/c_api.h
 +  c/c_api_experimental.h
 +  c/c_api_internal.h
 +  c/c_api_types.h
 +  c/common.h
-+  c/c_api_opaque_internal.cc
-+  c/c_api_opaque_internal.h
-+  c/c_api_opaque.h
-+  c/common_internal.cc
-+  c/common_internal.h
++  # c/c_api_opaque_internal.cc
++  # c/c_api_opaque_internal.h
++  # c/c_api_opaque.h
++  # c/common_internal.cc
++  # c/common_internal.h
 +)
-+target_include_directories(tensorflow-lite PRIVATE c)
++target_include_directories(tensorflow-lite PRIVATE ${TFLITE_SOURCE_DIR}/c)
 +set(TFLITE_C_OUTPUT_NAME "tensorflowlite_c" CACHE STRING "Output name for the C API library")
-+set_target_properties(tensorflow-lite PROPERTIES
-+  OUTPUT_NAME ${TFLITE_C_OUTPUT_NAME}
-+)
++set_target_properties(tensorflow-lite PROPERTIES OUTPUT_NAME ${TFLITE_C_OUTPUT_NAME})
 +if (BUILD_SHARED_LIBS)
 +  if (WIN32)
 +    target_compile_definitions(tensorflow-lite PRIVATE TFL_COMPILE_LIBRARY)
@@ -42,11 +41,3 @@ index 635e4a80..729e5b36 100644
  # The install targets.
  if(TFLITE_ENABLE_INSTALL)
    install(
-@@ -757,6 +790,7 @@ if(TFLITE_ENABLE_INSTALL)
-     EXPORT ${PROJECT_NAME}Targets
-     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-   )
- 
-   foreach(hdr ${_ALL_TFLITE_HDRS})
