@@ -106,7 +106,7 @@ index cf06e2a7..c8c96cfa 100644
 -      PRIVATE ${TENSORFLOW_SOURCE_DIR}
 -    )
 +    target_include_directories(metal_delegate PRIVATE ${TENSORFLOW_SOURCE_DIR})
-+    target_link_libraries(metal_delegate PUBLIC absl::status absl::strings flatbuffers::flatbuffers "-framework Foundation" "-framework Metal")
++    target_link_libraries(metal_delegate PUBLIC absl::status absl::strings absl::log flatbuffers::flatbuffers "-framework Foundation" "-framework Metal")
 +    # some sources need Objective-C++ types
 +    set_source_files_properties(${TFLITE_DELEGATES_METAL_SRCS} PROPERTIES LANGUAGE OBJCXX)
 +    list(APPEND TFLITE_TARGET_DEPENDENCIES metal_delegate)
@@ -147,7 +147,7 @@ index cf06e2a7..c8c96cfa 100644
 +      add_library(${lib_name} STATIC ${METAL_DELEGATE_PATH}${lib_name}.cc)
 +      target_include_directories(${lib_name} PRIVATE ${TENSORFLOW_SOURCE_DIR})
 +      set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE OBJCXX) # requires CMP0119
-+      target_link_libraries(${lib_name} PUBLIC absl::status absl::strings flatbuffers::flatbuffers)
++      target_link_libraries(${lib_name} PUBLIC absl::status absl::strings absl::log flatbuffers::flatbuffers)
 +    endforeach()
 +    list(APPEND MM_SRCS
 +      buffer_convert
