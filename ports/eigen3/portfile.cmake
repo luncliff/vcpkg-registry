@@ -1,11 +1,9 @@
-vcpkg_buildpath_length_warning(37)
-
 vcpkg_from_gitlab(
     GITLAB_URL https://gitlab.com
     OUT_SOURCE_PATH SOURCE_PATH
     REPO libeigen/eigen
-    REF ddb163ffb1d39cab299a584f2965007b6d7e755d
-    SHA512 e30adf2b0f5faa6fe5d22d3d22311933415f267db758b4a895d3a2917313bb138b26983c7763612e22e05271f5dc7b4b0ad7c4bc44dff065ca5c619a863357d1
+    REF 2265a5e025601d501903c772799ce29fb73c8efa # 
+    SHA512 972c7d229aa77770528b4361cb1d308848c0f7dfcd846a372c32376c73871e0ed8e855e77e8ad3a67bd216e25a3f161d79dcd7a5ca61f4566d85410c3474b45f
     HEAD_REF master
 )
 
@@ -37,4 +35,4 @@ file(REMOVE_RECURSE
 )
 
 file(INSTALL "${SOURCE_PATH}/COPYING.README" DESTINATION "${CURRENT_PACKAGES_DIR}/share")
-vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING.MPL2")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
