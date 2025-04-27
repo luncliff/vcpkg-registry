@@ -9,7 +9,7 @@ Targets...
 * [vcpkg](https://github.com/microsoft/vcpkg): recommend [2024.06.15](https://github.com/microsoft/vcpkg/releases/tag/2024.06.15) or later
 * [vcpkg-tool](https://github.com/microsoft/vcpkg-tool) follows the vcpkg
 
-### References
+### [References](docs/references.md)
 
 * Microsoft C++ Team Blog: https://devblogs.microsoft.com/cppblog/
     * https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/
@@ -145,7 +145,7 @@ Options:
 * `arm-android`
 * `x64-android`
 
-Check [Vcpkg and Android](https://github.com/microsoft/vcpkg/blob/master/docs/users/android.md) for more detailed usage.
+Check [Vcpkg and Android](https://learn.microsoft.com/en-us/vcpkg/users/platforms/android) for more detailed usage.
 
 The triplets help 
 ```console

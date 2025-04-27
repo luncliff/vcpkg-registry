@@ -18,7 +18,7 @@ Some varialbe to help [FindVulkan.cmake](https://cmake.org/cmake/help/latest/mod
 
 ### See Also
 
-* https://github.com/microsoft/vcpkg/blob/master/docs/users/android.md
+* https://learn.microsoft.com/en-us/vcpkg/users/platforms/android
 * https://android.googlesource.com/platform/ndk/+/master/docs/BuildSystemMaintainers.md#sysroot
 * https://developer.android.com/ndk/guides/graphics/getting-started
 
