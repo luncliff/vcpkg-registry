@@ -133,7 +133,7 @@
       "port-version": 1
     },
     "nvidia-cudnn-frontend": {
-      "baseline": "1.11.0",
+      "baseline": "1.12.0",
       "port-version": 0
     },
     "nvidia-cutlass": {

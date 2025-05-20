@@ -2,7 +2,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO NVIDIA/cudnn-frontend
     REF v${VERSION}
-    SHA512 2d50fbedc1d2f488275aedce84893447a025d4c00b9e8609c4004b2eb0525480a348835d0e8b2784499d80d0c63d75bb1430741cb06c3652da8dd72b822489fa
+    SHA512 331ebbbd3439ab1b680d543d0550d63407148e9731c62e4d805eddb49bad5bc9ca7a38d9dd6ac4b976c70955155254fdee037a98f386f5e34c744eb3c2de095f
     HEAD_REF main
     PATCHES
         fix-install.patch # support find_package(cudnn-frontend)
