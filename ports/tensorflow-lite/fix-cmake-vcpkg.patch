@@ -290,3 +290,42 @@ index e49f6356..87882f88 100644
  @PACKAGE_INIT@
  
  include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
+index c73d0114..41664940 100644
+--- a/tensorflow/lite/CMakeLists.txt
++++ b/tensorflow/lite/CMakeLists.txt
+@@ -197,7 +197,8 @@ if(TFLITE_ENABLE_XNNPACK)
+   endif()
+   list(APPEND TFLITE_TARGET_DEPENDENCIES "${PTHREADPOOL_LIB}")
+ 
+-  IF(NOT DEFINED FP16_SOURCE_DIR)
++  find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
++  IF(FALSE)
+     MESSAGE(STATUS "Downloading FP16 to ${CMAKE_BINARY_DIR}/FP16-source (define FP16_SOURCE_DIR to avoid it)")
+     CONFIGURE_FILE(cmake/DownloadFP16.cmake "${CMAKE_BINARY_DIR}/FP16-download/CMakeLists.txt")
+     EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+@@ -502,17 +503,17 @@ if(_TFLITE_ENABLE_NNAPI)
+   )
+ 
+   list(APPEND TFLITE_NNAPI_SRCS
+-    "${TSL_SOURCE_DIR}/tsl/platform/default/logging.cc"
+-    "${TSL_SOURCE_DIR}/tsl/platform/default/mutex.cc"
++    # "${TSL_SOURCE_DIR}/tsl/platform/default/logging.cc"
++    # "${TSL_SOURCE_DIR}/tsl/platform/default/mutex.cc"
+     "${TFLITE_SOURCE_DIR}/nnapi/sl/SupportLibrary.cc"
+   )
+   # tsl::mutex requires nsync_cpp
+-  find_package(nsync_cpp CONFIG REQUIRED)
+-  list(APPEND TFLITE_TARGET_DEPENDENCIES nsync_cpp)
++  # find_package(nsync_cpp CONFIG REQUIRED)
++  # list(APPEND TFLITE_TARGET_DEPENDENCIES nsync_cpp)
+   # disable ml_dtypes/float8.h which requries libeigen3 master branch ...
+-  set_source_files_properties(${TFLITE_NNAPI_SRCS} PROPERTIES
+-    COMPILE_DEFINITIONS "TENSORFLOW_TSL_PLATFORM_FLOAT8_H_;TENSORFLOW_CORE_PLATFORM_FLOAT8_H_"
+-  )
++  # set_source_files_properties(${TFLITE_NNAPI_SRCS} PROPERTIES
++  #   COMPILE_DEFINITIONS "TENSORFLOW_TSL_PLATFORM_FLOAT8_H_;TENSORFLOW_CORE_PLATFORM_FLOAT8_H_"
++  # )
+   if(${TFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION})
+     list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DNNAPI_VERBOSE_VALIDATION")
+   endif()
