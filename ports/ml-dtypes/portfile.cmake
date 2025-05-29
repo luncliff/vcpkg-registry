@@ -10,6 +10,10 @@ vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}/ml_dtypes")
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH "share/ml_dtypes" PACKAGE_NAME "ml_dtypes")
 
+# use the relative path: "include/float8.h" -> "float8.h"
+vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/include/ml_dtypes/mxfloat.h"
+                     "include/" "")
+
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
