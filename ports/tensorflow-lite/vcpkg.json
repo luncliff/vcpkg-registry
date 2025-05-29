@@ -42,7 +42,6 @@
     "gpu": {
       "description": "Enable GPU delegates",
       "dependencies": [
-        "fp16",
         "opencl",
         "opengl-registry",
         {

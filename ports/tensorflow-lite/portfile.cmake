@@ -10,6 +10,7 @@ vcpkg_from_github(
     PATCHES
         fix-cmake-vcpkg.patch
         fix-cmake-c-api.patch
+        fix-sources.patch
 )
 
 file(REMOVE_RECURSE
