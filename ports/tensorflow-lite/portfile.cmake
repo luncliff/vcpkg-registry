@@ -10,7 +10,8 @@ vcpkg_from_github(
     PATCHES
         fix-cmake-vcpkg.patch
         fix-cmake-c-api.patch
-        fix-sources.patch
+        fix-includes.patch
+        disable-android-gl-delegates.patch
 )
 
 file(REMOVE_RECURSE
