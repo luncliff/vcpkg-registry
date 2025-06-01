@@ -116,6 +116,10 @@
       "baseline": "0.11.22",
       "port-version": 0
     },
+    "minja": {
+      "baseline": "2025-05-15",
+      "port-version": 0
+    },
     "ml-dtypes": {
       "baseline": "0.5.2",
       "port-version": 1
