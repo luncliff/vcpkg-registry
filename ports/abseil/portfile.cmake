@@ -13,8 +13,7 @@ vcpkg_cmake_configure(
     DISABLE_PARALLEL_CONFIGURE
     OPTIONS
         -DCMAKE_CXX_STANDARD=17
-        # Abseil requires C++17 or later, but let the ports decide the C++ standard
-        -DABSL_PROPAGATE_CXX_STD=OFF
+        -DABSL_PROPAGATE_CXX_STD=ON
         -DABSL_ENABLE_INSTALL=ON
         -DABSL_MSVC_STATIC_RUNTIME=${USE_STATIC_RUNTIME}
         -DABSL_BUILD_TESTING=OFF
