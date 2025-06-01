@@ -145,7 +145,7 @@
         },
         {
           "name": "tensorflow-lite",
-          "platform": "windows"
+          "platform": "windows | linux | android | osx | ios"
         },
         {
           "name": "tensorflow-lite",

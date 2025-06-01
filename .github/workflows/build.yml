@@ -232,8 +232,13 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "b02e341c927f16d991edbd915d8ea43eac52096c" # 2025.03.19
+          vcpkgGitCommitId: "ce613c41372b23b1f51333815feb3edd87ef8a8b" # 2025.04.09
           runVcpkgInstall: false
+
+      - uses: nttld/setup-ndk@v1.5.0
+        with:
+          ndk-version: 'r29-beta1' # https://github.com/android/ndk/releases
+          local-cache: true
 
       - name: "Run vcpkg(arm64-android)"
         run: |
