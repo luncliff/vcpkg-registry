@@ -1,0 +1,14 @@
+{
+  "name": "minja",
+  "version-date": "2025-05-15",
+  "description": "A minimalistic C++ Jinja templating engine for LLM chat templates",
+  "homepage": "https://github.com/google/minja",
+  "license": "MIT",
+  "dependencies": [
+    "nlohmann-json",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}
