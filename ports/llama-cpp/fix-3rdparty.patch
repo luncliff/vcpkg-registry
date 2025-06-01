@@ -1,159 +1,68 @@
-diff --git a/common/CMakeLists.txt b/common/CMakeLists.txt
-index 43533fc..a2e23c6 100644
---- a/common/CMakeLists.txt
-+++ b/common/CMakeLists.txt
-@@ -63,7 +63,7 @@ add_library(${TARGET} STATIC
-     console.cpp
-     console.h
-     json-schema-to-grammar.cpp
--    json.hpp
-+    # json.hpp
-     llguidance.cpp
-     log.cpp
-     log.h
-@@ -82,6 +82,8 @@ if (BUILD_SHARED_LIBS)
- endif()
+diff --git a/tools/mtmd/CMakeLists.txt b/tools/mtmd/CMakeLists.txt
+index 4baa15b..d459931 100644
+--- a/tools/mtmd/CMakeLists.txt
++++ b/tools/mtmd/CMakeLists.txt
+@@ -17,7 +17,9 @@ target_link_libraries     (mtmd PUBLIC ggml llama)
+ target_link_libraries     (mtmd PRIVATE Threads::Threads)
+ target_include_directories(mtmd PUBLIC  .)
+ target_include_directories(mtmd PRIVATE ../..)
+-target_include_directories(mtmd PRIVATE ../../vendor)
++find_path(STB_INCLUDE_DIR stb_image.h REQUIRED)
++find_path(MINIAUDIO_INCLUDE_DIR miniaudio.h REQUIRED)
++target_include_directories(mtmd PUBLIC ${STB_INCLUDE_DIR} ${MINIAUDIO_INCLUDE_DIR})
+ target_compile_features   (mtmd PRIVATE cxx_std_17)
  
- set(LLAMA_COMMON_EXTRA_LIBS build_info)
-+find_package(nlohmann_json CONFIG REQUIRED)
-+target_link_libraries(${TARGET} PRIVATE nlohmann_json::nlohmann_json)
+ if (BUILD_SHARED_LIBS)
+diff --git a/tools/mtmd/mtmd-helper.cpp b/tools/mtmd/mtmd-helper.cpp
+index 64f03fd..cfd97df 100644
+--- a/tools/mtmd/mtmd-helper.cpp
++++ b/tools/mtmd/mtmd-helper.cpp
+@@ -27,10 +27,10 @@
+ #define MA_NO_ENGINE
+ #define MA_NO_GENERATION
+ #define MA_API static
+-#include "miniaudio/miniaudio.h"
++#include <miniaudio.h>
  
- # Use curl to download model url
- if (LLAMA_CURL)
-diff --git a/common/json-schema-to-grammar.h b/common/json-schema-to-grammar.h
-index 4613f5d..6763e6d 100644
---- a/common/json-schema-to-grammar.h
-+++ b/common/json-schema-to-grammar.h
-@@ -3,7 +3,7 @@
- #include "ggml.h"
- // Change JSON_ASSERT from assert() to GGML_ASSERT:
- #define JSON_ASSERT GGML_ASSERT
--#include "json.hpp"
-+#include <nlohmann/json.hpp>
+ #define STB_IMAGE_IMPLEMENTATION
+-#include "stb/stb_image.h"
++#include <stb_image.h>
  
- std::string json_schema_to_grammar(const nlohmann::ordered_json & schema,
-                                    bool force_gbnf = false);
-diff --git a/examples/run/run.cpp b/examples/run/run.cpp
-index e63c2aa..6a0faa2 100644
---- a/examples/run/run.cpp
-+++ b/examples/run/run.cpp
-@@ -26,7 +26,7 @@
- 
- #include "chat.h"
- #include "common.h"
--#include "json.hpp"
-+#include <nlohmann/json.hpp>
- #include "linenoise.cpp/linenoise.h"
- #include "llama-cpp.h"
- #include "log.h"
-diff --git a/examples/server/CMakeLists.txt b/examples/server/CMakeLists.txt
-index aee9038..27edf13 100644
---- a/examples/server/CMakeLists.txt
-+++ b/examples/server/CMakeLists.txt
-@@ -12,7 +12,7 @@ endif()
- set(TARGET_SRCS
-     server.cpp
-     utils.hpp
--    httplib.h
-+    # httplib.h
- )
- set(PUBLIC_ASSETS
-     index.html.gz
-@@ -37,6 +37,14 @@ install(TARGETS ${TARGET} RUNTIME)
+ #define LOG_INF(...) fprintf(stdout, __VA_ARGS__)
+ #define LOG_ERR(...) fprintf(stderr, __VA_ARGS__)
+diff --git a/tools/server/CMakeLists.txt b/tools/server/CMakeLists.txt
+index c2a56aa..fd740e8 100644
+--- a/tools/server/CMakeLists.txt
++++ b/tools/server/CMakeLists.txt
+@@ -37,6 +37,8 @@ target_include_directories(${TARGET} PRIVATE ../llava)
  target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR})
- target_link_libraries(${TARGET} PRIVATE common ${CMAKE_THREAD_LIBS_INIT})
+ target_link_libraries(${TARGET} PRIVATE common mtmd ${CMAKE_THREAD_LIBS_INIT})
  
 +find_package(httplib CONFIG REQUIRED)
-+find_package(ZLIB REQUIRED)
-+target_link_libraries(${TARGET} PRIVATE httplib::httplib ZLIB::ZLIB)
-+if(APPLE)
-+    find_library(SYSTEMCONFIGURATION SystemConfiguration REQUIRED)
-+    target_link_libraries(${TARGET} PRIVATE ${SYSTEMCONFIGURATION})
-+endif()
-+
++target_link_libraries(${TARGET} PRIVATE httplib::httplib)
  if (LLAMA_SERVER_SSL)
      find_package(OpenSSL REQUIRED)
      target_link_libraries(${TARGET} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
-diff --git a/examples/server/server.cpp b/examples/server/server.cpp
-index c580ec1..6e33367 100644
---- a/examples/server/server.cpp
-+++ b/examples/server/server.cpp
-@@ -10,7 +10,7 @@
- 
- // Change JSON_ASSERT from assert() to GGML_ASSERT:
- #define JSON_ASSERT GGML_ASSERT
--#include "json.hpp"
-+#include <nlohmann/json.hpp>
- // mime type for sending response
- #define MIMETYPE_JSON "application/json; charset=utf-8"
- 
-diff --git a/examples/server/utils.hpp b/examples/server/utils.hpp
-index aba2f27..ee7330c 100644
---- a/examples/server/utils.hpp
-+++ b/examples/server/utils.hpp
-@@ -9,11 +9,11 @@
+diff --git a/tools/server/utils.hpp b/tools/server/utils.hpp
+index f3e0392..523fb3f 100644
+--- a/tools/server/utils.hpp
++++ b/tools/server/utils.hpp
+@@ -13,7 +13,7 @@
  #define CPPHTTPLIB_FORM_URL_ENCODED_PAYLOAD_MAX_LENGTH 1048576
  // disable Nagle's algorithm
  #define CPPHTTPLIB_TCP_NODELAY true
--#include "httplib.h"
+-#include <cpp-httplib/httplib.h>
 +#include <httplib.h>
  
- // Change JSON_ASSERT from assert() to GGML_ASSERT:
  #define JSON_ASSERT GGML_ASSERT
--#include "json.hpp"
-+#include <nlohmann/json.hpp>
- #include "chat.h"
- 
- #include <random>
-diff --git a/examples/tts/tts.cpp b/examples/tts/tts.cpp
-index 0f04798..8c831cd 100644
---- a/examples/tts/tts.cpp
-+++ b/examples/tts/tts.cpp
-@@ -5,7 +5,7 @@
- #include "sampling.h"
- #include "log.h"
- #include "llama.h"
--#include "json.hpp"
-+#include <nlohmann/json.hpp>
- 
- #include <algorithm>
- #include <cmath>
-diff --git a/common/minja/chat-template.hpp b/common/minja/chat-template.hpp
-index 237a762..60d998d 100644
---- a/common/minja/chat-template.hpp
-+++ b/common/minja/chat-template.hpp
-@@ -20,7 +20,7 @@
- #include <string>
- #include <vector>
- 
--#include <json.hpp>
-+#include <nlohmann/json.hpp>
- 
- using json = nlohmann::ordered_json;
- 
-diff --git a/common/minja/minja.hpp b/common/minja/minja.hpp
-index e52e792..f1fd579 100644
---- a/common/minja/minja.hpp
-+++ b/common/minja/minja.hpp
-@@ -28,7 +28,7 @@
- #include <utility>
- #include <vector>
- 
--#include <json.hpp>
-+#include <nlohmann/json.hpp>
- 
- using json = nlohmann::ordered_json;
- 
-diff --git a/tests/test-chat.cpp b/tests/test-chat.cpp
-index a0bf6af..586d692 100644
---- a/tests/test-chat.cpp
-+++ b/tests/test-chat.cpp
-@@ -7,7 +7,7 @@
- //
- #include <fstream>
- #include <iostream>
--#include <json.hpp>
-+#include <nlohmann/json.hpp>
- #include <string>
- 
- #include "chat.h"
+ #include <nlohmann/json.hpp>
+diff --git a/tools/tts/CMakeLists.txt b/tools/tts/CMakeLists.txt
+index c72bd81..821d0e7 100644
+--- a/tools/tts/CMakeLists.txt
++++ b/tools/tts/CMakeLists.txt
+@@ -3,3 +3,5 @@ add_executable(${TARGET} tts.cpp)
+ install(TARGETS ${TARGET} RUNTIME)
+ target_link_libraries(${TARGET} PRIVATE llama common ${CMAKE_THREAD_LIBS_INIT})
+ target_compile_features(${TARGET} PRIVATE cxx_std_17)
++find_package(nlohmann_json CONFIG REQUIRED)
++target_link_libraries(${TARGET} PRIVATE nlohmann_json::nlohmann_json)
