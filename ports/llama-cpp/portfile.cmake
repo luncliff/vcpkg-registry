@@ -12,7 +12,6 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-cmake-ggml.patch
-        # fix-cmake-llama.patch
         fix-3rdparty.patch
 )
 file(REMOVE_RECURSE
@@ -20,7 +19,7 @@ file(REMOVE_RECURSE
     "${SOURCE_PATH}/vendor/miniaudio" # miniaudio
     "${SOURCE_PATH}/vendor/cpp-httplib" # cpp-httplib
     "${SOURCE_PATH}/vendor/stb" # stb
-    # todo: google/minja
+    "${SOURCE_PATH}/vendor/minja" # minja
 )
 
 vcpkg_find_acquire_program(GIT)
@@ -161,16 +160,16 @@ vcpkg_fixup_pkgconfig()
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/ggml" PACKAGE_NAME "ggml" DO_NOT_DELETE_PARENT_CONFIG_PATH)
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/llama" PACKAGE_NAME "llama")
 
-if("server" IN_LIST FEATURES)
-    vcpkg_copy_tools(TOOL_NAMES llama-server DESTINATION "${CURRENT_PACKAGES_DIR}/tools/llama.cpp" AUTO_CLEAN)
+file(COPY "${SOURCE_PATH}/grammars"
+          "${SOURCE_PATH}/models"
+          "${SOURCE_PATH}/prompts"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
+)
+
+if("tools" IN_LIST FEATURES)
     file(INSTALL
-        "${SOURCE_PATH}/examples/server/public"
-        "${SOURCE_PATH}/examples/server/public_simplechat"
-        "${SOURCE_PATH}/examples/server/chat.mjs"
-        "${SOURCE_PATH}/examples/server/chat.sh"
-        "${SOURCE_PATH}/examples/server/chat-llama2.sh"
-        "${SOURCE_PATH}/examples/server/README.md"
-        DESTINATION "${CURRENT_PACKAGES_DIR}/tools/llama.cpp"
+        "${SOURCE_PATH}/examples/chat.sh"
+        DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
     )
 endif()
 

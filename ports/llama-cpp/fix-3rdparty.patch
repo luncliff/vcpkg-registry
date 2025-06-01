@@ -1,3 +1,17 @@
+diff --git a/common/CMakeLists.txt b/common/CMakeLists.txt
+index 564af14..822aceb 100644
+--- a/common/CMakeLists.txt
++++ b/common/CMakeLists.txt
+@@ -144,7 +144,8 @@ if (LLAMA_LLGUIDANCE)
+     set(LLAMA_COMMON_EXTRA_LIBS ${LLAMA_COMMON_EXTRA_LIBS} llguidance ${LLGUIDANCE_PLATFORM_LIBS})
+ endif ()
+ 
+-target_include_directories(${TARGET} PUBLIC . ../vendor)
++find_path(MINJA_INCLUDE_DIRS "minja/chat-template.hpp" REQUIRED)
++target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MINJA_INCLUDE_DIRS})
+ target_compile_features   (${TARGET} PUBLIC cxx_std_17)
+ target_link_libraries     (${TARGET} PRIVATE ${LLAMA_COMMON_EXTRA_LIBS} PUBLIC llama Threads::Threads)
+ 
 diff --git a/tools/mtmd/CMakeLists.txt b/tools/mtmd/CMakeLists.txt
 index 4baa15b..d459931 100644
 --- a/tools/mtmd/CMakeLists.txt
