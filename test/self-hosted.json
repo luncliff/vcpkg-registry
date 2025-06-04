@@ -63,7 +63,7 @@
           "features": [
             "opencl",
             "openmp",
-            "server"
+            "tools"
           ]
         },
         {
