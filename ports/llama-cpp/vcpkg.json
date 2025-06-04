@@ -59,7 +59,7 @@
         {
           "name": "curl",
           "features": [
-            "ssl"
+            "openssl"
           ]
         },
         "miniaudio",
