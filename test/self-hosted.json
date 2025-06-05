@@ -80,6 +80,7 @@
           ],
           "platform": "windows"
         },
+        "v8",
         {
           "name": "winpixeventruntime",
           "platform": "x64 & windows"
