@@ -1,0 +1,16 @@
+{
+  "name": "v8",
+  "version": "13.9.90",
+  "description": "Google Chrome's JavaScript engine",
+  "homepage": "https://github.com/v8/v8",
+  "license": "BSD-3-Clause",
+  "dependencies": [
+    "glib",
+    "icu",
+    {
+      "name": "vcpkg-gn",
+      "host": true
+    },
+    "zlib"
+  ]
+}
