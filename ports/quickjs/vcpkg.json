@@ -1,9 +1,9 @@
 {
   "name": "quickjs",
   "version-date": "2025-05-30",
-  "description": "...",
-  "homepage": "https://github.com/bellard/quickjs",
-  "license": null,
+  "description": "QuickJS is a small and embeddable Javascript engine.",
+  "homepage": "https://bellard.org/quickjs/",
+  "license": "MIT",
   "supports": "!windows",
   "dependencies": [
     {

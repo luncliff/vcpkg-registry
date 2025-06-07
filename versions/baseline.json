@@ -212,6 +212,10 @@
       "baseline": "2024-06-17",
       "port-version": 0
     },
+    "quickjs": {
+      "baseline": "2025-05-30",
+      "port-version": 0
+    },
     "ruy": {
       "baseline": "2024-03-22",
       "port-version": 0
