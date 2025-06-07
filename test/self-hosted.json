@@ -57,6 +57,7 @@
           ],
           "platform": "x64 & windows"
         },
+        "jerryscript",
         "liblzma",
         {
           "name": "llama-cpp",
