@@ -9,6 +9,7 @@
       "name": "curl",
       "default-features": false
     },
+    "minja",
     "nlohmann-json",
     {
       "name": "vcpkg-cmake",
@@ -63,7 +64,6 @@
           ]
         },
         "miniaudio",
-        "minja",
         "stb"
       ]
     },
