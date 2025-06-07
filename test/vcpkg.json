@@ -32,6 +32,12 @@
           "name": "godot",
           "host": true,
           "platform": "linux"
+        },
+        {
+          "name": "llama-cpp",
+          "features": [
+            "tools"
+          ]
         }
       ]
     },
@@ -145,14 +151,14 @@
         },
         {
           "name": "tensorflow-lite",
-          "platform": "windows | linux | android | osx | ios"
-        },
-        {
-          "name": "tensorflow-lite",
           "features": [
             "gpu"
           ],
           "platform": "windows & !arm"
+        },
+        {
+          "name": "tensorflow-lite",
+          "platform": "windows | linux | android | osx | ios"
         },
         "xatlas",
         {
