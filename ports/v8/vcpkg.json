@@ -8,6 +8,10 @@
     "glib",
     "icu",
     {
+      "name": "vcpkg-get-python-packages",
+      "host": true
+    },
+    {
       "name": "vcpkg-gn",
       "host": true
     },
