@@ -168,6 +168,22 @@ file(COPY "${SOURCE_PATH}/grammars"
 )
 
 if("tools" IN_LIST FEATURES)
+    vcpkg_copy_tools(AUTO_CLEAN TOOL_NAMES
+        llama-batched-bench
+        llama-bench
+        llama-cli
+        llama-cvector-generator
+        llama-export-lora
+        llama-gguf-split
+        llama-imatrix
+        llama-mtmd-cli
+        llama-perplexity
+        llama-quantize
+        llama-run
+        llama-server
+        llama-tokenize
+        llama-tts
+    )
     file(INSTALL
         "${SOURCE_PATH}/examples/chat.sh"
         DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
@@ -177,6 +193,7 @@ endif()
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
+    "${CURRENT_PACKAGES_DIR}/debug/bin"
 )
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
