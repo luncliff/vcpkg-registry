@@ -13,6 +13,7 @@ vcpkg_from_github(
     PATCHES
         fix-cmake-ggml.patch
         fix-3rdparty.patch
+        fix-cmake-llama.patch
 )
 file(REMOVE_RECURSE
     "${SOURCE_PATH}/vendor/nlohmann" # nlohmann-json
