@@ -1,14 +1,15 @@
 {
   "name": "llama-cpp",
-  "version": "5158",
+  "version": "5568",
   "description": "LLM inference in C/C++",
-  "homepage": "https://github.com/ggerganov/llama.cpp",
+  "homepage": "https://github.com/ggml-org/llama.cpp",
   "license": "MIT",
   "dependencies": [
     {
       "name": "curl",
       "default-features": false
     },
+    "minja",
     "nlohmann-json",
     {
       "name": "vcpkg-cmake",
@@ -29,7 +30,8 @@
     "cuda": {
       "description": "Use CUDA",
       "dependencies": [
-        "cudnn"
+        "cuda",
+        "nvidia-cudnn-frontend"
       ]
     },
     "metal": {
@@ -45,8 +47,8 @@
     "openmp": {
       "description": "Use OpenMP"
     },
-    "server": {
-      "description": "Build llama server",
+    "tools": {
+      "description": "Build llama tools",
       "supports": "windows | linux | osx",
       "dependencies": [
         {
@@ -58,16 +60,11 @@
         {
           "name": "curl",
           "features": [
-            "ssl"
+            "openssl"
           ]
         },
-        "openssl",
-        {
-          "name": "zlib-ng",
-          "features": [
-            "zlib-compat"
-          ]
-        }
+        "miniaudio",
+        "stb"
       ]
     },
     "vulkan": {
