@@ -3,21 +3,24 @@ if(VCPKG_TARGET_IS_WINDOWS)
 endif()
 set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
-# https://github.com/ggml-org/llama.cpp/releases/tag/b5158
+# https://github.com/ggml-org/llama.cpp/releases/tag/b5568
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO ggerganov/llama.cpp
+    REPO ggml-org/llama.cpp
     REF "b${VERSION}"
-    SHA512 796e5b641f1cb88f085b6a96d428f363fa32d11c1bc426042fbc266ceab834aa53c510cd1d91f856042c2bc3078f5eda6e27a9341510458859962c0d0c9dabc0
+    SHA512 815264eb77fc921ee08f952aaabeeea4d872fb4eb069a0312d53ff3f6712f6226208d0f1ccbfaa075ca276db34fc0990daf17796d120de934ed2622e4ac107b4
     HEAD_REF master
     PATCHES
         fix-cmake-ggml.patch
-        fix-cmake-llama.patch
         fix-3rdparty.patch
+        fix-cmake-llama.patch
 )
-file(REMOVE
-    "${SOURCE_PATH}/common/json.hpp" # nlohmann-json
-    "${SOURCE_PATH}/examples/server/httplib.h" # cpp-httplib
+file(REMOVE_RECURSE
+    "${SOURCE_PATH}/vendor/nlohmann" # nlohmann-json
+    "${SOURCE_PATH}/vendor/miniaudio" # miniaudio
+    "${SOURCE_PATH}/vendor/cpp-httplib" # cpp-httplib
+    "${SOURCE_PATH}/vendor/stb" # stb
+    "${SOURCE_PATH}/vendor/minja" # minja
 )
 
 vcpkg_find_acquire_program(GIT)
@@ -29,8 +32,9 @@ message(STATUS "Using python3: ${PYTHON3}")
 # for BLAS, see https://cmake.org/cmake/help/latest/module/FindBLAS.html#blas-lapack-vendors
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        server  LLAMA_BUILD_SERVER
-        server  LLAMA_SERVER_SSL
+        tools   LLAMA_BUILD_TOOLS
+        tools   LLAMA_BUILD_SERVER
+        tools   LLAMA_SERVER_SSL
         cuda    GGML_CUDA
         cuda    GGML_CUDA_GRAPHS
         cuda    GGML_CUDA_FORCE_MMQ
@@ -157,22 +161,39 @@ vcpkg_fixup_pkgconfig()
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/ggml" PACKAGE_NAME "ggml" DO_NOT_DELETE_PARENT_CONFIG_PATH)
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/llama" PACKAGE_NAME "llama")
 
-if("server" IN_LIST FEATURES)
-    vcpkg_copy_tools(TOOL_NAMES llama-server DESTINATION "${CURRENT_PACKAGES_DIR}/tools/llama.cpp" AUTO_CLEAN)
+file(COPY "${SOURCE_PATH}/grammars"
+          "${SOURCE_PATH}/models"
+          "${SOURCE_PATH}/prompts"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
+)
+
+if("tools" IN_LIST FEATURES)
+    vcpkg_copy_tools(AUTO_CLEAN TOOL_NAMES
+        llama-batched-bench
+        llama-bench
+        llama-cli
+        llama-cvector-generator
+        llama-export-lora
+        llama-gguf-split
+        llama-imatrix
+        llama-mtmd-cli
+        llama-perplexity
+        llama-quantize
+        llama-run
+        llama-server
+        llama-tokenize
+        llama-tts
+    )
     file(INSTALL
-        "${SOURCE_PATH}/examples/server/public"
-        "${SOURCE_PATH}/examples/server/public_simplechat"
-        "${SOURCE_PATH}/examples/server/chat.mjs"
-        "${SOURCE_PATH}/examples/server/chat.sh"
-        "${SOURCE_PATH}/examples/server/chat-llama2.sh"
-        "${SOURCE_PATH}/examples/server/README.md"
-        DESTINATION "${CURRENT_PACKAGES_DIR}/tools/llama.cpp"
+        "${SOURCE_PATH}/examples/chat.sh"
+        DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
     )
 endif()
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
+    "${CURRENT_PACKAGES_DIR}/debug/bin"
 )
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

@@ -23,7 +23,7 @@ set(VCPKG_CMAKE_SYSTEM_VERSION 10.0.22621.0)
 list(APPEND VCPKG_CMAKE_CONFIGURE_OPTIONS
     # Some old packages will error with CMake 4.0+ see https://cmake.org/cmake/help/latest/release/4.0.html
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
-    "-DCMAKE_CXX_STANDARD=20"
+    # "-DCMAKE_CXX_STANDARD=20"
 )
 # list(APPEND VCPKG_MESON_CONFIGURE_OPTIONS ...)
 
