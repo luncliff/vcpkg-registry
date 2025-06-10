@@ -62,8 +62,7 @@
           "name": "llama-cpp",
           "features": [
             "opencl",
-            "openmp",
-            "server"
+            "openmp"
           ]
         },
         {

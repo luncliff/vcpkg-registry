@@ -32,6 +32,12 @@
           "name": "godot",
           "host": true,
           "platform": "linux"
+        },
+        {
+          "name": "llama-cpp",
+          "features": [
+            "tools"
+          ]
         }
       ]
     },
@@ -73,7 +79,7 @@
         {
           "name": "llama-cpp",
           "features": [
-            "server"
+            "tools"
           ],
           "platform": "windows | linux | osx"
         },

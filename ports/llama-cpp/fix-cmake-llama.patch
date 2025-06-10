@@ -1,28 +1,19 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 74b48d2..172c5d9 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -169,6 +169,9 @@ if (LLAMA_BUILD_COMMON AND LLAMA_BUILD_TESTS AND NOT CMAKE_JS_VERSION)
-     add_subdirectory(tests)
- endif()
+diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
+index d64956b..c412c84 100644
+--- a/tools/CMakeLists.txt
++++ b/tools/CMakeLists.txt
+@@ -1,6 +1,14 @@
+ # dependencies
  
-+if (LLAMA_BUILD_SERVER)
-+    add_subdirectory(examples/server)
+ find_package(Threads REQUIRED)
++if(LLAMA_SERVER_SSL)
++    find_package(ZLIB REQUIRED)
++    find_package(OpenSSL REQUIRED)
++    link_libraries(ZLIB::ZLIB OpenSSL::SSL OpenSSL::Crypto)
++    if(APPLE)
++        link_libraries("-framework Security" "-framework SystemConfiguration")
++    endif()
 +endif()
- if (LLAMA_BUILD_COMMON AND LLAMA_BUILD_EXAMPLES)
-     add_subdirectory(examples)
-     add_subdirectory(pocs)
-diff --git a/examples/CMakeLists.txt b/examples/CMakeLists.txt
-index 66cfab2..9df5985 100644
---- a/examples/CMakeLists.txt
-+++ b/examples/CMakeLists.txt
-@@ -41,9 +41,6 @@ else()
-     add_subdirectory(perplexity)
-     add_subdirectory(quantize)
-     add_subdirectory(retrieval)
--    if (LLAMA_BUILD_SERVER)
--        add_subdirectory(server)
--    endif()
-     add_subdirectory(save-load-state)
-     add_subdirectory(run)
-     add_subdirectory(simple)
+ 
+ # third-party
+ 
