@@ -161,7 +161,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "b02e341c927f16d991edbd915d8ea43eac52096c" # 2025.03.19
+          vcpkgGitCommitId: "ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0" # 2025.06.13
           vcpkgJsonGlob: "test/self-hosted.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
