@@ -120,6 +120,25 @@ The "overlay ports" and "overlay triplets" may need more detailed options or swi
 - Overlay triplets
   - https://learn.microsoft.com/en-us/vcpkg/users/examples/overlay-triplets-linux-dynamic
 
+If you want to use the [openssl3](../ports/openssl3) port in the reigstry,
+You have to provide the `--overlay-ports` option, or `VCPKG_OVERLAY_PORTS` environment variable.
+
+```ps1
+# suppose you cloned the vcpkg-registry repository to "C:/vcpkg-registry"
+vcpkg install --overlay-ports "C:/vcpkg-registry/ports" openssl3
+```
+
+You may not want to modify folders under `VCPKG_ROOT`(or `$env:VCPKG_ROOT` in PowerShell) to compare build logs under "buildtrees" folder, or port install outputs in "packages" folder
+In the case, you can to provide `--x-*-root` options to the `vcpkg install` command.
+
+```ps1
+vcpkg install --overlay-ports "C:/vcpkg-registry/ports" `
+  --x-buildtrees-root "buildtrees" `
+  --x-packages-root "packages" `
+  --x-install-root "installed" `
+  openssl3
+```
+
 ### Editing baseline files in vcpkg Registry
 
 - See [README.md](../README.md) to read more detailed references
@@ -139,20 +158,22 @@ Set-Location "vcpkg-registry"
 Format all `vcpkg.json` files under [ports/](../ports/) folder.
 
 ```ps1
+# vcpkg help format-manifest
 vcpkg format-manifest --all `
     --vcpkg-root "${env:VCPKG_ROOT}" `
-    --x-buildin-ports-root "$(Get-Location)/ports" `
+    --x-builtin-ports-root "$(Get-Location)/ports" `
     --x-builtin-registry-versions-dir "$(Get-Location)/versions
 ```
 
 Update baseline adn version JSON files for a specific port
 
 ```ps1
+# vcpkg help x-add-version
 $PortName="some-port"
 vcpkg x-add-version $PortName `
     --overwrite-version `
     --vcpkg-root "${env:VCPKG_ROOT}" `
-    --x-buildin-ports-root "$(Get-Location)/ports" `
+    --x-builtin-ports-root "$(Get-Location)/ports" `
     --x-builtin-registry-versions-dir "$(Get-Location)/versions
 ```
 
@@ -187,11 +208,40 @@ Mostly for port creation/sharing without following the guidelines.
 
 (TBA)
 
+* See "Editing baseline files in vcpkg Registry" section above
+
 Currently, the following scripts are used to maintain [ports/](../ports/) and [versions/](../versions/) folder.
 
 * [scripts/registry-format.ps1](../scripts/registry-format.ps1)
 * [scripts/registry-add-version.ps1](../scripts/registry-add-version.ps1)
 
+For example, when you updated some files of the port, we do the following steps.
+
+```ps1
+Push-Location "C:/vcpkg-registry"
+  $RegistryRoot = Get-Location
+  # ... Suppose we edited files under ports/openssl3/ ...
+
+  # Simply, format all vcpkg.json files and add the changes to git
+  ./scripts/registry-format.ps1 -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$RegistryRoot"
+  git add ./ports
+
+  # Then update the baseline and version files. This is required by vcpkg tool
+  ./scripts/registry-add-version.ps1 -PortName "openssl3" -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$RegistryRoot"
+  git add ./versions/
+
+  # ... Commit the changes ...
+Pop-Location
+```
+
 ### Testing a port
 
 (TBA)
+
+When the port's default installation works, it is enough.
+However, if the port has some features, and they are important. We have to test install with the features repetitively.
+
+1. Run `vcpkg install` command with the port name. Here, the installation needs to be "overlay install"(`--x-overlay-ports`) to prevent mix/conflict with vcpkg upstream.
+2. Use `vcpkg search` command to list the port's features.
+3. If there is no feature, the port is tested.
+4. If there are some features, run `vcpkg install` command with each of the features.
