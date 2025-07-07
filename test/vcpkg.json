@@ -133,6 +133,10 @@
           "platform": "windows"
         },
         {
+          "name": "quickjs",
+          "platform": "!windows"
+        },
+        {
           "name": "spine-runtimes",
           "features": [
             "sdl2"
