@@ -12,7 +12,7 @@
   ],
   "features": {
     "tools": {
-      "description": "Buind/Install OpenSSL CLI tools",
+      "description": "Build/Install OpenSSL CLI tools",
       "supports": "windows"
     }
   }
