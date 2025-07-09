@@ -62,7 +62,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           # sudo apt update -y
-          sudo apt install -y $(cat test/packages-apt.txt)
+          sudo apt install -y --fix-missing $(cat test/packages-apt.txt)
 
       - name: "Run homebrew"
         if: runner.os == 'macOS'
