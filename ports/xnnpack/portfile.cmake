@@ -10,6 +10,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-cmake.patch
+        google-xnnpack-pr-7859.diff # modified https://github.com/google/XNNPACK/pull/7859
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)
