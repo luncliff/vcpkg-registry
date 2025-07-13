@@ -1,13 +1,13 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 
-set(ORT_GIT_COMMIT "e0b66cad282043d4377cea5269083f17771b6dfc")
+set(ORT_GIT_COMMIT "8f7cce3a49fdbdac96e0868b75b7d0159db7ac7f")
 set(ORT_GIT_BRANCH "v${VERSION}")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
     REF ${ORT_GIT_BRANCH}
-    SHA512 028a7f48f41d2e8a453aae25ebc4cd769db389401937928b7d452fab5f8d7af8cb63eb4150daf79589845528f0e4c3bdfefa27af70d3630398990c9e8b85387b
+    SHA512 b828250eadfc3820aa35962e1f1bf733e443dca73a048d56630fe507b70fb4898593e683a294a7cccd6a9a93dfda964ca2381a4785b526e84dd060c8573953c2
     PATCHES
         fix-sources.patch
         fix-cmake.patch
