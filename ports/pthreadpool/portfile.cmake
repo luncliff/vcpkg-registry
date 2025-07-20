@@ -4,22 +4,21 @@ endif()
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO Maratyszcza/pthreadpool
-    REF 560c60d342a76076f0557a3946924c6478470044
-    SHA512 d23e764e9a02f34210b3b9c5a66dae3b9e8211de6f78ec9b2672c19c48f364f4edb268ab77b1adf2802a3c35c6857deba81e48a658caa1a587fe8f3493a07f59
+    REPO google/pthreadpool
+    REF c2ba5c50bb58d1397b693740cf75fad836a0d1bf
+    SHA512 3c1fc5b7ed716c7b581f06449b2ca9513331c3b279cb6b289c735c3d64f1ac0ac8f19d3362b28a35ce57ab066b60c4bb3147727cf4f23c2c906aab03d0b35729
     PATCHES
-        fix-cmake.patch
+        fix-uwp.patch
 )
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
-        -DPTHREADPOOL_ALLOW_DEPRECATED_API=ON
         -DPTHREADPOOL_BUILD_TESTS=OFF
         -DPTHREADPOOL_BUILD_BENCHMARKS=OFF
 )
 vcpkg_cmake_install()
 
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 
-vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
