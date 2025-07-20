@@ -1,9 +1,9 @@
 diff --git a/libkineto/CMakeLists.txt b/libkineto/CMakeLists.txt
-index 140ee68..bc4d540 100644
+index 5256694..bc47d54 100644
 --- a/libkineto/CMakeLists.txt
 +++ b/libkineto/CMakeLists.txt
-@@ -52,6 +52,13 @@ if (NOT ROCM_SOURCE_DIR)
-     message(INFO " ROCM_SOURCE_DIR = ${ROCM_SOURCE_DIR}")
+@@ -135,6 +135,14 @@ IF (DEFINED LIBKINETO_NOXPUPTI AND NOT LIBKINETO_NOXPUPTI)
+     add_subdirectory(src/plugin/xpupti)
  endif()
  
 +if(NOT LIBKINETO_NOCUPTI)
@@ -13,25 +13,15 @@ index 140ee68..bc4d540 100644
 +  get_target_property(CUPTI_INCLUDE_DIR CUDA::cupti INTERFACE_INCLUDE_DIRECTORIES)
 +  get_target_property(CUDA_cupti_LIBRARY CUDA::cupti IMPORTED_LOCATION)
 +endif()
- if (KINETO_BUILD_TESTS)
-   enable_testing()
-   if (NOT CUDA_SOURCE_DIR)
-@@ -193,7 +200,8 @@ endif()
- target_compile_options(kineto_base PRIVATE "${KINETO_COMPILE_OPTIONS}")
- target_compile_options(kineto_api PRIVATE "${KINETO_COMPILE_OPTIONS}")
++
+ # Define file lists
+ if (LIBKINETO_NOCUPTI AND LIBKINETO_NOROCTRACER AND LIBKINETO_NOXPUPTI)
+     get_filelist("get_libkineto_cpu_only_srcs(with_api=False)" LIBKINETO_SRCS)
+@@ -213,6 +221,7 @@ set(DYNOLOG_INCLUDE_DIR "${LIBKINETO_THIRDPARTY_DIR}/dynolog/")
+ set(IPCFABRIC_INCLUDE_DIR "${DYNOLOG_INCLUDE_DIR}/dynolog/src/ipcfabric/")
+ add_subdirectory("${IPCFABRIC_INCLUDE_DIR}")
  
--if(NOT TARGET fmt)
 +find_package(fmt CONFIG REQUIRED)
-+if(FALSE)
+ if(NOT TARGET fmt::fmt-header-only)
    if(NOT FMT_SOURCE_DIR)
      set(FMT_SOURCE_DIR "${LIBKINETO_THIRDPARTY_DIR}/fmt"
-       CACHE STRING "fmt source directory from submodules")
-@@ -211,7 +219,7 @@ if(NOT TARGET fmt)
-   set(BUILD_SHARED_LIBS ${TEMP_BUILD_SHARED_LIBS} CACHE BOOL "Build shared libs" FORCE)
- endif()
- 
--set(FMT_INCLUDE_DIR "${FMT_SOURCE_DIR}/include")
-+find_path(FMT_INCLUDE_DIR NAMES "fmt/format.h" REQUIRED)
- message(STATUS "Kineto: FMT_SOURCE_DIR = ${FMT_SOURCE_DIR}")
- message(STATUS "Kineto: FMT_INCLUDE_DIR = ${FMT_INCLUDE_DIR}")
- if (NOT CUPTI_INCLUDE_DIR)

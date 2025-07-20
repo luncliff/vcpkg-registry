@@ -3,19 +3,19 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/kineto
-    REF 596126cba98181ce4a88e06aa1d602b6afd966dd
-    SHA512 5f7916a914e78afba56d47c6589eccf7303a7bdf9a55fcbbeef8733f49e554bce00a4829fb50813736913433a35cdedcccd942c79b1ebb9cae6c76693aae6648
+    REF 54ffcd4fb0bd77a5ecea46d11b4ed12d393c7fe3
+    SHA512 5346f9d97e12ac200b5d9d5e96fa6c6b9e4b84736d0beea51050725949f6fca31af020aff287468426c2b04588428fc67fbb1c8eb1f50fbef2f5e6ad002c58de
     HEAD_REF main
     PATCHES
         fix-cmake.patch
-        fix-sources.patch
 )
 
+# todo: extract to another port
 vcpkg_from_github(
     OUT_SOURCE_PATH DYNOLOG_SOURCE_PATH
     REPO facebookincubator/dynolog
-    REF 7570766213484a926908c884888cfb701577a9cb # 2024-11-12
-    SHA512 548b51276dfc924ab513406810b90a19de7e0557bfc185cc6e1e285dbaefa685fb8664524c0a04b5802f87911e68e30db675cb1d6bbecc269b441c5972b9dea2
+    REF 31a73dce4470bbf6aa684fc2bc72a7330360c50e # 2025-07-19
+    SHA512 1ae1ec2e5d83c38df7c385b1fab8b0a08a0680e0bfeadc32a8f253ed83c1d81c95d8192650f5e1b08f8b433cf467ad38f3025cfd4d4ce4bb3b6d0d54e90e56b0
     HEAD_REF main
 )
 file(REMOVE_RECURSE "${SOURCE_PATH}/libkineto/third_party/dynolog")
@@ -27,7 +27,7 @@ message(STATUS "Using Python3: ${PYTHON3}")
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/libkineto"
     OPTIONS
-        -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON3}
+        "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}"
         -DKINETO_BUILD_TESTS=OFF
         -DLIBKINETO_NOCUPTI=ON # todo: support CUDA feature
         -DLIBKINETO_NOROCTRACER=ON
