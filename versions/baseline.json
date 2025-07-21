@@ -25,7 +25,7 @@
       "port-version": 0
     },
     "cpuinfo": {
-      "baseline": "2025-03-28",
+      "baseline": "2025-06-26",
       "port-version": 0
     },
     "cudnn-frontend": {
