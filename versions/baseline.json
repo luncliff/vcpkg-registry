@@ -89,7 +89,7 @@
       "port-version": 0
     },
     "google-pthreadpool": {
-      "baseline": "2025-03-19",
+      "baseline": "2025-06-17",
       "port-version": 0
     },
     "libdispatch": {
