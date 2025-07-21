@@ -1,6 +1,6 @@
 {
   "name": "google-pthreadpool",
-  "version-date": "2025-03-19",
+  "version-date": "2025-06-17",
   "description": "Portable (POSIX/Windows/Emscripten) thread pool for C/C++",
   "homepage": "https://github.com/google/pthreadpool",
   "dependencies": [
