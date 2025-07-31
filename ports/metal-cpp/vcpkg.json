@@ -1,6 +1,6 @@
 {
   "name": "metal-cpp",
-  "version-string": "macOS15.2_iOS18.2",
+  "version-string": "macOS26_iOS26-beta2",
   "description": "Metal-cpp is a low-overhead C++ interface for Metal that helps developers add Metal functionality to graphics apps, games, and game engines that are written in C++.",
   "homepage": "https://developer.apple.com/metal/cpp/",
   "license": "Apache-2.0"

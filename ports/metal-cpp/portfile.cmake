@@ -2,7 +2,7 @@
 vcpkg_download_distfile(ARCHIVE
     URLS "https://developer.apple.com/metal/cpp/files/metal-cpp_${VERSION}.zip"
     FILENAME metal-cpp_${VERSION}.zip
-    SHA512 6a539e7bff5eb6d16176e3565f07f18f157eb69ca7c478a5ee9b0400aed84672632dc7e8b6d8d452d49c434bbe6a04bb1579756bf3564ee6163c67b87d967513
+    SHA512 983ab6c6a791925b436b3402707be8634d77c31f53875e88dbf56097c71d9097377d495ad472db18f1703c2fa812f2d3d03384ec14661a497346fd9cc14c58d5
 )
 
 vcpkg_extract_source_archive_ex(
