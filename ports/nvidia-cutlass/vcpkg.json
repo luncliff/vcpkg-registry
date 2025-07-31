@@ -17,12 +17,6 @@
     }
   ],
   "features": {
-    "tests": {
-      "description": "Enable CUTLASS Tests and GTest-based Unit Tests",
-      "dependencies": [
-        "gtest"
-      ]
-    },
     "tools": {
       "description": "Enable CUTLASS Tools"
     }
