@@ -1,6 +1,9 @@
 
 # GitHub Copilot Instructions for vcpkg package manager
 
+Create a work-note.md file to record the references and progress logs in Agent mode.
+[The work-note.md file won't be added in the commit.](../.gitignore)
+
 ## [References](../docs/references.md)
 
 ### Official Documentation
