@@ -201,44 +201,124 @@ When encountering compiler or linker errors, refer the following links
 This repository is for experiment with vcpkg.  
 Mostly for port creation/sharing without following the guidelines.
 
-* [microsoft/vcpkg Contributing Guideline](https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md)
-* [Maintainer Guideline](https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md)
-
-### Updating a ports
-
-(TBA)
-
-* See "Editing baseline files in vcpkg Registry" section above
+- [microsoft/vcpkg Contributing Guideline](https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md)
+- [Maintainer Guideline](https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md)
 
 Currently, the following scripts are used to maintain [ports/](../ports/) and [versions/](../versions/) folder.
 
-* [scripts/registry-format.ps1](../scripts/registry-format.ps1)
-* [scripts/registry-add-version.ps1](../scripts/registry-add-version.ps1)
+- [scripts/registry-format.ps1](../scripts/registry-format.ps1)
+- [scripts/registry-add-version.ps1](../scripts/registry-add-version.ps1)
 
-For example, when you updated some files of the port, we do the following steps.
+### Updating a ports
+
+Here are the steps to update a port in the vcpkg registry with **explicit Git checkpoints**.
+
+#### Step 1: Modify [Port Files](../ports/)
+- Change the vcpkg.json file of the port (update version)
+- Change the portfile.cmake (update `REF` and `SHA512` values)
+- Run the port install test (`vcpkg install <port-name>`)
+- If the install failed, check the configure/build/install logs and create patches
+
+>
+> [!NOTE]
+>
+> The Microsoft/vcpkg upstream tries to reduce the patch by suggesting the Pull Requests to the ports' projects.(See guideline references above.)  
+> However, in this repository, we prefer adopting later versions of build toolchains, rather than providing a correct changes.  
+> If there is no existing(and helpful) issues & pull requests in the upstream, we will create a patches.  
+> When the patched port can be used without big issues, then we will consider reporting to the project and making a Pull Request with the patches.
+>
+
+#### Step 2: Format The Changed [Port Files](../ports/) (Required)
+
+- Run formatting script to ensure consistent JSON formatting
+
+```ps1
+./scripts/registry-format.ps1 -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
+```
+
+#### **GIT CHECKPOINT 1**: Commit Port Changes
+
+```ps1
+git add ./ports/<port-name>/
+git commit -m "[<port-name>] use X.Y.Z" -m "- <link to release or commit URL>"
+```
+
+#### Step 3: Update Baseline and Version Files
+
+- Update registry baseline and version tracking files
+
+```ps1
+./scripts/registry-add-version.ps1 -PortName "<port-name>" -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
+```
+
+#### **GIT CHECKPOINT 2**: Commit [versions/](../versions/) changes
+```ps1
+git add ./versions/
+git commit -m "[<port-name>] update baseline and version files for X.Y.Z"
+```
+
+>
+> [!NOTE]
+>
+> Fresh git repo state is required by vcpkg tool, so always commit port changes before running registry-add-version.ps1
+>
+
+#### Note: Calculating SHA512 for New Versions
+
+When updating to a new version, you need to calculate the `SHA512` hash:
+
+```ps1
+# Download the source archive
+$Version = "X.Y.Z"
+$Url = "https://github.com/OWNER/REPO/archive/v${Version}.tar.gz"
+curl -L -o "temp-${Version}.tar.gz" $Url
+
+# Calculate SHA512 (use lowercase for vcpkg)
+$Hash = (Get-FileHash -Algorithm SHA512 "temp-${Version}.tar.gz").Hash.ToLower()
+Write-Host "SHA512: $Hash"
+
+# Clean up
+Remove-Item "temp-${Version}.tar.gz"
+```
+
+If the hash calculation can't be done in the current Shell environment,
+use `0` for the `SHA512` value in the portfile.cmake.
+By running the `vcpkg install` command with the change, vcpkg tool will report the calculated `SHA512` value with its output message.
+
+#### Example
+
+Suppose we are updating the [`openssl3` port](../ports/openssl3/).
 
 ```ps1
 Push-Location "C:/vcpkg-registry"
   $RegistryRoot = Get-Location
+  $PortName = "openssl3"  # Replace with your port name
+  
   # ... Suppose we edited files under ports/openssl3/ ...
-
-  # Simply, format all vcpkg.json files and add the changes to git
+  
+  # Step 1: Test the port installation
+  vcpkg install --overlay-ports="ports" --triplet=x64-windows $PortName
+    
+  # Step 2: Format all vcpkg.json files (optional but recommended)
   ./scripts/registry-format.ps1 -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$RegistryRoot"
-  git add ./ports
 
-  # Then update the baseline and version files. This is required by vcpkg tool
-  ./scripts/registry-add-version.ps1 -PortName "openssl3" -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$RegistryRoot"
+  # GIT CHECKPOINT 1: Commit port changes
+  git add ./ports/$PortName/
+  git commit -m "[$PortName] update to version X.Y.Z"
+
+  # Step 3: Update the baseline and version files
+  # This should be done after commit. Fresh git repo state is required by vcpkg tool
+  ./scripts/registry-add-version.ps1 -PortName $PortName -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$RegistryRoot"
+  
+  # GIT CHECKPOINT 3: Commit version files
   git add ./versions/
-
-  # ... Commit the changes ...
+  git commit -m "[$PortName] update baseline and version files"
 Pop-Location
 ```
 
 ### Testing a port
 
-(TBA)
-
-When the port's default installation works, it is enough.
+Mostly, the port's default installation works, it is enough.
 However, if the port has some features, and they are important. We have to test install with the features repetitively.
 
 1. Run `vcpkg install` command with the port name. Here, the installation needs to be "overlay install"(`--x-overlay-ports`) to prevent mix/conflict with vcpkg upstream.
