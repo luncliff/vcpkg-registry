@@ -1,19 +1,2 @@
-vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
-
-vcpkg_from_github(
-    OUT_SOURCE_PATH SOURCE_PATH
-    REPO NVIDIA/NVTX
-    REF v${VERSION}
-    SHA512 0ed51db1e77c7eb3f8c6e8a425720c13906860f54cb97dc313def0e4688b2d6f572a071fcbce0fae6f2a1abb151721dab6711287f9d9dd609b4369ae84805152
-    HEAD_REF release-v3
-)
-
-file(INSTALL "${SOURCE_PATH}/c/include/nvtx3" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
-
-file(REMOVE_RECURSE
-    "${CURRENT_PACKAGES_DIR}/debug"
-    "${CURRENT_PACKAGES_DIR}/lib"
-)
-file(INSTALL "${SOURCE_PATH}/c/README.md" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
-
-vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")
+set(VCPKG_POLICY_EMPTY_PACKAGE enabled)
+message(STATUS "The port will install 'nvtx3' instead")

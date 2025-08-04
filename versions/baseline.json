@@ -149,7 +149,7 @@
       "port-version": 0
     },
     "nvidia-tools-extension-sdk": {
-      "baseline": "3.1.1",
+      "baseline": "3.2.0",
       "port-version": 0
     },
     "nvidia-triton-client": {
