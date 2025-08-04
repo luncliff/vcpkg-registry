@@ -1,7 +1,10 @@
 {
   "name": "nvidia-tools-extension-sdk",
-  "version": "3.1.1",
-  "description": "The NVIDIA® Tools Extension SDK (NVTX)",
+  "version": "3.2.0",
+  "description": "Redirection port for 'nvtx3'",
   "homepage": "https://nvidia.github.io/NVTX/",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": [
+    "nvtx3"
+  ]
 }

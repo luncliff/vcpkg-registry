@@ -149,7 +149,7 @@
       "port-version": 0
     },
     "nvidia-tools-extension-sdk": {
-      "baseline": "3.1.1",
+      "baseline": "3.2.0",
       "port-version": 0
     },
     "nvidia-triton-client": {
@@ -162,6 +162,10 @@
     },
     "nvidia-triton-core": {
       "baseline": "2025-02-08",
+      "port-version": 0
+    },
+    "nvtx3": {
+      "baseline": "3.2.0",
       "port-version": 0
     },
     "onnx": {
