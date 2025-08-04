@@ -165,7 +165,7 @@
       "port-version": 0
     },
     "nvtx3": {
-      "baseline": "3.2.0",
+      "baseline": "3.2.2",
       "port-version": 0
     },
     "onnx": {
