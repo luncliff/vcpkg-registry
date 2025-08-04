@@ -164,6 +164,10 @@
       "baseline": "2025-02-08",
       "port-version": 0
     },
+    "nvtx3": {
+      "baseline": "3.2.0",
+      "port-version": 0
+    },
     "onnx": {
       "baseline": "1.16.2",
       "port-version": 1
