@@ -1,6 +1,6 @@
 {
   "name": "nvidia-cutlass",
-  "version-semver": "3.8.0",
+  "version-semver": "3.9.0",
   "description": "CUDA Templates for Linear Algebra Subroutines",
   "homepage": "https://github.com/NVIDIA/cutlass",
   "license": "BSD-3-Clause",
@@ -16,7 +16,13 @@
       "host": true
     }
   ],
+  "default-features": [
+    "tools"
+  ],
   "features": {
+    "library": {
+      "description": "Enable CUTLASS Library"
+    },
     "tools": {
       "description": "Enable CUTLASS Tools"
     }
