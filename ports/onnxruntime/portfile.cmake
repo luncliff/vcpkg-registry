@@ -9,12 +9,11 @@ vcpkg_from_github(
     REF ${ORT_GIT_BRANCH}
     SHA512 32310215a3646c64ff5e0a309c3049dbe02ae9dd5bda8c89796bd9f86374d0f43443aed756b941d9af20ef1758bb465981ac517bbe8ac33661a292d81c59b152
     PATCHES
-        # because the version has changed. we need to test each patches with the matching features
-        fix-sources.patch # source changes
-        fix-cmake.patch # cmake changes
-        fix-cmake-cuda.patch # onnxruntime[cuda]
-        fix-cmake-training.patch # onnxruntime[training]
-        fix-cmake-tensorrt.patch # onnxruntime[tensorrt]
+        fix-sources.patch
+        fix-cmake.patch
+        fix-cmake-cuda.patch
+        fix-cmake-training.patch
+        fix-cmake-tensorrt.patch
 )
 
 find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
@@ -64,7 +63,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         framework onnxruntime_BUILD_APPLE_FRAMEWORK
         framework onnxruntime_BUILD_OBJC
         nccl      onnxruntime_USE_NCCL
-        mpi       onnxruntime_USE_MPI
     INVERTED_FEATURES
         cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
@@ -77,6 +75,18 @@ if("training" IN_LIST FEATURES)
         SHA512 0dc57928d55ebd46386d0f0852b3b4e9078222bd4378655abb16f6bc0e5ed2969600071d5d2ae9a3f2aa6bb327fe567869a01a69fdda35c261dc44a1eadd18ce
     )
     list(APPEND FEATURE_OPTIONS "-DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}")
+endif()
+
+if("cuda" IN_LIST FEATURES)
+    vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root)
+    message(STATUS "Using nvcc: ${NVCC}")
+    list(APPEND FEATURE_OPTIONS
+        "-DCMAKE_CUDA_COMPILER=${NVCC}"
+        "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
+        # "-DCMAKE_CUDA_ARCHITECTURES=native"
+        # too much warnings about attribute
+        "-DCMAKE_CUDA_FLAGS=-Xcudafe --diag_suppress=2803 -Wno-deprecated-gpu-targets"
+    )
 endif()
 
 if("tensorrt" IN_LIST FEATURES)
@@ -122,7 +132,6 @@ vcpkg_cmake_configure(
         -DORT_GIT_BRANCH=${ORT_GIT_BRANCH}
         # some other customizations ...
         --compile-no-warning-as-error
-        "-DCMAKE_CUDA_FLAGS=-Xcudafe --diag_suppress=2803" # too much warnings about attribute
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
