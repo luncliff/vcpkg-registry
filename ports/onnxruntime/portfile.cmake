@@ -1,19 +1,20 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 
-set(ORT_GIT_COMMIT "8f7cce3a49fdbdac96e0868b75b7d0159db7ac7f")
+set(ORT_GIT_COMMIT "f217402897f40ebba457e2421bc0a4702771968e")
 set(ORT_GIT_BRANCH "v${VERSION}")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
     REF ${ORT_GIT_BRANCH}
-    SHA512 b828250eadfc3820aa35962e1f1bf733e443dca73a048d56630fe507b70fb4898593e683a294a7cccd6a9a93dfda964ca2381a4785b526e84dd060c8573953c2
+    SHA512 32310215a3646c64ff5e0a309c3049dbe02ae9dd5bda8c89796bd9f86374d0f43443aed756b941d9af20ef1758bb465981ac517bbe8ac33661a292d81c59b152
     PATCHES
-        fix-sources.patch
-        fix-cmake.patch
-        fix-cmake-cuda.patch
-        fix-cmake-training.patch
-        fix-cmake-tensorrt.patch
+        # because the version has changed. we need to test each patches with the matching features
+        fix-sources.patch # source changes
+        fix-cmake.patch # cmake changes
+        fix-cmake-cuda.patch # onnxruntime[cuda]
+        fix-cmake-training.patch # onnxruntime[training]
+        fix-cmake-tensorrt.patch # onnxruntime[tensorrt]
 )
 
 find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
