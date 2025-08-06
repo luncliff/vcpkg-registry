@@ -105,7 +105,7 @@
       "port-version": 0
     },
     "llama-cpp": {
-      "baseline": "5568",
+      "baseline": "6092",
       "port-version": 0
     },
     "metal-cpp": {
