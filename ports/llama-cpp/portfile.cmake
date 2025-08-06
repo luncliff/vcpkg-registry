@@ -3,17 +3,15 @@ if(VCPKG_TARGET_IS_WINDOWS)
 endif()
 set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
-# https://github.com/ggml-org/llama.cpp/releases/tag/b5568
+# https://github.com/ggml-org/llama.cpp/releases/tag/b6092
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggml-org/llama.cpp
     REF "b${VERSION}"
-    SHA512 815264eb77fc921ee08f952aaabeeea4d872fb4eb069a0312d53ff3f6712f6226208d0f1ccbfaa075ca276db34fc0990daf17796d120de934ed2622e4ac107b4
+    SHA512 3975d176316cc9f3fdfa2183581ca4c57b30f3fc9c15d7eb94144be2de323d5fd2cd82fc345965cc1b8334059657a7666331efdb4fa7adf74114282ecb2abbec
     HEAD_REF master
     PATCHES
-        fix-cmake-ggml.patch
         fix-3rdparty.patch
-        fix-cmake-llama.patch
 )
 file(REMOVE_RECURSE
     "${SOURCE_PATH}/vendor/nlohmann" # nlohmann-json
@@ -69,8 +67,19 @@ if(VCPKG_TARGET_IS_OSX)
     )
 endif()
 
+if("cuda" IN_LIST FEATURES)
+    vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root)
+    list(APPEND FEATURE_OPTIONS
+        "-DCMAKE_CUDA_COMPILER:FILEPATH=${NVCC}"
+        "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
+    )
+endif()
+
 if("vulkan" IN_LIST FEATURES)
-    list(APPEND TOOL_PATHS "${VCPKG_HOST_INSTALLED_DIR}/tools/glslang")
+    list(APPEND TOOL_PATHS
+        "${VCPKG_HOST_INSTALLED_DIR}/tools/glslang"
+        "${VCPKG_HOST_INSTALLED_DIR}/tools/shaderc"
+    )
     if(DEFINED ENV{VULKAN_SDK})
         list(APPEND TOOL_PATHS "$ENV{VULKAN_SDK}/Bin")
     endif()

@@ -1,6 +1,6 @@
 {
   "name": "llama-cpp",
-  "version": "5568",
+  "version": "6092",
   "description": "LLM inference in C/C++",
   "homepage": "https://github.com/ggml-org/llama.cpp",
   "license": "MIT",
@@ -31,7 +31,7 @@
       "description": "Use CUDA",
       "dependencies": [
         "cuda",
-        "nvidia-cudnn-frontend"
+        "cudnn-frontend"
       ]
     },
     "metal": {
@@ -76,6 +76,10 @@
           "features": [
             "tools"
           ]
+        },
+        {
+          "name": "shaderc",
+          "host": true
         },
         "vulkan"
       ]
