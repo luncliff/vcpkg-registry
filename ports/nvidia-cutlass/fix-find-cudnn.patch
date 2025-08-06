@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b54b833..e9cb236 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -810,7 +810,7 @@ if (CUTLASS_ENABLE_CUBLAS)
+   target_compile_definitions(CUTLASS INTERFACE CUTLASS_ENABLE_CUBLAS=1)
+ endif()
+ 
+-include(${CMAKE_CURRENT_SOURCE_DIR}/cuDNN.cmake)
++find_package(CUDNN REQUIRED) # FindCUDNN.cmake from vcpkg 'cudnn' port
+ 
+ if (CUTLASS_ENABLE_CUDNN)
+   target_compile_definitions(CUTLASS INTERFACE CUTLASS_ENABLE_CUDNN=1)

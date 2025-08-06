@@ -9,6 +9,8 @@ vcpkg_from_github(
     REF v${VERSION}
     SHA512 b02775b7a364a708388fd7ce1c5526453cfb42f35fd9143aad0b0efd2dc10b66feb1539ad08f0f9089fd241e0bdb2002fdeea2604cfdba7a519aceb4f0df0557
     HEAD_REF main
+    PATCHES
+        fix-find-cudnn.patch
 )
 
 vcpkg_find_acquire_program(PYTHON3)
