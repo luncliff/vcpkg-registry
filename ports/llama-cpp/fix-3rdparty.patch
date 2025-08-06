@@ -1,8 +1,8 @@
 diff --git a/common/CMakeLists.txt b/common/CMakeLists.txt
-index 564af14..822aceb 100644
+index 0ae4d69..5265331 100644
 --- a/common/CMakeLists.txt
 +++ b/common/CMakeLists.txt
-@@ -144,7 +144,8 @@ if (LLAMA_LLGUIDANCE)
+@@ -133,7 +133,8 @@ if (LLAMA_LLGUIDANCE)
      set(LLAMA_COMMON_EXTRA_LIBS ${LLAMA_COMMON_EXTRA_LIBS} llguidance ${LLGUIDANCE_PLATFORM_LIBS})
  endif ()
  
@@ -11,6 +11,25 @@ index 564af14..822aceb 100644
 +target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MINJA_INCLUDE_DIRS})
  target_compile_features   (${TARGET} PUBLIC cxx_std_17)
  target_link_libraries     (${TARGET} PRIVATE ${LLAMA_COMMON_EXTRA_LIBS} PUBLIC llama Threads::Threads)
+ 
+diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
+index d64956b..9611d76 100644
+--- a/tools/CMakeLists.txt
++++ b/tools/CMakeLists.txt
+@@ -3,6 +3,14 @@
+ find_package(Threads REQUIRED)
+ 
+ # third-party
++if(LLAMA_SERVER_SSL)
++    find_package(ZLIB REQUIRED)
++    find_package(OpenSSL REQUIRED)
++    link_libraries(ZLIB::ZLIB OpenSSL::SSL OpenSSL::Crypto)
++    if(APPLE)
++        link_libraries("-framework Security" "-framework SystemConfiguration")
++    endif()
++endif()
+ 
+ # ...
  
 diff --git a/tools/mtmd/CMakeLists.txt b/tools/mtmd/CMakeLists.txt
 index 4baa15b..d459931 100644
@@ -28,7 +47,7 @@ index 4baa15b..d459931 100644
  
  if (BUILD_SHARED_LIBS)
 diff --git a/tools/mtmd/mtmd-helper.cpp b/tools/mtmd/mtmd-helper.cpp
-index 64f03fd..cfd97df 100644
+index 686f42f..eabe20e 100644
 --- a/tools/mtmd/mtmd-helper.cpp
 +++ b/tools/mtmd/mtmd-helper.cpp
 @@ -27,10 +27,10 @@
@@ -58,11 +77,11 @@ index c2a56aa..fd740e8 100644
      find_package(OpenSSL REQUIRED)
      target_link_libraries(${TARGET} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 diff --git a/tools/server/utils.hpp b/tools/server/utils.hpp
-index f3e0392..523fb3f 100644
+index f3dfc82..02c0d14 100644
 --- a/tools/server/utils.hpp
 +++ b/tools/server/utils.hpp
-@@ -13,7 +13,7 @@
- #define CPPHTTPLIB_FORM_URL_ENCODED_PAYLOAD_MAX_LENGTH 1048576
+@@ -15,7 +15,7 @@
+ #define CPPHTTPLIB_LISTEN_BACKLOG 512
  // disable Nagle's algorithm
  #define CPPHTTPLIB_TCP_NODELAY true
 -#include <cpp-httplib/httplib.h>
