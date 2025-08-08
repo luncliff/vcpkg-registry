@@ -85,16 +85,19 @@ jobs:
 
   overlay_cuda:
     name: "CUDA"
-    runs-on: ["self-hosted", "x64", "Windows", "CUDA"]
-    needs: ["overlay"]
     continue-on-error: true
     timeout-minutes: 300
+    defaults:
+      run:
+        shell: pwsh
     strategy:
       matrix:
-        include:
-          - vcpkg_tag: "2025.07.25"
-            vcpkg_commit: "dd3097e305afa53f7b4312371f62058d2e665320"
+        cuda_env: [CUDA_PATH_V12_8, CUDA_PATH_V13_0] # todo: TENSORRT_HOME
       fail-fast: false
+    runs-on:
+      - self-hosted
+      - Windows
+      - ${{ matrix.cuda_env }}
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
@@ -108,27 +111,35 @@ jobs:
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
           git config --system core.longpaths true
-        shell: pwsh
         continue-on-error: true
 
       - name: "Change vcpkg.json"
         run: |
           New-Item -Type Directory -Force C:/vcpkg-caches
           Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
-        shell: pwsh
+
+      - name: "Change CUDA_PATH"
+        run: |
+          $Label="${{matrix.cuda_env}}"
+          if ($Label -eq "CUDA_PATH_V12_8"){
+            echo "CUDA_PATH=$env:CUDA_PATH_V12_8" >> $GITHUB_ENV
+          }
+          if ($Label -eq "CUDA_PATH_V13_0"){
+            echo "CUDA_PATH=$env:CUDA_PATH_V13_0" >> $GITHUB_ENV
+          }
 
       - uses: lukka/run-vcpkg@v11.5
-        name: "Run vcpkg(x64-windows, ${{ matrix.vcpkg_tag }})"
+        name: "Run vcpkg(x64-windows)"
         with:
           vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "${{ matrix.vcpkg_commit }}"
+          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `cuda`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches,readwrite"
+          VCPKG_BINARY_SOURCES: "files,C:/vcpkg-caches,readwrite"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
