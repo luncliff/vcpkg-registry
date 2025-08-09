@@ -10,7 +10,8 @@ vcpkg_extract_source_archive(SOURCE_PATH
   ARCHIVE "${ARCHIVE}"
   PATCHES
     fix-cmake4.patch
-    no-tests.patch
+    fix-no-tests.patch
+    fix-pkgconfig.patch
 )
 vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root) 
 
@@ -49,5 +50,6 @@ file(REMOVE_RECURSE
   "${CURRENT_PACKAGES_DIR}/debug/include"
   "${CURRENT_PACKAGES_DIR}/debug/share"
 )
+file(INSTALL "${SOURCE_PATH}/ReleaseNotes" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
 
-vcpkg_install_copyright(FILE_LIST "${src_path}/COPYRIGHT")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYRIGHT")
