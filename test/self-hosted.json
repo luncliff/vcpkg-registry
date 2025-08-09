@@ -23,6 +23,7 @@
             "cuda"
           ]
         },
+        "magma",
         "nvidia-cnmem",
         "nvidia-cudnn-frontend",
         {

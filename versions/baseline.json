@@ -108,6 +108,10 @@
       "baseline": "6092",
       "port-version": 0
     },
+    "magma": {
+      "baseline": "2.9.0",
+      "port-version": 0
+    },
     "metal-cpp": {
       "baseline": "macOS26_iOS26-beta2",
       "port-version": 0
