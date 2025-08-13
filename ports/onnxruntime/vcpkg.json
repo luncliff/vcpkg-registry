@@ -1,6 +1,6 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.21.1",
+  "version-semver": "1.22.0",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://github.com/microsoft/onnxruntime",
   "license": "MIT",
@@ -65,8 +65,13 @@
       "description": "Build with CUDA support",
       "dependencies": [
         "cuda",
-        "nvidia-cudnn-frontend",
-        "nvidia-cutlass"
+        "cudnn-frontend",
+        {
+          "name": "nvidia-cutlass",
+          "features": [
+            "tools"
+          ]
+        }
       ]
     },
     "directml": {
@@ -80,6 +85,20 @@
     "framework": {
       "description": "Build a macOS/iOS framework, Objective-C library",
       "supports": "osx | ios"
+    },
+    "nccl": {
+      "description": "Build with NCCL",
+      "supports": "x64 & linux",
+      "dependencies": [
+        "nccl",
+        {
+          "name": "onnxruntime",
+          "default-features": false,
+          "features": [
+            "cuda"
+          ]
+        }
+      ]
     },
     "openvino": {
       "description": "Build with OpenVINO support",

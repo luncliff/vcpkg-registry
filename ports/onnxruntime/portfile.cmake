@@ -1,13 +1,13 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 
-set(ORT_GIT_COMMIT "8f7cce3a49fdbdac96e0868b75b7d0159db7ac7f")
+set(ORT_GIT_COMMIT "f217402897f40ebba457e2421bc0a4702771968e")
 set(ORT_GIT_BRANCH "v${VERSION}")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
     REF ${ORT_GIT_BRANCH}
-    SHA512 b828250eadfc3820aa35962e1f1bf733e443dca73a048d56630fe507b70fb4898593e683a294a7cccd6a9a93dfda964ca2381a4785b526e84dd060c8573953c2
+    SHA512 32310215a3646c64ff5e0a309c3049dbe02ae9dd5bda8c89796bd9f86374d0f43443aed756b941d9af20ef1758bb465981ac517bbe8ac33661a292d81c59b152
     PATCHES
         fix-sources.patch
         fix-cmake.patch
@@ -63,7 +63,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         framework onnxruntime_BUILD_APPLE_FRAMEWORK
         framework onnxruntime_BUILD_OBJC
         nccl      onnxruntime_USE_NCCL
-        mpi       onnxruntime_USE_MPI
     INVERTED_FEATURES
         cuda      onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION
 )
@@ -78,12 +77,27 @@ if("training" IN_LIST FEATURES)
     list(APPEND FEATURE_OPTIONS "-DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}")
 endif()
 
+if("cuda" IN_LIST FEATURES)
+    vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root)
+    message(STATUS "Using nvcc: ${NVCC}")
+    list(APPEND FEATURE_OPTIONS
+        "-DCMAKE_CUDA_COMPILER=${NVCC}"
+        "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
+        # "-DCMAKE_CUDA_ARCHITECTURES=native"
+        # too much warnings about attribute
+        "-DCMAKE_CUDA_FLAGS=-Xcudafe --diag_suppress=2803 -Wno-deprecated-gpu-targets"
+    )
+endif()
+
 if("tensorrt" IN_LIST FEATURES)
+    if(DEFINED ENV{TENSORRT_HOME})
+        set(TENSORRT_HOME "$ENV{TENSORRT_HOME}")
+    endif()
     if(DEFINED TENSORRT_HOME)
         message(STATUS "Using TensorRT: ${TENSORRT_HOME}")
         list(APPEND FEATURE_OPTIONS "-Donnxruntime_TENSORRT_HOME:PATH=${TENSORRT_HOME}")
     else()
-        message(WARNING "Define TENSORRT_HOME in the triplet for onnxruntime_TENSORRT_HOME")
+        message(WARNING "Define TENSORRT_HOME in the triplet or environment variables. If the environment variable is not visible, check the VCPKG_KEEP_ENV_VARS.")
     endif()
 endif()
 
@@ -121,7 +135,6 @@ vcpkg_cmake_configure(
         -DORT_GIT_BRANCH=${ORT_GIT_BRANCH}
         # some other customizations ...
         --compile-no-warning-as-error
-        "-DCMAKE_CUDA_FLAGS=-Xcudafe --diag_suppress=2803" # too much warnings about attribute
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
         -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF

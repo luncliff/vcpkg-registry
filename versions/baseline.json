@@ -181,7 +181,7 @@
       "port-version": 0
     },
     "onnxruntime": {
-      "baseline": "1.21.1",
+      "baseline": "1.22.0",
       "port-version": 0
     },
     "opencl": {
