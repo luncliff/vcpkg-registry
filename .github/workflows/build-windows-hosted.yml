@@ -14,6 +14,7 @@ concurrency:
 env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
   VCPKG_ENABLE_METRICS: 0
+  VCPKG_BINARY_SOURCES: "files,C:/vcpkg-caches,readwrite"
 
 jobs:
   overlay:
@@ -59,7 +60,7 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches,readwrite"
+          # VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches,readwrite"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -74,7 +75,7 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches,readwrite"
+          # VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches,readwrite"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -122,10 +123,12 @@ jobs:
         run: |
           $Label="${{matrix.cuda_env}}"
           if ($Label -eq "CUDA_PATH_V12_8"){
-            echo "CUDA_PATH=$env:CUDA_PATH_V12_8" >> $GITHUB_ENV
+            Write-Output "CUDA_PATH=${env:CUDA_PATH_V12_8}"
+            "CUDA_PATH=${env:CUDA_PATH_V12_8}" >> $GITHUB_ENV
           }
           if ($Label -eq "CUDA_PATH_V13_0"){
-            echo "CUDA_PATH=$env:CUDA_PATH_V13_0" >> $GITHUB_ENV
+            Write-Output "CUDA_PATH=${env:CUDA_PATH_V13_0}"
+            "CUDA_PATH=${env:CUDA_PATH_V13_0}" >> $GITHUB_ENV
           }
 
       - uses: lukka/run-vcpkg@v11.5
@@ -139,9 +142,7 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `cuda`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          VCPKG_BINARY_SOURCES: "files,C:/vcpkg-caches,readwrite"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          VCPKG_KEEP_ENV_VARS: "CUDA_PATH;TENSORRT_HOME"
 
       - uses: yumis-coconudge/clean-workspace-action@v1.0.6
         with:
@@ -179,6 +180,5 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `vulkan`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
           VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
