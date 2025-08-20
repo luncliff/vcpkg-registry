@@ -91,14 +91,14 @@ jobs:
     defaults:
       run:
         shell: pwsh
-    strategy:
-      matrix:
-        cuda_env: [CUDA_PATH_V12_8, CUDA_PATH_V13_0] # todo: TENSORRT_HOME
-      fail-fast: false
+    # strategy:
+    #   matrix:
+    #     cuda_env: [CUDA_PATH] # todo: CUDA_PATH_V13_0
+    #   fail-fast: false
     runs-on:
       - self-hosted
       - Windows
-      - ${{ matrix.cuda_env }}
+      - CUDA
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
@@ -119,17 +119,9 @@ jobs:
           New-Item -Type Directory -Force C:/vcpkg-caches
           Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
 
-      - name: "Change CUDA_PATH"
+      - name: "Check CUDA_PATH"
         run: |
-          $Label="${{matrix.cuda_env}}"
-          if ($Label -eq "CUDA_PATH_V12_8"){
-            Write-Output "CUDA_PATH=${env:CUDA_PATH_V12_8}"
-            "CUDA_PATH=${env:CUDA_PATH_V12_8}" >> $GITHUB_ENV
-          }
-          if ($Label -eq "CUDA_PATH_V13_0"){
-            Write-Output "CUDA_PATH=${env:CUDA_PATH_V13_0}"
-            "CUDA_PATH=${env:CUDA_PATH_V13_0}" >> $GITHUB_ENV
-          }
+          Write-Output "CUDA_PATH: ${env:CUDA_PATH}"
 
       - uses: lukka/run-vcpkg@v11.5
         name: "Run vcpkg(x64-windows)"
