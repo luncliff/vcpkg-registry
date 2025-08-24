@@ -119,9 +119,11 @@ jobs:
           New-Item -Type Directory -Force C:/vcpkg-caches
           Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
 
-      - name: "Check CUDA_PATH"
+      - name: "Check CUDA Environment"
         run: |
           Write-Output "CUDA_PATH: ${env:CUDA_PATH}"
+          Write-Output "CUDNN_ROOT_DIR: ${env:CUDNN_ROOT_DIR}"
+          Write-Output "TENSORRT_HOME: ${env:TENSORRT_HOME}"
 
       - uses: lukka/run-vcpkg@v11.5
         name: "Run vcpkg(x64-windows)"
@@ -134,7 +136,7 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `cuda`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          VCPKG_KEEP_ENV_VARS: "CUDA_PATH;TENSORRT_HOME"
+          VCPKG_KEEP_ENV_VARS: "CUDA_PATH;CUDNN_ROOT_DIR;TENSORRT_HOME"
 
       - uses: yumis-coconudge/clean-workspace-action@v1.0.6
         with:
