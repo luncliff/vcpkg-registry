@@ -5,63 +5,44 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/XNNPACK
-    REF b1f45735aa86a0a84053d331fee702b8038492ee
-    SHA512 3c4415cb9097f60bb1149140bc5b609f7c4aea5c03e8bfc8168645d480fcea52b4beee4ae030923910ad072158bf3de355077cd6f75c3905c659c4507eaab4ca
+    REF efdfb7ebf2e38492061e788df8a1ee7544d06ccc
+    SHA512 f951b1ecb8ada17f0790910c0c2ddac027275a02cfac07b7de7db0984c7ba6eb3944e0fca0df43dadb0b4bc1e96a7c925ade46ff7ef5e9f434de92c0a8ce48b9
     HEAD_REF master
     PATCHES
         fix-cmake.patch
         fix-emscripten.patch
 )
 
-if(VCPKG_TARGET_IS_WINDOWS)
-    # see https://docs.microsoft.com/en-us/cpp/intrinsics/arm64-intrinsics?view=msvc-170
-    # see https://github.com/google/XNNPACK/blob/master/scripts/build-windows-arm64.cmd
-    # see ${SOURCE_PATH}/scripts/build-windows-arm64.cmd
-    if(VCPKG_TARGET_ARCHITECTURE MATCHES "arm")
-        list(APPEND PLATFORM_OPTIONS
-            -DXNNPACK_ENABLE_ASSEMBLY=OFF
-            -DXNNPACK_ENABLE_ARM_FP16_SCALAR=OFF
-            -DXNNPACK_ENABLE_ARM_BF16=OFF # `bfloat16_t` type is missing
-            # -DXNNPACK_ENABLE_ARM_FP16_VECTOR=ON # `__fp16` type is missing
-        )
-    endif()
-elseif(VCPKG_TARGET_IS_ANDROID)
-    # see ${SOURCE_PATH}/scripts/build-android-armv7.sh
-    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
-        list(APPEND PLATFORM_OPTIONS -DXNNPACK_ENABLE_ARM_BF16=OFF)
-    endif()
-endif()
-
-vcpkg_find_acquire_program(PYTHON3)
-message(STATUS "Using python3: ${PYTHON3}")
-
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        test    XNNPACK_BUILD_TESTS
-        test    XNNPACK_BUILD_BENCHMARKS
         kleidiai XNNPACK_ENABLE_KLEIDIAI
 )
 
+vcpkg_find_acquire_program(PYTHON3)
+message(STATUS "Using Python3: ${PYTHON3}")
+
 vcpkg_cmake_configure(
-    SOURCE_PATH ${SOURCE_PATH}
+    SOURCE_PATH "${SOURCE_PATH}"
+    WINDOWS_USE_MSBUILD
     OPTIONS
         ${FEATURE_OPTIONS}
-        ${PLATFORM_OPTIONS}
+        "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
         -DXNNPACK_USE_SYSTEM_LIBS=ON
-        "-DCPUINFO_SOURCE_DIR:PATH=${CURRENT_INSTALLED_DIR}"
-        "-DPTHREADPOOL_SOURCE_DIR:PATH=${CURRENT_INSTALLED_DIR}"
+        -DXNNPACK_ENABLE_ASSEMBLY=ON
         -DXNNPACK_ENABLE_MEMOPT=ON
         -DXNNPACK_ENABLE_SPARSE=ON
-        # -DXNNPACK_BUILD_ALL_MICROKERNELS=ON # let the project select default
-        "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
+        -DXNNPACK_ENABLE_WASM_REVECTORIZE=${VCPKG_TARGET_IS_EMSCRIPTEN}
+        -DXNNPACK_BUILD_TESTS=OFF
+        -DXNNPACK_BUILD_BENCHMARKS=OFF
+    MAYBE_UNUSED_VARIABLES
+        XNNPACK_ENABLE_WASM_REVECTORIZE
 )
 vcpkg_cmake_install()
+vcpkg_copy_pdbs()
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/bin"
     "${CURRENT_PACKAGES_DIR}/debug/share"
 )
-# file(INSTALL "${SOURCE_PATH}/include/" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
-
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

@@ -1,4 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
+<<<<<<< HEAD
 index 9df3691..6c457cc 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
@@ -78,3 +79,59 @@ index 9df3691..6c457cc 100644
      SET(FXDIV_BUILD_TESTS OFF CACHE BOOL "")
      SET(FXDIV_BUILD_BENCHMARKS OFF CACHE BOOL "")
      ADD_SUBDIRECTORY(
+=======
+index 64a9d9c..c34b8af 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1189,6 +1189,8 @@ IF(NOT TARGET cpuinfo)
+     ADD_SUBDIRECTORY(
+       "${CPUINFO_SOURCE_DIR}"
+       "${CMAKE_BINARY_DIR}/cpuinfo")
++  elseif(TRUE)
++    find_package(cpuinfo CONFIG REQUIRED)
+   ELSE()
+     ADD_LIBRARY(cpuinfo SHARED IMPORTED)
+     FIND_LIBRARY(CPUINFO_LIBRARY cpuinfo PATHS "${CPUINFO_SOURCE_DIR}/lib")
+@@ -1201,8 +1203,8 @@ IF(NOT TARGET cpuinfo)
+   ENDIF()
+ ENDIF()
+ IF(XNNPACK_BUILD_LIBRARY)
+-  TARGET_LINK_LIBRARIES(xnnpack-hardware-config PRIVATE cpuinfo)
+-  TARGET_LINK_LIBRARIES(XNNPACK PRIVATE cpuinfo)
++  target_link_libraries(xnnpack-hardware-config PRIVATE cpuinfo::cpuinfo)
++  target_link_libraries(XNNPACK PRIVATE cpuinfo::cpuinfo)
+ ENDIF()
+ 
+ # ---[ Configure pthreadpool
+@@ -1221,7 +1223,8 @@ IF(NOT TARGET pthreadpool)
+       MESSAGE(FATAL_ERROR "Cannot find pthreadpool")
+     ENDIF()
+     FIND_PACKAGE(Threads REQUIRED)
+-    TARGET_INCLUDE_DIRECTORIES(pthreadpool INTERFACE "${PTHREADPOOL_SOURCE_DIR}/include")
++    find_path(PTHREADPOOL_INCLUDE_DIR pthreadpool.h REQUIRED)
++    target_include_directories(pthreadpool INTERFACE "${PTHREADPOOL_INCLUDE_DIR}")
+     TARGET_LINK_LIBRARIES(pthreadpool INTERFACE Threads::Threads)
+     SET_PROPERTY(TARGET pthreadpool PROPERTY IMPORTED_LOCATION "${PTHREADPOOL_LIBRARY}")
+     SET_PROPERTY(TARGET pthreadpool PROPERTY IMPORTED_IMPLIB "${PTHREADPOOL_LIBRARY}")
+@@ -1237,6 +1240,10 @@ IF(NOT TARGET fxdiv)
+     ADD_SUBDIRECTORY(
+       "${FXDIV_SOURCE_DIR}"
+       "${CMAKE_BINARY_DIR}/FXdiv")
++  elseif(TRUE)
++    find_path(FXDIV_INCLUDE_DIR NAMES fxdiv.h REQUIRED)
++    add_library(fxdiv INTERFACE)
++    target_include_directories(fxdiv INTERFACE "${FXDIV_INCLUDE_DIR}")
+   ELSE()
+     FIND_FILE(FXDIV_HDR fxdiv.h PATH_SUFFIXES include PATHS "${FXDIV_SOURCE_DIR}")
+     IF(NOT FXDIV_HDR)
+@@ -1271,6 +1278,9 @@ IF(XNNPACK_ENABLE_KLEIDIAI)
+       ADD_SUBDIRECTORY(
+         "${KLEIDIAI_SOURCE_DIR}"
+         "${CMAKE_BINARY_DIR}/kleidiai")
++    elseif(TRUE)
++      find_package(KleidiAI CONFIG REQUIRED)
++      add_library(kleidiai ALIAS KleidiAI::kleidiai)
+     ELSE()
+       ADD_LIBRARY(kleidiai SHARED IMPORTED)
+       FIND_LIBRARY(KLEIDIAI_LIBRARY kleidiai PATHS "${KLEIDIAI_SOURCE_DIR}/lib")
+>>>>>>> 9f26f22 ([xnnpack] update to 2025-08-19)
