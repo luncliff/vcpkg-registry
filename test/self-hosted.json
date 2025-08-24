@@ -93,6 +93,12 @@
       "dependencies": [
         "glslang",
         {
+          "name": "libtorch",
+          "features": [
+            "vulkan"
+          ]
+        },
+        {
           "name": "llama-cpp",
           "features": [
             "vulkan"
