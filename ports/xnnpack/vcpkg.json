@@ -1,8 +1,9 @@
 {
   "name": "xnnpack",
-  "version-date": "2025-04-19",
+  "version-date": "2025-08-19",
   "description": "High-efficiency floating-point neural network inference operators for mobile, server, and Web",
   "homepage": "https://github.com/google/XNNPACK",
+  "license": "BSD-3-Clause",
   "dependencies": [
     "cpuinfo",
     "fp16",
@@ -14,11 +15,11 @@
     }
   ],
   "features": {
-    "test": {
-      "description": "Build and run tests",
+    "kleidiai": {
+      "description": "Use KleidiAI GEMM microkernels for ARM",
+      "supports": "arm64 & !windows",
       "dependencies": [
-        "benchmark",
-        "gtest"
+        "kleidiai"
       ]
     }
   }
