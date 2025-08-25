@@ -6,7 +6,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
     REF v${VERSION}
-    SHA512 f9647621c93b6a7d3c43d92b7cfa0ec481de0f43e4936c0d946e305b440aa1caa72a48cbf4ccef7efc270f1e6d7926c2c327dfd2af9f649707e52bb10bd86235
+    SHA512 8709d8d8b145cb467d9cbdb8631e09663f078bbf874f041282c5a71a0860088c54c32ad8c13aabd8c4f03193b97c84a6426629c83a3d465bc8f451b4b4fa84cc
     PATCHES
         fix-cmake-vcpkg.patch
         fix-cmake-c-api.patch
