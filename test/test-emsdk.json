@@ -7,10 +7,11 @@
   "supports": "emscripten",
   "dependencies": [
     "abseil",
-    "xnnpack",
     {
       "name": "curl",
       "default-features": false
-    }
+    },
+    "tensorflow-lite",
+    "xnnpack"
   ]
 }
