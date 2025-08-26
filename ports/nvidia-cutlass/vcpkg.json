@@ -1,7 +1,6 @@
 {
   "name": "nvidia-cutlass",
-  "version-semver": "3.9.0",
-  "port-version": 1,
+  "version-semver": "3.9.1",
   "description": "CUDA Templates for Linear Algebra Subroutines",
   "homepage": "https://github.com/NVIDIA/cutlass",
   "license": "BSD-3-Clause",
