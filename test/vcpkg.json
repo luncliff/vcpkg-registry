@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2025-04-06",
+  "version-date": "2025-08-29",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows | linux | osx | ios",
@@ -163,7 +163,17 @@
         "xatlas",
         {
           "name": "xnnpack",
+          "features": [
+            "test"
+          ],
           "platform": "linux"
+        },
+        {
+          "name": "xnnpack",
+          "features": [
+            "kleidiai"
+          ],
+          "platform": "arm64 & !windows"
         },
         "zlib-ng"
       ]
