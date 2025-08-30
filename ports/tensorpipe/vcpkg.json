@@ -1,7 +1,6 @@
 {
   "name": "tensorpipe",
-  "version-date": "2022-05-14",
-  "port-version": 1,
+  "version-date": "2025-08-16",
   "description": "A tensor-aware point-to-point communication primitive for machine learning",
   "homepage": "https://github.com/pytorch/tensorpipe",
   "supports": "linux | osx",
@@ -22,18 +21,6 @@
       "description": "Enable support for CUDA tensors, CUDA IPC channel",
       "dependencies": [
         "cuda"
-      ]
-    },
-    "pybind11": {
-      "description": "Build Python bindings",
-      "dependencies": [
-        "pybind11"
-      ]
-    },
-    "test": {
-      "description": "Build with Google.Test",
-      "dependencies": [
-        "gtest"
       ]
     }
   }
