@@ -5,8 +5,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO BinomialLLC/basis_universal
-    REF v1_50_0_2
-    SHA512 845077e9c88a3610b4845bbf4856a2141d678751eb2b5eba26bb4cbbaa0199ad4eae6a37dee485bfcac9d583ee6dca983f300fb7e2b86dfbc9824b5059e11345
+    REF v1_60
+    SHA512 9464a944b2eaad5574e5f54b5d528be29d498f53463db1e00791ed61f0c497d4f1b9f8f78dba0e99c979ce70a894f8786b5ebef4b7741bfd244c7b56b7fb04fe
     HEAD_REF master
     PATCHES
         fix-zstd-import.patch

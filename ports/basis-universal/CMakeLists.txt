@@ -3,7 +3,7 @@ project(basisu CXX)
 
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 option(USE_ZSTD "ZSTD support" TRUE)
 option(USE_OPENCL "OpenCL support" FALSE)
@@ -79,7 +79,9 @@ list(APPEND ENCODER_SRCS
     encoder/basisu_kernels_sse.cpp
     encoder/basisu_opencl.cpp
     encoder/pvpngreader.cpp
-    encoder/basisu_astc_hdr_enc.cpp
+    encoder/basisu_astc_hdr_6x6_enc.cpp
+    encoder/basisu_astc_hdr_common.cpp
+    encoder/basisu_uastc_hdr_4x4_enc.cpp
 	encoder/3rdparty/android_astc_decomp.cpp
     encoder/3rdparty/tinyexr.cpp
 )
