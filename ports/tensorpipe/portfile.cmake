@@ -17,11 +17,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         pybind11    TP_BUILD_PYTHON
 )
 
-if("pybind11" IN_LIST FEATURES)
-    vcpkg_find_acquire_program(PYTHON3)
-    list(APPEND FEATURE_OPTIONS -DPYTHON_EXECUTABLE=${PYTHON3})
-endif()
-
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
