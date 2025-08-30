@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/tensorpipe
-    REF bb1473a4b38b18268e8693044afdb8635bc8351b
-    SHA512 cf0334f81affb2d844bc8b63c533a749753e36ee096f841641716a3bf044b17580262a2e9056d8d1351228e323c4f75401a2a120a5de397e80ec21a33fe56d2b
+    REF af0118d13e52f5a08841464a768e01a0bf3e3075
+    SHA512 f2b4464d69afdffd5e98930b84f41344aa01aa912549e2d842c5950aa188abd9c45ac741cb3c2a74e135d44803497c33bc9260e219e3b4c105cb0f99ee7e1d0c
     PATCHES
         fix-cmakelists.patch
 )
@@ -37,9 +37,10 @@ vcpkg_cmake_configure(
         TP_ENABLE_CUDA_IPC
 )
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(CONFIG_PATH "share/cmake/Tensorpipe")
+vcpkg_cmake_config_fixup(CONFIG_PATH "share/cmake/Tensorpipe" PACKAGE_NAME Tensorpipe)
 
-file(INSTALL "${SOURCE_PATH}/LICENSE.txt" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include"
-                    "${CURRENT_PACKAGES_DIR}/debug/share"
+file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/debug/include"
+    "${CURRENT_PACKAGES_DIR}/debug/share"
 )
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")

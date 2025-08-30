@@ -1,84 +1,26 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 640054e..002dd3d 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -26,3 +26,10 @@ add_subdirectory(tensorpipe)
- install(EXPORT TensorpipeTargets
-         DESTINATION share/cmake/Tensorpipe
-         FILE TensorpipeTargets.cmake)
-+
-+include(CMakePackageConfigHelpers)
-+get_filename_component(CONFIG_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/TensorpipeConfig.cmake ABSOLUTE)
-+configure_package_config_file(cmake/TensorpipeConfig.cmake.in ${CONFIG_FILE_PATH}
-+        INSTALL_DESTINATION share/cmake/Tensorpipe)
-+
-+install(FILES ${CONFIG_FILE_PATH} DESTINATION share/cmake/Tensorpipe)
 diff --git a/tensorpipe/CMakeLists.txt b/tensorpipe/CMakeLists.txt
-index 5c36064..cfaf0bc 100644
+index efcffc2..180d833 100644
 --- a/tensorpipe/CMakeLists.txt
 +++ b/tensorpipe/CMakeLists.txt
-@@ -118,9 +118,9 @@ list(APPEND TP_PUBLIC_HDRS
-   transport/uv/factory.h
+@@ -119,8 +119,8 @@ list(APPEND TP_PUBLIC_HDRS
    transport/uv/utility.h)
  
--# Add uv package
+ # Add uv package
 -find_package(uv REQUIRED)
 -list(APPEND TP_LINK_LIBRARIES uv::uv)
-+# `libuv` in vcpkg
-+find_package(libuv CONFIG REQUIRED) 
++find_package(libuv CONFIG REQUIRED)
 +list(APPEND TP_LINK_LIBRARIES $<IF:$<TARGET_EXISTS:libuv::uv_a>,libuv::uv_a,libuv::uv>)
  
  ### shm
  
-@@ -184,8 +184,11 @@ configure_file(config.h.in config.h)
- # We should keep libnop headers private as they should not be exposed to downstream users,
- # but they're currently transitively included by tensorpipe/transport/connection.h (which
- # is still unclear whether it should be a public or private header).
--list(APPEND TP_INCLUDE_DIRS $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/libnop/include>)
--
-+find_path(LIBNOP_INCLUDE_DIRS "nop/serializer.h")
-+if(LIBNOP_INCLUDE_DIRS-NOTFOUND)
-+  message(FATAL_ERROR "Failed to find header of the 'libnop' package from vcpkg.")
-+endif()
-+list(APPEND TP_INCLUDE_DIRS $<BUILD_INTERFACE:${LIBNOP_INCLUDE_DIRS}>)
+@@ -321,6 +321,10 @@ if(TP_USE_CUDA)
  
- ## Target
+ endif()
  
-@@ -204,6 +207,12 @@ target_include_directories(tensorpipe PUBLIC ${TP_INCLUDE_DIRS})
++include(CMakePackageConfigHelpers)
++get_filename_component(CONFIG_FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/TensorpipeConfig.cmake" ABSOLUTE)
++configure_package_config_file("${PROJECT_SOURCE_DIR}/cmake/TensorpipeConfig.cmake.in" "${CONFIG_FILE_PATH}" INSTALL_DESTINATION share/cmake/Tensorpipe)
++install(FILES "${CONFIG_FILE_PATH}" DESTINATION share/cmake/Tensorpipe)
  
- ## Install
+ ## Python bindings
  
-+install(DIRECTORY channel common core transport util
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorpipe
-+        FILES_MATCHING PATTERN "*.h")
-+install(FILES tensorpipe.h
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tensorpipe)
-+
- install(TARGETS tensorpipe
-         EXPORT TensorpipeTargets
-         LIBRARY DESTINATION ${TP_INSTALL_LIBDIR}
-diff --git a/tensorpipe/python/CMakeLists.txt b/tensorpipe/python/CMakeLists.txt
-index 41958dd..5414056 100644
---- a/tensorpipe/python/CMakeLists.txt
-+++ b/tensorpipe/python/CMakeLists.txt
-@@ -4,13 +4,12 @@
- # This source code is licensed under the BSD-style license found in the
- # LICENSE file in the root directory of this source tree.
- 
--if(NOT (COMMAND pybind11_add_module))
--  add_subdirectory(
--    ${PROJECT_SOURCE_DIR}/third_party/pybind11
--    ${PROJECT_BINARY_DIR}/third_party/pybind11
--    EXCLUDE_FROM_ALL)
--endif()
-+find_package(pybind11 CONFIG REQUIRED)
- 
--set(PYBIND11_CPP_STANDARD -std=c++14)
- pybind11_add_module(pytensorpipe tensorpipe.cc)
--target_link_libraries(pytensorpipe PRIVATE tensorpipe)
-+set_target_properties(pytensorpipe PROPERTIES CXX_STANDARD 14)
-+target_link_libraries(pytensorpipe PRIVATE tensorpipe pybind11::module)
-+
-+install(TARGETS pytensorpipe
-+        EXPORT TensorpipeTargets
-+        DESTINATION ${CMAKE_INSTALL_LIBDIR})
