@@ -65,8 +65,8 @@
       "port-version": 4
     },
     "fp16": {
-      "baseline": "2024-06-20",
-      "port-version": 1
+      "baseline": "2025-08-17",
+      "port-version": 0
     },
     "gemmlowp": {
       "baseline": "2023-11-04",
