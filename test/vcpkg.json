@@ -161,13 +161,7 @@
           "platform": "windows | linux | android | osx | ios"
         },
         "xatlas",
-        {
-          "name": "xnnpack",
-          "features": [
-            "test"
-          ],
-          "platform": "linux"
-        },
+        "xnnpack",
         {
           "name": "xnnpack",
           "features": [
