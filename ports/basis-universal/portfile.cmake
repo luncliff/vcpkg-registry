@@ -10,6 +10,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-zstd-import.patch
+        fix-ambiguous.patch
 )
 # check https://gcc.gnu.org/onlinedocs/
 # check https://www.gnu.org/software/libc/manual/html_node/Feature-Test-Macros.html
