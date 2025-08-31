@@ -1,0 +1,46 @@
+{
+  "name": "dawn",
+  "version-date": "2025-08-30",
+  "description": "...",
+  "homepage": "https://github.com/google/dawn",
+  "license": "BSD-3-Clause",
+  "supports": "windows | osx",
+  "dependencies": [
+    "abseil",
+    "glfw3",
+    "glslang",
+    "protobuf",
+    "spirv-cross",
+    "spirv-headers",
+    "spirv-tools",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "default-features": [
+    {
+      "name": "dx12",
+      "platform": "windows"
+    }
+  ],
+  "features": {
+    "dx12": {
+      "description": "DirectX 12",
+      "dependencies": [
+        "directx-dxc",
+        "directx-headers"
+      ]
+    },
+    "vulkan": {
+      "description": "Vulkan SDK",
+      "dependencies": [
+        "vulkan-headers"
+      ]
+    }
+  }
+}

@@ -1,0 +1,44 @@
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO google/dawn
+    REF v20250830.164456
+    SHA512 d5ac08cedb26b657d2707596c76f8b88241db90668110e4310ea8068def6aa42d4ab7568e2b54db4854a252627942e1f3ca7ed2e73dd34185aa62ac659671158
+)
+file(REMOVE_RECURSE "${SOURCE_PATH}/third_party")
+
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+        webgpu  DAWN_ENABLE_WEBGPU_ON_WEBGPU
+        # webgpu  DAWN_BUILD_NODE_BINDINGS
+        opengl  DAWN_ENABLE_DESKTOP_GL
+        gles    DAWN_ENABLE_OPENGLES
+        vulkan  DAWN_ENABLE_VULKAN
+)
+
+vcpkg_find_acquire_program(PYTHON3)
+get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
+message(STATUS "Using python3: ${PYTHON3}")
+
+vcpkg_cmake_configure(
+    SOURCE_PATH "${SOURCE_PATH}"
+    OPTIONS
+        ${FEATURE_OPTIONS}
+        -DDAWN_ENABLE_D3D12=${VCPKG_TARGET_IS_WINDOWS}
+        -DDAWN_USE_BUILT_DXC=${VCPKG_TARGET_IS_WINDOWS}
+        -DDAWN_ENABLE_METAL=${VCPKG_TARGET_IS_OSX}
+        -DDAWN_USE_GLFW=ON
+        -DDAWN_SUPPORTS_GLFW_FOR_WINDOWING=OFF
+        -DDAWN_USE_WINDOWS_UI=${VCPKG_TARGET_IS_WINDOWS_UI}
+        -DDAWN_ENABLE_SPIRV_VALIDATION=ON
+        -DDAWN_FORCE_SYSTEM_COMPONENT_LOAD=ON
+        -DDAWN_BUILD_TESTS=OFF
+        -DDAWN_BUILD_SAMPLES=OFF
+        -DDAWN_BUILD_PROTOBUF=OFF
+        -DDAWN_ENABLE_INSTALL=ON
+        "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
+)
+vcpkg_cmake_install()
+vcpkg_copy_pdbs()
+# vcpkg_cmake_config_fixup(PACKAGE_NAME fbgemmLibrary CONFIG_PATH "share/cmake/${PORT}")
+
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
