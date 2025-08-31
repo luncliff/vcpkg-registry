@@ -1,6 +1,7 @@
 {
   "name": "tensorflow-lite",
   "version-semver": "2.19.1",
+  "port-version": 1,
   "description": "An Open Source Machine Learning Framework for Everyone",
   "homepage": "https://github.com/tensorflow/tensorflow",
   "license": "Apache-2.0",
@@ -18,10 +19,6 @@
     "gemmlowp",
     "ml-dtypes",
     "neon2sse",
-    {
-      "name": "nsync",
-      "platform": "android"
-    },
     {
       "name": "protobuf",
       "host": true
