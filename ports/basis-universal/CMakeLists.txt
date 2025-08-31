@@ -3,7 +3,7 @@ project(basisu CXX)
 
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 option(USE_ZSTD "ZSTD support" TRUE)
 option(USE_OPENCL "OpenCL support" FALSE)
@@ -20,48 +20,47 @@ if(USE_OPENCL)
    add_compile_definitions(BASISD_SUPPORT_OPENCL=1)
 endif()
 
+# Emscripten-specific settings (aligned with upstream)
 if(EMSCRIPTEN)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s ALLOW_MEMORY_GROWTH=1 -DBASISU_SUPPORT_SSE=0")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s ALLOW_MEMORY_GROWTH=1 -DBASISU_SUPPORT_SSE=0")
-endif()
-
-if(MSVC)
-    check_cxx_compiler_flag("/arch:SSE" USE_SSE)
-
-else()
-    set(CMAKE_CXX_VISIBILITY_PRESET "default") # use hidden?
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-    add_compile_definitions(
-        # -fno-strict-aliasing
-        _LARGEFILE64_SOURCE=1
-        -D_FILE_OFFSET_BITS=64
-    )
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES x86)
-        check_cxx_compiler_flag("-msse4" USE_SSE4)
-        if(USE_SSE4)
-            add_compile_options("-msse4")
-        endif()
-        check_cxx_compiler_flag("-msse4.1" USE_SSE41)
-        if(USE_SSE41)
-            add_compile_options("-msse4.1")
-        endif()
-        check_cxx_compiler_flag("-msse4.2" USE_SSE42)
-        if(USE_SSE42)
-            add_compile_options("-msse4.2")
-        endif()
-        if(USE_SSE4 OR USE_SSE41 OR USE_SSE42)
-            set(USE_SSE ON)
-        endif()
-    endif()
-endif()
-
-if(USE_SSE)
-    add_compile_definitions(BASISU_SUPPORT_SSE=1)
-else()
+    add_compile_options(-s ALLOW_MEMORY_GROWTH=1)
     add_compile_definitions(BASISU_SUPPORT_SSE=0)
 endif()
 
-list(APPEND ENCODER_SRCS
+# Compiler-specific settings (simplified from upstream)
+if(MSVC)
+    check_cxx_compiler_flag("/arch:SSE" USE_SSE)
+    if(USE_SSE)
+        add_compile_definitions(BASISU_SUPPORT_SSE=1)
+    else()
+        add_compile_definitions(BASISU_SUPPORT_SSE=0)
+    endif()
+else()
+    # Non-MSVC settings (GCC/Clang)
+    add_compile_definitions(
+        _LARGEFILE64_SOURCE=1
+        _FILE_OFFSET_BITS=64
+    )
+    
+    # Add upstream's essential compiler flags
+    add_compile_options(-fno-strict-aliasing)
+    
+    # SSE support for x86 architectures
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES x86)
+        check_cxx_compiler_flag("-msse4.1" USE_SSE41)
+        if(USE_SSE41)
+            add_compile_options(-msse4.1)
+            add_compile_definitions(BASISU_SUPPORT_SSE=1)
+            set(USE_SSE ON)
+        endif()
+    endif()
+    
+    if(NOT USE_SSE)
+        add_compile_definitions(BASISU_SUPPORT_SSE=0)
+    endif()
+endif()
+
+# Define source files (following upstream structure)
+set(ENCODER_LIB_SRC_LIST
     encoder/basisu_backend.cpp
     encoder/basisu_basis_file.cpp
     encoder/basisu_comp.cpp
@@ -79,16 +78,21 @@ list(APPEND ENCODER_SRCS
     encoder/basisu_kernels_sse.cpp
     encoder/basisu_opencl.cpp
     encoder/pvpngreader.cpp
-    encoder/basisu_astc_hdr_enc.cpp
-	encoder/3rdparty/android_astc_decomp.cpp
+    encoder/basisu_uastc_hdr_4x4_enc.cpp
+    encoder/basisu_astc_hdr_6x6_enc.cpp
+    encoder/basisu_astc_hdr_common.cpp
+    encoder/3rdparty/android_astc_decomp.cpp
     encoder/3rdparty/tinyexr.cpp
 )
-add_library(basisu_encoder STATIC ${ENCODER_SRCS})
 
-list(APPEND TRANSCODER_SRCS
+# Create static encoder library (following upstream approach)
+add_library(basisu_encoder STATIC ${ENCODER_LIB_SRC_LIST})
+
+# Create separate transcoder library for vcpkg compatibility
+set(TRANSCODER_LIB_SRC_LIST
     transcoder/basisu_transcoder.cpp
 )
-add_library(basisu_transcoder STATIC ${TRANSCODER_SRCS})
+add_library(basisu_transcoder STATIC ${TRANSCODER_LIB_SRC_LIST})
 target_link_libraries(basisu_transcoder PUBLIC basisu_encoder)
 
 if(USE_ZSTD)
