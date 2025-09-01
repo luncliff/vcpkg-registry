@@ -1,6 +1,6 @@
 {
   "name": "abseil",
-  "version": "20250512.0",
+  "version": "20250512.1",
   "description": "Abseil is an open-source collection of C++ code (compliant to C++17) designed to augment the C++ standard library",
   "homepage": "https://github.com/abseil/abseil-cpp",
   "license": "Apache-2.0",
