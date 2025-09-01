@@ -5,23 +5,16 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/fbgemm
     REF v${VERSION}
-    SHA512 eb1e59c78b802852690272396f6db409ece7cdd8603a87d981a437edf2eea02895a9ecef09b9f3092ee207bc88bb6200a10f777589b31efa4af72b46fe989980
-    PATCHES
-        fix-cmakelists.patch
+    SHA512 c864af70200c603b5eebbcf8adffd8d540a4d2f725d78e3519053621172dcad452c31f7794572c16e32d56cf883cf57851e434f0f5accb19f175c0e2d5e9c541
 )
+
+# Copy our modified CMakeLists.txt
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         gpu FBGEMM_BUILD_FBGEMM_GPU
 )
-
-if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
-    set(LIBRARY_TYPE "shared")
-elseif(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
-    set(LIBRARY_TYPE "static")
-else()
-    set(LIBRARY_TYPE "default")
-endif()
 
 vcpkg_find_acquire_program(PYTHON3)
 get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
@@ -31,12 +24,12 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
-        -DFBGEMM_LIBRARY_TYPE=${LIBRARY_TYPE}
+        -DFBGEMM_LIBRARY_TYPE=default
         -DUSE_SANITIZER=OFF
         -DFBGEMM_BUILD_TESTS=OFF
         -DFBGEMM_BUILD_BENCHMARKS=OFF
         -DFBGEMM_BUILD_DOCS=OFF
-        "-DPYTHON_EXECUTABLE:FILEPATH=${PYTHON3}" # inject the path instead of find_package(Python)
+        "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}" # inject the path instead of find_package(Python)
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
