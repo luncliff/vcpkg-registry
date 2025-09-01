@@ -16,6 +16,14 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         gpu FBGEMM_BUILD_FBGEMM_GPU
 )
 
+if("gpu" IN_LIST FEATURES)
+    vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root) 
+    message(STATUS "Using nvcc: ${NVCC}")
+    list(APPEND FEATURE_OPTIONS
+        "-DCMAKE_CUDA_COMPILER:FILEPATH=${NVCC}"
+        "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
+    )
+endif()
 vcpkg_find_acquire_program(PYTHON3)
 get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
 message(STATUS "Using python3: ${PYTHON3}")

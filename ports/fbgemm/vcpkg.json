@@ -16,5 +16,17 @@
       "name": "vcpkg-cmake-config",
       "host": true
     }
-  ]
+  ],
+  "features": {
+    "gpu": {
+      "description": "Build with CUDA and NCCL",
+      "supports": "x64 & linux",
+      "dependencies": [
+        "cuda",
+        "nccl",
+        "nlohmann-json",
+        "nvidia-cutlass"
+      ]
+    }
+  }
 }
