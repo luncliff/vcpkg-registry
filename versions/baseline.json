@@ -57,7 +57,7 @@
       "port-version": 2
     },
     "fbgemm": {
-      "baseline": "0.8.0",
+      "baseline": "1.3.0",
       "port-version": 0
     },
     "fft2d": {
