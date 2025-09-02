@@ -30,14 +30,14 @@ index c8c96cfa..fc2a6b39 100644
 +if (BUILD_SHARED_LIBS)
 +  if (WIN32)
 +    target_compile_definitions(tensorflow-lite PRIVATE TFL_COMPILE_LIBRARY)
-+    target_compile_definitions(xnnpack-delegate PRIVATE TFL_COMPILE_LIBRARY)
++    target_compile_definitions(xnnpack-delegate PRIVATE TFL_COMPILE_LIBRARY ${TFLITE_TARGET_PRIVATE_DEFINITIONS})
++    target_compile_options(xnnpack-delegate PRIVATE ${TFLITE_TARGET_PRIVATE_OPTIONS})
 +  elseif (APPLE)
 +    target_link_options(tensorflow-lite PRIVATE "-Wl,-exported_symbols_list,${TFLITE_SOURCE_DIR}/c/exported_symbols.lds")
 +  else ()
 +    target_link_options(tensorflow-lite PRIVATE "-Wl,--version-script,${TFLITE_SOURCE_DIR}/c/version_script.lds")
 +  endif()
 +endif()
-+
  # The install targets.
  if(TFLITE_ENABLE_INSTALL)
    install(
