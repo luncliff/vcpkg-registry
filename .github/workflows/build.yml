@@ -20,7 +20,7 @@ jobs:
     name: "Validate"
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5
       - name: "Run registry-format.ps1"
         run: |
           $env:VCPKG_ROOT="$env:VCPKG_INSTALLATION_ROOT"
@@ -46,7 +46,7 @@ jobs:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -168,7 +168,7 @@ jobs:
           # - runner_image: "windows-latest"
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -223,7 +223,7 @@ jobs:
     # container: # https://circleci.com/developer/images/image/cimg/android
     #   image: cimg/android:2025.01.1-ndk # 28.0.12674087
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -282,7 +282,7 @@ jobs:
         EMSDK_NODE: /emsdk/node/20.18.0_64bit/bin/node
         EMCC_CFLAGS: "-mbulk-memory -matomics -pthread"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: "Run apt"
         run: |
