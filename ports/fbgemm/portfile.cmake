@@ -6,10 +6,9 @@ vcpkg_from_github(
     REPO pytorch/fbgemm
     REF v${VERSION}
     SHA512 c864af70200c603b5eebbcf8adffd8d540a4d2f725d78e3519053621172dcad452c31f7794572c16e32d56cf883cf57851e434f0f5accb19f175c0e2d5e9c541
+    PATCHES
+        fix-cmakelists.patch
 )
-
-# Copy our modified CMakeLists.txt
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
