@@ -166,8 +166,7 @@
           "name": "xnnpack",
           "features": [
             "kleidiai"
-          ],
-          "platform": "arm64 & !windows"
+          ]
         },
         "zlib-ng"
       ]
