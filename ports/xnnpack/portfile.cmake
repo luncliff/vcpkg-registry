@@ -38,8 +38,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         test    XNNPACK_BUILD_TESTS
         test    XNNPACK_BUILD_BENCHMARKS
-        test    XNNPACK_BUILD_ALL_MICROKERNELS
-        kleidi  XNNPACK_ENABLE_KLEIDIAI
+        kleidiai XNNPACK_ENABLE_KLEIDIAI
 )
 
 vcpkg_cmake_configure(
@@ -52,6 +51,7 @@ vcpkg_cmake_configure(
         "-DPTHREADPOOL_SOURCE_DIR:PATH=${CURRENT_INSTALLED_DIR}"
         -DXNNPACK_ENABLE_MEMOPT=ON
         -DXNNPACK_ENABLE_SPARSE=ON
+        -DXNNPACK_BUILD_ALL_MICROKERNELS=ON
         "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
 )
 vcpkg_cmake_install()
