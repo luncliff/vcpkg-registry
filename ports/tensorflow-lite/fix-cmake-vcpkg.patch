@@ -40,6 +40,15 @@ index cf06e2a7..77b722da 100644
      MESSAGE(STATUS "Downloading FP16 to ${CMAKE_BINARY_DIR}/FP16-source (define FP16_SOURCE_DIR to avoid it)")
      CONFIGURE_FILE(cmake/DownloadFP16.cmake "${CMAKE_BINARY_DIR}/FP16-download/CMakeLists.txt")
      EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+@@ -217,7 +217,7 @@ endif()
+ # Additional compiler flags used when compiling TF Lite.
+ set(TFLITE_TARGET_PUBLIC_OPTIONS "-DEIGEN_NEON_GEBP_NR=4")
+ set(TFLITE_TARGET_PRIVATE_OPTIONS "")
+-set(TFLITE_TARGET_PRIVATE_DEFINITIONS "")
++set(TFLITE_TARGET_PRIVATE_DEFINITIONS -DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX="-vcpkg")
+ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang$")
+   # TFLite uses deprecated methods in neon2sse which generates a huge number of
+   # warnings so surpress these until they're fixed.
 @@ -237,6 +229,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
    # Use NOGDI to ERROR macro which breaks TensorFlow logging.
    # Disable mmap, which is not available on Windows.
