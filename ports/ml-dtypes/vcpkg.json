@@ -1,9 +1,9 @@
 {
   "name": "ml-dtypes",
-  "version-semver": "0.5.2",
-  "port-version": 1,
+  "version-semver": "0.5.3",
   "description": "A stand-alone implementation of several NumPy dtype extensions used in machine learning.",
   "homepage": "https://github.com/jax-ml/ml_dtypes",
+  "license": "Apache-2.0",
   "dependencies": [
     "eigen3",
     {
