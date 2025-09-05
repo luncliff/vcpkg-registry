@@ -10,6 +10,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-cmake.patch
+        fix-emscripten.patch
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)
