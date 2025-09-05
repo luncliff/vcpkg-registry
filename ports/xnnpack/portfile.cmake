@@ -51,7 +51,7 @@ vcpkg_cmake_configure(
         "-DPTHREADPOOL_SOURCE_DIR:PATH=${CURRENT_INSTALLED_DIR}"
         -DXNNPACK_ENABLE_MEMOPT=ON
         -DXNNPACK_ENABLE_SPARSE=ON
-        -DXNNPACK_BUILD_ALL_MICROKERNELS=ON
+        # -DXNNPACK_BUILD_ALL_MICROKERNELS=ON # let the project select default
         "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
 )
 vcpkg_cmake_install()
