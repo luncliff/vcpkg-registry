@@ -246,7 +246,7 @@
     },
     "tensorflow-lite": {
       "baseline": "2.19.1",
-      "port-version": 1
+      "port-version": 2
     },
     "tensorpipe": {
       "baseline": "2025-08-16",
@@ -262,7 +262,7 @@
     },
     "xnnpack": {
       "baseline": "2025-06-06",
-      "port-version": 0
+      "port-version": 1
     },
     "xnvctrl": {
       "baseline": "515.43.04",

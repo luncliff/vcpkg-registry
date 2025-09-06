@@ -10,6 +10,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-cmake.patch
+        fix-emscripten.patch
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)
@@ -38,8 +39,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         test    XNNPACK_BUILD_TESTS
         test    XNNPACK_BUILD_BENCHMARKS
-        test    XNNPACK_BUILD_ALL_MICROKERNELS
-        kleidi  XNNPACK_ENABLE_KLEIDIAI
+        kleidiai XNNPACK_ENABLE_KLEIDIAI
 )
 
 vcpkg_cmake_configure(
@@ -52,6 +52,7 @@ vcpkg_cmake_configure(
         "-DPTHREADPOOL_SOURCE_DIR:PATH=${CURRENT_INSTALLED_DIR}"
         -DXNNPACK_ENABLE_MEMOPT=ON
         -DXNNPACK_ENABLE_SPARSE=ON
+        # -DXNNPACK_BUILD_ALL_MICROKERNELS=ON # let the project select default
         "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
 )
 vcpkg_cmake_install()

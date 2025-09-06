@@ -1,5 +1,5 @@
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index cf06e2a7..77b722da 100644
+index cf06e2a7..31e2a6ed 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
 @@ -52,14 +52,6 @@ set(TF_SOURCE_DIR "${TENSORFLOW_SOURCE_DIR}/tensorflow")
@@ -33,23 +33,30 @@ index cf06e2a7..77b722da 100644
        "${CMAKE_BINARY_DIR}/pthreadpool")
    endif()
 -  list(APPEND TFLITE_TARGET_DEPENDENCIES pthreadpool)
-+  list(APPEND TFLITE_TARGET_DEPENDENCIES "${PTHREADPOOL_LIB}")
- 
+-
 -  IF(NOT DEFINED FP16_SOURCE_DIR)
++  list(APPEND TFLITE_TARGET_DEPENDENCIES "${PTHREADPOOL_LIB}")
++  find_path(FP16_INCLUDE_DIRS "fp16.h" REQUIRED)
 +  IF(FALSE)
      MESSAGE(STATUS "Downloading FP16 to ${CMAKE_BINARY_DIR}/FP16-source (define FP16_SOURCE_DIR to avoid it)")
      CONFIGURE_FILE(cmake/DownloadFP16.cmake "${CMAKE_BINARY_DIR}/FP16-download/CMakeLists.txt")
      EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
-@@ -237,6 +229,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+@@ -236,11 +228,12 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+   # use of std::min std::max.
    # Use NOGDI to ERROR macro which breaks TensorFlow logging.
    # Disable mmap, which is not available on Windows.
-   list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "-DNOMINMAX" "-DNOGDI" "-DTFLITE_MMAP_DISABLED")
+-  list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "-DNOMINMAX" "-DNOGDI" "-DTFLITE_MMAP_DISABLED")
++  list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "-DNOMINMAX" "-DNOGDI" "-DTFLITE_MMAP_DISABLED")
 +  list(APPEND TFLITE_TARGET_PRIVATE_DEFINITIONS "_CRT_SECURE_NO_WARNINGS" "_SILENCE_CXX20_IS_POD_DEPRECATION_WARNING" "_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING" "_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING")
-+  list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "/Zc:__cplusplus")  
    # lite/kernels/conv.cc has more than 64k sections so enable /bigobj to
    # support compilation with MSVC2015.
    if(MSVC)
-@@ -299,6 +293,7 @@ populate_tflite_source_vars("core" TFLITE_CORE_SRCS)
+-    list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "/bigobj")
++    list(APPEND TFLITE_TARGET_PRIVATE_OPTIONS "/bigobj" "/Zc:__cplusplus")
+     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+       message("Disabling MSVC /O2 optimization for Win32")
+       set(CompFlags
+@@ -299,6 +292,7 @@ populate_tflite_source_vars("core" TFLITE_CORE_SRCS)
  populate_tflite_source_vars(
    "core/acceleration/configuration" TFLITE_CORE_ACCELERATION_SRCS
    FILTER "xnnpack_plugin.*"
@@ -57,7 +64,7 @@ index cf06e2a7..77b722da 100644
    FILTER "(_test)\\.(cc|h)$"
  )
  populate_tflite_source_vars("core/api" TFLITE_CORE_API_SRCS)
-@@ -313,13 +308,15 @@ populate_tflite_source_vars("core/tools" TFLITE_CORE_TOOLS_SRCS)
+@@ -313,13 +307,15 @@ populate_tflite_source_vars("core/tools" TFLITE_CORE_TOOLS_SRCS)
  populate_tflite_source_vars("c" TFLITE_C_SRCS)
  populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
  if(TFLITE_ENABLE_GPU)
@@ -78,18 +85,18 @@ index cf06e2a7..77b722da 100644
    endif()
    populate_tflite_source_vars(
      "delegates/gpu/cl" TFLITE_DELEGATES_GPU_CL_SRCS
-@@ -403,7 +400,9 @@ if(TFLITE_ENABLE_GPU)
+@@ -403,7 +399,9 @@ if(TFLITE_ENABLE_GPU)
      ${TFLITE_SOURCE_DIR}/delegates/gpu/common
      ${TFLITE_SOURCE_DIR}/delegates/gpu/common/task
    )
 -  if(TFLITE_ENABLE_METAL AND "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
 +  if(TFLITE_ENABLE_METAL AND APPLE)
 +    cmake_policy(SET CMP0119 NEW) # Enforce source language with the compiler's option
-+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES") # Xcode will apply -fobjc-arc 
++    set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES") # Xcode will apply -fobjc-arc
      #
      # libmetal_delegate library
      #
-@@ -422,11 +421,11 @@ if(TFLITE_ENABLE_GPU)
+@@ -422,11 +420,11 @@ if(TFLITE_ENABLE_GPU)
      add_library(metal_delegate STATIC
        ${TFLITE_DELEGATES_METAL_SRCS}
      )
@@ -106,7 +113,7 @@ index cf06e2a7..77b722da 100644
      #
      # generate flatbuffers header for inference_context
      #
-@@ -458,40 +457,52 @@ if(TFLITE_ENABLE_GPU)
+@@ -458,40 +456,52 @@ if(TFLITE_ENABLE_GPU)
          metal_device
          metal_spatial_tensor
      )
@@ -188,7 +195,7 @@ index cf06e2a7..77b722da 100644
    populate_tflite_source_vars("delegates/nnapi"
      TFLITE_DELEGATES_NNAPI_SRCS
      FILTER "(_test_list|_disabled)\\.(cc|h)$"
-@@ -501,6 +512,10 @@ if(_TFLITE_ENABLE_NNAPI)
+@@ -501,6 +511,10 @@ if(_TFLITE_ENABLE_NNAPI)
    )
  
    list(APPEND TFLITE_NNAPI_SRCS
@@ -199,18 +206,27 @@ index cf06e2a7..77b722da 100644
      "${TFLITE_SOURCE_DIR}/nnapi/sl/SupportLibrary.cc"
    )
  
-@@ -516,8 +531,8 @@ else()
+@@ -516,12 +530,14 @@ else()
    )
  endif()
  if(TFLITE_ENABLE_XNNPACK)
 -  find_package(fp16_headers REQUIRED)
 -  find_package(XNNPACK REQUIRED)
+-  set(XNNPACK_NEON_2_SSE "")
 +  find_library(XNNPACK_LIBRARY NAMES XNNPACK REQUIRED)
 +  find_library(XNNPACK_MICROKERNELS_PROD_LIBRARY NAMES microkernels-prod xnnpack-microkernels-prod)
-   set(XNNPACK_NEON_2_SSE "")
++  # vcpkg port 'xnnpack' may used 'kleidiai' feature in ARM64
++  if((CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64") OR (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64"))
++    find_package(KleidiAI CONFIG) # KleidiAI::kleidiai
++  endif()
    if (NOT CMAKE_SYSTEM_PROCESSOR OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86")
-     find_package(NEON_2_SSE REQUIRED)
-@@ -538,7 +553,7 @@ if(TFLITE_ENABLE_XNNPACK)
+-    find_package(NEON_2_SSE REQUIRED)
+-    list(APPEND XNNPACK_NEON_2_SSE NEON_2_SSE::NEON_2_SSE)
++    find_package(NEON_2_SSE REQUIRED) # NEON_2_SSE::NEON_2_SSE
+   endif()
+   populate_tflite_source_vars("delegates/xnnpack"
+     TFLITE_DELEGATES_XNNPACK_SRCS
+@@ -538,19 +554,27 @@ if(TFLITE_ENABLE_XNNPACK)
  
    add_library(xnnpack-delegate STATIC
      "${TFLITE_DELEGATES_XNNPACK_SRCS}"
@@ -219,7 +235,30 @@ index cf06e2a7..77b722da 100644
    )
    target_include_directories(xnnpack-delegate
      PUBLIC $<BUILD_INTERFACE:${TENSORFLOW_SOURCE_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-@@ -560,7 +575,10 @@ if(TFLITE_ENABLE_XNNPACK)
+     PRIVATE "${PROJECT_BINARY_DIR}"
+   )
+-  target_link_libraries(xnnpack-delegate
++  target_link_libraries(xnnpack-delegate PUBLIC ${XNNPACK_LIBRARY}
+     Eigen3::Eigen
+     flatbuffers::flatbuffers
+     gemmlowp::gemmlowp
+     ruy::ruy
+-    ${XNNPACK_NEON_2_SSE}
+-    )
++  )
++  if(TARGET NEON_2_SSE::NEON_2_SSE)
++    target_link_libraries(xnnpack-delegate PUBLIC NEON_2_SSE::NEON_2_SSE)
++  endif()
++  if(XNNPACK_MICROKERNELS_PROD_LIBRARY)
++    target_link_libraries(xnnpack-delegate PUBLIC ${XNNPACK_MICROKERNELS_PROD_LIBRARY})
++  endif()
++  if(TARGET KleidiAI::kleidiai)
++    target_link_libraries(xnnpack-delegate PUBLIC KleidiAI::kleidiai)
++  endif()
+ 
+   list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_KERNEL_USE_XNNPACK")
+   target_compile_options(xnnpack-delegate
+@@ -560,7 +584,7 @@ if(TFLITE_ENABLE_XNNPACK)
  
    list(APPEND TFLITE_TARGET_DEPENDENCIES
      xnnpack-delegate
@@ -227,12 +266,9 @@ index cf06e2a7..77b722da 100644
 -  )
 +    ${XNNPACK_LIBRARY}
 +  )
-+  if(XNNPACK_MICROKERNELS_PROD_LIBRARY)
-+    list(APPEND TFLITE_TARGET_DEPENDENCIES ${XNNPACK_MICROKERNELS_PROD_LIBRARY})
-+  endif()
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_BUILD_WITH_XNNPACK_DELEGATE")
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DXNNPACK_DELEGATE_ENABLE_QS8")
-@@ -727,7 +742,8 @@ target_include_directories(tensorflow-lite
+@@ -727,7 +751,8 @@ target_include_directories(tensorflow-lite
    PUBLIC $<BUILD_INTERFACE:${TENSORFLOW_SOURCE_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
  )
  target_link_libraries(tensorflow-lite
@@ -242,7 +278,7 @@ index cf06e2a7..77b722da 100644
      Eigen3::Eigen
      absl::flags
      absl::hash
-@@ -744,6 +760,9 @@ target_link_libraries(tensorflow-lite
+@@ -744,6 +769,9 @@ target_link_libraries(tensorflow-lite
      ${CMAKE_DL_LIBS}
      ${TFLITE_TARGET_DEPENDENCIES}
  )
@@ -252,7 +288,7 @@ index cf06e2a7..77b722da 100644
  
  if (NOT BUILD_SHARED_LIBS)
    list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFL_STATIC_LIBRARY_BUILD")
-@@ -772,6 +791,20 @@ if(TFLITE_ENABLE_INSTALL)
+@@ -772,6 +800,20 @@ if(TFLITE_ENABLE_INSTALL)
        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/lite/${dir}"
      )
    endforeach()
@@ -273,7 +309,7 @@ index cf06e2a7..77b722da 100644
  
    install(
      EXPORT ${PROJECT_NAME}Targets
-@@ -794,6 +827,7 @@ if(TFLITE_ENABLE_INSTALL)
+@@ -794,6 +836,7 @@ if(TFLITE_ENABLE_INSTALL)
    )
  endif()
  
