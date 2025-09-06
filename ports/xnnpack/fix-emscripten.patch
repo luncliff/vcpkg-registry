@@ -1,0 +1,117 @@
+diff --git a/src/f16-gemm/gen/f16-gemm-1x16-minmax-wasmrelaxedsimd-splat.c b/src/f16-gemm/gen/f16-gemm-1x16-minmax-wasmrelaxedsimd-splat.c
+index aaab390..9105885 100644
+--- a/src/f16-gemm/gen/f16-gemm-1x16-minmax-wasmrelaxedsimd-splat.c
++++ b/src/f16-gemm/gen/f16-gemm-1x16-minmax-wasmrelaxedsimd-splat.c
+@@ -12,7 +12,7 @@
+ 
+ #include <wasm_simd128.h>
+ 
+-#include "xnnpack/gemm.h"
++#include "src/xnnpack/gemm.h"
+ 
+ void xnn_f16_gemm_minmax_ukernel_1x16__wasmrelaxedsimd_splat(
+     size_t mr,
+diff --git a/src/f16-gemm/gen/f16-gemm-1x8-minmax-wasmrelaxedsimd-splat.c b/src/f16-gemm/gen/f16-gemm-1x8-minmax-wasmrelaxedsimd-splat.c
+index a5806e6..fbdf3e3 100644
+--- a/src/f16-gemm/gen/f16-gemm-1x8-minmax-wasmrelaxedsimd-splat.c
++++ b/src/f16-gemm/gen/f16-gemm-1x8-minmax-wasmrelaxedsimd-splat.c
+@@ -12,7 +12,7 @@
+ 
+ #include <wasm_simd128.h>
+ 
+-#include "xnnpack/gemm.h"
++#include "src/xnnpack/gemm.h"
+ 
+ void xnn_f16_gemm_minmax_ukernel_1x8__wasmrelaxedsimd_splat(
+     size_t mr,
+diff --git a/src/f16-gemm/gen/f16-gemm-4x16-minmax-wasmrelaxedsimd-splat.c b/src/f16-gemm/gen/f16-gemm-4x16-minmax-wasmrelaxedsimd-splat.c
+index c261e8b..c7497f2 100644
+--- a/src/f16-gemm/gen/f16-gemm-4x16-minmax-wasmrelaxedsimd-splat.c
++++ b/src/f16-gemm/gen/f16-gemm-4x16-minmax-wasmrelaxedsimd-splat.c
+@@ -12,7 +12,7 @@
+ 
+ #include <wasm_simd128.h>
+ 
+-#include "xnnpack/gemm.h"
++#include "src/xnnpack/gemm.h"
+ 
+ void xnn_f16_gemm_minmax_ukernel_4x16__wasmrelaxedsimd_splat(
+     size_t mr,
+diff --git a/src/f16-gemm/gen/f16-gemm-4x8-minmax-wasmrelaxedsimd-splat.c b/src/f16-gemm/gen/f16-gemm-4x8-minmax-wasmrelaxedsimd-splat.c
+index ba1c0b8..addb83e 100644
+--- a/src/f16-gemm/gen/f16-gemm-4x8-minmax-wasmrelaxedsimd-splat.c
++++ b/src/f16-gemm/gen/f16-gemm-4x8-minmax-wasmrelaxedsimd-splat.c
+@@ -12,7 +12,7 @@
+ 
+ #include <wasm_simd128.h>
+ 
+-#include "xnnpack/gemm.h"
++#include "src/xnnpack/gemm.h"
+ 
+ void xnn_f16_gemm_minmax_ukernel_4x8__wasmrelaxedsimd_splat(
+     size_t mr,
+diff --git a/src/f16-gemm/gen/f16-gemm-6x16-minmax-wasmrelaxedsimd-splat.c b/src/f16-gemm/gen/f16-gemm-6x16-minmax-wasmrelaxedsimd-splat.c
+index e4c0bb5..15d28e9 100644
+--- a/src/f16-gemm/gen/f16-gemm-6x16-minmax-wasmrelaxedsimd-splat.c
++++ b/src/f16-gemm/gen/f16-gemm-6x16-minmax-wasmrelaxedsimd-splat.c
+@@ -12,7 +12,7 @@
+ 
+ #include <wasm_simd128.h>
+ 
+-#include "xnnpack/gemm.h"
++#include "src/xnnpack/gemm.h"
+ 
+ void xnn_f16_gemm_minmax_ukernel_6x16__wasmrelaxedsimd_splat(
+     size_t mr,
+diff --git a/src/f16-gemm/gen/f16-gemm-6x8-minmax-wasmrelaxedsimd-splat.c b/src/f16-gemm/gen/f16-gemm-6x8-minmax-wasmrelaxedsimd-splat.c
+index 55ffd16..e82b9cc 100644
+--- a/src/f16-gemm/gen/f16-gemm-6x8-minmax-wasmrelaxedsimd-splat.c
++++ b/src/f16-gemm/gen/f16-gemm-6x8-minmax-wasmrelaxedsimd-splat.c
+@@ -12,7 +12,7 @@
+ 
+ #include <wasm_simd128.h>
+ 
+-#include "xnnpack/gemm.h"
++#include "src/xnnpack/gemm.h"
+ 
+ void xnn_f16_gemm_minmax_ukernel_6x8__wasmrelaxedsimd_splat(
+     size_t mr,
+diff --git a/src/f16-gemm/gen/f16-gemm-8x16-minmax-wasmrelaxedsimd-splat.c b/src/f16-gemm/gen/f16-gemm-8x16-minmax-wasmrelaxedsimd-splat.c
+index 03e73cd..f654f78 100644
+--- a/src/f16-gemm/gen/f16-gemm-8x16-minmax-wasmrelaxedsimd-splat.c
++++ b/src/f16-gemm/gen/f16-gemm-8x16-minmax-wasmrelaxedsimd-splat.c
+@@ -12,7 +12,7 @@
+ 
+ #include <wasm_simd128.h>
+ 
+-#include "xnnpack/gemm.h"
++#include "src/xnnpack/gemm.h"
+ 
+ void xnn_f16_gemm_minmax_ukernel_8x16__wasmrelaxedsimd_splat(
+     size_t mr,
+diff --git a/src/f16-gemm/gen/f16-gemm-8x8-minmax-wasmrelaxedsimd-splat.c b/src/f16-gemm/gen/f16-gemm-8x8-minmax-wasmrelaxedsimd-splat.c
+index 86d1a72..46acc8b 100644
+--- a/src/f16-gemm/gen/f16-gemm-8x8-minmax-wasmrelaxedsimd-splat.c
++++ b/src/f16-gemm/gen/f16-gemm-8x8-minmax-wasmrelaxedsimd-splat.c
+@@ -12,7 +12,7 @@
+ 
+ #include <wasm_simd128.h>
+ 
+-#include "xnnpack/gemm.h"
++#include "src/xnnpack/gemm.h"
+ 
+ void xnn_f16_gemm_minmax_ukernel_8x8__wasmrelaxedsimd_splat(
+     size_t mr,
+diff --git a/src/f16-gemm/wasmrelaxedsimd-splat.c.in b/src/f16-gemm/wasmrelaxedsimd-splat.c.in
+index b08b084..23ce79f 100644
+--- a/src/f16-gemm/wasmrelaxedsimd-splat.c.in
++++ b/src/f16-gemm/wasmrelaxedsimd-splat.c.in
+@@ -8,7 +8,7 @@ $assert NR % 8 == 0
+ 
+ #include <wasm_simd128.h>
+ 
+-#include "xnnpack/gemm.h"
++#include "src/xnnpack/gemm.h"
+ 
+ void xnn_f16_gemm_minmax_ukernel_${MR}x${NR}__wasmrelaxedsimd_splat(
+     size_t mr,
