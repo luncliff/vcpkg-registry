@@ -1,7 +1,6 @@
 {
   "name": "fp16",
-  "version-date": "2024-06-20",
-  "port-version": 1,
+  "version-date": "2025-08-17",
   "description": "Header-only library for conversion to/from half-precision floating point formats",
   "homepage": "https://github.com/Maratyszcza/FP16",
   "license": "MIT",
