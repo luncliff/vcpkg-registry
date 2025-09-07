@@ -6,12 +6,11 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
     REF v${VERSION}
-    SHA512 8709d8d8b145cb467d9cbdb8631e09663f078bbf874f041282c5a71a0860088c54c32ad8c13aabd8c4f03193b97c84a6426629c83a3d465bc8f451b4b4fa84cc
+    SHA512 e1e27c84491a28dc5b7deb181de0fbad27ddd58cdd7ee2f6815bebd26d7ff400a94efea52eb7da344702adcd9181a474a76dc9e94d2ad7d6511d261deffa0cf5
     PATCHES
         fix-cmake-vcpkg.patch
         fix-cmake-c-api.patch
-        fix-includes.patch
-        disable-android-gl-delegates.patch
+        fix-headers.patch
 )
 
 file(REMOVE_RECURSE
@@ -102,9 +101,9 @@ codegen_flatc_cpp(
 
 codegen_flatc_cpp(
     DIRECTORY "${TFLITE_SOURCE_DIR}/delegates/gpu/common/task"
-    SOURCES serialization_base.fbs
+    SOURCES tflite_serialization_base.fbs
     FLATC_ARGS --scoped-enums
-    LOGNAME codegen-flatc-serialization_base
+    LOGNAME codegen-flatc-serialization
 )
 
 codegen_flatc_cpp(
@@ -180,7 +179,7 @@ vcpkg_cmake_configure(
         -DTFLITE_ENABLE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
         -DTFLITE_ENABLE_EXTERNAL_DELEGATE=ON
         -DTFLITE_ENABLE_INSTALL=ON
-        -DTFLITE_C_OUTPUT_NAME=${PORT} # see fix-cmake-c-api.patch
+        -DTFLITE_C_OUTPUT_NAME=tensorflow-lite # see fix-cmake-c-api.patch
         -DCMAKE_CROSSCOMPILING=${VCPKG_CROSSCOMPILING}
         "-DTFLITE_HOST_TOOLS_DIR:PATH=${CURRENT_HOST_INSTALLED_DIR}/tools"        
         "-DFLATC_BIN:FILEPATH=${FLATC}"

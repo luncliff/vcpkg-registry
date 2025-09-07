@@ -15,3 +15,25 @@ index b536e2f8..838fde0c 100644
  
  namespace tsl {
  using float4_e2m1fn = ::ml_dtypes::float4_e2m1fn;
+diff --git a/tensorflow/lite/core/model_building.h b/tensorflow/lite/core/model_building.h
+index 8b9b87e2..b109d1c5 100644
+--- a/tensorflow/lite/core/model_building.h
++++ b/tensorflow/lite/core/model_building.h
+@@ -89,7 +89,7 @@ class [[nodiscard]] Buffer {
+   Buffer(const Buffer&) = default;
+   Buffer& operator=(const Buffer&) = default;
+ 
+- private:
++ public:
+   Buffer(InterpreterInfo* builder, BufferIdx buffer_idx)
+       : builder_(builder), buffer_idx_(buffer_idx) {}
+ 
+@@ -138,7 +138,7 @@ class [[nodiscard]] Tensor {
+ 
+   explicit Tensor(Buffer buffer) : builder_(buffer.builder_) {}
+ 
+- private:
++ public:
+   Tensor() = default;
+   Tensor(InterpreterInfo* builder, TensorIdx tensor_idx, GraphIdx graph_idx)
+       : builder_(builder), tensor_idx_(tensor_idx), graph_idx_(graph_idx) {}
