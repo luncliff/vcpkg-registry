@@ -1,6 +1,6 @@
 {
   "name": "opencl-headers",
-  "version-string": "v2024.10.24",
+  "version-string": "v2025.07.22",
   "description": "Khronos OpenCL-Headers",
   "homepage": "https://github.com/KhronosGroup/OpenCL-Headers",
   "supports": "!uwp",
