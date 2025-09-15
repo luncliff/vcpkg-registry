@@ -29,7 +29,7 @@
       "port-version": 0
     },
     "cudnn-frontend": {
-      "baseline": "1.13.0",
+      "baseline": "1.14.0",
       "port-version": 0
     },
     "d3d12-transition-layer": {
