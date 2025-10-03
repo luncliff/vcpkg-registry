@@ -140,7 +140,7 @@ jobs:
       - name: "Run vcpkg(arm64-windows)"
         if: runner.os == 'Windows'
         run: |
-          vcpkg install --keep-going `
+          vcpkg install --keep-going --allow-unsupported `
             --clean-packages-after-build --x-buildtrees-root buildtrees `
             --x-manifest-root test --x-feature test
         shell: pwsh
