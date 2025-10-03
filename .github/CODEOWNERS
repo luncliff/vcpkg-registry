@@ -1,0 +1,15 @@
+# Global code owners for vcpkg registry
+* @luncliff
+
+# Port-specific ownership
+/ports/ @luncliff
+/versions/ @luncliff
+
+# Documentation
+/docs/ @luncliff
+*.md @luncliff
+
+# Build system and CI
+/triplets/ @luncliff
+/scripts/ @luncliff
+/.github/ @luncliff
