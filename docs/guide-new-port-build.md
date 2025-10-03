@@ -3,18 +3,59 @@
 This guide covers how to configure, build, and install sources after acquisition. Acquisition helpers are documented in `guide-new-port-download.md`.
 
 See also:
-- Planning overview: `guide-new-port.md`
+- [Planning overview](./guide-new-port.md)
 
-## 1. Build System Matrix
+## 1. Build System Scenarios
 
-| Scenario | Helper(s) | Example Port | Notes |
-|----------|-----------|--------------|-------|
-| CMake project (standard) | [`vcpkg_cmake_configure`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_cmake_configure) + [`vcpkg_cmake_install`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_cmake_install) + [`vcpkg_cmake_config_fixup`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_cmake_config_fixup) | [`opencl`](../ports/opencl), [`zlib-ng`](../ports/zlib-ng), [`eigen3`](../ports/eigen3) | Add/override options, handle config path |
-| CMake (header-only / subset) | [`vcpkg_cmake_configure`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_cmake_configure) (subset) or manual copy | [`nvtx3`](../ports/nvtx3) | May set `VCPKG_BUILD_TYPE` or remove debug dirs |
-| Meson project | [`vcpkg_configure_meson`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_configure_meson) + [`vcpkg_install_meson`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_install_meson) | [`etcpak`](../ports/etcpak) | Convert feature toggles to true/false |
-| NuGet binary package | [`vcpkg_find_acquire_program`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_find_acquire_program) + manual `file(INSTALL ...)` | [`directml`](../ports/directml) | No compilation; relocate binaries/headers |
-| Tool-only or extra executables | [`vcpkg_copy_tools`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_copy_tools) | [`etcpak`](../ports/etcpak), [`liblzma`](../ports/liblzma) | Use `AUTO_CLEAN` to remove unused wrappers |
-| Pkg-config generation | [`vcpkg_fixup_pkgconfig`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_fixup_pkgconfig) | [`eigen3`](../ports/eigen3), [`zlib-ng`](../ports/zlib-ng), [`liblzma`](../ports/liblzma) | Run after install, before cleanup |
+### CMake Projects
+
+#### Standard CMake Project
+Use [vcpkg_cmake_configure](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_cmake_configure) + [vcpkg_cmake_install](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_cmake_install) + [vcpkg_cmake_config_fixup](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_cmake_config_fixup) for most CMake-based projects.
+
+Examples: [`opencl`](../ports/opencl), [`zlib-ng`](../ports/zlib-ng), [`eigen3`](../ports/eigen3)
+
+This approach handles adding/overriding options and managing config path adjustments.
+
+#### Header-Only or Subset CMake Projects
+Use [`vcpkg_cmake_configure`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_cmake_configure) subset or manual copy for projects that don't require full compilation.
+
+Examples: [`nvtx3`](../ports/nvtx3)
+
+May set `VCPKG_BUILD_TYPE` or remove debug directories for optimization.
+
+### Meson Projects
+Use [`vcpkg_configure_meson`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_configure_meson) + [`vcpkg_install_meson`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_install_meson) for Meson-based build systems.
+
+Examples: [`etcpak`](../ports/etcpak)
+
+Convert feature toggles to true/false format for Meson compatibility.
+
+### Binary Packages
+
+#### NuGet Binary Package
+Use [`vcpkg_find_acquire_program`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_find_acquire_program) + manual `file(INSTALL ...)` for pre-compiled binary packages.
+
+Examples: [`directml`](../ports/directml)
+
+No compilation required; focus on relocating binaries and headers to proper locations.
+
+### Tool and Executable Management
+
+#### Tool-Only or Extra Executables
+Use [`vcpkg_copy_tools`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_copy_tools) for managing compiled tools and executables.
+
+Examples: [`etcpak`](../ports/etcpak), [`liblzma`](../ports/liblzma)
+
+Use `AUTO_CLEAN` option to remove unused wrappers automatically.
+
+### Configuration Management
+
+#### Pkg-config Generation
+Use [`vcpkg_fixup_pkgconfig`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_fixup_pkgconfig) for projects that generate pkg-config files.
+
+Examples: [`eigen3`](../ports/eigen3), [`zlib-ng`](../ports/zlib-ng), [`liblzma`](../ports/liblzma)
+
+Run this helper after install but before cleanup steps.
 
 ## 2. Common CMake Pattern
 
@@ -38,7 +79,7 @@ file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 ```
 
 ### With Feature Options
-Use [`vcpkg_check_features`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_check_features) to map logical feature names to CMake variables.
+Use [vcpkg_check_features](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_check_features) to map logical feature names to CMake variables.
 ```cmake
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTS
   FEATURES
@@ -189,17 +230,9 @@ For nonstandard names (e.g. `LICENSE.md`, `COPYING`), specify the correct file.
 
 ## 10. Build Phase Checklist
 
-- [ ] Select appropriate build helper (CMake / Meson / relocation)
-- [ ] Map features → build options
-- [ ] Disable tests / examples unless expressly desired
-- [ ] Set install dirs (CONFIG_PATH, pkgconfig) if upstream uses nonstandard paths
-- [ ] Run fixups (`vcpkg_cmake_config_fixup`, `vcpkg_fixup_pkgconfig`)
-- [ ] Copy tools conditionally
-- [ ] Remove redundant debug/include/share content
-- [ ] Handle static vs shared specific cleanup
-- [ ] Install license documentation
+To keep a single authoritative checklist for contributors, please follow the consolidated checklist in the docs:
+
+[Contributor Checklist](./pull_request_template.md)
 
 ---
-Next: see `guide-new-port.md` for the end-to-end workflow.
-
-Review your work with the [Contributor Checklist](../.github/pull_request_template.md)
+Next: see [guide-new-port.md](./guide-new-port.md) for the end-to-end workflow.

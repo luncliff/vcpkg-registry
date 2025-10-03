@@ -6,15 +6,50 @@ See also:
 - Build / install patterns: `guide-new-port-build.md`
 - Planning & workflow overview: `guide-new-port.md`
 
-## 1. Decision Matrix
+## 1. Source Acquisition Scenarios
 
-| Upstream Hosting | Typical Archive | Helper Function            | In-Repo Example | Notes |
-|------------------|-----------------|----------------------------|-----------------|-------|
-| GitHub           | tag / release   | [`vcpkg_from_github`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_from_github)        | [`ports/opencl`](../ports/opencl), [`ports/zlib-ng`](../ports/zlib-ng), [`ports/nvtx3`](../ports/nvtx3) | Supports `REF`, optional `PATCHES` |
-| GitLab           | commit / tag    | [`vcpkg_from_gitlab`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_from_gitlab)        | [`ports/eigen3`](../ports/eigen3)  | Requires `GITLAB_URL` + `REPO` (group/project) |
-| SourceForge      | packaged tar.*  | [`vcpkg_from_sourceforge`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_from_sourceforge)   | [`ports/liblzma`](../ports/liblzma) | Provide `REPO` + exact `FILENAME` |
-| Generic (other)  | custom          | [`vcpkg_download_distfile`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_download_distfile)  | (Add if needed) | Manual hash + manual extract |
-| Already packaged | (headers only)  | Still one of the above     | `ports/nvtx3`   | You can restrict to a subdir |
+### GitHub Hosting
+
+#### Tag or Release Archives
+Use [`vcpkg_from_github`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_from_github) for projects hosted on GitHub with tagged releases.
+
+Examples: [`ports/opencl`](../ports/opencl), [`ports/zlib-ng`](../ports/zlib-ng), [`ports/nvtx3`](../ports/nvtx3)
+
+Supports `REF` parameter for specifying tags or commits, with optional `PATCHES` for build fixes.
+
+### GitLab Hosting
+
+#### Commit or Tag Archives
+Use [`vcpkg_from_gitlab`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_from_gitlab) for projects hosted on GitLab instances.
+
+Examples: [`ports/eigen3`](../ports/eigen3)
+
+Requires `GITLAB_URL` + `REPO` parameters in group/project format.
+
+### SourceForge Hosting
+
+#### Packaged Archives
+Use [`vcpkg_from_sourceforge`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_from_sourceforge) for projects distributed through SourceForge.
+
+Examples: [`ports/liblzma`](../ports/liblzma)
+
+Provide `REPO` parameter and exact `FILENAME` for the archive.
+
+### Generic Hosting
+
+#### Custom Distribution Points
+Use [`vcpkg_download_distfile`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_download_distfile) for projects hosted on custom servers or unusual hosting platforms.
+
+Requires manual hash calculation and manual extraction steps.
+
+### Pre-Packaged Sources
+
+#### Headers-Only or Subset Installation
+Use any of the above acquisition methods even for header-only libraries.
+
+Examples: `ports/nvtx3`
+
+You can restrict installation to a specific subdirectory of the source.
 
 ## 2. Common Manifest Skeleton (`vcpkg.json`)
 
@@ -181,6 +216,6 @@ file(REMOVE_RECURSE "${SOURCE_PATH}/third_party" "${SOURCE_PATH}/external/libpng
 
 
 ---
-**Next:** proceed to build configuration (`guide-new-port-build.md`).
+**Next:** proceed to build configuration ([guide-new-port-build.md](./guide-new-port-build.md)).
 
-Review your work with the [Contributor Checklist](../.github/pull_request_template.md)
+Review your work with the [Contributor Checklist](./pull_request_template.md)
