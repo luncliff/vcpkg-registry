@@ -7,6 +7,10 @@ updates:
       interval: "monthly"
     labels:
       - "ci: GitHub Actions"
+    assignees:
+      - "luncliff"
+    commit-message:
+      prefix: "[skip ci] "
 
   - package-ecosystem: "pip"
     directory: "/"
