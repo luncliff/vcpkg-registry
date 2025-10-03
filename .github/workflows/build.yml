@@ -38,7 +38,7 @@ jobs:
       matrix:
         include:
           - runner_image: "ubuntu-24.04"
-          - runner_image: "macos-13"
+          # - runner_image: "macos-13"
           - runner_image: "windows-latest"
       fail-fast: false
     env:
@@ -164,7 +164,7 @@ jobs:
       matrix:
         include:
           - runner_image: "ubuntu-24.04"
-          - runner_image: "macos-13"
+          # - runner_image: "macos-13"
           # - runner_image: "windows-latest"
       fail-fast: false
     steps:
