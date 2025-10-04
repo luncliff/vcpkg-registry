@@ -9,6 +9,17 @@ Targets...
 * [vcpkg](https://github.com/microsoft/vcpkg): recommend [2024.06.15](https://github.com/microsoft/vcpkg/releases/tag/2024.06.15) or later
 * [vcpkg-tool](https://github.com/microsoft/vcpkg-tool) follows the vcpkg
 
+## Documentation
+
+### Port Development Guides
+
+- [Port Creation Guide](docs/guide-new-port.md)
+- [Port Updates](docs/guide-update-port.md)
+
+### Quality Assurance
+- [Review Checklist](docs/review-checklist.md)
+- [Pull Request Template](docs/pull_request_template.md)
+
 ### [References](docs/references.md)
 
 * Microsoft C++ Team Blog: https://devblogs.microsoft.com/cppblog/
