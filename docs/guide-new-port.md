@@ -166,12 +166,7 @@ Review your work with the [Contributor Checklist](./pull_request_template.md)
 **Likely Cause:** Debug directory is empty or missing required artifacts  
 **Fix:** Remove debug directory or add required debug artifacts
 
-## 6. When to Use Embedded CMakeLists Strategy
-- Upstream build scripts unstable / patch churn high.
-- You need rapid prototyping before crafting minimal patches.
-- Remember to convert to patch form if contributing upstream.
-
-## 7. Next Steps
+## 6. Next Steps
 Proceed to either:
 - Deepen acquisition options → [guide-new-port-download.md](./guide-new-port-download.md)
 - Tune build & packaging → [guide-new-port-build.md](./guide-new-port-build.md)

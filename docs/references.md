@@ -10,6 +10,14 @@
   - [Concepts: Overlay Ports](https://learn.microsoft.com/en-us/vcpkg/concepts/overlay-ports)
   - [Example: Overlay Triplets](https://learn.microsoft.com/en-us/vcpkg/users/examples/overlay-triplets-linux-dynamic)
 
+### Port Development and Maintenance
+
+- [Tutorial: Update an Existing vcpkg Dependency](https://learn.microsoft.com/en-us/vcpkg/produce/update-package-version)
+- [vcpkg x-add-version Command](https://learn.microsoft.com/en-us/vcpkg/commands/add-version)
+- [Registries Concepts](https://learn.microsoft.com/en-us/vcpkg/concepts/registries)
+- [Versioning Concepts](https://learn.microsoft.com/en-us/vcpkg/concepts/versioning)
+- [Apply Patches to Dependencies](https://learn.microsoft.com/en-us/vcpkg/produce/patches)
+
 ### GitHub Resources
 
 - [microsoft/vcpkg-tool](https://github.com/microsoft/vcpkg-tool/releases)
