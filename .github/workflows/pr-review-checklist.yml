@@ -14,43 +14,31 @@ jobs:
   post-checklist:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.title, '] Update') || contains(github.event.pull_request.title, '] update')
-    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
       - name: Read review checklist
         id: checklist
         run: |
           # Read the checklist file and prepare it for GitHub comment
           CHECKLIST_CONTENT=$(cat docs/review-checklist.md)
-          
           # Create comment body with proper formatting
           cat << 'EOF' > comment_body.md
-          ## 🔍 Port Review Checklist
-          
           Hi @${{ github.event.pull_request.user.login }}! Thanks for contributing a new port. 
-          
           **For reviewers:** Please use this checklist to ensure thorough review of the port contribution.
-          
-          ---
-          
           EOF
           
           echo "$CHECKLIST_CONTENT" >> comment_body.md
-          
           cat << 'EOF' >> comment_body.md
-          
           ---
-          
           **Review Instructions:**
           1. Check each item as you verify it
-          2. Leave specific feedback for any issues found
-          3. Update the final review decision section
-          4. Consider testing on multiple platforms if possible
-          
+          2. Leave specific feedback or note for any issues found
+          3. Consider testing on multiple platforms if possible
+
           **For Contributors:** You can use this checklist to self-review before requesting review.
           EOF
+        shell: bash
 
       - name: Post review checklist comment
         uses: peter-evans/create-or-update-comment@v5
@@ -75,10 +63,10 @@ jobs:
       - name: Request review from code owners
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             // Get the owner from CODEOWNERS or repository owner
             const owner = context.repo.owner;
-            
             github.rest.pulls.requestReviewers({
               owner: context.repo.owner,
               repo: context.repo.repo,
