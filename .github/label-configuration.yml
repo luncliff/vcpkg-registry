@@ -1,27 +1,16 @@
 # Automatically label PRs based on changed files
 
-'port-contribution':
-  - 'ports/**'
-
 'documentation':
   - 'docs/**'
   - '*.md'
-
-'build-system':
   - 'triplets/**'
   - 'scripts/**'
 
-'ci/cd':
+'ci: GitHub Actions':
   - '.github/**'
 
-'version-update':
-  - 'versions/**'
-
-'new-port':
-  - 'ports/*/vcpkg.json'
-  - 'ports/*/portfile.cmake'
-
-'port-update':
-  - changed-files:
-    - any-glob-to-any-file: 'ports/**/vcpkg.json'
-    - any-glob-to-any-file: 'versions/**'
+# 'port-update':
+#   - changed-files:
+#     - any-glob-to-any-file: 'ports/**/vcpkg.json'
+#     - any-glob-to-any-file: 'ports/**/portfile.cmake'
+#     - any-glob-to-any-file: 'versions/**'
