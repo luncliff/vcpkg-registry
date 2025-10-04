@@ -322,7 +322,6 @@ vcpkg install port-name@1.2.3
 ## 10. Related Resources
 
 - [Main Port Update Guide](./guide-update-port.md)
-- [Patch Maintenance Guide](./guide-update-port-patches.md)
 - [vcpkg Versioning Documentation](https://learn.microsoft.com/en-us/vcpkg/reference/vcpkg-json)
 - [vcpkg Git Registry Concepts](https://learn.microsoft.com/en-us/vcpkg/maintainers/registries)
 - [Registry Maintenance Scripts](../scripts/)

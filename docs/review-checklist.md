@@ -44,7 +44,6 @@ This document provides a comprehensive checklist for reviewing new port contribu
 - [ ] Obsolete patches removed
 - [ ] Updated patches apply cleanly
 - [ ] New patches justified and minimal
-- [ ] Embedded CMakeLists.txt approach used appropriately (if applicable)
 - [ ] Patch purposes documented in portfile
 
 ### Regression Testing
@@ -200,7 +199,6 @@ This document provides a comprehensive checklist for reviewing new port contribu
 - [Source Acquisition Guide](guide-new-port-download.md)
 - [Build Patterns Guide](guide-new-port-build.md)
 - [Version Management Guide](guide-update-port-versioning.md)
-- [Patch Maintenance Guide](guide-update-port-patches.md)
 - [vcpkg Documentation](https://learn.microsoft.com/en-us/vcpkg/)
   - [ ] CMake: [`vcpkg_cmake_configure`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_cmake_configure) + [`vcpkg_cmake_install`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_cmake_install)
   - [ ] Meson: [`vcpkg_configure_meson`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_configure_meson) + [`vcpkg_install_meson`](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_install_meson)

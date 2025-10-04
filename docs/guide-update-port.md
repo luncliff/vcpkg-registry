@@ -108,8 +108,6 @@ Following the [version management guide](./guide-update-port-versioning.md):
 
 ### Step 3: Handle Patches
 
-Following the [patch maintenance guide](./guide-update-port-patches.md):
-
 1. **Test existing patches:**
    ```powershell
    # Try building with existing patches
@@ -120,10 +118,6 @@ Following the [patch maintenance guide](./guide-update-port-patches.md):
    - If patches fail to apply, update them for the new version
    - Remove patches that are no longer needed
    - Create new patches for new issues
-
-3. **Consider embedded CMakeLists.txt approach:**
-   - For complex cases where patches become unwieldy
-   - See [patch maintenance guide](./guide-update-port-patches.md) for details
 
 ### Step 4: Test the Update
 
@@ -226,7 +220,6 @@ Following the [patch maintenance guide](./guide-update-port-patches.md):
 - Prefer minimal patches over extensive modifications
 - Document patch purposes clearly
 - Consider upstream contributions for widely applicable fixes
-- Use embedded CMakeLists.txt for complex build system changes
 
 ### Testing Approach
 - Test both clean installs and updates
@@ -253,7 +246,6 @@ Following the [patch maintenance guide](./guide-update-port-patches.md):
 
 ### Build System Changes
 - May require patch updates
-- Consider embedded CMakeLists.txt approach
 - Test thoroughly across platforms
 
 ### Dependency Changes
@@ -265,7 +257,6 @@ Following the [patch maintenance guide](./guide-update-port-patches.md):
 
 - [New Port Creation](./guide-new-port.md)
 - [Version Management](./guide-update-port-versioning.md)
-- [Patch Maintenance](./guide-update-port-patches.md)
 - [Review Checklist](./review-checklist.md)
 - [vcpkg Documentation](https://learn.microsoft.com/en-us/vcpkg/)
 - [Registry Scripts](../scripts/)
