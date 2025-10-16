@@ -1,28 +1,31 @@
 # 📝 Pull Request
 
-**Type:** [ ] New Port [ ] Port Update [ ] Documentation [ ] Otherption of the changes and why they are needed.
-
----
+Leave one of "New Port" or "Port Update" below...
 
 ## 🆕 New Port
 
 *Delete this section if this is a port update*
 
+- **Port Name:** `<port-name>`
+- **New Version:** `<new-version>`
+- **Upstream Release or Tag:** `<release-url-or-commit>`
+
+Link `#<issue-number>` (if applicable)
+
 ### 📋 New Port Checklist
 
-- [ ] Port installs successfully with overlay
-- [ ] No unexpected files in package directory
-- [ ] License file is properly installed
-- [ ] Port follows registry formatting standards
+- [ ] Port installs successfully with overlay(`vcpkg install --overlay-ports`)
+- [ ] No unexpected files in port directory
+- [ ] License file is properly installed(``share/<port-name>/copyright` or `VCPKG_POLICY_SKIP_COPYRIGHT_CHECK`)
+- [ ] Port follows formatting(`vcpkg format-manifest --all`)
 - [ ] Version baseline has been updated
-- [ ] All commits follow naming convention
 
-### Port Information
+For Reviewers🔎, check the followings.
 
-- **Port Name:** `<port-name>`
-- **Version:** `<version>`
-- **Upstream:** `<repository-url>`
-- **License:** `<license-type>`
+- [Port Creation Guide](./guide-new-port.md)
+- [Source Acquisition](./guide-new-port-download.md)
+- [Build Patterns](./guide-new-port-build.md)
+- [Review Checklist](./review-checklist.md)
 
 #### Build System
 - [ ] CMake
@@ -32,15 +35,15 @@
 - [ ] Other: `<specify>`
 
 #### Testing
-- [ ] `vcpkg install --overlay-ports=ports <port-name>` succeeds
-- [ ] Package files are correctly installed
+- [ ] Package files(`*.pc`, `*-config.cmake`, etc) are correctly installed
 - [ ] License file is present in `share/<port-name>/`
 
-**Target Triplets Tested:**
-- [ ] x64-windows
-- [ ] x64-linux  
-- [ ] x64-osx
-- [ ] Other: `<specify-triplets>`
+List the tested triplets:
+
+- x64-windows
+- x64-linux
+- x64-osx
+- Other: `<specify-triplets>`
 
 ---
 
@@ -48,21 +51,24 @@
 
 *Delete this section if this is a new port*
 
+- **Port Name:** `<port-name>`
+- **New Version:** `<new-version>`
+- **Upstream Release or Tag:** `<release-url-or-commit>`
+
+Link `#<issue-number>` (if applicable)
+
 ### 📋 Update Checklist
 
-- [ ] Version updated in vcpkg.json
-- [ ] SHA512 hash updated in portfile.cmake
-- [ ] Patches updated or removed if no longer needed
-- [ ] Port installs successfully with new version
+- [ ] Port installs successfully with overlay(`vcpkg install --overlay-ports`)
+- [ ] No unexpected files in port directory(e.g. patch files that are not used in `portfile.cmake`)
+- [ ] Port follows formatting(`vcpkg format-manifest --all`)
 - [ ] Version baseline has been updated
-- [ ] Commits follow naming convention
 
-### Update Information
+For Reviewers🔎, check the followings.
 
-- **Port Name:** `<port-name>`
-- **Previous Version:** `<old-version>`
-- **New Version:** `<new-version>`
-- **Upstream Release:** `<release-url-or-commit>`
+- [Port Update Guide](./guide-update-port.md)
+- [Version Management](./guide-update-port-versioning.md)
+- [Review Checklist](./review-checklist.md)
 
 #### Changes Made
 - [ ] Updated version in `vcpkg.json`
@@ -72,42 +78,11 @@
 
 #### Validation
 - [ ] `vcpkg install --overlay-ports=ports <port-name>` succeeds
-- [ ] No regression in functionality
-- [ ] License file properly installed
+- [ ] Regression tested in the other ports that use changed port
 
-**Target Triplets Verified:**
-- [ ] x64-windows
-- [ ] x64-linux
-- [ ] x64-osx
-- [ ] Other: `<specify-triplets>`
+List the tested triplets:
 
----
-
-## � Common Information
-
-### Known Issues / Limitations
-`<describe-any-known-issues>`
-
-### Testing Notes
-`<additional-testing-information>`
-
-### Breaking Changes
-- [ ] No breaking changes
-- [ ] Breaking changes (describe below)
-
-`<describe-breaking-changes-if-any>`
-
----
-
-## 🔍 For Reviewers
-
-### Related Issues
-Closes #`<issue-number>` (if applicable)
-
-### References
-- [Port Creation Guide](./guide-new-port.md)
-- [Port Update Guide](./guide-update-port.md)
-- [Source Acquisition](./guide-new-port-download.md)
-- [Build Patterns](./guide-new-port-build.md)
-- [Version Management](./guide-update-port-versioning.md)
-- [Review Checklist](./review-checklist.md)
+- x64-windows
+- x64-linux
+- x64-osx
+- Other: `<specify-triplets>`

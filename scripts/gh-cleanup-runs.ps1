@@ -21,7 +21,7 @@ param
 (
     [String]$Repository = "",
     [Parameter(Mandatory = $true)][String]$Workflow,
-    [String]$Branch = "main",
+    [String]$Branch = "",
     [String]$Conclusion = "cancelled",
     [String]$GitHubHost = "github.com" 
 )
@@ -36,7 +36,13 @@ if ($Repository -eq "") {
 }
 
 # ex) '.workflow_runs[] | select(.conclusion != "") | .id'
-[String]$Query = ".workflow_runs[] | select(.head_branch == ""$Branch"") | select(.conclusion == ""$Conclusion"") | .id"
+
+# if Branch is empty string, the query won't use it
+if ($Branch -eq "") {
+    [String]$Query = ".workflow_runs[] | select(.conclusion == ""$Conclusion"") | .id"
+} else {
+    [String]$Query = ".workflow_runs[] | select(.head_branch == ""$Branch"") | select(.conclusion == ""$Conclusion"") | .id"
+}
 Write-Output "Query: $Query"
 
 gh api `
