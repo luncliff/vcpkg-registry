@@ -1,0 +1,44 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a783c57..65c7d09 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -68,7 +68,10 @@ include(CheckCCompilerFlag)
+ CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
+ CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+ CHECK_CXX_COMPILER_FLAG("-fPIC" COMPILER_SUPPORTS_FPIC)
+-if (COMPILER_SUPPORTS_CXX14)
++if (TRUE)
++  set(CMAKE_CXX_STANDARD 17)
++  set(CMAKE_CUDA_STANDARD 17)
++elseif (COMPILER_SUPPORTS_CXX14)
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+ elseif(COMPILER_SUPPORTS_CXX0X)
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+@@ -77,7 +80,10 @@ else()
+ endif()
+ 
+ CHECK_C_COMPILER_FLAG("-std=c99" COMPILER_SUPPORTS_C99)
+-if (COMPILER_SUPPORTS_C99)
++if (TRUE)
++  message(STATUS "Using C11")
++  set(CMAKE_C_STANDARD 11)
++elseif (COMPILER_SUPPORTS_C99)
+     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+ else()
+     message( WARNING "The compiler ${CMAKE_C_COMPILER} doesn't support the -std=c99 flag. Some code may not compile.")
+diff --git a/interface_cuda/interface.cpp b/interface_cuda/interface.cpp
+index c4544f9..3449ceb 100644
+--- a/interface_cuda/interface.cpp
++++ b/interface_cuda/interface.cpp
+@@ -451,10 +451,9 @@ magma_print_environment()
+         check_error( err );
+ 
+         #ifdef MAGMA_HAVE_CUDA
+-        printf( "%% device %d: %s, %.1f MHz clock, %.1f MiB memory, capability %d.%d\n",
++        printf( "%% device %d: %s, %.1f MiB memory, capability %d.%d\n",
+                 dev,
+                 prop.name,
+-                prop.clockRate / 1000.,
+                 prop.totalGlobalMem / (1024.*1024.),
+                 prop.major,
+                 prop.minor );
