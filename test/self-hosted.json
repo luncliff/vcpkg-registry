@@ -25,7 +25,6 @@
           ]
         },
         "magma",
-        "nvidia-cnmem",
         "nvidia-cudnn-frontend",
         {
           "name": "nvidia-cutlass",
@@ -33,11 +32,7 @@
             "tools"
           ]
         },
-        "nvidia-nvbench",
         "nvidia-tools-extension-sdk",
-        "nvidia-triton-client",
-        "nvidia-triton-common",
-        "nvidia-triton-core",
         {
           "name": "onnxruntime",
           "features": [
