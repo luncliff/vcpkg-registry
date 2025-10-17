@@ -24,8 +24,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2025.07.25"
-            vcpkg_commit: "dd3097e305afa53f7b4312371f62058d2e665320"
+          - vcpkg_tag: "2025.09.17"
+            vcpkg_commit: "4334d8b4c8916018600212ab4dd4bbdc343065d1"
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -46,7 +46,7 @@ jobs:
       - name: "Change vcpkg.json"
         run: |
           New-Item -Type Directory -Force C:/vcpkg-caches
-          Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+          Move-Item -Path "test/test-self-hosted.json" -Destination "test/vcpkg.json" -Force
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.5
@@ -117,7 +117,7 @@ jobs:
       - name: "Change vcpkg.json"
         run: |
           New-Item -Type Directory -Force C:/vcpkg-caches
-          Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+          Move-Item -Path "test/test-self-hosted.json" -Destination "test/vcpkg.json" -Force
 
       - name: "Check CUDA Environment"
         run: |
@@ -129,7 +129,7 @@ jobs:
         name: "Run vcpkg(x64-windows)"
         with:
           vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
+          vcpkgGitCommitId: "4334d8b4c8916018600212ab4dd4bbdc343065d1" # 2025.09.17
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
@@ -167,8 +167,8 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
-          vcpkgJsonGlob: "test/self-hosted.json"
+          vcpkgGitCommitId: "4334d8b4c8916018600212ab4dd4bbdc343065d1" # 2025.09.17
+          vcpkgJsonGlob: "test/test-self-hosted.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `vulkan`]'
@@ -176,3 +176,47 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
           VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
+
+      - uses: yumis-coconudge/clean-workspace-action@v1.0.6
+        with:
+          additional-path: "C:/vcpkg/buildtrees,C:/vcpkg/packages"
+        if: always()
+
+  overlay_tools:
+    name: "Host Tools"
+    runs-on: ["self-hosted", "x64", "Windows"]
+    needs: overlay
+    steps:
+      - uses: actions/checkout@v5
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+
+      - name: "Change vcpkg.json"
+        run: |
+          New-Item -Type Directory -Force C:/vcpkg-caches
+          Move-Item -Path "test/test-self-hosted.json" -Destination "test/vcpkg.json" -Force
+
+      - uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "C:/vcpkg"
+          vcpkgGitCommitId: "4334d8b4c8916018600212ab4dd4bbdc343065d1" # 2025.09.17
+          vcpkgJsonGlob: "test/test-self-hosted.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+          runVcpkgInstall: true
+          runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `host-tools`]'
+        env:
+          VCPKG_DEFAULT_TRIPLET: "x64-windows"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
+
+      - uses: yumis-coconudge/clean-workspace-action@v1.0.6
+        with:
+          additional-path: "C:/vcpkg/buildtrees,C:/vcpkg/packages"
+        if: always()

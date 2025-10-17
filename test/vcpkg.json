@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2025-08-29",
+  "version-date": "2025-10-17",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "windows | linux | osx | ios",
@@ -16,31 +16,6 @@
     }
   ],
   "features": {
-    "host-tools": {
-      "description": "install tool ports, with host: true option",
-      "supports": "native",
-      "dependencies": [
-        {
-          "name": "godot",
-          "host": true,
-          "features": [
-            "spine-runtimes"
-          ],
-          "platform": "osx"
-        },
-        {
-          "name": "godot",
-          "host": true,
-          "platform": "linux"
-        },
-        {
-          "name": "llama-cpp",
-          "features": [
-            "tools"
-          ]
-        }
-      ]
-    },
     "test": {
       "description": "install library ports",
       "dependencies": [
