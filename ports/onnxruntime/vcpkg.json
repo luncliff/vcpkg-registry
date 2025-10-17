@@ -28,7 +28,6 @@
       "name": "flatbuffers",
       "version>=": "23.5.26"
     },
-    "ms-gsl",
     "nlohmann-json",
     {
       "name": "onnx",
