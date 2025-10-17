@@ -1,9 +1,8 @@
 {
   "name": "onnx",
-  "version-semver": "1.16.2",
-  "port-version": 1,
+  "version-semver": "1.19.1",
   "description": "Open standard for machine learning interoperability",
-  "homepage": "https://onnx.ai",
+  "homepage": "https://github.com/onnx/onnx",
   "license": "Apache-2.0",
   "dependencies": [
     "protobuf",
@@ -17,6 +16,10 @@
     },
     {
       "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    {
+      "name": "vcpkg-get-python-packages",
       "host": true
     }
   ],
