@@ -1,0 +1,13 @@
+diff --git a/cmake/ONNXConfig.cmake.in b/cmake/ONNXConfig.cmake.in
+index a5129bf..158b56a 100644
+--- a/cmake/ONNXConfig.cmake.in
++++ b/cmake/ONNXConfig.cmake.in
+@@ -4,7 +4,7 @@
+ # library version information
+ set(ONNX_VERSION "@ONNX_VERSION@")
+ 
+-if((NOT @@ONNX_USE_PROTOBUF_SHARED_LIBS@@) AND @@Build_Protobuf@@)
++if(NOT @@ONNX_USE_PROTOBUF_SHARED_LIBS@@)
+   find_package(Protobuf REQUIRED CONFIG)
+ endif()
+ 
