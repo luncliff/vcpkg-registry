@@ -3,11 +3,11 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO onnx/optimizer
-    REF "v${VERSION}"
-    SHA512 552d6fa261c3ce2db2e0938a5b5261676335bce9bd828b46a1e2631f3b362c748ae9a6cfe7d62072fc3774b3f506bc54aa5827b52241e6f48d78a08dea1d9316
-    HEAD_REF master
-    PATCHES
-        fix-cmakelists.patch
+    REF 31194ccb971bbbcc8218e103c7b0a8049ddddc3e
+    SHA512 2a5dda0f4ca167f526f98b4f6ff05cacd5c83c983412ebb1c5c94ac9803d733e9d1677b35278255f16fa9a99f1c1168830c6400842d6c8d7120a1e594946a6e9
+    HEAD_REF main
+    # PATCHES
+    #     fix-cmakelists.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
