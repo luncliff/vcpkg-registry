@@ -16,7 +16,7 @@ Link `#<issue-number>` (if applicable)
 
 - [ ] Port installs successfully with overlay(`vcpkg install --overlay-ports`)
 - [ ] No unexpected files in port directory
-- [ ] License file is properly installed(``share/<port-name>/copyright` or `VCPKG_POLICY_SKIP_COPYRIGHT_CHECK`)
+- [ ] License file is properly installed(`share/<port-name>/copyright` or `VCPKG_POLICY_SKIP_COPYRIGHT_CHECK`)
 - [ ] Port follows formatting(`vcpkg format-manifest --all`)
 - [ ] Version baseline has been updated
 
@@ -28,13 +28,15 @@ For Reviewers🔎, check the followings.
 - [Review Checklist](./review-checklist.md)
 
 #### Build System
-- [ ] CMake
-- [ ] Meson
-- [ ] Header-only
-- [ ] Binary redistribution
-- [ ] Other: `<specify>`
 
-#### Testing
+- CMake
+- Meson
+- Header-only
+- Binary redistribution
+- Other: `<specify>`
+
+### Testing
+
 - [ ] Package files(`*.pc`, `*-config.cmake`, etc) are correctly installed
 - [ ] License file is present in `share/<port-name>/`
 
@@ -57,7 +59,7 @@ List the tested triplets:
 
 Link `#<issue-number>` (if applicable)
 
-### 📋 Update Checklist
+### 📋 Port Update Checklist
 
 - [ ] Port installs successfully with overlay(`vcpkg install --overlay-ports`)
 - [ ] No unexpected files in port directory(e.g. patch files that are not used in `portfile.cmake`)
@@ -71,12 +73,14 @@ For Reviewers🔎, check the followings.
 - [Review Checklist](./review-checklist.md)
 
 #### Changes Made
+
 - [ ] Updated version in `vcpkg.json`
 - [ ] Updated `REF` in `portfile.cmake`
 - [ ] Updated `SHA512` hash in `portfile.cmake`
 - [ ] Updated/removed patches: `<list-changes>`
 
-#### Validation
+### Validation
+
 - [ ] `vcpkg install --overlay-ports=ports <port-name>` succeeds
 - [ ] Regression tested in the other ports that use changed port
 

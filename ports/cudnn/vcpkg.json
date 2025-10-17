@@ -1,0 +1,11 @@
+{
+  "name": "cudnn",
+  "version": "9.11.1",
+  "description": "NVIDIA's cuDNN deep neural network acceleration library.",
+  "homepage": "https://docs.nvidia.com/deeplearning/cudnn/backend/latest/release-notes.html",
+  "license": null,
+  "supports": "(windows & x64 & !uwp) | (linux & x64) | (linux & arm64)",
+  "dependencies": [
+    "cuda"
+  ]
+}

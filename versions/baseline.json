@@ -28,6 +28,10 @@
       "baseline": "2025-06-26",
       "port-version": 0
     },
+    "cudnn": {
+      "baseline": "9.11.1",
+      "port-version": 0
+    },
     "cudnn-frontend": {
       "baseline": "1.14.0",
       "port-version": 0
