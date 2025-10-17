@@ -2,7 +2,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO NVIDIA/cudnn-frontend
     REF v${VERSION}
-    SHA512 95dbf57594eda08905f176f6f18be297cfbac571460829c55959f15e87f92e9019812ff367bf857dc26d6961d9c6393e667b09e855732e3ab7645e93f325efa1
+    SHA512 60bae39a11ac6a2a357aa1cbc9a0b69bcf8f6e9b68bfa02eef934c3861fd6f32c4258b30fbf8ef779433b8262995e8f952dd5f7ba75eb196391046523f7d678d
     HEAD_REF main
     PATCHES
         fix-thirdparty.patch
@@ -14,6 +14,8 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         python  CUDNN_FRONTEND_BUILD_PYTHON_BINDINGS
 )
 
+vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root)
+
 # header only, INTERFACE library
 set(VCPKG_BUILD_TYPE release)
 
@@ -21,6 +23,8 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
+        "-DCMAKE_CUDA_COMPILER:FILEPATH=${NVCC}"
+        "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
         -DCUDNN_FRONTEND_FETCH_PYBINDS_IN_CMAKE=OFF
         -DCUDNN_FRONTEND_BUILD_TESTS=OFF
         -DCUDNN_FRONTEND_BUILD_SAMPLES=OFF
