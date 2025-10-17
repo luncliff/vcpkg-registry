@@ -3,15 +3,15 @@ if(VCPKG_TARGET_IS_WINDOWS)
 endif()
 set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
-# https://github.com/ggml-org/llama.cpp/releases/tag/b6301
+# https://github.com/ggml-org/llama.cpp/releases/tag/b6786
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggml-org/llama.cpp
     REF "b${VERSION}"
-    SHA512 8f7900829f1b0f99e4b59f8e24def0e975ac6e7186619daaa77477506f93609243188589285f9fc46b924f215a1eed1ae20b386340c507d40c0865de8c1eb3be
+    SHA512 c56398808a1948e9aa5b93cf77da5b5a969b7896e42a0dbac13b4329fa8f6a28a6830d39752def6d0945faa21d3bd2b8cf5d6e6c7098756d8545ad1ce33c9169
     HEAD_REF master
-    PATCHES
-        fix-3rdparty.patch
+    # PATCHES
+    #     fix-3rdparty.patch
 )
 file(REMOVE_RECURSE
     "${SOURCE_PATH}/vendor/nlohmann" # nlohmann-json
@@ -172,7 +172,6 @@ vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/llama" PACKAGE_NAME "llama")
 
 file(COPY "${SOURCE_PATH}/grammars"
           "${SOURCE_PATH}/models"
-          "${SOURCE_PATH}/prompts"
     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
 )
 
