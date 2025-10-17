@@ -1,22 +1,24 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0063385..e9ad9ff 100644
+index 988c9a3..56e6d3e 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -26,7 +26,7 @@ if(NOT ONNX_OPT_USE_SYSTEM_PROTOBUF)
-   add_subdirectory_if_no_target(${PROJECT_SOURCE_DIR}/third_party/protobuf/cmake libprotobuf)
+@@ -31,8 +31,7 @@ if(NOT ONNX_OPT_USE_SYSTEM_PROTOBUF)
  endif()
  
--
-+find_package(ONNX CONFIG REQUIRED) # ONNX::onnx
- set(ONNX_ROOT ${PROJECT_SOURCE_DIR}/third_party/onnx)
- add_subdirectory_if_no_target(${ONNX_ROOT} ${ONNX_TARGET_NAME})
  
+-set(ONNX_ROOT ${PROJECT_SOURCE_DIR}/third_party/onnx)
+-add_subdirectory_if_no_target(${ONNX_ROOT} ${ONNX_TARGET_NAME})
++find_package(ONNX CONFIG REQUIRED) # ONNX::onnx
+ 
+ file(READ "${PROJECT_SOURCE_DIR}/VERSION_NUMBER" ONNX_OPTIMIZER_VERSION)
+ string(STRIP "${ONNX_OPTIMIZER_VERSION}" ONNX_OPTIMIZER_VERSION)
 diff --git a/cmake/utils.cmake b/cmake/utils.cmake
-index 6cca9f3..a735434 100644
+index 6cca9f3..bb69a1a 100644
 --- a/cmake/utils.cmake
 +++ b/cmake/utils.cmake
-@@ -1,4 +1,10 @@
+@@ -1,4 +1,11 @@
 -include(${PROJECT_SOURCE_DIR}/third_party/onnx/cmake/Utils.cmake)
++# include(${PROJECT_SOURCE_DIR}/third_party/onnx/cmake/Utils.cmake)
 +function(add_msvc_runtime_flag lib)
 +  if(ONNX_USE_MSVC_STATIC_RUNTIME)
 +    target_compile_options(${lib} PRIVATE $<$<NOT:$<CONFIG:Debug>>:/MT> $<$<CONFIG:Debug>:/MTd>)    
