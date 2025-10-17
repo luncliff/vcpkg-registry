@@ -1,6 +1,6 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.22.1",
+  "version-semver": "1.23.0",
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://github.com/microsoft/onnxruntime",
   "license": "MIT",
@@ -73,14 +73,6 @@
             "tools"
           ]
         }
-      ]
-    },
-    "directml": {
-      "description": "Build with DirectML support",
-      "supports": "windows",
-      "dependencies": [
-        "directml",
-        "directx-headers"
       ]
     },
     "framework": {

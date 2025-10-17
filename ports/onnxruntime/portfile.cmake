@@ -1,19 +1,19 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 
-set(ORT_GIT_COMMIT "89746dc19a0a1ae59ebf4b16df9acab8f99f3925")
+set(ORT_GIT_COMMIT "be835efc56aca19b8e810538ec93c8e150e0fc61")
 set(ORT_GIT_BRANCH "v${VERSION}")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
     REF ${ORT_GIT_BRANCH}
-    SHA512 6fd9da2c9db62659ff10e011d02109262d9d494cc0594aa0a096146c5df907acced42e76ef409927899c856075dd4ba64a294442f65e7eabf7d4dc7049991b43
-    PATCHES
-        fix-sources.patch
-        fix-cmake.patch
-        fix-cmake-cuda.patch
-        fix-cmake-training.patch
-        fix-cmake-tensorrt.patch
+    SHA512 65685eb7d8d832961a83e21e8e4a7a93b9189f13ef2456e4b265efa8d70d20b4064b1bb62a6f46271cb3c91742051fee473acf7b9f7e9d62926e1da07f772acb
+    # PATCHES
+    #     fix-sources.patch
+    #     fix-cmake.patch
+    #     fix-cmake-cuda.patch
+    #     fix-cmake-training.patch
+    #     fix-cmake-tensorrt.patch
 )
 
 find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
