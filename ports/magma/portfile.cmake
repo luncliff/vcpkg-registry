@@ -12,6 +12,7 @@ vcpkg_extract_source_archive(SOURCE_PATH
     fix-cmake4.patch
     fix-no-tests.patch
     fix-pkgconfig.patch
+    fix-cuda13.patch
 )
 vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root) 
 
@@ -21,17 +22,23 @@ if(VCPKG_TARGET_IS_WINDOWS AND VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
   )
 endif()
 
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+  FEATURES
+    openmp  CMAKE_DISABLE_FIND_PACKAGE_OpenMP
+    fortran USE_FORTRAN
+)
+
+
 vcpkg_cmake_configure(
   SOURCE_PATH "${SOURCE_PATH}"
   OPTIONS
     "-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=${VCPKG_TARGET_IS_WINDOWS}"
-    -DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=ON
     -DMAGMA_ENABLE_CUDA=ON
     -DMAGMA_ENABLE_HIP=OFF
-    -DUSE_FORTRAN=OFF
     "-DCMAKE_CUDA_COMPILER:FILEPATH=${NVCC}"
     "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
     ${PLATFORM_OPTIONS}
+    ${FEATURE_OPTIONS}
 )
 vcpkg_cmake_install()
 vcpkg_fixup_pkgconfig()

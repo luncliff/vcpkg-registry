@@ -1,15 +1,2 @@
-# Global code owners for vcpkg registry
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 * @luncliff
-
-# Port-specific ownership
-/ports/ @luncliff
-/versions/ @luncliff
-
-# Documentation
-/docs/ @luncliff
-*.md @luncliff
-
-# Build system and CI
-/triplets/ @luncliff
-/scripts/ @luncliff
-/.github/ @luncliff
