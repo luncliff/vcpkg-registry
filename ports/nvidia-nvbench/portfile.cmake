@@ -3,32 +3,34 @@ if(VCPKG_TARGET_IS_WINDOWS)
 endif()
 
 vcpkg_from_github(
-    OUT_SOURCE_PATH RAPIDS_SOURCE_PATH
-    REPO rapidsai/rapids-cmake
-    REF v24.08.00
-    SHA512 140cebd0a42114bb58b6c6e694b98de118b1d58c62187f57036ad75407fd51c0e3c012e8f7312bc0a86ab592cf4033184260899d3e1894b9848e3c84ddebc9d9
-    HEAD_REF main
-)
-
-vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO NVIDIA/nvbench
-    REF a171514056e5d6a7f52a035dd6c812fa301d4f4f
-    SHA512 5a5fb4886495fa0682c7331ac12610b0c09caa95a1f31b8a2c5af69ebaa1965a841b6f23c1226c29c9020e7db6988926db142d36792d32b7cce04edae2b0cc08
+    REF 98d701c054b9c9dfa22d2b7bd811213f070bbebf
+    SHA512 b31e6b708dd5a529042db367fe1701c165485df1abb57f1d5f965dc3cd1ee4c6d6bfdef2ad05cf4ba3a22896f60e2369a6d0ae74db55c3a05f60c2937df45b3d
     PATCHES
         fix-cmake.patch
     HEAD_REF main
 )
 
+vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root)
+
+# No Debug configuration
+set(VCPKG_BUILD_TYPE release)
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     DISABLE_PARALLEL_CONFIGURE
     OPTIONS
-        "-Drapids-cmake-dir:PATH=${RAPIDS_SOURCE_PATH}/rapids-cmake"
-        "-DCMAKE_MODULE_PATH:PATH=${RAPIDS_SOURCE_PATH}/rapids-cmake"
-        -DNVBench_ENABLE_NVML=ON
+        "-DCMAKE_CUDA_COMPILER=${NVCC}"
+        "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
+        -Drapids-cmake-version=25.10 # https://github.com/rapidsai/rapids-cmake/releases/tag/v25.10.00
+        # -DFETCHCONTENT_FULLY_DISCONNECTED=OFF
         -DNVBench_ENABLE_CUPTI=ON
+        # -DNVBench_ENABLE_DEVICE_TESTING=ON
+        # -DNVBench_ENABLE_HEADER_TESTING=ON
         -DNVBench_ENABLE_INSTALL_RULES=ON
+        -DNVBench_ENABLE_NVML=ON
+        -DNVBench_ENABLE_TESTING=OFF
         -DNVBench_ENABLE_EXAMPLES=OFF
         -DNVBench_ENABLE_WERROR=OFF
 )

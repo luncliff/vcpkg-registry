@@ -1,36 +1,35 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8eb5f88..0605981 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -48,7 +48,7 @@ option(NVBench_ENABLE_EXAMPLES "Build NVBench examples." OFF)
- option(NVBench_ENABLE_INSTALL_RULES "Install NVBench." ${NVBench_TOPLEVEL_PROJECT})
- 
- include(cmake/NVBenchUtilities.cmake) # Must be first
--include(cmake/NVBenchClangdCompileInfo.cmake) # Must be before any targets are created
-+# include(cmake/NVBenchClangdCompileInfo.cmake) # Must be before any targets are created
- 
- include(cmake/NVBenchConfigTarget.cmake)
- include(cmake/NVBenchDependentDlls.cmake)
 diff --git a/cmake/NVBenchDependencies.cmake b/cmake/NVBenchDependencies.cmake
-index 8ba07fe..702e438 100644
+index 4a9392f..702e438 100644
 --- a/cmake/NVBenchDependencies.cmake
 +++ b/cmake/NVBenchDependencies.cmake
-@@ -1,22 +1,13 @@
+@@ -1,31 +1,13 @@
  ################################################################################
  # fmtlib/fmt
--include("${rapids-cmake-dir}/cpm/fmt.cmake")
+-set(export_set_details)
+-set(install_fmt OFF)
 +find_package(fmt CONFIG REQUIRED)
- 
++
  if(NOT BUILD_SHARED_LIBS AND NVBench_ENABLE_INSTALL_RULES)
- set(export_set_details BUILD_EXPORT_SET nvbench-targets
-                        INSTALL_EXPORT_SET nvbench-targets)
+-  set(export_set_details BUILD_EXPORT_SET nvbench-targets
+-                         INSTALL_EXPORT_SET nvbench-targets)
+-  set(install_fmt ON)
++set(export_set_details BUILD_EXPORT_SET nvbench-targets
++                       INSTALL_EXPORT_SET nvbench-targets)
  endif()
  
--rapids_cpm_fmt(${export_set_details}
+-rapids_cpm_find(fmt 11.2.0 ${export_set_details}
+-  GLOBAL_TARGETS fmt::fmt fmt::fmt-header-only
 -  CPM_ARGS
+-    GIT_REPOSITORY "https://github.com/fmtlib/fmt.git"
+-    GIT_TAG "11.2.0"
 -    OPTIONS
 -      # Force static to keep fmt internal.
 -      "BUILD_SHARED_LIBS OFF"
+-      # Suppress warnings from fmt headers by marking them as system.
+-      "FMT_SYSTEM_HEADERS ON"
+-      # Disable install rules since we're linking statically.
+-      "FMT_INSTALL ${install_fmt}"
+-      "CMAKE_POSITION_INDEPENDENT_CODE ON"
 -)
 -
 -if(NOT fmt_ADDED)
@@ -40,14 +39,14 @@ index 8ba07fe..702e438 100644
  
  ################################################################################
  # nlohmann/json
-@@ -24,17 +15,7 @@ endif()
+@@ -33,17 +15,7 @@ endif()
  # Following recipe from
  # http://github.com/cpm-cmake/CPM.cmake/blob/master/examples/json/CMakeLists.txt
  # Download the zips because the repo takes an excessively long time to clone.
--rapids_cpm_find(nlohmann_json 3.11.3
+-rapids_cpm_find(nlohmann_json 3.12.0
 -  CPM_ARGS
--    URL https://github.com/nlohmann/json/releases/download/v3.11.3/include.zip
--    URL_HASH SHA256=a22461d13119ac5c78f205d3df1db13403e58ce1bb1794edc9313677313f4a9d
+-    URL https://github.com/nlohmann/json/releases/download/v3.12.0/include.zip
+-    URL_HASH SHA256=b8cb0ef2dd7f57f18933997c9934bb1fa962594f701cd5a8d3c2c80541559372
 -  PATCH_COMMAND
 -    ${CMAKE_COMMAND}
 -      -D "CUDA_VERSION=${CMAKE_CUDA_COMPILER_VERSION}"
@@ -59,30 +58,14 @@ index 8ba07fe..702e438 100644
  
  add_library(nvbench_json INTERFACE IMPORTED)
  if (TARGET nlohmann_json::nlohmann_json)
-diff --git a/cmake/NVBenchInstallRules.cmake b/cmake/NVBenchInstallRules.cmake
-index 16e9b7e..a475631 100644
---- a/cmake/NVBenchInstallRules.cmake
-+++ b/cmake/NVBenchInstallRules.cmake
-@@ -55,8 +55,10 @@ endif()
- function(nvbench_install_libraries)
-   if(NVBench_ENABLE_INSTALL_RULES)
-     install(TARGETS ${ARGN}
--      DESTINATION "${NVBench_INSTALL_LIB_DIR}"
-       EXPORT nvbench-targets
-+      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-     )
-   endif()
- endfunction()
 diff --git a/cmake/NVBenchRapidsCMake.cmake b/cmake/NVBenchRapidsCMake.cmake
-index b110ccc..a6a5e00 100644
+index a22bcf4..963db19 100644
 --- a/cmake/NVBenchRapidsCMake.cmake
 +++ b/cmake/NVBenchRapidsCMake.cmake
-@@ -21,5 +21,5 @@ endmacro()
- macro(nvbench_init_rapids_cmake)
-   rapids_cmake_build_type(Release)
-   rapids_cmake_write_version_file("${NVBench_BINARY_DIR}/nvbench/detail/version.cuh")
+@@ -25,5 +25,5 @@ macro(nvbench_init_rapids_cmake)
+     "${NVBench_BINARY_DIR}/nvbench/detail/version.cuh"
+     PREFIX "NVBENCH"
+   )
 -  rapids_cpm_init()
 +  # rapids_cpm_init() # vcpkg will be used
  endmacro()
