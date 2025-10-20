@@ -66,6 +66,7 @@
       "dependencies": [
         "cuda",
         "cudnn",
+        "cudnn-frontend",
         {
           "name": "gloo",
           "features": [

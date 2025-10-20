@@ -32,16 +32,6 @@ vcpkg_from_github(
 )
 file(COPY "${src_kineto}/" DESTINATION "${SOURCE_PATH}/third_party/kineto")
 
-vcpkg_from_github(
-    OUT_SOURCE_PATH src_cudnn
-    REPO NVIDIA/cudnn-frontend
-    REF "v1.14.0"
-    SHA512 95dbf57594eda08905f176f6f18be297cfbac571460829c55959f15e87f92e9019812ff367bf857dc26d6961d9c6393e667b09e855732e3ab7645e93f325efa1
-    HEAD_REF main
-)
-file(COPY "${src_cudnn}/" DESTINATION "${SOURCE_PATH}/third_party/cudnn_frontend")
-
-
 file(REMOVE
   "${SOURCE_PATH}/cmake/Modules/FindBLAS.cmake"
   "${SOURCE_PATH}/cmake/Modules/FindLAPACK.cmake"
