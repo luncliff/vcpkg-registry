@@ -1,15 +1,20 @@
 {
   "name": "libtorch",
-  "version": "2.7.1",
+  "version": "2.8.0",
   "description": "Tensors and Dynamic neural networks in Python with strong GPU acceleration",
   "homepage": "https://pytorch.org/",
   "license": null,
   "supports": "(windows & !static) | osx | linux",
   "dependencies": [
     "blas",
+    "concurrentqueue",
     "cpp-httplib",
     "cpuinfo",
     "eigen3",
+    {
+      "name": "fbgemm",
+      "platform": "x64"
+    },
     "flatbuffers",
     {
       "name": "flatbuffers",
@@ -19,13 +24,11 @@
     "foxi",
     "fp16",
     "gemmlowp",
-    "gflags",
-    "glog",
-    "google-pthreadpool",
     "lapack",
     "lmdb",
     "mimalloc",
     "miniz",
+    "nlohmann-json",
     "onnx",
     "onnx-optimizer",
     "opencl",
@@ -36,6 +39,7 @@
       "name": "protobuf",
       "host": true
     },
+    "pthreadpool",
     "sleef",
     {
       "name": "vcpkg-cmake",
@@ -49,14 +53,11 @@
       "name": "vcpkg-get-python-packages",
       "host": true
     },
-    "xnnpack",
-    {
-      "name": "xnnpack",
-      "features": [
-        "kleidiai"
-      ],
-      "platform": "arm64"
-    }
+    "xnnpack"
+  ],
+  "default-features": [
+    "gflags",
+    "glog"
   ],
   "features": {
     "cuda": {
@@ -65,7 +66,6 @@
       "dependencies": [
         "cuda",
         "cudnn",
-        "cudnn-frontend",
         {
           "name": "gloo",
           "features": [
@@ -97,6 +97,14 @@
           "platform": "linux"
         },
         {
+          "name": "libtorch",
+          "default-features": false,
+          "features": [
+            "mpi"
+          ],
+          "platform": "linux"
+        },
+        {
           "name": "libuv",
           "platform": "windows | osx"
         },
@@ -104,6 +112,18 @@
           "name": "tensorpipe",
           "platform": "linux | osx"
         }
+      ]
+    },
+    "gflags": {
+      "description": "Build with gflags",
+      "dependencies": [
+        "gflags"
+      ]
+    },
+    "glog": {
+      "description": "Build with glog",
+      "dependencies": [
+        "glog"
       ]
     },
     "llvm": {
@@ -115,14 +135,6 @@
     "mpi": {
       "description": "Use MPI for Caffe2. Only available if USE_DISTRIBUTED is on",
       "dependencies": [
-        {
-          "name": "libtorch",
-          "default-features": false,
-          "features": [
-            "dist"
-          ],
-          "platform": "linux"
-        },
         "mpi"
       ]
     },
@@ -137,6 +149,12 @@
         "nnpack"
       ]
     },
+    "opencl": {
+      "description": "Build with OpenCL",
+      "dependencies": [
+        "opencl"
+      ]
+    },
     "openmp": {
       "description": "Use OpenMP for parallel code"
     },
@@ -148,7 +166,10 @@
           "host": true
         },
         "vulkan",
-        "vulkan-loader",
+        {
+          "name": "vulkan-loader",
+          "platform": "!android"
+        },
         "vulkan-memory-allocator"
       ]
     }

@@ -6,15 +6,14 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/pytorch
     REF "v${VERSION}"
-    SHA512 a9fc2252af9031c2cd46dde558c491aea8bc322fb80157a7760f300a44b759d4bfe866f030fbb974b80493057cfff4dd512498f99a100ed6d05bf620258ed37e
+    SHA512 448e9dad4aa10f1793d35e6ffe9f0f69b7719d41e6eccceb687a8d0c148e22d03e4f76170a05308ef9323a7aea41aa74605077ae1d68c6d949f13b3340ebf310
     HEAD_REF main
     PATCHES
-        fix-pytorch-pr-156630.patch # https://github.com/pytorch/pytorch/pull/156630
         fix-cmake.patch
+        fix-osx.patch
+        fix-vulkan.patch # use vulkan-memory-allocator from vcpkg
         fix-glog.patch
-        fix-kineto.patch
-        fix-vulkan.patch
-        fix-miniz.patch
+        fix-miniz.patch # https://github.com/pytorch/pytorch/commit/a02e88d19c01a7226fa69fa0bf3a6a0b9a21c7e2
 )
 
 file(REMOVE_RECURSE
@@ -23,14 +22,25 @@ file(REMOVE_RECURSE
 )
 
 # even though we are using `USE_KINETO=OFF`, some files are using the headers
+# https://github.com/pytorch/kineto/pull/1099 removed MTIA_WORKLOADD enum. use a commit before the change
 vcpkg_from_github(
     OUT_SOURCE_PATH src_kineto
     REPO pytorch/kineto
-    REF 54ffcd4fb0bd77a5ecea46d11b4ed12d393c7fe3 # 2025-07-17
-    SHA512 5346f9d97e12ac200b5d9d5e96fa6c6b9e4b84736d0beea51050725949f6fca31af020aff287468426c2b04588428fc67fbb1c8eb1f50fbef2f5e6ad002c58de
+    REF 3f4beb08ad7e49be28eafa1216233df73e5be06f # 2025-06-03
+    SHA512 742e5119e130d3a01bf92480af9285c93663126b22de2c597fa566fb571969a724bb225ddb122e1cb32bce13d6507f6d3e8500205d0d6811f9c67838f44828ef
     HEAD_REF main
 )
 file(COPY "${src_kineto}/" DESTINATION "${SOURCE_PATH}/third_party/kineto")
+
+vcpkg_from_github(
+    OUT_SOURCE_PATH src_cudnn
+    REPO NVIDIA/cudnn-frontend
+    REF "v1.14.0"
+    SHA512 95dbf57594eda08905f176f6f18be297cfbac571460829c55959f15e87f92e9019812ff367bf857dc26d6961d9c6393e667b09e855732e3ab7645e93f325efa1
+    HEAD_REF main
+)
+file(COPY "${src_cudnn}/" DESTINATION "${SOURCE_PATH}/third_party/cudnn_frontend")
+
 
 file(REMOVE
   "${SOURCE_PATH}/cmake/Modules/FindBLAS.cmake"
@@ -57,6 +67,7 @@ x_vcpkg_get_python_packages(
     PACKAGES typing-extensions pyyaml numpy
     OUT_PYTHON_VAR PYTHON3
 )
+
 message(STATUS "Using Python3: ${PYTHON3}")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -66,6 +77,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     openmp  USE_OPENMP
     opencl  USE_OPENCL
     mkldnn  USE_MKLDNN
+    mkldnn  USE_MKLDNN_CBLAS
     cuda    USE_CUDA
     cuda    USE_CUDNN
     cuda    USE_NCCL
@@ -73,13 +85,14 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     cuda    USE_MAGMA
     vulkan  USE_VULKAN
     vulkan  USE_VULKAN_RELAXED_PRECISION
-    rocm    USE_ROCM  # This is an alternative to cuda not a feature! (Not in vcpkg.json!) -> disabled
     llvm    USE_LLVM
     mpi     USE_MPI
     nnpack  USE_NNPACK  # todo: check use of `DISABLE_NNPACK_AND_FAMILY`
 #   No feature in vcpkg yet so disabled. -> Requires numpy build by vcpkg itself
     python  BUILD_PYTHON
     python  USE_NUMPY
+    glog    USE_GLOG
+    gflags  USE_GFLAGS
 )
 
 if("dist" IN_LIST FEATURES)
@@ -93,11 +106,10 @@ if("dist" IN_LIST FEATURES)
 endif()
 
 if("cuda" IN_LIST FEATURES)
-    vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root)
-    message(STATUS "Using nvcc: ${NVCC}")
+    vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root) 
     list(APPEND FEATURE_OPTIONS
-        "-DCMAKE_CUDA_COMPILER:FILEPATH=${NVCC}"
-        "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
+        "-DCMAKE_CUDA_COMPILER=${NVCC}"
+        "-DCUDAToolkit_ROOT=${cuda_toolkit_root}" 
     )
 endif()
 
@@ -112,13 +124,19 @@ if(VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_IOS)
     set(TARGET_IS_MOBILE ON)
 endif()
 
+# By default MKL is used. We will use Eigen 
+set(BLAS "Eigen")
+if(TARGET_IS_MOBILE)
+    # In mobile, Eigen(embedded source) is used. We will use OpenBLAS instead.
+    set(BLAS "OpenBLAS") # see how port 'blas' works
+endif()
+
 set(TARGET_IS_APPLE OFF)
 if(VCPKG_TARGET_IS_IOS OR VCPKG_TARGET_IS_OSX)
     set(TARGET_IS_APPLE ON)
 endif()
 
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
-
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     DISABLE_PARALLEL_CONFIGURE
@@ -134,22 +152,19 @@ vcpkg_cmake_configure(
         -DCAFFE2_STATIC_LINK_CUDA=ON
         -DCAFFE2_USE_MSVC_STATIC_RUNTIME=${USE_STATIC_RUNTIME}
         -DCAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO=OFF
-        -DBUILD_JNI=${VCPKG_TARGET_IS_ANDROID}
-        -DUSE_GFLAGS=ON
-        -DUSE_GLOG=ON
+        -DUSE_FLASH_ATTENTION=OFF
         -DUSE_ITT=OFF
-        -DUSE_OBSERVERS=OFF
-        -DUSE_ROCM=OFF
-        -DUSE_NUMA=${VCPKG_TARGET_IS_LINUX}
-        -DUSE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
-        -DUSE_MKLDNN=OFF
-        -DUSE_MKLDNN_CBLAS=OFF
         -DUSE_KINETO=OFF
+        -DUSE_ROCM=OFF # This is an alternative to cuda
+        -DUSE_NUMA=${VCPKG_TARGET_IS_LINUX}
+        -DUSE_SYSTEM_LIBS=ON
+        -DBUILD_JNI=${VCPKG_TARGET_IS_ANDROID}
+        -DUSE_NNAPI=${VCPKG_TARGET_IS_ANDROID}
+        -DBLAS=${BLAS} # BLAS=MKL not supported in this port
         -DUSE_COREML_DELEGATE=${VCPKG_TARGET_IS_IOS}
         -DUSE_PYTORCH_METAL=${TARGET_IS_APPLE}
         -DUSE_PYTORCH_METAL_EXPORT=${VCPKG_TARGET_IS_OSX}
         -DUSE_PYTORCH_QNNPACK=OFF
-        -DUSE_SYSTEM_LIBS=ON
     OPTIONS_DEBUG
         -DPRINT_CMAKE_DEBUG_INFO=ON
     MAYBE_UNUSED_VARIABLES
@@ -161,7 +176,8 @@ vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 
 vcpkg_cmake_config_fixup(PACKAGE_NAME Caffe2 CONFIG_PATH "share/cmake/Caffe2" DO_NOT_DELETE_PARENT_CONFIG_PATH)
-vcpkg_cmake_config_fixup(PACKAGE_NAME Torch CONFIG_PATH "share/cmake/Torch")
+vcpkg_cmake_config_fixup(PACKAGE_NAME Torch CONFIG_PATH "share/cmake/Torch" DO_NOT_DELETE_PARENT_CONFIG_PATH)
+vcpkg_cmake_config_fixup(PACKAGE_NAME ATen CONFIG_PATH "share/cmake/ATen" )
 
 # Traverse the folder and remove "some" empty folders
 function(cleanup_once folder)
@@ -204,4 +220,6 @@ file(REMOVE_RECURSE
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
 
+
 set(VCPKG_POLICY_DLLS_WITHOUT_EXPORTS enabled) # torch_global_deps.dll is empty.c and just for linking deps
+
