@@ -39,7 +39,6 @@
       "name": "protobuf",
       "host": true
     },
-    "pthreadpool",
     "sleef",
     {
       "name": "vcpkg-cmake",

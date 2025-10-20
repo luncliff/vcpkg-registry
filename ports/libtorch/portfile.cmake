@@ -14,6 +14,7 @@ vcpkg_from_github(
         fix-vulkan.patch # use vulkan-memory-allocator from vcpkg
         fix-glog.patch
         fix-miniz.patch # https://github.com/pytorch/pytorch/commit/a02e88d19c01a7226fa69fa0bf3a6a0b9a21c7e2
+        fix-cuda.patch # fixing CUB detection in CUDA 13.0+
 )
 
 file(REMOVE_RECURSE
@@ -97,6 +98,7 @@ endif()
 
 if("cuda" IN_LIST FEATURES)
     vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root) 
+    message(STATUS "Using CUDAToolkit: ${cuda_toolkit_root}")
     list(APPEND FEATURE_OPTIONS
         "-DCMAKE_CUDA_COMPILER=${NVCC}"
         "-DCUDAToolkit_ROOT=${cuda_toolkit_root}" 
@@ -143,6 +145,7 @@ vcpkg_cmake_configure(
         -DCAFFE2_USE_MSVC_STATIC_RUNTIME=${USE_STATIC_RUNTIME}
         -DCAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO=OFF
         -DUSE_FLASH_ATTENTION=OFF
+        -DUSE_MEM_EFF_ATTENTION=OFF
         -DUSE_ITT=OFF
         -DUSE_KINETO=OFF
         -DUSE_ROCM=OFF # This is an alternative to cuda
