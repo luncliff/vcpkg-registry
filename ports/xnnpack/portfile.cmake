@@ -10,7 +10,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-cmake.patch
-        fix-emscripten.patch
+        # fix-emscripten.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
