@@ -77,6 +77,10 @@
           "platform": "windows | android"
         },
         {
+          "name": "libtorch",
+          "platform": "osx | linux"
+        },
+        {
           "name": "llama-cpp",
           "features": [
             "tools"
