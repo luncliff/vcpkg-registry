@@ -38,7 +38,7 @@ jobs:
       matrix:
         include:
           - runner_image: "ubuntu-24.04"
-          # - runner_image: "macos-13"
+          - runner_image: "macos-latest"
           - runner_image: "windows-latest"
       fail-fast: false
     env:
@@ -218,7 +218,7 @@ jobs:
 
   android:
     name: "Android"
-    runs-on: "ubuntu-24.04" # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#environment-variables-2
+    runs-on: "ubuntu-24.04" # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md
     needs: validate
     # container: # https://circleci.com/developer/images/image/cimg/android
     #   image: cimg/android:2025.01.1-ndk # 28.0.12674087
@@ -232,12 +232,12 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
+          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
           runVcpkgInstall: false
 
       - uses: nttld/setup-ndk@v1.5.0
         with:
-          ndk-version: 'r29-beta3' # https://github.com/android/ndk/releases
+          ndk-version: 'r29' # https://github.com/android/ndk/releases
           local-cache: true
 
       - name: "Run vcpkg(arm64-android)"
