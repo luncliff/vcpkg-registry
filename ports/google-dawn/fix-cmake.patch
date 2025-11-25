@@ -1,0 +1,140 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e0c6fa084..3c3748464 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -463,6 +463,8 @@ set(TINT_SPIRV_TOOLS_DIR   ${DAWN_SPIRV_TOOLS_DIR})
+ ################################################################################
+ # Run on all subdirectories
+ ################################################################################
++find_package(absl CONFIG REQUIRED GLOBAL)
++find_package(Protobuf CONFIG REQUIRED GLOBAL)
+ add_subdirectory(third_party)
+ 
+ # TODO(crbug.com/tint/455): Tint does not currently build with CMake when
+diff --git a/src/tint/CMakeLists.txt b/src/tint/CMakeLists.txt
+index 13ab1895e..304567083 100644
+--- a/src/tint/CMakeLists.txt
++++ b/src/tint/CMakeLists.txt
+@@ -402,10 +402,10 @@ function(tint_add_target TARGET KIND)
+   endif()
+ 
+   if(${KIND} STREQUAL lib)
+-    add_library(${TARGET} STATIC EXCLUDE_FROM_ALL)
++    add_library(${TARGET} STATIC)
+     tint_lib_compile_options(${TARGET})
+   elseif(${KIND} STREQUAL proto)
+-    add_library(${TARGET} STATIC EXCLUDE_FROM_ALL)
++    add_library(${TARGET} STATIC)
+     list(APPEND TINT_PROTO_TARGETS ${TARGET})
+     set(TINT_PROTO_TARGETS ${TINT_PROTO_TARGETS} PARENT_SCOPE)
+     tint_proto_compile_options(${TARGET})
+diff --git a/src/tint/cmd/BUILD.cmake b/src/tint/cmd/BUILD.cmake
+index ecc909038..0b0c6c2c0 100644
+--- a/src/tint/cmd/BUILD.cmake
++++ b/src/tint/cmd/BUILD.cmake
+@@ -34,10 +34,10 @@
+ #                       Do not modify this file directly
+ ################################################################################
+ 
+-include(cmd/bench/BUILD.cmake)
++# include(cmd/bench/BUILD.cmake)
+ include(cmd/common/BUILD.cmake)
+-include(cmd/fuzz/BUILD.cmake)
++# include(cmd/fuzz/BUILD.cmake)
+ include(cmd/info/BUILD.cmake)
+-include(cmd/test/BUILD.cmake)
++# include(cmd/test/BUILD.cmake)
+ include(cmd/tint/BUILD.cmake)
+ include(cmd/tintd/BUILD.cmake)
+diff --git a/src/tint/cmd/info/BUILD.cmake b/src/tint/cmd/info/BUILD.cmake
+index 962cf67cf..341a1a381 100644
+--- a/src/tint/cmd/info/BUILD.cmake
++++ b/src/tint/cmd/info/BUILD.cmake
+@@ -41,6 +41,7 @@
+ tint_add_target(tint_cmd_info_cmd cmd
+   cmd/info/main.cc
+ )
++install(TARGETS tint_cmd_info_cmd DESTINATION "${CMAKE_INSTALL_BINDIR}")
+ 
+ tint_target_add_dependencies(tint_cmd_info_cmd cmd
+   tint_api_common
+diff --git a/src/tint/cmd/tint/BUILD.cmake b/src/tint/cmd/tint/BUILD.cmake
+index 2a0565743..c844dfac6 100644
+--- a/src/tint/cmd/tint/BUILD.cmake
++++ b/src/tint/cmd/tint/BUILD.cmake
+@@ -41,6 +41,7 @@
+ tint_add_target(tint_cmd_tint_cmd cmd
+   cmd/tint/main.cc
+ )
++install(TARGETS tint_cmd_tint_cmd DESTINATION "${CMAKE_INSTALL_BINDIR}")
+ 
+ tint_target_add_dependencies(tint_cmd_tint_cmd cmd
+   tint_api
+diff --git a/third_party/CMakeLists.txt b/third_party/CMakeLists.txt
+index 368dc9745..38d542e9f 100644
+--- a/third_party/CMakeLists.txt
++++ b/third_party/CMakeLists.txt
+@@ -128,6 +128,7 @@ if (NOT TARGET SPIRV-Headers)
+     set(SPIRV_HEADERS_SKIP_INSTALL ON CACHE BOOL "" FORCE)
+ 
+     message(STATUS "Dawn: using SPIRV-Headers at ${DAWN_SPIRV_HEADERS_DIR}")
++    # find_package(SPIRV-Headers CONFIG REQUIRED GLOBAL)
+     add_subdirectory(${DAWN_SPIRV_HEADERS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/spirv-headers")
+ endif()
+ 
+@@ -142,6 +143,7 @@ if (NOT TARGET SPIRV-Tools AND
+     set(SKIP_SPIRV_TOOLS_INSTALL ON CACHE BOOL "" FORCE)
+     set(SPIRV_WERROR OFF CACHE BOOL OFF FORCE)
+     message(STATUS "Dawn: using SPIRV-Tools at ${DAWN_SPIRV_TOOLS_DIR}")
++    # find_package(SPIRV-Tools CONFIG REQUIRED GLOBAL)
+     add_subdirectory(${DAWN_SPIRV_TOOLS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/spirv-tools" EXCLUDE_FROM_ALL)
+ endif()
+ 
+@@ -153,6 +155,7 @@ if(NOT TARGET glslang AND (TINT_BUILD_GLSL_WRITER OR TINT_BUILD_GLSL_VALIDATOR)
+     # glslang does not export symbols properly when BUILD_SHARED_LIBS=1, so always build it as static for now.
+     set(BUILD_SHARED_LIBS_SAVED ${BUILD_SHARED_LIBS})
+     set(BUILD_SHARED_LIBS 0)
++    # find_package(glslang CONFIG REQUIRED GLOBAL)
+     add_subdirectory("${DAWN_GLSLANG_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/glslang" EXCLUDE_FROM_ALL)
+     set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_SAVED})
+ endif()
+@@ -166,7 +169,7 @@ if (NOT TARGET glfw AND DAWN_USE_GLFW)
+     set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+ 
+     message(STATUS "Dawn: using GLFW at ${DAWN_GLFW_DIR}")
+-    add_subdirectory(${DAWN_GLFW_DIR} "${CMAKE_CURRENT_BINARY_DIR}/glfw")
++    find_package(glfw3 CONFIG REQUIRED GLOBAL) # glfw
+ endif()
+ 
+ if (DAWN_BUILD_PROTOBUF AND NOT TARGET libprotobuf-mutator)
+@@ -185,12 +188,12 @@ if (NOT TARGET Vulkan::Headers AND DAWN_ENABLE_VULKAN)
+     message(STATUS "Dawn: using Vulkan::Headers at ${DAWN_VULKAN_HEADERS_DIR}")
+ 
+     set(VULKAN_HEADERS_ENABLE_MODULE OFF)
+-    add_subdirectory(${DAWN_VULKAN_HEADERS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/vulkan-headers/src")
++    find_package(VulkanHeaders CONFIG REQUIRED GLOBAL) # Vulkan::Headers
+ endif()
+ 
+ if (NOT TARGET Vulkan::UtilityHeaders AND DAWN_ENABLE_VULKAN)
+     message(STATUS "Dawn: using VulkanUtilityLibraries at ${DAWN_VULKAN_UTILITY_LIBRARIES_DIR}")
+-    add_subdirectory(${DAWN_VULKAN_UTILITY_LIBRARIES_DIR} "${CMAKE_CURRENT_BINARY_DIR}/vulkan-utility-libraries/src")
++    find_package(VulkanUtilityLibraries CONFIG REQUIRED GLOBAL)
+ endif()
+ 
+ if (DAWN_ENABLE_SWIFTSHADER AND NOT TARGET vk_swiftshader)
+@@ -274,6 +277,7 @@ function(AddSubdirectoryDXC)
+     set(LLVM_ENABLE_TERMINFO OFF CACHE BOOL "" FORCE)
+ 
+     if (NOT WIN32)
++        find_package(directx-headers CONFIG REQUIRED GLOBAL)
+         set(DIRECTX_HEADER_INCLUDE_DIR "${DAWN_THIRD_PARTY_DIR}/dxheaders/include")
+     endif()
+ 
+@@ -292,6 +296,7 @@ function(AddSubdirectoryDXC)
+         set(CMAKE_INSTALL_RPATH "\$ORIGIN")
+     endif()
+ 
++    find_package(directx-dxc CONFIG REQUIRED GLOBAL)
+     message(STATUS "\nAdding DXC to build:\n")
+     add_subdirectory(dxc
+         # Disable all targets by default, and enable only the dxc and dxcompiler targets (below)
