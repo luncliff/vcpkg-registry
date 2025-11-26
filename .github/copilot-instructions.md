@@ -3,6 +3,8 @@
 
 Use [References](../docs/references.md) to fetch documents for working with vcpkg commands and build toolchains.
 
+If using prompts, check [prompt/agent description](./readme.md) together.
+
 ## How To
 
 The followings are minimal guidelines.

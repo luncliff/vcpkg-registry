@@ -256,7 +256,7 @@ Some agents use different AI models for optimization:
 
 ## Work Note Tracking
 
-All agents append execution summaries to `work-note.md` in chronological order:
+All agents and prompts will use `work-note.md`(located in the workspace root) in chronological order:
 
 ```markdown
 ## 2025-11-26 10:30:15 - /search-port
