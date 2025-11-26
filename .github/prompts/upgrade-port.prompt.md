@@ -1,7 +1,7 @@
 ---
 description: 'Upgrade port to newer version with SHA512 calculation and testing'
 agent: 'agent'
-tools: ['edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch']
+tools: ['edit/editFiles', 'edit/createFile', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch']
 model: Claude Sonnet 4 (copilot)
 ---
 
@@ -269,7 +269,6 @@ Replace example-rich outputs with a deterministic upgrade specification. The age
 7. `## Validation`
 8. `## Issues & Warnings`
 9. `## Next Steps`
-10. `## Work Note Entry`
 
 ### 1. Summary
 - Port: `<name>`
@@ -325,8 +324,10 @@ Branch by outcome:
 - MAJOR VERSION WARNING: choose (proceed | create alternate port | revert)
 Bulleted actionable items only.
 
-### 9. Work Note Entry
-Emit ready-to-append block:
+### Post Report Action: Work Note Update
+
+Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
+
 ```
 ## <timestamp UTC> - /upgrade-port <port>
 Outcome: SUCCESS|FAILURE|MAJOR|SHA512-CORRECTED
@@ -345,7 +346,7 @@ Next: <primary action>
 - Show at most first 16 chars of old/new SHA512 when contrasting (`old: abcdef...`) unless invalid
 
 ### Multi-Port (rare)
-If future extension allows multi-port upgrade, repeat sections 2–7 per port with a shared Summary / Work Note Entry aggregate.
+If future extension allows multi-port upgrade, repeat sections 2–7 per port with a shared Summary aggregate.
 
 ### Non-Blocking Conditions
 - Placeholder SHA512 later corrected → classify as warning, not critical

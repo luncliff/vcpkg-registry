@@ -1,7 +1,7 @@
 ---
 description: 'Install vcpkg port with overlay-ports and analyze build logs'
 agent: 'agent'
-tools: ['edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal']
+tools: ['edit/editFiles', 'edit/createFile', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal']
 model: GPT-5 mini (copilot)
 ---
 
@@ -206,7 +206,6 @@ Replace example reports with a deterministic structure. The agent MUST output a 
 8. `## Diagnostics` (log locations / key patterns)
 9. `## Recommendations`
 10. `## Next Steps`
-11. `## Work Note Entry`
 
 ### 1. Summary
 - Port Specification: `<name>[features]:<triplet>` or `<name>:<triplet>`
@@ -256,8 +255,10 @@ If none: `None`
 - Failure example order: Fix manifest → Re-run install → Consider patches
 - Success example order: /review-port → add version → optional feature tests
 
-### 10. Work Note Entry
-Ready-to-append block:
+### Post Report Action: Work Note Update
+
+Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
+
 ```
 ## <timestamp UTC> - /install-port
 Port: <spec>

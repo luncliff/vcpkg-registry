@@ -261,7 +261,6 @@ Replace example-based content with a deterministic specification. The agent MUST
 8. `## Validation`
 9. `## Notes & Warnings`
 10. `## Next Steps`
-11. `## Work Note Entry`
 
 ### 1. Summary
 - Port Name: `<name>`
@@ -321,8 +320,10 @@ Ordered actionable list:
 3. (Optional) Create usage file if missing
 4. (If experimental) Convert embedded script to patch before upstream contribution
 
-### 10. Work Note Entry
-Append block:
+### Post Report Action: Work Note Update
+
+Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
+
 ```
 ## <timestamp UTC> - /create-port
 Port: <name>

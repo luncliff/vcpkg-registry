@@ -1,7 +1,7 @@
 ---
 description: 'Review port files against vcpkg guidelines and best practices'
 agent: 'agent'
-tools: ['edit/editFiles', 'search/fileSearch', 'search/textSearch', 'search/readFile', 'fetch']
+tools: ['edit/editFiles', 'edit/createFile', 'search/fileSearch', 'search/textSearch', 'search/readFile', 'fetch']
 model: Claude Sonnet 4 (copilot)
 ---
 
@@ -288,8 +288,10 @@ Branch based:
 - Keep code snippets minimal (single line) unless clarity demands more
 - Timestamp in ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
 
-### Work Note Entry Format
-Append to `work-note.md` (agent):
+### Post Report Action: Work Note Update
+
+Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
+
 ```
 ## <timestamp UTC> - /review-port <port>[, <port>...]
 Result: PASS | PASS (experimental) | FAIL

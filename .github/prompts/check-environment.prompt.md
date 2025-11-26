@@ -1,7 +1,7 @@
 ---
 description: 'Detect and verify host system environment for vcpkg development'
 agent: 'agent'
-tools: ['runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch']
+tools: ['edit/createFile', 'edit/editFiles', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch']
 model: Claude Haiku 4.5 (copilot)
 ---
 
@@ -68,16 +68,26 @@ This prompt requires no user input arguments. It automatically detects the curre
 
 #### Step 2.3: Test common development tools
 - Tool: `#runInTerminal`
-- Windows: `Get-Command git, cmake, curl -ErrorAction SilentlyContinue | Format-Table Name, Version`
-- Linux/macOS: `command -v git cmake curl; git --version 2>/dev/null; cmake --version 2>/dev/null`
-- Purpose: Check availability of common build tools
+- Purpose: Check availability and versions using an executable list with a command template
+
+Command templates (the agent will iterate executables and apply the template):
+
+- Windows (PowerShell):
+  - Template: `Get-Command <exe> -ErrorAction SilentlyContinue | Select-Object Source`
+  - Executables: `curl`, `tar`, `zip`, `unzip`, `git`, `cmake`, `ninja`
+
+- Linux/macOS (POSIX shells):
+  - Template: `command -v <exe>; <exe> --version 2>/dev/null`
+  - Executables: `curl`, `tar`, `zip`, `unzip`, `git`, `cmake`, `ninja`
 
 ### Phase 3: Cross-Platform Translation (if non-Windows detected)
 
 #### Step 3.1: Fetch GitHub Actions runner-images documentation
 - Tool: `#fetch`
-- URL: `https://github.com/actions/runner-images/tree/main/images`
 - Purpose: Get standard environment configurations for reference
+- URLs: Fetch the following links to lookup proper documents
+  - https://github.com/actions/runner-images/blob/main/README.md
+  - https://docs.github.com/en/actions/concepts/runners/github-hosted-runners
 
 #### Step 3.2: Generate command translation guide
 - Action: Create Bash/Zsh equivalents for PowerShell commands used in other prompts
@@ -99,7 +109,9 @@ This prompt requires no user input arguments. It automatically detects the curre
 
 ## Reporting
 
-Replace example outputs with a deterministic specification. The agent MUST emit a markdown report containing the headings below (in order). Emit all headings; if a section has no data write `None`. Keep bullets concise (≤120 chars). Use tables only when listing >5 tools or >5 command translations.
+Replace example outputs with a deterministic specification.
+The agent MUST emit a markdown report containing the headings below (in order). Emit all headings; if a section has no data write `None`.
+Keep bullets concise (≤120 chars). Use tables only when listing >5 tools or >5 command translations.
 
 ### Required Top-Level Headings
 1. `# Environment Check Report`
@@ -111,7 +123,6 @@ Replace example outputs with a deterministic specification. The agent MUST emit 
 7. `## Status`
 8. `## Recommendations`
 9. `## Next Steps`
-10. `## Work Note Entry`
 
 ### 1. Summary
 - Timestamp: ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
@@ -133,12 +144,12 @@ Replace example outputs with a deterministic specification. The agent MUST emit 
 - Minimum Requirement (PowerShell ≥7.1): met ✅ / unmet ❌ / not applicable
 
 ### 4. Tools
-List detected development tools (git, cmake, curl, python optional):
-- git: version or `missing`
-- cmake: version or `missing`
-- curl: version or `missing`
+Reflect bootstrap requirements:
+- Required (Unix): `curl`, `zip`, `unzip`, `tar`
+- Optional (Unix): `cmake`, `ninja`, `git`
+- Windows: `curl` is sufficient for bootstrap; others optional (`git`, `cmake`, `ninja`)
 - python: version or `missing` (optional)
-If more than 5, use table.
+Report each detected tool as `version` or `missing`. If more than 5, use a table.
 
 ### 5. Cross-Platform Translations
 Only emit if shell ≠ PowerShell OR user is on non-Windows:
@@ -168,17 +179,6 @@ Ordered list (max 5):
 - If WARN: perform upgrades then re-run check
 - If ERROR: install missing tools first
 
-### 9. Work Note Entry
-Append block:
-```
-## <timestamp UTC> - /check-environment
-OS: <family> <arch>
-Shell: <name> <version>
-Outcome: READY|WARN|ERROR
-MissingTools: <list|None>
-Next: <primary action>
-```
-
 ### Conventions
 - Icons: ✅ present, ⚠️ warning, ❌ error
 - Do not include full multi-line system dumps; extract key fields only
@@ -189,7 +189,6 @@ Next: <primary action>
 - Missing optional tools (python) not strictly required
 
 ### Blocking Errors
-- git or cmake missing
 - Shell detection failed (no command execution)
 
 This specification replaces previous example reports; output only real environment data.

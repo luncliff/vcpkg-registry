@@ -223,18 +223,6 @@ Bulleted actionable lines, else `None`.
 No tables unless >10 results (then optional), prefer bullets.
 Keep each bullet ≤120 characters.
 
-### Work Note Entry Format
-Append to `work-note.md`:
-```
-## <timestamp UTC> - /search-port
-Query: <original>
-Local Found: <count>
-Upstream Only: <count>
-Deprecated: <count>
-Not Found: <count>
-Action: <primary suggested next step>
-```
-
 ### Multi-Port Ordering
 Order sections by: found local → upstream-only → deprecated → not found.
 

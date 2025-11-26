@@ -1,7 +1,7 @@
 ---
 description: 'Verify vcpkg installation, configuration, and registry structure'
 agent: 'agent'
-tools: ['search/fileSearch', 'search/listDirectory', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch']
+tools: ['search/fileSearch', 'search/listDirectory', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'edit/createFile']
 model: Claude Haiku 4.5 (copilot)
 ---
 
@@ -166,7 +166,6 @@ Replace example reports with a deterministic specification. The agent MUST outpu
 9. `## Diagnostics`
 10. `## Recommendations`
 11. `## Next Steps`
-12. `## Work Note Entry`
 
 ### 1. Summary
 - Timestamp: ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
@@ -232,18 +231,6 @@ Ordered immediate suggestions:
 1. For ERROR: install or set VCPKG_ROOT
 2. For WARN (outdated): upgrade tool
 3. For OK: proceed to `/search-port` or `/create-port`
-
-### 11. Work Note Entry
-Append block:
-```
-## <timestamp UTC> - /check-vcpkg-environment
-Outcome: OK|WARN|ERROR
-Root: <path|unset>
-Version: <parsed|unknown>
-Outdated: yes|no
-FeatureFlags: <value|None>
-Next: <primary action>
-```
 
 ### Conventions
 - Icons: ✅ present, ❌ missing, ⚠️ warning (outdated / partial)

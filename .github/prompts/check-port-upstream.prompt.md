@@ -1,7 +1,7 @@
 ---
 description: 'Check for upstream project updates and newer versions'
 agent: 'agent'
-tools: ['edit/editFiles', 'search/textSearch', 'search/readFile', 'fetch', 'githubRepo']
+tools: ['edit/editFiles', 'edit/createFile', 'search/textSearch', 'search/readFile', 'fetch', 'githubRepo']
 model: Claude Haiku 4.5 (copilot)
 ---
 
@@ -178,7 +178,6 @@ Replace example reports with a deterministic specification. The agent MUST outpu
 8. `## Status`
 9. `## Recommendations`
 10. `## Next Steps`
-11. `## Work Note Entry`
 
 ### 1. Summary
 - Port: `<name>`
@@ -237,25 +236,11 @@ Ordered list (max 5) tailored to outcome:
 - UP-TO-DATE: optional periodic recheck
 - NOT FOUND: verify homepage or port name
 
-### 10. Work Note Entry
-Append block:
-```
-## <timestamp UTC> - /check-port-upstream
-Port: <name>
-Local: <version>
-Upstream: <version|None>
-Vcpkg: <version|None>
-Outcome: UP-TO-DATE|PATCH|MAJOR|AHEAD|NOT-FOUND
-Age: <days|unknown>
-Next: <primary action>
-```
-
 ### Batch Mode (Multiple Ports)
 Add headings after Summary:
 12. `## Batch Summary`
 13. `## Ports Requiring Action`
 14. `## Up-to-Date Ports`
-15. `## Work Note Entry (Batch)`
 
 Batch Summary Table Columns:
 - Port | Local | Upstream | Vcpkg | Status (short code: OK / PATCH / MAJOR / AHEAD / MISS)
@@ -264,18 +249,6 @@ Ports Requiring Action: detailed bullets (one line each):
 - `<port>`: local `<x>` → upstream `<y>` (reason: security|patch|major)
 
 Up-to-Date Ports: list or `None`
-
-Batch Work Note Block:
-```
-## <timestamp UTC> - /check-port-upstream (batch)
-Checked: <count>
-Patch: <count>
-Major: <count>
-Ahead: <count>
-UpToDate: <count>
-Missing: <count>
-Priority: <first recommended port>
-```
 
 ### Conventions
 - Icons: ✅ current, ⚠️ attention (behind/major/ahead), ❌ missing
