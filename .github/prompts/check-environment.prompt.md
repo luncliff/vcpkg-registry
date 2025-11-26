@@ -2,7 +2,7 @@
 description: 'Detect and verify host system environment for vcpkg development'
 agent: 'agent'
 tools: ['runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch']
-model: GPT-5 mini (copilot)
+model: Claude Haiku 4.5 (copilot)
 ---
 
 # Check Environment
@@ -101,28 +101,30 @@ This prompt requires no user input arguments. It automatically detects the curre
 
 ### Report Format
 
+Use the same sections of the following markdown report example.
+
 ```markdown
 # Environment Check Report
 
-**Date**: 2025-11-26 10:30:45
+Date: 2025-11-26 10:30:45
 
 ## System Information
 
-✅ **Operating System**: Windows 11 (Build 22631)
-✅ **Architecture**: x64
-✅ **Hostname**: dev-machine
+✅ Operating System: Windows 11 (Build 22631)
+✅ Architecture: x64
+✅ Hostname: dev-machine
 
 ## Shell Environment
 
-✅ **Shell**: PowerShell Core (pwsh)
-✅ **Version**: 7.4.0
-✅ **Edition**: Core
+✅ Shell: PowerShell Core (pwsh)
+✅ Version: 7.4.0
+✅ Edition: Core
 
 ## Development Tools
 
-✅ **Git**: 2.43.0
-✅ **CMake**: 3.28.1
-✅ **Curl**: 8.5.0
+✅ Git: 2.43.0
+✅ CMake: 3.28.1
+✅ Curl: 8.5.0
 
 ## Status Summary
 

@@ -2,7 +2,7 @@
 description: 'Install vcpkg port with overlay-ports and analyze build logs'
 agent: 'agent'
 tools: ['edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal']
-model: GPT-5 mini (copilot)
+model: Claude Haiku 4.5 (copilot)
 ---
 
 # Install Port
@@ -193,335 +193,31 @@ Install opencv4[opengl] with x64-windows triplet
 
 ## Reporting
 
+The followings code snippets are example.
+
 ### Successful Installation
 
-```markdown
-# Port Installation Report
+Suggest the next steps:
 
-**Port**: `openssl3`
-**Triplet**: x64-windows
-**Date**: 2025-11-26 12:05:30
-
-## Installation Result
-
-✅ **Success**
-
-### Details
-
-- **Duration**: 2m 45s
-- **Dependencies Built**: 2 (vcpkg-cmake, vcpkg-cmake-config)
-- **Output Location**: `installed/x64-windows/`
-
-### Installed Files
-
-**Headers**: 
-- `installed/x64-windows/include/openssl/*.h` (285 files)
-
-**Libraries**:
-- `installed/x64-windows/lib/libssl.lib`
-- `installed/x64-windows/lib/libcrypto.lib`
-
-**Binaries**:
-- `installed/x64-windows/bin/libssl-3-x64.dll`
-- `installed/x64-windows/bin/libcrypto-3-x64.dll`
-
-### Usage
-
-```cmake
-find_package(OpenSSL REQUIRED)
-target_link_libraries(main PRIVATE OpenSSL::SSL OpenSSL::Crypto)
-```
-
-## Command Used
-
-```powershell
-vcpkg install --overlay-ports ./ports `
-  --x-buildtrees-root buildtrees `
-  --x-packages-root packages `
-  --x-install-root installed `
-  openssl3:x64-windows
-```
-
-## Next Steps
-
-Port installed successfully. Consider:
 1. Review port with `/review-port openssl3` to validate against guidelines
 2. Add version to registry: `./scripts/registry-add-version.ps1 -PortName "openssl3"`
-```
+
 
 ### Installation with Features
 
-```markdown
-# Port Installation Report
-
-**Port**: `opencv4[opengl,ffmpeg]`
-**Triplet**: x64-windows
-**Date**: 2025-11-26 12:10:15
-
-## Installation Result
-
-✅ **Success**
-
-### Features Enabled
-
-- ✅ `opengl` - OpenGL support
-- ✅ `ffmpeg` - FFmpeg video codec support
-
-### Details
-
-- **Duration**: 15m 32s
-- **Dependencies Built**: 18 (including ffmpeg, opengl, vcpkg-cmake, ...)
-- **Output Location**: `installed/x64-windows/`
-
-### Installed Files
-
-**Headers**: 
-- `installed/x64-windows/include/opencv4/opencv2/*.hpp` (450+ files)
-
-**Libraries**:
-- `installed/x64-windows/lib/opencv_core4.lib`
-- `installed/x64-windows/lib/opencv_videoio4.lib` (with ffmpeg)
-- `installed/x64-windows/lib/opencv_highgui4.lib` (with opengl)
-- ... (12 total)
-
-## Command Used
-
-```powershell
-vcpkg install --overlay-ports ./ports `
-  --x-buildtrees-root buildtrees `
-  --x-packages-root packages `
-  --x-install-root installed `
-  "opencv4[opengl,ffmpeg]:x64-windows"
-```
-```
-
 ### Installation Failed - CMake Configuration Error
 
-```markdown
-# Port Installation Report
-
-**Port**: `tensorflow-lite`
-**Triplet**: x64-windows
-**Date**: 2025-11-26 12:15:45
-
-## Installation Result
-
-❌ **Failed**
-
-### Error Summary
-
-CMake configuration failed - could not find Abseil libraries
-
-### Error Details
-
-```
-CMake Error at CMakeLists.txt:42 (find_package):
-  Could not find a package configuration file provided by "absl" with any
-  of the following names:
-
-    abslConfig.cmake
-    absl-config.cmake
-
-  Add the installation prefix of "absl" to CMAKE_PREFIX_PATH or set
-  "absl_DIR" to a directory containing one of the above files.
-```
-
-### Log Location
-
-`buildtrees/tensorflow-lite/config-x64-windows-out.log` (lines 245-260)
-
-## Diagnosis
-
-⚠️ **Missing Dependency**: `abseil` package
-
-### Root Cause
-
-Port manifest (`ports/tensorflow-lite/vcpkg.json`) does not list `abseil` as a dependency, but CMake requires it.
-
-### Recommended Fix
-
-1. Edit `ports/tensorflow-lite/vcpkg.json`
-2. Add `abseil` to dependencies array:
-   ```json
-   {
-     "name": "tensorflow-lite",
-     "version": "2.14.0",
-     "dependencies": [
-       "abseil",
-       "flatbuffers",
-       "vcpkg-cmake",
-       "vcpkg-cmake-config"
-     ]
-   }
-   ```
-
-3. Retry installation:
-   ```powershell
-   /install-port tensorflow-lite
-   ```
-
-## Command Used
-
-```powershell
-vcpkg install --overlay-ports ./ports `
-  --x-buildtrees-root buildtrees `
-  --x-packages-root packages `
-  --x-install-root installed `
-  tensorflow-lite:x64-windows
-```
-```
 
 ### Installation Failed - Compiler Error
-
-```markdown
-# Port Installation Report
-
-**Port**: `cpuinfo`
-**Triplet**: x64-windows
-**Date**: 2025-11-26 12:20:30
-
-## Installation Result
-
-❌ **Failed**
-
-### Error Summary
-
-MSVC compilation error - undefined identifier
-
-### Error Details
-
-```
-C:\...\cpuinfo\src\x86\cache\init.c(42): error C2065: 'CPUINFO_LOG_ERROR': undeclared identifier
-C:\...\cpuinfo\src\x86\cache\init.c(42): error C3861: 'CPUINFO_LOG_ERROR': identifier not found
-```
-
-### Log Location
-
-`buildtrees/cpuinfo/build-x64-windows-out.log` (lines 1250-1255)
-
-## Diagnosis
-
-⚠️ **Build Configuration Issue**: Logging macros not defined
-
-### Root Cause
-
-Port needs to enable logging feature or define `CPUINFO_LOG_ERROR` macro
-
-### Recommended Fixes
-
-**Option 1**: Add CMake definition in portfile.cmake
-```cmake
-vcpkg_cmake_configure(
-    SOURCE_PATH "${SOURCE_PATH}"
-    OPTIONS
-        -DCPUINFO_BUILD_TOOLS=OFF
-        -DCPUINFO_LOG_LEVEL=error
-)
-```
-
-**Option 2**: Create patch to fix upstream code
-```cmake
-vcpkg_apply_patches(
-    SOURCE_PATH "${SOURCE_PATH}"
-    PATCHES
-        fix-logging-macros.patch
-)
-```
 
 ### Next Steps
 
 1. Update `ports/cpuinfo/portfile.cmake` with fix
 2. Retry installation: `/install-port cpuinfo`
 
-## Command Used
-
-```powershell
-vcpkg install --overlay-ports ./ports `
-  --x-buildtrees-root buildtrees `
-  --x-packages-root packages `
-  --x-install-root installed `
-  cpuinfo:x64-windows
-```
-```
 
 ### Installation Failed - Missing Patch
 
-```markdown
-# Port Installation Report
-
-**Port**: `openssl3`
-**Triplet**: arm64-android
-**Date**: 2025-11-26 12:25:10
-
-## Installation Result
-
-❌ **Failed**
-
-### Error Summary
-
-Build system error - Android-specific configuration not found
-
-### Error Details
-
-```
-Operating system: Android
-This system is not supported, see NOTES-ANDROID.md for details
-CMake Error at CMakeLists.txt:12 (message):
-  Android builds require ANDROID_NDK_HOME
-```
-
-### Log Location
-
-`buildtrees/openssl3/config-arm64-android-out.log` (lines 20-30)
-
-## Diagnosis
-
-⚠️ **Platform-Specific Issue**: Android triplet requires special handling
-
-### Root Cause
-
-Port portfile.cmake does not set Android-specific variables for OpenSSL build
-
-### Recommended Fix
-
-Update `ports/openssl3/portfile.cmake`:
-
-```cmake
-if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
-    list(APPEND CONFIGURE_OPTIONS
-        "ANDROID_NDK_HOME=$ENV{ANDROID_NDK_HOME}"
-        "ANDROID_PLATFORM=android-${VCPKG_CMAKE_SYSTEM_VERSION}"
-    )
-endif()
-
-vcpkg_cmake_configure(
-    SOURCE_PATH "${SOURCE_PATH}"
-    OPTIONS ${CONFIGURE_OPTIONS}
-)
-```
-
-### Alternative: Create Android-Specific Patch
-
-Create `ports/openssl3/android-ndk.patch` with NDK detection fixes
-
-### Next Steps
-
-1. Update portfile.cmake with Android support
-2. Ensure `ANDROID_NDK_HOME` environment variable is set
-3. Retry: `/install-port openssl3:arm64-android`
-
-## Command Used
-
-```powershell
-vcpkg install --overlay-ports ./ports `
-  --overlay-triplets ./triplets `
-  --triplet arm64-android `
-  --x-buildtrees-root buildtrees `
-  --x-packages-root packages `
-  --x-install-root installed `
-  openssl3
-```
-```
 
 ## Work Note Entry
 

@@ -2,7 +2,7 @@
 description: 'Verify vcpkg installation, configuration, and registry structure'
 agent: 'agent'
 tools: ['search/fileSearch', 'search/listDirectory', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch']
-model: GPT-5 mini (copilot)
+model: Claude Haiku 4.5 (copilot)
 ---
 
 # Check vcpkg Environment
@@ -154,29 +154,31 @@ No user input required. Automatically detects vcpkg configuration.
 
 ### Report Format
 
+Use the same sections of the following markdown report example.
+
 ```markdown
 # vcpkg Environment Check Report
 
-**Date**: 2025-11-26 10:35:12
+Date: 2025-11-26 10:35:12
 
 ## vcpkg Installation
 
-✅ **VCPKG_ROOT**: `C:\vcpkg`
-✅ **Executable Path**: `C:\vcpkg\vcpkg.exe`
-✅ **Version**: 2025-06-20-abc123def456
-✅ **Toolchain File**: `C:\vcpkg\scripts\buildsystems\vcpkg.cmake` (exists)
+✅ VCPKG_ROOT: `C:\vcpkg`
+✅ Executable Path: `C:\vcpkg\vcpkg.exe`
+✅ Version: 2025-06-20-abc123def456
+✅ Toolchain File: `C:\vcpkg\scripts\buildsystems\vcpkg.cmake` (exists)
 
 ### Version Status
-⚠️ **Recommendation**: vcpkg-tool version 2025-06-20+ recommended. Current: 2024-06-15
+⚠️ Recommendation: vcpkg-tool version 2025-06-20+ recommended. Current: 2024-06-15
 Consider upgrading: https://github.com/microsoft/vcpkg-tool/releases
 
 ## Registry Configuration
 
-✅ **Registry Root**: `C:\Users\user\vcpkg-registry`
-✅ **Ports Folder**: `C:\Users\user\vcpkg-registry\ports` (exists)
-✅ **Versions Folder**: `C:\Users\user\vcpkg-registry\versions` (exists)
-✅ **Triplets Folder**: `C:\Users\user\vcpkg-registry\triplets` (exists)
-✅ **Baseline File**: `C:\Users\user\vcpkg-registry\versions\baseline.json` (exists)
+✅ Registry Root: `C:\Users\user\vcpkg-registry`
+✅ Ports Folder: `C:\Users\user\vcpkg-registry\ports` (exists)
+✅ Versions Folder: `C:\Users\user\vcpkg-registry\versions` (exists)
+✅ Triplets Folder: `C:\Users\user\vcpkg-registry\triplets` (exists)
+✅ Baseline File: `C:\Users\user\vcpkg-registry\versions\baseline.json` (exists)
 
 ### vcpkg-configuration.json
 ✅ Found at: `C:\Users\user\vcpkg-registry\vcpkg-configuration.json`
@@ -195,8 +197,8 @@ Consider upgrading: https://github.com/microsoft/vcpkg-tool/releases
 
 `VCPKG_FEATURE_FLAGS=versions,registries`
 
-- **versions**: Enables versioning support for precise dependency control
-- **registries**: Enables custom registry support for private ports
+- versions: Enables versioning support for precise dependency control
+- registries: Enables custom registry support for private ports
 
 ## Status Summary
 
@@ -213,9 +215,9 @@ Use absolute path for vcpkg if not in PATH: `C:\vcpkg\vcpkg.exe`
 ```markdown
 ## vcpkg Installation
 
-⚠️ **VCPKG_ROOT**: Not set (using executable location)
-✅ **Executable Path**: `C:\vcpkg\vcpkg.exe`
-✅ **Inferred VCPKG_ROOT**: `C:\vcpkg`
+⚠️ `VCPKG_ROOT`: Not set (using executable location)
+✅ Executable Path: `C:\vcpkg\vcpkg.exe`
+✅ Inferred `VCPKG_ROOT`: `C:\vcpkg`
 ```
 
 ### When vcpkg Not Found
@@ -223,28 +225,28 @@ Use absolute path for vcpkg if not in PATH: `C:\vcpkg\vcpkg.exe`
 ```markdown
 ## vcpkg Installation
 
-❌ **Error**: vcpkg not found
+❌ Error: vcpkg not found
 
 ### Resolution Steps
 
-1. **Check VCPKG_ROOT**: Ensure environment variable is set
+1. Check `VCPKG_ROOT`: Ensure environment variable is set
    ```powershell
    $env:VCPKG_ROOT = "C:\path\to\vcpkg"
    ```
 
-2. **Add to PATH**: Make vcpkg accessible
+2. Add to PATH: Make vcpkg accessible
    ```powershell
    $env:PATH += ";C:\path\to\vcpkg"
    ```
 
-3. **Install vcpkg**: If not installed
+3. Install vcpkg: If not installed
    ```powershell
    git clone https://github.com/microsoft/vcpkg
    cd vcpkg
    .\bootstrap-vcpkg.bat
    ```
 
-4. **Searched Locations**:
+4. Searched Locations:
    - `C:\vcpkg` (not found)
    - `C:\tools\vcpkg` (not found)
    - `C:\src\vcpkg` (not found)
