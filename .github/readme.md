@@ -25,7 +25,7 @@ Custom agents are repository-specific AI assistants configured through prompt fi
 
 **Example usage**:
 ```
-@workspace /check-environment
+/check-environment
 ```
 
 ---
@@ -47,7 +47,7 @@ Custom agents are repository-specific AI assistants configured through prompt fi
 
 **Example usage**:
 ```
-@workspace /check-vcpkg-environment
+/check-vcpkg-environment
 ```
 
 ---
@@ -70,9 +70,9 @@ Custom agents are repository-specific AI assistants configured through prompt fi
 
 **Example usage**:
 ```
-@workspace /search-port openssl3
-@workspace Search for ports related to https://github.com/pytorch/cpuinfo
-@workspace Find tensorflow-lite port
+/search-port openssl3
+Search for ports related to https://github.com/pytorch/cpuinfo
+Find tensorflow-lite port
 ```
 
 ---
@@ -96,9 +96,9 @@ Custom agents are repository-specific AI assistants configured through prompt fi
 
 **Example usage**:
 ```
-@workspace /create-port https://github.com/pytorch/cpuinfo
-@workspace Create port for openssl version 3.0.15
-@workspace Generate port files for farmhash
+/create-port https://github.com/pytorch/cpuinfo
+Create port for openssl version 3.0.15
+Generate port files for farmhash
 ```
 
 ---
@@ -121,9 +121,9 @@ Custom agents are repository-specific AI assistants configured through prompt fi
 
 **Example usage**:
 ```
-@workspace /install-port openssl3
-@workspace Test cpuinfo port installation
-@workspace Install opencv4[opengl,ffmpeg] with x64-windows triplet
+/install-port openssl3
+Test cpuinfo port installation
+Install opencv4[opengl,ffmpeg] with x64-windows triplet
 ```
 
 ---
@@ -147,9 +147,9 @@ Custom agents are repository-specific AI assistants configured through prompt fi
 
 **Example usage**:
 ```
-@workspace /review-port openssl3
-@workspace Check if tensorflow-lite follows guidelines
-@workspace Validate cpuinfo port files
+/review-port openssl3
+Check if tensorflow-lite follows guidelines
+Validate cpuinfo port files
 ```
 
 ---
@@ -173,9 +173,9 @@ Custom agents are repository-specific AI assistants configured through prompt fi
 
 **Example usage**:
 ```
-@workspace /check-port-upstream openssl3
-@workspace Is cpuinfo up to date?
-@workspace Check for newer versions of tensorflow-lite
+/check-port-upstream openssl3
+Is cpuinfo up to date?
+Check for newer versions of tensorflow-lite
 ```
 
 ---
@@ -199,9 +199,9 @@ Custom agents are repository-specific AI assistants configured through prompt fi
 
 **Example usage**:
 ```
-@workspace /upgrade-port openssl3 to 3.0.15
-@workspace Update cpuinfo to latest version
-@workspace Upgrade tensorflow-lite to 2.14.1
+/upgrade-port openssl3 to 3.0.15
+Update cpuinfo to latest version
+Upgrade tensorflow-lite to 2.14.1
 ```
 
 ## Workflow Patterns
