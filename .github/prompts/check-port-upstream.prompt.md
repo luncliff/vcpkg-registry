@@ -159,7 +159,7 @@ Check for newer versions of tensorflow-lite
 - Format: Table comparing local, microsoft/vcpkg, upstream project
 - Highlight: Differences and recommendations
 
-#### Step 6.2: Update work-note.md
+#### Step 6.2: Update work-note.md in workspace root
 - Tool: `#editFiles` (append mode)
 - Content: Version check results with timestamp
 

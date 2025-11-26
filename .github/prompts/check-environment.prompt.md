@@ -1,7 +1,7 @@
 ---
 description: 'Detect and verify host system environment for vcpkg development'
 agent: 'agent'
-tools: ['edit/createFile', 'edit/editFiles', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch']
+tools: ['runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch']
 model: Claude Haiku 4.5 (copilot)
 ---
 
@@ -101,11 +101,6 @@ Command templates (the agent will iterate executables and apply the template):
 #### Step 4.1: Compile environment summary
 - Collect all detected information
 - Format as structured markdown report
-
-#### Step 4.2: Update work-note.md
-- Tool: `#editFiles` (append mode)
-- Content: Environment detection results with timestamp
-- Purpose: Provide reproducible record
 
 ## Reporting
 

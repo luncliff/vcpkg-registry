@@ -150,10 +150,6 @@ Check if tensorflow-lite exists
 - Mark deprecated ports
 - Format as structured markdown
 
-#### Step 6.2: Update work-note.md
-- Tool: `#editFiles` (append mode)
-- Content: Port search results with timestamp
-
 ## Reporting
 
 The agent MUST output a single markdown report with deterministic structure (no example filler). Emit all headings in order even if a section is empty (use `None`). Avoid prose beyond concise factual bullets.

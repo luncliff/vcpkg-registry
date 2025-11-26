@@ -146,10 +146,6 @@ No user input required. Automatically detects vcpkg configuration.
 - Collect all detected information
 - Format as structured markdown
 
-#### Step 5.2: Update work-note.md
-- Tool: `#editFiles` (append mode)
-- Content: vcpkg environment check results with timestamp
-
 ## Reporting
 
 Replace example reports with a deterministic specification. The agent MUST output a markdown report using the headings below (in order). Emit all headings; if no data for a section write `None`. Keep bullets concise (≤120 chars). No tables unless >6 environment variables.
