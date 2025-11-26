@@ -257,426 +257,98 @@ Upgrade tensorflow-lite to 2.14.1
 
 ## Reporting
 
-### Successful Upgrade
+Replace example-rich outputs with a deterministic upgrade specification. The agent MUST emit a markdown report with the exact headings below (in order). Provide concise factual bullets; omit narrative fluff. If a section has no content, write `None`.
 
-```markdown
-# Port Upgrade Report
+### Required Top-Level Headings
+1. `# Port Upgrade Report`
+2. `## Summary`
+3. `## Version Changes`
+4. `## Source & SHA512`
+5. `## File Modifications`
+6. `## Test Installation`
+7. `## Validation`
+8. `## Issues & Warnings`
+9. `## Next Steps`
+10. `## Work Note Entry`
 
-**Port**: `openssl3`
-**Old Version**: 3.0.13
-**New Version**: 3.0.15
-**Date**: 2025-11-26 15:05:30
+### 1. Summary
+- Port: `<name>`
+- Old Version: `<old>`
+- New Version: `<new>`
+- Timestamp: ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
+- Outcome: `SUCCESS` | `FAILURE` | `MAJOR VERSION WARNING` | `SHA512 CORRECTED`
+- Mode: `editable test passed` | `editable test failed`
 
-## Changes
+### 2. Version Changes
+- vcpkg.json: `version` changed (old → new)
+- REF Strategy: describe pattern used (`v${VERSION}` / `${VERSION}` / `<name>-${VERSION}`)
+- Major/Minor bump classification; if major, flag with ⚠️
 
-### vcpkg.json
-- ✅ `version`: "3.0.13" → "3.0.15"
+### 3. Source & SHA512
+- Source Tag/Archive URL used
+- SHA512 New: 128 hex chars (validate length) ✅/❌
+- SHA512 Acquisition Method: direct download | reported by vcpkg mismatch correction
+- Placeholder Used: yes/no (if `0` initially)
+- Correction Applied: yes/no
 
-### portfile.cmake
-- ✅ `REF`: openssl-${VERSION} (no change, uses variable)
-- ✅ `SHA512`: `8a7e4c2f...` → `f3b9d1e8...` (updated)
+### 4. File Modifications
+List only changed lines/keys:
+- `vcpkg.json`: version field updated ✅/❌
+- `portfile.cmake`: REF updated (yes/no), SHA512 updated (yes/no)
+- Additional version occurrences updated (if any) or `None`
 
-## SHA512 Calculation
+### 5. Test Installation
+- Command Executed (single line)
+- Result: success/failure
+- Duration (if parseable)
+- Key Artifacts Installed: headers | libs | dlls (list or `None`)
+- Build Log Path (relative) for failure
 
-Downloaded source archive from:
+### 6. Validation
+- Version field integrity ✅/❌
+- SHA512 integrity ✅/⚠️ (uppercase warning) / ❌ (bad length)
+- REF pattern consistency ✅/⚠️ (hardcoded tag) / ❌
+- Editable mode test: passed/failed
+- Baseline update required: yes/no
+
+### 7. Issues & Warnings
+Separate subsections:
+- Critical Issues: block upgrade (build failure, invalid SHA512, missing source)
+- Warnings: non-blocking (uppercase SHA512, hardcoded REF, placeholder used then fixed)
+Provide each with brief fix action snippet (JSON/CMake or command).
+
+### 8. Next Steps
+Branch by outcome:
+- SUCCESS: commit changes → run `registry-add-version.ps1` → commit versions
+- SHA512 CORRECTED: retest then commit
+- FAILURE: analyze logs; consider patches; optional rollback commands
+- MAJOR VERSION WARNING: choose (proceed | create alternate port | revert)
+Bulleted actionable items only.
+
+### 9. Work Note Entry
+Emit ready-to-append block:
 ```
-https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.15.tar.gz
-```
-
-Calculated SHA512:
-```
-f3b9d1e89a2c4f7e... (128 characters)
-```
-
-## Test Results
-
-✅ **Test Installation Successful** (with --editable flag)
-
-### Test Command
-
-```powershell
-vcpkg install --editable --overlay-ports ./ports openssl3:x64-windows
-```
-
-### Output
-
-```
-Starting package 1/1: openssl3:x64-windows
-Building package openssl3[core]:x64-windows...
--- Using cached openssl-openssl-3.0.15.tar.gz
--- Cleaning sources at C:/..../buildtrees/openssl3/src/ssl-3.0.15-....
--- Extracting source C:/..../downloads/openssl-openssl-3.0.15.tar.gz
-...
--- Performing post-build validation
-Stored binary cache: ...
--- Performing post-build validation done
-Elapsed time to handle openssl3:x64-windows: 2 min 45 s
-Total install time: 2 min 45 s
-openssl3:x64-windows package is successfully installed.
-```
-
-### Installed Files
-
-- Headers: `installed/x64-windows/include/openssl/*.h`
-- Libraries: `libssl.lib`, `libcrypto.lib`
-- Binaries: `libssl-3-x64.dll`, `libcrypto-3-x64.dll`
-
-## Validation
-
-✅ Version updated correctly in vcpkg.json
-✅ SHA512 updated correctly in portfile.cmake
-✅ Test installation succeeded
-✅ Binary cache created
-
-## Next Steps
-
-### 1. Commit Port Changes
-
-```powershell
-git add ports/openssl3/
-git commit -m "[openssl3] update to 3.0.15" -m "- Security fixes: CVE-2024-XXXX"
-```
-
-### 2. Update Registry Baseline
-
-```powershell
-./scripts/registry-add-version.ps1 -PortName "openssl3" -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
+## <timestamp UTC> - /upgrade-port <port>
+Outcome: SUCCESS|FAILURE|MAJOR|SHA512-CORRECTED
+Old→New: <old> → <new>
+SHA512: updated|placeholder|corrected
+Test: passed|failed
+Critical: <count>
+Warnings: <count>
+Next: <primary action>
 ```
 
-### 3. Commit Version Files
-
-```powershell
-git add versions/
-git commit -m "[openssl3] update baseline and version files"
-```
-
-### 4. (Optional) Test Without --editable
-
-Remove cached packages and test final installation:
-```powershell
-Remove-Item -Recurse packages/openssl3_*
-vcpkg install --overlay-ports ./ports openssl3:x64-windows
-```
-
-## Upstream Changes
-
-See release notes: https://github.com/openssl/openssl/releases/tag/openssl-3.0.15
-
-### Highlights
-- Security fixes for CVE-2024-XXXX
-- Performance improvements
-- Bug fixes for Windows builds
-
-### Breaking Changes
-None reported
-```
-
-### Upgrade with SHA512 Correction
-
-```markdown
-# Port Upgrade Report
-
-**Port**: `cpuinfo`
-**Old Version**: 2023-08-02
-**New Version**: 2024-01-15
-**Date**: 2025-11-26 15:10:45
-
-## Changes
-
-### vcpkg.json
-- ✅ `version`: "2023-08-02" → "2024-01-15"
-
-### portfile.cmake
-- ✅ `REF`: ${VERSION} (no change)
-- ✅ `SHA512`: Initially incorrect, corrected after test
-
-## SHA512 Calculation
-
-### Initial Attempt (Failed)
-
-Used placeholder SHA512 `0` due to download timeout.
-
-### Correction from vcpkg Test
-
-vcpkg reported correct SHA512 during test installation:
-```
-error: SHA512 mismatch detected
-Expected: 0
-Actual: a2c4f7e3b9d1e8f6...
-```
-
-Updated portfile.cmake with correct value.
-
-## Test Results
-
-✅ **Test Installation Successful** (after SHA512 correction)
-
-### Iterations
-
-1. **First attempt**: SHA512 mismatch (expected)
-   - Used placeholder `0`
-   - vcpkg reported actual SHA512
-   
-2. **Second attempt**: Success
-   - Updated with correct SHA512: `a2c4f7e3b9d1e8f6...`
-   - Installation completed successfully
-
-## Next Steps
-
-1. Commit port changes
-2. Run `registry-add-version.ps1`
-3. Commit version files
-
-## Note
-
-**Placeholder SHA512 Strategy**: Useful when download fails or checksum calculation unavailable. vcpkg will report correct value on first install attempt.
-```
-
-### Upgrade Failed - Build Errors
-
-```markdown
-# Port Upgrade Report
-
-**Port**: `tensorflow-lite`
-**Old Version**: 2.14.0
-**New Version**: 2.15.0
-**Date**: 2025-11-26 15:15:20
-
-## Changes
-
-### vcpkg.json
-- ✅ `version`: "2.14.0" → "2.15.0"
-
-### portfile.cmake
-- ✅ `REF`: v${VERSION}
-- ✅ `SHA512`: `f3b9d1e8...` (calculated and updated)
-
-## SHA512 Calculation
-
-✅ Successfully calculated SHA512:
-```
-f3b9d1e89a2c4f7e3b6d5c8a9e2f4c7b1d8e3f9a6c5d2b7e4f1c8d9b2a3f6e5c4
-```
-
-## Test Results
-
-❌ **Test Installation Failed**
-
-### Error Summary
-
-Compiler error - API changes in TensorFlow 2.15.0
-
-### Error Details
-
-```
-C:\...\tensorflow\lite\kernels\internal\reference\integer_ops\add.h(42):
-error C2065: 'ActivationFunctionType': undeclared identifier
-
-C:\...\tensorflow\lite\kernels\internal\reference\integer_ops\add.h(42):
-error C2065: 'kNone': undeclared identifier
-```
-
-### Log Location
-
-`buildtrees/tensorflow-lite/build-x64-windows-out.log` (lines 2450-2460)
-
-## Diagnosis
-
-⚠️ **Breaking API Changes**: TensorFlow 2.15.0 changed internal API
-
-### Root Cause
-
-Enum type `ActivationFunctionType` moved to different header or renamed.
-
-### Recommended Fixes
-
-**Option 1**: Create patch for API changes
-```cmake
-vcpkg_apply_patches(
-    SOURCE_PATH "${SOURCE_PATH}"
-    PATCHES
-        fix-activation-type-2.15.patch
-)
-```
-
-**Option 2**: Check upstream vcpkg
-- Search: microsoft/vcpkg for tensorflow-lite 2.15 patches
-- URL: https://github.com/microsoft/vcpkg/tree/master/ports/tensorflow-lite
-
-**Option 3**: Check upstream TensorFlow
-- Issue: Search TensorFlow issues for build errors
-- URL: https://github.com/tensorflow/tensorflow/issues
-
-## Breaking Changes
-
-Major API changes detected in TensorFlow 2.15:
-- Internal kernel API reorganization
-- Activation function type changes
-
-## Next Steps
-
-### 1. Research Upstream Solutions
-
-Check if microsoft/vcpkg has patches for 2.15:
-```powershell
-/check-port-upstream tensorflow-lite
-```
-
-### 2. Create Patches
-
-If no upstream patches:
-1. Identify API changes from TensorFlow changelog
-2. Create patch file: `ports/tensorflow-lite/fix-api-2.15.patch`
-3. Update portfile.cmake to apply patch
-
-### 3. Alternative: Stay on 2.14.0
-
-If patches too complex:
-- Revert changes: `git checkout ports/tensorflow-lite/`
-- Wait for microsoft/vcpkg to handle 2.15
-- Monitor: https://github.com/microsoft/vcpkg/pulls?q=tensorflow-lite
-
-## Recommendation
-
-⚠️ **Do not proceed with upgrade** until build errors resolved.
-
-Consider:
-1. Research upstream patches first
-2. If patches available, apply and retry
-3. If patches unavailable, stay on 2.14.0
-
-## Rollback Command
-
-```powershell
-git checkout ports/tensorflow-lite/vcpkg.json
-git checkout ports/tensorflow-lite/portfile.cmake
-```
-```
-
-### Major Version Upgrade Warning
-
-```markdown
-# Port Upgrade Report
-
-**Port**: `zlib-ng`
-**Old Version**: 2.1.7
-**New Version**: 3.0.2
-**Date**: 2025-11-26 15:20:15
-
-## Changes
-
-### vcpkg.json
-- ⚠️ `version`: "2.1.7" → "3.0.2" (**Major version bump**)
-
-### portfile.cmake
-- ✅ `REF`: v${VERSION}
-- ✅ `SHA512`: `c4f7e3b9...` (calculated)
-
-## Major Version Warning
-
-⚠️ **Major version upgrade detected: 2.x → 3.x**
-
-### Breaking Changes
-
-Review release notes carefully:
-- https://github.com/zlib-ng/zlib-ng/releases/tag/3.0.0
-
-Potential breaking changes:
-- API function signature changes
-- Removed deprecated functions
-- Configuration option changes
-
-## Dependency Impact
-
-Ports depending on zlib-ng:
-```powershell
-vcpkg depend-info zlib-ng --overlay-ports ./ports
-```
-
-⚠️ **Warning**: Upgrading may break dependent ports
-
-## Recommendations
-
-### Option 1: Test Carefully
-1. Complete upgrade
-2. Test all dependent ports
-3. Update dependent ports if needed
-
-### Option 2: Create Separate Port
-- Keep `zlib-ng` at 2.1.7
-- Create new port `zlib-ng3` for 3.x
-- Allow gradual migration
-
-### Option 3: Wait for Upstream
-- Let microsoft/vcpkg handle major version
-- Adopt their migration strategy
-
-## Current Status
-
-⚠️ **Upgrade paused for user decision**
-
-## Next Steps
-
-**User Decision Required**:
-
-1. **Proceed with upgrade** (risky):
-   ```powershell
-   /install-port zlib-ng
-   ```
-   Then test all dependent ports.
-
-2. **Create separate port** (safer):
-   ```powershell
-   /create-port https://github.com/zlib-ng/zlib-ng version 3.0.2
-   ```
-   Name it `zlib-ng3`.
-
-3. **Cancel upgrade** (conservative):
-   ```powershell
-   git checkout ports/zlib-ng/
-   ```
-   Stay on 2.1.7 until upstream handles migration.
-
-**Recommendation**: Option 3 (wait for upstream guidance)
-```
-
-## Work Note Entry
-
-### Success
-
-```markdown
-## 2025-11-26 15:05:30 - /upgrade-port
-
-✅ Port upgraded successfully
-- Port: openssl3
-- Version: 3.0.13 → 3.0.15
-- SHA512: Updated
-- Test: Passed (with --editable)
-- Next: Commit changes and run registry-add-version.ps1
-```
-
-### Failure
-
-```markdown
-## 2025-11-26 15:15:20 - /upgrade-port
-
-❌ Port upgrade failed
-- Port: tensorflow-lite
-- Version: 2.14.0 → 2.15.0
-- SHA512: Calculated
-- Test: Failed (build errors)
-- Error: API breaking changes
-- Recommendation: Create patches or wait for upstream
-```
-
-### Major Version Warning
-
-```markdown
-## 2025-11-26 15:20:15 - /upgrade-port
-
-⚠️ Major version upgrade detected
-- Port: zlib-ng
-- Version: 2.1.7 → 3.0.2 (major bump)
-- Status: Paused for user decision
-- Recommendation: Wait for upstream or create separate port (zlib-ng3)
-```
+### 10. Conventions
+- Icons: ✅ valid, ⚠️ warning, ❌ error
+- Keep bullets ≤120 chars
+- Avoid full log dumps; reference path only
+- Show at most first 16 chars of old/new SHA512 when contrasting (`old: abcdef...`) unless invalid
+
+### Multi-Port (rare)
+If future extension allows multi-port upgrade, repeat sections 2–7 per port with a shared Summary / Work Note Entry aggregate.
+
+### Non-Blocking Conditions
+- Placeholder SHA512 later corrected → classify as warning, not critical
+- Hardcoded REF acceptable if upstream tag pattern inconsistent; still warn
+
+This specification replaces prior sample reports. Generate only real execution data.

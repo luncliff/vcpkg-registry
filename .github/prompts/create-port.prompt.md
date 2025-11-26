@@ -155,8 +155,8 @@ Generate port files for farmhash
     "homepage": "{project-url}",
     "license": "{license-spdx-id}",
     "dependencies": [
-      "vcpkg-cmake",
-      "vcpkg-cmake-config"
+      { "name": "vcpkg-cmake", "host": true },
+      { "name": "vcpkg-cmake-config", "host": true }
     ]
   }
   ```
@@ -248,241 +248,110 @@ Generate port files for farmhash
 
 ## Reporting
 
-### Successful Port Creation
+Replace example-based content with a deterministic specification. The agent MUST output a markdown report containing the headings below (in order). Emit all headings even if empty (use `None`). Keep bullets concise; avoid narrative paragraphs.
 
-```markdown
-# Port Creation Report
+### Required Top-Level Headings
+1. `# Port Creation Report`
+2. `## Summary`
+3. `## Project Metadata`
+4. `## Build System Detection`
+5. `## Dependencies`
+6. `## Generated Files`
+7. `## Checksums`
+8. `## Validation`
+9. `## Notes & Warnings`
+10. `## Next Steps`
+11. `## Work Note Entry`
 
-**Port Name**: `cpuinfo`
-**Version**: 2023-08-02
-**Date**: 2025-11-26 11:15:30
+### 1. Summary
+- Port Name: `<name>`
+- Version: `<version>` (original tag form and normalized if different)
+- Source: GitHub URL or homepage
+- Timestamp: ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
+- Outcome: `CREATED` | `FAILED`
 
-## Project Information
+### 2. Project Metadata
+- Description: first sentence trimmed ≤120 chars
+- License: SPDX identifier (or `Unknown`)
+- Latest Release/Tag: `<tag>` or `None`
+- HEAD Commit (if no release): 7-char SHA or `None`
 
-- **Source**: https://github.com/pytorch/cpuinfo
-- **Description**: CPU INFOrmation library (x86/x86-64/ARM/ARM64, Linux/Windows/Android/macOS/iOS)
-- **License**: BSD-2-Clause
-- **Build System**: CMake
-- **Latest Release**: 2023-08-02 (commit 6481e8bef)
+### 3. Build System Detection
+- Detected: `CMake` | `Meson` | `Autotools` | `Plain` | `Unknown`
+- Strategy: `vcpkg_from_github` + helper(s) chosen
+- Experimental Override: `Embedded CMakeLists.txt` / `None`
 
-## Dependencies Detected
+### 4. Dependencies
+- Direct Dependencies: list (host tools first) or `None`
+- Missing Mapping: upstream names without vcpkg port matches or `None`
+- Host Tools Added: e.g., `vcpkg-cmake`, `vcpkg-cmake-config`
 
-- `vcpkg-cmake` (build helper)
-- `vcpkg-cmake-config` (config fixup)
-- No external dependencies required
+### 5. Generated Files
+Each file bullet with status icon:
+- ✅ `vcpkg.json` – size bytes
+- ✅ `portfile.cmake`
+- ⚠️ `CMakeLists.txt` (embedded) (experimental) or `None`
+- ✅ `usage` (if created) else `None`
 
-## Created Files
+### 6. Checksums
+- Source URL: archive/tarball used
+- SHA512: 128 hex chars or `placeholder (0)`
+- Method: `downloaded` | `reported by vcpkg mismatch` | `placeholder`
 
-✅ `ports/cpuinfo/vcpkg.json`
-- Name: cpuinfo
-- Version: 2023-08-02
-- Dependencies: 2 (vcpkg-cmake, vcpkg-cmake-config)
+### 7. Validation
+- Manifest Fields: name/version/description/license ✅/❌
+- Version Format: semver/date compliant ✅/⚠️/❌
+- SHA512 Format: length + lowercase ✅/⚠️/❌
+- Helper Functions Present: configure/install/fixup ✅/❌
+- Debug Cleanup: include/share removal ✅/❌
+- Copyright: `vcpkg_install_copyright` used ✅/⚠️/❌
 
-✅ `ports/cpuinfo/portfile.cmake`
-- Source: vcpkg_from_github
-- SHA512: 8a7e8c4f2b3d1e9f... (calculated)
-- Build: vcpkg_cmake_configure + vcpkg_cmake_install
+### 8. Notes & Warnings
+Bullets for non-blocking items:
+- Embedded build script rationale
+- Potential upstream duplication (if already exists in microsoft/vcpkg)
+- Hardcoded REF pattern vs `${VERSION}` variable
+- Placeholder checksum usage
+If none: `None`
 
-## Template Used
+### 9. Next Steps
+Ordered actionable list:
+1. Test installation: `/install-port <name>`
+2. (If success) Add version: `./scripts/registry-add-version.ps1 -PortName "<name>"`
+3. (Optional) Create usage file if missing
+4. (If experimental) Convert embedded script to patch before upstream contribution
 
-Based on `ports/abseil/portfile.cmake` (similar CMake project)
-
-## Validation
-
-✅ vcpkg.json formatted
-✅ Required fields present
-✅ SHA512 verified (128 hex characters)
-✅ Portfile syntax valid
-
-## Next Steps
-
-Test port installation:
-```powershell
-/install-port cpuinfo
+### 10. Work Note Entry
+Append block:
+```
+## <timestamp UTC> - /create-port
+Port: <name>
+Version: <version>
+Outcome: CREATED|FAILED
+Checksum: <sha512|placeholder>
+BuildSystem: <detected>
+Experimental: yes|no
+Next: /install-port <name>
 ```
 
-If installation succeeds, add to versions:
-```powershell
-./scripts/registry-add-version.ps1 -PortName "cpuinfo" -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
-```
-```
+### Failure Mode Reporting
+If Outcome = FAILED, still emit sections 1–11:
+- Dependencies / Generated Files / Checksums may be `None`
+- Validation lists blocking missing items under Notes & Warnings
+Add explicit bullet: `❌ Creation blocked: <reason>`
 
-### Port with Patches Required
+### Conventions
+- Icons: ✅ valid, ⚠️ warning, ❌ error/blocking
+- Bullet length ≤120 chars
+- No full log dumps; show only required metadata
+- Paths relative to workspace
 
-```markdown
-# Port Creation Report
+### Non-Blocking Examples
+- Using HEAD commit (no release) for early snapshot
+- Omitted usage file for header-only without config targets
 
-**Port Name**: `farmhash`
-**Version**: 1.0.0
-**Date**: 2025-11-26 11:20:45
+### Blocking Examples
+- Missing `version` field
+- Invalid SHA512 (length ≠128) unless placeholder strategy documented
 
-## Project Information
-
-- **Source**: https://github.com/google/farmhash
-- **Description**: FarmHash, a family of hash functions
-- **License**: MIT
-- **Build System**: CMake (custom CMakeLists.txt embedded)
-- **Latest Release**: v1.1 (2014-10-03)
-
-## Build System Customization
-
-⚠️ **Embedded CMakeLists.txt Approach**
-- Original build system: Autotools (complex)
-- Solution: Created custom CMakeLists.txt
-- Reason: Simpler than maintaining autotools patches
-
-## Created Files
-
-✅ `ports/farmhash/vcpkg.json`
-✅ `ports/farmhash/portfile.cmake`
-✅ `ports/farmhash/CMakeLists.txt` (embedded)
-- Custom build script copied to source during build
-- Simplifies Windows compilation
-
-## Portfile Strategy
-
-```cmake
-# Copy our modified CMakeLists.txt
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" 
-     DESTINATION "${SOURCE_PATH}")
-
-vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}")
-vcpkg_cmake_install()
-```
-
-## Validation
-
-✅ vcpkg.json formatted
-✅ Embedded CMakeLists.txt present
-⚠️ **Warning**: This approach is for experimental/private registries only
-- For upstream contribution, convert to patch files
-
-## Next Steps
-
-Test port installation:
-```powershell
-/install-port farmhash
-```
-
-## Maintenance Note
-
-If contributing to microsoft/vcpkg upstream:
-1. Generate patch from embedded CMakeLists.txt
-2. Replace embedded file with `vcpkg_apply_patches` call
-3. Follow upstream contribution guidelines
-```
-
-### Port Creation Failed
-
-```markdown
-# Port Creation Report
-
-**Port Name**: `unknown-project`
-**Date**: 2025-11-26 11:25:15
-
-## Error
-
-❌ **Failed to create port**
-
-### Issue
-
-Could not determine project information:
-- No GitHub URL provided
-- Project not found in search results
-- Insufficient information to proceed
-
-### User Input
-
-```
-create port for unknown-project
-```
-
-## Required Information
-
-Please provide:
-1. **GitHub URL** or **Project Homepage**
-2. **Version number** (if not using latest release)
-3. **Build system type** (if known)
-
-## Retry
-
-Try again with more details:
-```
-/create-port https://github.com/owner/repo
-```
-
-Or:
-```
-Create port for {project-name} from https://project-homepage.com version X.Y.Z
-```
-```
-
-### SHA512 Calculation Guidance
-
-```markdown
-# Port Creation Report (In Progress)
-
-**Port Name**: `openssl3`
-**Version**: 3.0.15
-
-## SHA512 Calculation
-
-If unable to calculate SHA512 automatically, use manual method:
-
-### PowerShell
-
-```powershell
-$Version = "3.0.15"
-$Url = "https://github.com/openssl/openssl/archive/refs/tags/openssl-${Version}.tar.gz"
-curl -L -o "temp-${Version}.tar.gz" $Url
-(Get-FileHash -Algorithm SHA512 "temp-${Version}.tar.gz").Hash.ToLower()
-Remove-Item "temp-${Version}.tar.gz"
-```
-
-### Bash/Zsh
-
-```bash
-version="3.0.15"
-url="https://github.com/openssl/openssl/archive/refs/tags/openssl-${version}.tar.gz"
-curl -L -o "temp-${version}.tar.gz" "$url"
-sha512sum "temp-${version}.tar.gz" | awk '{print $1}'
-rm "temp-${version}.tar.gz"
-```
-
-### Alternative: Use Dummy SHA512
-
-If download fails:
-1. Use `SHA512 0` in portfile.cmake
-2. Run `vcpkg install --overlay-ports ./ports {port-name}`
-3. vcpkg will report correct SHA512 in error message
-4. Update portfile.cmake with reported value
-```
-
-## Work Note Entry
-
-```markdown
-## 2025-11-26 11:15:30 - /create-port
-
-✅ Port created successfully
-- Name: cpuinfo
-- Version: 2023-08-02
-- Source: https://github.com/pytorch/cpuinfo
-- Build system: CMake
-- SHA512: Calculated
-- Files: vcpkg.json, portfile.cmake
-- Next: Test installation with /install-port
-```
-
-### For Port with Patches
-
-```markdown
-## 2025-11-26 11:20:45 - /create-port
-
-✅ Port created with embedded CMakeLists.txt
-- Name: farmhash
-- Version: 1.0.0
-- Source: https://github.com/google/farmhash
-- Custom: Embedded CMakeLists.txt (replaced autotools)
-- Warning: Experimental approach, convert to patches for upstream
-- Next: Test installation with /install-port
-```
+This specification replaces previous illustrative examples; emit only real creation data.

@@ -156,202 +156,94 @@ Check if tensorflow-lite exists
 
 ## Reporting
 
-### Port Found in Local Registry
+The agent MUST output a single markdown report with deterministic structure (no example filler). Emit all headings in order even if a section is empty (use `None`). Avoid prose beyond concise factual bullets.
 
-```markdown
-# Port Search Report
+### Required Top-Level Headings
+1. `# Port Search Report` (title)
+2. `## Query Summary`
+3. `## Local Registry Results`
+4. `## Upstream Results`
+5. `## Dependency Information`
+6. `## Deprecation & Alternatives`
+7. `## Not Found Summary`
+8. `## Multi-Port Aggregate` (only for >1 query term)
+9. `## Next Steps`
 
-**Search Query**: openssl3
-**Date**: 2025-11-26 10:40:23
+### 1. Query Summary
+- Original Input: raw user string
+- Parsed Terms: list of normalized port names/keywords
+- Timestamp: ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
 
-## Local Registry
+### 2. Local Registry Results
+For each matched port (one bullet each):
+- `name` — version (from `vcpkg.json`), status icon (`✅` found, `⚠️` deprecated, `❌` missing)
+- Description (first sentence)
+- Location: relative path `ports/<name>/`
+- Features: list or `None`
+If no matches: single line `None`.
 
-✅ **Found**: `openssl3`
+### 3. Upstream Results
+List ports found in `microsoft/vcpkg` not overridden locally and note version difference:
+- Format: `<name>` — upstream version; Compare: local newer|same|older|not present
+If none: `None`.
 
-### Port Details
+### 4. Dependency Information
+For each locally found port (skip if none):
+- Port: `<name>`
+- Direct Dependencies: comma list with host/tool markers (`vcpkg-cmake (host)`) or `None`
+Do not include full tree depth; keep first-level only.
 
-- **Version**: 3.0.15
-- **Description**: OpenSSL is an open-source implementation of the SSL and TLS protocols
-- **Homepage**: https://www.openssl.org
-- **License**: Apache-2.0
-- **Location**: `ports/openssl3/`
+### 5. Deprecation & Alternatives
+List deprecated ports (policy empty package detected) with replacement target:
+- `<deprecated>` → `<alternative>` (reason: empty package policy)
+If none: `None`.
 
-### Dependencies
+### 6. Not Found Summary
+Ports/terms not found locally nor upstream:
+- `<term>` — `not found` (if URL provided include repository name analyzed)
+If GitHub URL provided and repo exists, append latest tag/release if fetched.
+If all found: `None`.
 
+### 7. Multi-Port Aggregate (only when multiple queries)
+- Totals: local found, upstream only, deprecated, not found
+- Newer Locals: list ports where local version > upstream
+
+### 8. Next Steps
+Decision guidance based on results:
+- If deprecated ports: suggest installing alternative
+- If upstream-only ports: suggest install command `vcpkg install <port>`
+- If not found but repo detected: suggest `/create-port <url>`
+- If local newer than upstream: note potential contribution
+Bulleted actionable lines, else `None`.
+
+### Icons & Conventions
+- ✅ present/valid
+- ⚠️ deprecated or attention
+- ❌ missing/not found
+No tables unless >10 results (then optional), prefer bullets.
+Keep each bullet ≤120 characters.
+
+### Work Note Entry Format
+Append to `work-note.md`:
 ```
-openssl3:x64-windows
-  - vcpkg-cmake:host
-  - vcpkg-cmake-config:host
-```
-
-### Features
-
-- `tools`: Build command-line tools
-
-## Upstream Comparison
-
-⚠️ **microsoft/vcpkg Version**: 3.0.13 (older than local)
-- Local registry has newer version
-
-## Status
-
-✅ Port ready for use in local registry
-```
-
-### Port Found Only Upstream
-
-```markdown
-# Port Search Report
-
-**Search Query**: tensorflow
-**Date**: 2025-11-26 10:42:15
-
-## Local Registry
-
-❌ **Not Found**: `tensorflow`
-
-## Upstream (microsoft/vcpkg)
-
-✅ **Found**: `tensorflow-cc`
-
-### Port Details
-
-- **Version**: 2.10.0
-- **Description**: TensorFlow C++ API
-- **Homepage**: https://www.tensorflow.org
-- **Location**: https://github.com/microsoft/vcpkg/tree/master/ports/tensorflow-cc
-
-## Suggestions
-
-Consider creating local port or using upstream port.
-
-To use upstream port:
-```powershell
-vcpkg install tensorflow-cc
-```
-
-To create local port:
-```powershell
-/create-port https://github.com/tensorflow/tensorflow
-```
-```
-
-### Deprecated Port Found
-
-```markdown
-# Port Search Report
-
-**Search Query**: openssl1
-**Date**: 2025-11-26 10:44:30
-
-## Local Registry
-
-⚠️ **Found (Deprecated)**: `openssl1`
-
-### Deprecation Notice
-
-This port is deprecated and redirects to `openssl3`.
-
-**Reason**: `set(VCPKG_POLICY_EMPTY_PACKAGE enabled)` detected in portfile.cmake
-
-### Migration Path
-
-Use `openssl3` instead:
-```powershell
-vcpkg install --overlay-ports ./ports openssl3
+## <timestamp UTC> - /search-port
+Query: <original>
+Local Found: <count>
+Upstream Only: <count>
+Deprecated: <count>
+Not Found: <count>
+Action: <primary suggested next step>
 ```
 
-## Recommended Alternative
+### Multi-Port Ordering
+Order sections by: found local → upstream-only → deprecated → not found.
 
-✅ **openssl3** (version 3.0.15)
-- **Description**: OpenSSL is an open-source implementation of the SSL and TLS protocols
-- **Location**: `ports/openssl3/`
-```
+### Data Collection Rules
+- Do not expand full dependency trees; only direct dependencies from `vcpkg.json`.
+- For features: list feature names only (no nested deps) unless explicitly requested.
+- GitHub release detection optional; if unavailable write `Latest Release: unknown`.
 
-### Multiple Ports Found
+### Non-Blocking Omissions
+- Absence of features is not an issue; show `Features: None`.
 
-```markdown
-# Port Search Report
-
-**Search Query**: ssl
-**Date**: 2025-11-26 10:46:12
-
-## Local Registry
-
-Found 3 matching ports:
-
-### 1. openssl3
-- **Version**: 3.0.15
-- **Description**: OpenSSL is an open-source implementation of the SSL and TLS protocols
-- **Location**: `ports/openssl3/`
-
-### 2. apple-nio-ssl
-- **Version**: 1.0.0
-- **Description**: Swift NIO SSL/TLS support
-- **Location**: `ports/apple-nio-ssl/`
-
-### 3. openssl1 (⚠️ Deprecated)
-- **Redirects to**: openssl3
-- **Location**: `ports/openssl1/`
-
-## Upstream
-
-Additional matches in microsoft/vcpkg:
-- `boringssl` (Google's fork of OpenSSL)
-- `libressl` (OpenBSD's SSL/TLS library)
-```
-
-### Port Not Found
-
-```markdown
-# Port Search Report
-
-**Search Query**: nonexistent-lib
-**Date**: 2025-11-26 10:48:45
-
-## Local Registry
-
-❌ **Not Found**: `nonexistent-lib`
-
-## Upstream (microsoft/vcpkg)
-
-❌ **Not Found**: `nonexistent-lib`
-
-## Project Homepage (if URL provided)
-
-✅ **GitHub**: https://github.com/example/nonexistent-lib
-- Latest Release: v1.2.3
-- Description: Example library for demonstration
-
-## Next Steps
-
-Port does not exist. Consider creating a new port:
-```powershell
-/create-port https://github.com/example/nonexistent-lib
-```
-```
-
-## Work Note Entry
-
-```markdown
-## 2025-11-26 10:40:23 - /search-port
-
-✅ Port search completed
-- Query: openssl3
-- Found in local registry: Yes (v3.0.15)
-- Found in upstream: Yes (v3.0.13)
-- Local has newer version
-```
-
-### For Not Found
-
-```markdown
-## 2025-11-26 10:48:45 - /search-port
-
-✅ Port search completed
-- Query: nonexistent-lib
-- Found in local registry: No
-- Found in upstream: No
-- Project exists on GitHub: Yes (v1.2.3)
-- Suggested action: Create new port
-```
+This specification replaces previous illustrative examples; generate only live data.

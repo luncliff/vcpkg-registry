@@ -2,7 +2,7 @@
 description: 'Install vcpkg port with overlay-ports and analyze build logs'
 agent: 'agent'
 tools: ['edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal']
-model: Claude Haiku 4.5 (copilot)
+model: GPT-5 mini (copilot)
 ---
 
 # Install Port
@@ -193,56 +193,103 @@ Install opencv4[opengl] with x64-windows triplet
 
 ## Reporting
 
-The followings code snippets are example.
+Replace example reports with a deterministic structure. The agent MUST output a markdown document with the headings below (in order). Every heading must appear; use `None` when no data. Keep bullets concise; avoid narrative paragraphs.
 
-### Successful Installation
+### Required Top-Level Headings
+1. `# Port Installation Report`
+2. `## Summary`
+3. `## Command`
+4. `## Result`
+5. `## Artifacts`
+6. `## Usage`
+7. `## Errors` (only if failed; still emit if success → `None`)
+8. `## Diagnostics` (log locations / key patterns)
+9. `## Recommendations`
+10. `## Next Steps`
+11. `## Work Note Entry`
 
-Suggest the next steps:
+### 1. Summary
+- Port Specification: `<name>[features]:<triplet>` or `<name>:<triplet>`
+- Timestamp: ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
+- Mode: `editable` | `standard`
+- Outcome: `SUCCESS` | `FAILURE`
+- Duration: `Xm Ys` or `unknown`
 
-1. Review port with `/review-port openssl3` to validate against guidelines
-2. Add version to registry: `./scripts/registry-add-version.ps1 -PortName "openssl3"`
+### 2. Command
+Single fenced block with exact invocation used (powershell form). No explanatory text.
 
+### 3. Result
+- Status icon: ✅ success / ❌ failure
+- Dependencies Built: count and primary names (max 5 then `+N more`)
+- Features Enabled: list or `None`
+- Cached Sources Used: yes/no (if parseable)
 
-### Installation with Features
+### 4. Artifacts (success only; if failure emit planned paths or `None`)
+- Include Headers: path or `None`
+- Libraries: list of produced libs (trim to first 5) or `None`
+- Binaries: dll/so/dylib list (trim) or `None`
 
-### Installation Failed - CMake Configuration Error
+### 5. Usage
+- If `usage` file exists: include its first 10 lines in fenced `cmake`
+- Else if CMake config likely (installed `*.cmake` under `share/<port>`): emit generic `find_package(<Port> CONFIG REQUIRED)` snippet
+- Else: `None`
 
+### 6. Errors (failure case)
+- Primary Error Type: `CMake`, `Compiler`, `Linker`, `Dependency`, `Platform`, `Unknown`
+- First Error Line (verbatim)
+- Count (approx if parsed) or `unknown`
+Success case: `None`
 
-### Installation Failed - Compiler Error
+### 7. Diagnostics
+- Log Files Checked: list relative paths present
+- Highlighted Patterns: bullet key tokens found (e.g., `Could NOT find`, `undefined reference`, `error C2065`)
+- Missing Dependencies: list or `None`
 
-### Next Steps
+### 8. Recommendations
+Provide actionable fixes (failure) or follow-up (success). Bullets only:
+- Failure: add missing dependency, patch suggestion, environment var export, triplet adjustment
+- Success: review port, add version, run depend-info
+If none: `None`
 
-1. Update `ports/cpuinfo/portfile.cmake` with fix
-2. Retry installation: `/install-port cpuinfo`
+### 9. Next Steps
+- Ordered short list; first item is highest priority
+- Failure example order: Fix manifest → Re-run install → Consider patches
+- Success example order: /review-port → add version → optional feature tests
 
-
-### Installation Failed - Missing Patch
-
-
-## Work Note Entry
-
-### Success
-
-```markdown
-## 2025-11-26 12:05:30 - /install-port
-
-✅ Installation successful
-- Port: openssl3:x64-windows
-- Duration: 2m 45s
-- Dependencies: 2 built
-- Output: installed/x64-windows/
-- Next: Review port with /review-port
+### 10. Work Note Entry
+Ready-to-append block:
+```
+## <timestamp UTC> - /install-port
+Port: <spec>
+Outcome: SUCCESS|FAILURE
+Duration: <value>
+Dependencies: <count>
+Features: <list|None>
+Errors: <count|None>
+Primary Error: <type|None>
+Next: <primary next action>
 ```
 
-### Failure
+### Conventions
+- Icons: ✅ success, ❌ failure, ⚠️ warning (non-blocking issues)
+- Trim lists >5 items with ellipsis `... (+N more)`
+- Do not dump entire build logs; reference path only
+- All paths relative to workspace root
+- Keep each bullet ≤120 characters
 
-```markdown
-## 2025-11-26 12:15:45 - /install-port
+### Error Classification Rules
+- CMake: contains `CMake Error` or `Could NOT find`
+- Compiler: `error C` (MSVC) or `error:` (gcc/clang) lines
+- Linker: `unresolved external symbol` / `undefined reference`
+- Dependency: manifest missing required library detected in error
+- Platform: environment/SDK variables missing (e.g., ANDROID_NDK_HOME)
+- Unknown: none of the above matched
 
-❌ Installation failed
-- Port: tensorflow-lite:x64-windows
-- Error: Missing dependency (abseil)
-- Log: buildtrees/tensorflow-lite/config-x64-windows-out.log
-- Fix: Add abseil to vcpkg.json dependencies
-- Retry: After fixing dependencies
-```
+### Feature Handling
+Parse feature spec inside brackets. If requested feature absent in manifest, classify as `Dependency` error and recommend manifest update.
+
+### Non-Blocking Warnings
+- Uppercase library filenames mismatch expected naming
+- Absence of usage file when port installs only headers
+
+This specification replaces prior example reports; emit only live execution data.

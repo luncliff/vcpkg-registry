@@ -99,72 +99,97 @@ This prompt requires no user input arguments. It automatically detects the curre
 
 ## Reporting
 
-### Report Format
+Replace example outputs with a deterministic specification. The agent MUST emit a markdown report containing the headings below (in order). Emit all headings; if a section has no data write `None`. Keep bullets concise (≤120 chars). Use tables only when listing >5 tools or >5 command translations.
 
-Use the same sections of the following markdown report example.
+### Required Top-Level Headings
+1. `# Environment Check Report`
+2. `## Summary`
+3. `## System`
+4. `## Shell`
+5. `## Tools`
+6. `## Cross-Platform Translations`
+7. `## Status`
+8. `## Recommendations`
+9. `## Next Steps`
+10. `## Work Note Entry`
 
-```markdown
-# Environment Check Report
+### 1. Summary
+- Timestamp: ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
+- OS Family: `Windows` | `Linux` | `macOS`
+- Architecture: `x64` | `arm64` | etc.
+- Shell: name + version
+- Outcome: `READY` | `WARN` | `ERROR`
 
-Date: 2025-11-26 10:30:45
+### 2. System
+- OS Detailed: version/build string
+- Hostname: or `None`
+- Kernel (Unix): `uname -r` or `None`
+- Distribution (Linux): from `/etc/os-release` or `None`
 
-## System Information
+### 3. Shell
+- Shell Name: `PowerShell` | `bash` | `zsh` | other
+- Version: parsed value
+- Edition (PowerShell): `Desktop` | `Core` | `None`
+- Minimum Requirement (PowerShell ≥7.1): met ✅ / unmet ❌ / not applicable
 
-✅ Operating System: Windows 11 (Build 22631)
-✅ Architecture: x64
-✅ Hostname: dev-machine
+### 4. Tools
+List detected development tools (git, cmake, curl, python optional):
+- git: version or `missing`
+- cmake: version or `missing`
+- curl: version or `missing`
+- python: version or `missing` (optional)
+If more than 5, use table.
 
-## Shell Environment
-
-✅ Shell: PowerShell Core (pwsh)
-✅ Version: 7.4.0
-✅ Edition: Core
-
-## Development Tools
-
-✅ Git: 2.43.0
-✅ CMake: 3.28.1
-✅ Curl: 8.5.0
-
-## Status Summary
-
-- ✅ System ready for vcpkg development
-- ⚠️ Minimum PowerShell version (7.1+): Met (7.4.0)
-
-## Cross-Platform Notes
-
-Detected Windows environment. All commands shown will use PowerShell syntax.
-
-For Bash/Zsh environments, use these equivalent commands:
-- `$env:VCPKG_ROOT` → `$VCPKG_ROOT`
+### 5. Cross-Platform Translations
+Only emit if shell ≠ PowerShell OR user is on non-Windows:
+Bullets mapping common PowerShell commands to bash/zsh equivalents:
+- `$env:VAR` → `$VAR`
 - `Get-ChildItem Env:` → `env | sort`
-- `Test-Path <path>` → `[ -e <path> ] && echo true`
+- `Test-Path <path>` → `[ -e <path> ]`
+- `Get-Command name` → `command -v name`
+- `Remove-Item path` → `rm -rf path`
+If Windows/PowerShell: `None` (note PowerShell is native).
+
+### 6. Status
+- Readiness: one line summary (e.g., `All required tools present`)
+- Warnings: list (e.g., outdated PowerShell, missing optional tool) or `None`
+- Errors: blocking issues (missing git/cmake) or `None`
+
+### 7. Recommendations
+Prioritized actions:
+- Install missing tools
+- Upgrade PowerShell if <7.1
+- Add optional tools (python) if port development requires
+`None` if no actions.
+
+### 8. Next Steps
+Ordered list (max 5):
+- If READY: suggest `/check-vcpkg-environment`
+- If WARN: perform upgrades then re-run check
+- If ERROR: install missing tools first
+
+### 9. Work Note Entry
+Append block:
+```
+## <timestamp UTC> - /check-environment
+OS: <family> <arch>
+Shell: <name> <version>
+Outcome: READY|WARN|ERROR
+MissingTools: <list|None>
+Next: <primary action>
 ```
 
-### For Non-Windows Environments
+### Conventions
+- Icons: ✅ present, ⚠️ warning, ❌ error
+- Do not include full multi-line system dumps; extract key fields only
+- All versions raw from tool output without extra parsing beyond first token
 
-Additional section with command translations:
+### Non-Blocking Warnings
+- PowerShell version ≥7.0 but <7.1
+- Missing optional tools (python) not strictly required
 
-```markdown
-## Command Translation Guide
+### Blocking Errors
+- git or cmake missing
+- Shell detection failed (no command execution)
 
-Your system uses Bash/Zsh. Use these equivalents for PowerShell commands shown in prompts:
-
-| PowerShell | Bash/Zsh |
-|------------|----------|
-| `$env:VAR` | `$VAR` |
-| `Get-ChildItem Env:` | `env \| sort` |
-| `Test-Path <path>` | `[ -e <path> ] && echo true` |
-| `Get-Command vcpkg` | `command -v vcpkg` |
-```
-
-## Work Note Entry
-
-```markdown
-## 2025-11-26 10:30:45 - /check-environment
-
-✅ Environment detected successfully
-- OS: Windows 11 x64
-- Shell: PowerShell 7.4.0
-- Development tools: git, cmake, curl verified
-```
+This specification replaces previous example reports; output only real environment data.

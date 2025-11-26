@@ -205,360 +205,107 @@ Validate cpuinfo port files
 
 ## Reporting
 
-### Review Passed
+Replace example-filled output with a structured, deterministic report. The agent MUST emit a markdown document with the following top-level headings (in order) and required subsections. Each heading must be present even if the section is empty; write `None` for empty content. Avoid embellishment; focus on factual validation results.
 
-```markdown
-# Port Review Report
+### Required Headings
+1. `# Port Review Report` (title)
+2. `## Summary`
+3. `## File Inventory`
+4. `## vcpkg.json Validation`
+5. `## portfile.cmake Validation`
+6. `## Additional Files`
+7. `## Baseline Check`
+8. `## Issues Summary`
+9. `## Recommendations`
+10. `## Next Steps`
 
-**Port**: `cpuinfo`
-**Date**: 2025-11-26 13:10:30
+### 1. Summary
+- Port: `<name>`
+- Date: `<UTC timestamp>`
+- Overall Result: `PASS` | `PASS (experimental)` | `FAIL`
+- Experimental Notes: present only if embedded CMakeLists.txt or non-standard approach detected
 
-## Overall Result
+### 2. File Inventory
+List each relevant file with status icon:
+- ✅ present and valid
+- ⚠️ present with warnings
+- ❌ missing or invalid
+Include: `vcpkg.json`, `portfile.cmake`, `usage`, patch files (`*.patch`), embedded `CMakeLists.txt`, license/copyright artifacts, auxiliary build scripts.
 
-✅ **PASS** - Port meets guidelines
+### 3. vcpkg.json Validation
+Subsections (always emit):
+- Required Fields: enumerate `name`, `version*|version-date|version-semver`, `description`
+- Optional Fields: `homepage`, `license`, `supports`, `features`
+- Version Format: note schema compliance, tag stripping, absence of leading `v`
+- Dependencies: list each with host/tool flags correctness
+- Features: list or `None`; validate naming & dependency chains
+Each item annotated with ✅/⚠️/❌ and concise rationale for non-✅.
 
-## File Inventory
+### 4. portfile.cmake Validation
+Subsections:
+- Source Acquisition: method used, REF strategy, SHA512 length/format, HEAD_REF presence
+- Build Helpers: usage of official helper functions (configure/install/fixup)
+- Installation Cleanup: removal of debug artifacts (`debug/include`, `debug/share`)
+- Patch Handling: PATCHES argument or `vcpkg_apply_patches` usage
+- Copyright: use of `vcpkg_install_copyright`
+- Deprecated Usage: list deprecated functions if found or `None`
 
-- ✅ `vcpkg.json` (277 bytes)
-- ✅ `portfile.cmake` (531 bytes)
-- ✅ `usage` (185 bytes)
+### 5. Additional Files
+Report on:
+- `usage` file: presence & clarity (find_package + target_link_libraries)
+- Embedded `CMakeLists.txt`: experimental note + upstream conversion reminder
+- Patch Files: list each with brief purpose (derived from filename or comments)
+- Unnecessary Files: binaries/large assets; list or `None`
 
-## vcpkg.json Validation
+### 6. Baseline Check
+- Baseline Entry: present/missing
+- Version History File: path and presence
+- Latest Version Match: whether `vcpkg.json` version matches top entry
 
-### Required Fields
-- ✅ `name`: "cpuinfo"
-- ✅ `version`: "2023-08-02"
-- ✅ `description`: "CPU INFOrmation library (x86/x86-64/ARM/ARM64, Linux/Windows/Android/macOS/iOS)"
+### 7. Issues Summary
+Split into:
+- Critical Issues: must fix before PASS (blocking schema errors, missing version, invalid SHA512, absent source acquisition, baseline absence when required)
+- Warnings: recommended improvements (missing optional fields, uppercase SHA512, lack of usage file, deprecated helper usage)
+Enumerate each with short actionable fix snippet (JSON/CMake line).
 
-### Optional Fields
-- ✅ `homepage`: "https://github.com/pytorch/cpuinfo"
-- ✅ `license`: "BSD-2-Clause"
+### 8. Recommendations
+High-level improvement suggestions (e.g., "Add usage file", "Convert embedded CMakeLists.txt to patch for upstream"). If none, state `None`.
 
-### Dependencies
-- ✅ `vcpkg-cmake` (host tool)
-- ✅ `vcpkg-cmake-config` (host tool)
+### 9. Next Steps
+Branch based:
+- PASS: suggest optional actions (add version if updated, run install test)
+- PASS (experimental): include upstream conversion reminder
+- FAIL: ordered list: fix critical issues → re-run review.
 
-### Version Format
-- ✅ Uses date format: "2023-08-02"
-- ✅ No leading 'v'
+### Severity Classification Rules
+- Critical: Violates schema, prevents reproducible build, or breaks registry versioning
+- Warning: Quality / guideline deviation but build likely succeeds
+- Recommendation: Non-mandatory enhancement, stylistic or future-proofing
 
-## portfile.cmake Validation
+### Output Conventions
+- Use consistent emoji indicators ✅/⚠️/❌
+- Prefer bullet lists; avoid tables unless multiple patches (>3)
+- Keep code snippets minimal (single line) unless clarity demands more
+- Timestamp in ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
 
-### Source Acquisition
-- ✅ Uses `vcpkg_from_github`
-- ✅ `REPO`: pytorch/cpuinfo
-- ✅ `REF`: ${VERSION}
-- ✅ `SHA512`: Valid (128 characters, lowercase)
-- ✅ `HEAD_REF`: main
-
-### Build System
-- ✅ Uses `vcpkg_cmake_configure`
-- ✅ Uses `vcpkg_cmake_install`
-- ✅ Uses `vcpkg_cmake_config_fixup`
-
-### Installation Cleanup
-- ✅ Removes debug headers
-- ✅ Removes debug share
-
-### Copyright
-- ✅ Uses `vcpkg_install_copyright(FILE_LIST ...)`
-- ✅ LICENSE path correct
-
-## Additional Files
-
-### usage
-- ✅ Present and well-documented
-- ✅ Provides CMake example:
-  ```cmake
-  find_package(cpuinfo CONFIG REQUIRED)
-  target_link_libraries(main PRIVATE cpuinfo::cpuinfo)
-  ```
-
-## Baseline Check
-
-- ✅ Listed in `versions/baseline.json`
-- ✅ Version history in `versions/c-/cpuinfo.json`
-
-## Recommendations
-
-✅ No issues found. Port is ready for use.
-
-## Next Steps
-
-Port passed review. You can now:
-1. Use the port in projects
-2. Update baseline if version changed: `./scripts/registry-add-version.ps1 -PortName "cpuinfo"`
+### Work Note Entry Format
+Append to `work-note.md` (agent):
+```
+## <timestamp UTC> - /review-port <port>[, <port>...]
+Result: PASS | PASS (experimental) | FAIL
+Critical: <count>
+Warnings: <count>
+Experimental: yes|no
+Next: <concise next action>
 ```
 
-### Review Failed - vcpkg.json Issues
+### Multi-Port Review
+If multiple ports requested, produce one consolidated document with a `## Port: <name>` block repeating sections 2–7 per port, then a global Issues Summary / Recommendations / Next Steps.
 
-```markdown
-# Port Review Report
+### Non-Blocking Omissions
+If a port intentionally omits a `usage` file (no exported targets), mark usage as `None (library has no CMake config)` not as a warning.
 
-**Port**: `example-lib`
-**Date**: 2025-11-26 13:15:45
+### SHA512 Validation Rule
+Length must be 128 hex chars; case-insensitive match permitted but flag uppercase as warning.
 
-## Overall Result
-
-❌ **FAIL** - Critical issues found
-
-## File Inventory
-
-- ⚠️ `vcpkg.json` (incomplete)
-- ✅ `portfile.cmake`
-- ❌ `usage` (missing)
-
-## vcpkg.json Validation
-
-### Required Fields
-- ✅ `name`: "example-lib"
-- ❌ **MISSING**: `version`
-- ✅ `description`: "Example library"
-
-### Optional Fields
-- ❌ **MISSING**: `homepage` (recommended)
-- ⚠️ `license`: Not specified (recommended)
-
-### Dependencies
-- ⚠️ `zlib`: Should specify build tool platform
-  - Fix: Use `{ "name": "vcpkg-cmake", "host": true }`
-
-### Version Format
-- ❌ **ERROR**: No version field present
-  - Fix: Add `"version": "1.0.0"` to vcpkg.json
-
-## portfile.cmake Validation
-
-### Source Acquisition
-- ✅ Uses `vcpkg_from_github`
-- ⚠️ `SHA512`: Uses uppercase (prefer lowercase)
-  - Fix: Convert SHA512 to lowercase
-
-### Build System
-- ✅ Uses `vcpkg_cmake_configure`
-- ✅ Uses `vcpkg_cmake_install`
-- ✅ Uses `vcpkg_cmake_config_fixup`
-
-### Installation Cleanup
-- ✅ Removes debug headers
-- ❌ **MISSING**: Debug share removal
-  - Fix: Add `file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")`
-
-### Copyright
-- ⚠️ Uses deprecated `file(INSTALL ... RENAME copyright)`
-  - Fix: Use `vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")`
-
-## Additional Files
-
-### usage
-- ❌ **MISSING**: No usage file
-  - Recommendation: Create `ports/example-lib/usage` with CMake example
-
-## Baseline Check
-
-- ❌ **NOT LISTED**: Port not in `versions/baseline.json`
-  - Fix: Run `./scripts/registry-add-version.ps1 -PortName "example-lib"`
-
-## Critical Issues (Must Fix)
-
-1. **Missing version field in vcpkg.json**
-   ```json
-   {
-     "name": "example-lib",
-     "version": "1.0.0",
-     ...
-   }
-   ```
-
-2. **Missing debug share removal in portfile.cmake**
-   ```cmake
-   file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
-   file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
-   ```
-
-3. **Port not in baseline** - Run registry-add-version.ps1
-
-## Warnings (Recommended Fixes)
-
-1. **Add homepage to vcpkg.json**
-   ```json
-   "homepage": "https://github.com/owner/example-lib"
-   ```
-
-2. **Add license to vcpkg.json**
-   ```json
-   "license": "MIT"
-   ```
-
-3. **Modernize copyright installation**
-   ```cmake
-   vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
-   ```
-
-4. **Convert SHA512 to lowercase**
-
-5. **Create usage file** with CMake example
-
-## Next Steps
-
-1. Fix critical issues
-2. Re-run `/review-port example-lib`
-3. After passing review, test with `/install-port example-lib`
-```
-
-### Review with Experimental Features
-
-```markdown
-# Port Review Report
-
-**Port**: `farmhash`
-**Date**: 2025-11-26 13:20:15
-
-## Overall Result
-
-✅ **PASS** (with experimental features)
-
-## File Inventory
-
-- ✅ `vcpkg.json`
-- ✅ `portfile.cmake`
-- ⚠️ **Experimental**: `CMakeLists.txt` (embedded)
-
-## vcpkg.json Validation
-
-✅ All required fields present
-
-## portfile.cmake Validation
-
-### Source Acquisition
-- ✅ Uses `vcpkg_from_github`
-- ✅ SHA512 valid
-
-### Experimental: Embedded CMakeLists.txt
-- ⚠️ Port uses embedded `CMakeLists.txt` approach
-- File copied to source during build: `file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")`
-
-**Rationale** (from copilot-instructions.md):
-- Original build system too complex (autotools)
-- Embedded approach simplifies maintenance
-- Acceptable for experimental/private registries
-
-**Upstream Contribution Warning**:
-If contributing to microsoft/vcpkg, convert embedded CMakeLists.txt to patch files:
-1. Generate patch: `git diff` or `diff` tools
-2. Replace `file(COPY ...)` with `vcpkg_apply_patches`
-3. Follow upstream guidelines
-
-### Build System
-- ✅ Uses `vcpkg_cmake_configure`
-- ✅ Uses `vcpkg_cmake_install`
-
-### Copyright
-- ✅ Uses `vcpkg_install_copyright`
-
-## Recommendations
-
-✅ Port follows repository guidelines (allows experimental approaches)
-
-⚠️ **If contributing upstream**: Convert embedded CMakeLists.txt to patch
-
-## Next Steps
-
-Port passed review. Experimental feature documented and justified.
-```
-
-### Review with Patch Files
-
-```markdown
-# Port Review Report
-
-**Port**: `tensorflow-lite`
-**Date**: 2025-11-26 13:25:30
-
-## Overall Result
-
-✅ **PASS**
-
-## File Inventory
-
-- ✅ `vcpkg.json`
-- ✅ `portfile.cmake`
-- ✅ `usage`
-- ✅ `fix-msvc-build.patch`
-- ✅ `fix-android-build.patch`
-
-## vcpkg.json Validation
-
-✅ All fields valid
-
-## portfile.cmake Validation
-
-### Patch Application
-- ✅ Uses `PATCHES` argument in `vcpkg_from_github`:
-  ```cmake
-  vcpkg_from_github(
-      OUT_SOURCE_PATH SOURCE_PATH
-      REPO tensorflow/tensorflow
-      REF v${VERSION}
-      SHA512 ...
-      HEAD_REF master
-      PATCHES
-          fix-msvc-build.patch
-          fix-android-build.patch
-  )
-  ```
-
-### Patch Files
-
-#### fix-msvc-build.patch
-- ✅ Descriptive filename
-- ✅ Purpose documented in portfile comments
-- Purpose: Fix MSVC `/permissive-` compiler errors
-
-#### fix-android-build.patch
-- ✅ Descriptive filename
-- ✅ Purpose documented
-- Purpose: Add Android NDK detection
-
-### Build System
-- ✅ Uses vcpkg CMake helpers
-
-### Copyright
-- ✅ Uses `vcpkg_install_copyright`
-
-## Recommendations
-
-✅ Patches well-documented and necessary
-
-✅ Port follows best practices
-
-## Next Steps
-
-Port passed review with properly maintained patches.
-```
-
-## Work Note Entry
-
-### Pass
-
-```markdown
-## 2025-11-26 13:10:30 - /review-port
-
-✅ Review passed
-- Port: cpuinfo
-- Issues: None
-- Recommendations: None
-- Status: Ready for use
-```
-
-### Fail
-
-```markdown
-## 2025-11-26 13:15:45 - /review-port
-
-❌ Review failed
-- Port: example-lib
-- Critical issues: 3 (missing version, missing debug cleanup, not in baseline)
-- Warnings: 5 (missing homepage, license, usage file, etc.)
-- Next: Fix critical issues and re-run review
-```
+This specification replaces prior illustrative examples. Do not embed sample reports—emit only live analysis per execution.

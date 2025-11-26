@@ -165,304 +165,139 @@ Check for newer versions of tensorflow-lite
 
 ## Reporting
 
-### Port Up-to-Date
+Replace example reports with a deterministic specification. The agent MUST output a markdown document with required headings below (in order). Emit all headings even if a section is empty (use `None`). Keep bullets concise (≤120 chars). Tables only when comparing ≥2 sources or batch mode.
 
-```markdown
-# Port Upstream Check
+### Required Top-Level Headings (Single Port)
+1. `# Port Upstream Check Report`
+2. `## Summary`
+3. `## Sources`
+4. `## Versions`
+5. `## Comparison`
+6. `## Release Details`
+7. `## Breaking Change Indicators`
+8. `## Status`
+9. `## Recommendations`
+10. `## Next Steps`
+11. `## Work Note Entry`
 
-**Port**: `cpuinfo`
-**Date**: 2025-11-26 14:05:30
+### 1. Summary
+- Port: `<name>`
+- Timestamp: ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
+- Outcome: `UP-TO-DATE` | `PATCH AVAILABLE` | `MAJOR UPDATE` | `AHEAD OF UPSTREAM` | `NOT FOUND`
+- Local Version: `<value>`
+- Upstream Latest: `<value|None>`
+- microsoft/vcpkg Version: `<value|None>`
 
-## Version Comparison
+### 2. Sources
+- Homepage: URL or `None`
+- GitHub Repo: `owner/repo` or `None`
+- Release Source Type: `release` | `tag` | `commit-snapshot`
 
-| Source | Version | Status |
-|--------|---------|--------|
-| **Local Registry** | 2023-08-02 | ✅ Current |
-| **Upstream Project** | 2023-08-02 | ✅ Same |
-| **microsoft/vcpkg** | 2023-08-02 | ✅ Same |
+### 3. Versions
+Bullet or mini-table of:
+- Local: `<version>` (normalized form)
+- Upstream Project: `<version>` (raw tag + normalized)
+- microsoft/vcpkg: `<version|None>`
+- REF Pattern: from portfile (`v${VERSION}` / `${VERSION}` / `<name>-${VERSION}` / commit SHA)
 
-## Upstream Project
+### 4. Comparison
+- Local vs Upstream: `equal` | `behind` | `ahead`
+- Local vs microsoft/vcpkg: `equal` | `newer` | `older` | `absent`
+- Upstream vs microsoft/vcpkg: `equal` | `upstream newer` | `upstream older`
+- Version Age (days since upstream release): `<n>` or `unknown`
 
-- **Repository**: https://github.com/pytorch/cpuinfo
-- **Latest Release**: 2023-08-02
-- **Release Date**: 2023-08-02
-- **Release Age**: 480 days ago
+### 5. Release Details
+- Latest Tag: `<tag>`
+- Release Date: `<YYYY-MM-DD>` or `unknown`
+- Tag Prefix Handling: how normalized (e.g., strip `v`, strip `openssl-`)
+- Changelog Files Found: list or `None`
 
-## Status
+### 6. Breaking Change Indicators
+Scan changelog lines (if fetched) for keywords:
+- Keywords Found: list (`breaking`, `deprecated`, `removed`, `incompatible`) or `None`
+- Potential Risk: `low` | `medium` | `high` (heuristic: major bump or keyword presence)
 
-✅ **Port is up-to-date**
+### 7. Status
+- Classification: one line summary (e.g., `Local behind upstream by 2 patch versions`)
+- Security Fix Mention: yes/no/unknown (if keywords `CVE`, `security` present)
 
-Local registry is using the latest upstream version.
+### 8. Recommendations
+Prioritized actionable bullets:
+- Upgrade command suggestion (`/upgrade-port <name> <version>`) if behind
+- Delay suggestion for major bump (advise review / separate port)
+- Contribute upstream (if local ahead of microsoft/vcpkg)
+- Re-check later (if no upstream release for long period)
+If none: `None`
 
-## Next Steps
+### 9. Next Steps
+Ordered list (max 5) tailored to outcome:
+- PATCH AVAILABLE: upgrade → test → add version
+- MAJOR UPDATE: review breaking changes → consider separate port → optional upgrade test
+- AHEAD OF UPSTREAM VCPKG: consider contribution PR
+- UP-TO-DATE: optional periodic recheck
+- NOT FOUND: verify homepage or port name
 
-No updates needed at this time.
-
-Check again periodically for new releases.
+### 10. Work Note Entry
+Append block:
+```
+## <timestamp UTC> - /check-port-upstream
+Port: <name>
+Local: <version>
+Upstream: <version|None>
+Vcpkg: <version|None>
+Outcome: UP-TO-DATE|PATCH|MAJOR|AHEAD|NOT-FOUND
+Age: <days|unknown>
+Next: <primary action>
 ```
 
-### Port Behind Upstream
+### Batch Mode (Multiple Ports)
+Add headings after Summary:
+12. `## Batch Summary`
+13. `## Ports Requiring Action`
+14. `## Up-to-Date Ports`
+15. `## Work Note Entry (Batch)`
 
-```markdown
-# Port Upstream Check
+Batch Summary Table Columns:
+- Port | Local | Upstream | Vcpkg | Status (short code: OK / PATCH / MAJOR / AHEAD / MISS)
 
-**Port**: `openssl3`
-**Date**: 2025-11-26 14:10:15
+Ports Requiring Action: detailed bullets (one line each):
+- `<port>`: local `<x>` → upstream `<y>` (reason: security|patch|major)
 
-## Version Comparison
+Up-to-Date Ports: list or `None`
 
-| Source | Version | Status |
-|--------|---------|--------|
-| **Local Registry** | 3.0.13 | ⚠️ **Behind** |
-| **Upstream Project** | 3.0.15 | ✅ Latest |
-| **microsoft/vcpkg** | 3.0.13 | ⚠️ Behind |
-
-## Upstream Project
-
-- **Repository**: https://github.com/openssl/openssl
-- **Latest Release**: openssl-3.0.15
-- **Release Date**: 2024-09-03
-- **Release Age**: 85 days ago
-
-## Release Notes
-
-https://github.com/openssl/openssl/releases/tag/openssl-3.0.15
-
-### Highlights
-- Security fixes for CVE-2024-XXXX
-- Performance improvements in TLS 1.3
-- Bug fixes for Windows builds
-
-## Status
-
-⚠️ **Update Available**
-
-Upstream project has 2 newer patch versions (3.0.13 → 3.0.15)
-
-## Upgrade Path
-
-### Option 1: Update Local Port
-```powershell
-/upgrade-port openssl3 3.0.15
+Batch Work Note Block:
+```
+## <timestamp UTC> - /check-port-upstream (batch)
+Checked: <count>
+Patch: <count>
+Major: <count>
+Ahead: <count>
+UpToDate: <count>
+Missing: <count>
+Priority: <first recommended port>
 ```
 
-### Option 2: Wait for microsoft/vcpkg
-- microsoft/vcpkg is also behind
-- May want to wait for upstream vcpkg update
-- Check microsoft/vcpkg issues: https://github.com/microsoft/vcpkg/issues?q=openssl3
-
-## Breaking Changes
-
-⚠️ Review release notes for compatibility:
-- https://github.com/openssl/openssl/releases/tag/openssl-3.0.14
-- https://github.com/openssl/openssl/releases/tag/openssl-3.0.15
-
-No major breaking changes reported.
-
-## Next Steps
-
-**Recommended**: Update port to 3.0.15 (security fixes)
-
-```powershell
-/upgrade-port openssl3 3.0.15
-```
-
-After upgrade, test installation:
-```powershell
-/install-port openssl3
-```
-```
-
-### Port Ahead of microsoft/vcpkg
-
-```markdown
-# Port Upstream Check
-
-**Port**: `tensorflow-lite`
-**Date**: 2025-11-26 14:15:45
-
-## Version Comparison
-
-| Source | Version | Status |
-|--------|---------|--------|
-| **Local Registry** | 2.14.0 | ✅ Latest |
-| **Upstream Project** | 2.14.0 | ✅ Same |
-| **microsoft/vcpkg** | 2.10.0 | ⚠️ Behind (4 versions) |
-
-## Upstream Project
-
-- **Repository**: https://github.com/tensorflow/tensorflow
-- **Latest Release**: v2.14.0
-- **Release Date**: 2023-09-18
-- **Release Age**: 435 days ago
-
-## Status
-
-✅ **Local Registry is Up-to-Date**
-
-Local registry has the latest upstream version.
-
-**Note**: microsoft/vcpkg is behind by 4 versions (2.10.0 vs. 2.14.0)
-
-## microsoft/vcpkg Status
-
-Local registry provides newer version than upstream vcpkg.
-
-Consider contributing updated port to microsoft/vcpkg:
-1. Review contribution guidelines: https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md
-2. Create PR with updated port
-3. Reference: https://github.com/microsoft/vcpkg/tree/master/ports/tensorflow-lite
-
-## Next Steps
-
-✅ No updates needed
-
-Optionally contribute to microsoft/vcpkg to help community.
-```
-
-### Major Version Available
-
-```markdown
-# Port Upstream Check
-
-**Port**: `zlib-ng`
-**Date**: 2025-11-26 14:20:30
-
-## Version Comparison
-
-| Source | Version | Status |
-|--------|---------|--------|
-| **Local Registry** | 2.1.7 | ⚠️ **Major Update Available** |
-| **Upstream Project** | 3.0.2 | ✅ Latest (major bump) |
-| **microsoft/vcpkg** | 2.1.7 | ⚠️ Behind |
-
-## Upstream Project
-
-- **Repository**: https://github.com/zlib-ng/zlib-ng
-- **Latest Release**: v3.0.2
-- **Release Date**: 2024-10-15
-- **Release Age**: 42 days ago
-
-## Major Version Change
-
-⚠️ **Major version bump detected: 2.x → 3.x**
-
-## Breaking Changes
-
-Review release notes carefully:
-- https://github.com/zlib-ng/zlib-ng/releases/tag/3.0.0
-- https://github.com/zlib-ng/zlib-ng/releases/tag/3.0.1
-- https://github.com/zlib-ng/zlib-ng/releases/tag/3.0.2
-
-### Known Changes
-- API changes in compression functions
-- Performance improvements
-- New features: ...
-
-## Upgrade Considerations
-
-**Test Thoroughly Before Upgrading**:
-1. Major version may have breaking API changes
-2. Dependent ports may need updates
-3. Consider creating separate port (`zlib-ng3`) if needed
-
-## Dependency Impact
-
-Check ports depending on `zlib-ng`:
-```powershell
-vcpkg depend-info zlib-ng --overlay-ports ./ports
-```
-
-## Next Steps
-
-### Option 1: Upgrade to 3.0.2 (Breaking)
-```powershell
-/upgrade-port zlib-ng 3.0.2
-```
-
-**Risk**: May break dependent ports
-
-### Option 2: Create New Port (zlib-ng3)
-- Keep `zlib-ng` at 2.1.7 for compatibility
-- Create `zlib-ng3` for 3.x series
-- Allow gradual migration
-
-### Option 3: Wait for microsoft/vcpkg
-- Let upstream vcpkg handle major version
-- Adopt their approach
-
-**Recommendation**: Wait for microsoft/vcpkg guidance on major version handling
-```
-
-### Batch Check Results
-
-```markdown
-# Port Upstream Check (Batch)
-
-**Ports**: 5 ports checked
-**Date**: 2025-11-26 14:25:10
-
-## Summary
-
-| Port | Local | Upstream | Status |
-|------|-------|----------|--------|
-| openssl3 | 3.0.13 | 3.0.15 | ⚠️ Update available |
-| cpuinfo | 2023-08-02 | 2023-08-02 | ✅ Up-to-date |
-| tensorflow-lite | 2.14.0 | 2.14.0 | ✅ Up-to-date |
-| zlib-ng | 2.1.7 | 3.0.2 | ⚠️ Major update |
-| abseil | 20240116.0 | 20240116.2 | ⚠️ Update available |
-
-## Ports Needing Updates
-
-### 1. openssl3 (3.0.13 → 3.0.15)
-- **Urgency**: High (security fixes)
-- **Action**: `/upgrade-port openssl3 3.0.15`
-
-### 2. zlib-ng (2.1.7 → 3.0.2)
-- **Urgency**: Low (major version, breaking changes)
-- **Action**: Review changes, consider separate port
-
-### 3. abseil (20240116.0 → 20240116.2)
-- **Urgency**: Medium (patch update)
-- **Action**: `/upgrade-port abseil 20240116.2`
-
-## Ports Up-to-Date
-
-- ✅ cpuinfo
-- ✅ tensorflow-lite
-
-## Next Steps
-
-Prioritize security updates first:
-1. openssl3 (security fixes)
-2. abseil (patch update)
-3. zlib-ng (review major version changes)
-```
-
-## Work Note Entry
-
-### Up-to-Date
-
-```markdown
-## 2025-11-26 14:05:30 - /check-port-upstream
-
-✅ Version check completed
-- Port: cpuinfo
-- Local: 2023-08-02
-- Upstream: 2023-08-02
-- Status: Up-to-date
-```
-
-### Update Available
-
-```markdown
-## 2025-11-26 14:10:15 - /check-port-upstream
-
-⚠️ Update available
-- Port: openssl3
-- Local: 3.0.13
-- Upstream: 3.0.15
-- Age: 85 days
-- Changes: Security fixes
-- Recommendation: Update (high priority)
-```
+### Conventions
+- Icons: ✅ current, ⚠️ attention (behind/major/ahead), ❌ missing
+- Use tables only for `Versions` and batch summary; otherwise bullets
+- Normalize versions before comparison; preserve raw tag in Release Details
+- Do not dump full changelog; only list detected keywords
+
+### Normalization Rules
+- Strip leading `v` or `<name>-` prefixes from tags
+- Accept date formats and treat lexicographically for comparison if both date-based
+- Mixed date vs semver: report `incompatible format` under Comparison
+
+### Security Detection Heuristics
+- If release notes contain `CVE` or `security` → set Security Fix Mention = yes
+
+### Non-Blocking Conditions
+- Local ahead of microsoft/vcpkg but equal to upstream
+- Missing microsoft/vcpkg entry (private-only port)
+
+### Blocking / High Priority Conditions
+- Security fixes available
+- Behind by >0 patch versions (patch classification)
+- Major version bump (needs review rather than auto-upgrade)
+
+This specification replaces prior example reports; output only real comparison data.

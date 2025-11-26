@@ -152,114 +152,115 @@ No user input required. Automatically detects vcpkg configuration.
 
 ## Reporting
 
-### Report Format
+Replace example reports with a deterministic specification. The agent MUST output a markdown report using the headings below (in order). Emit all headings; if no data for a section write `None`. Keep bullets concise (≤120 chars). No tables unless >6 environment variables.
 
-Use the same sections of the following markdown report example.
+### Required Top-Level Headings
+1. `# vcpkg Environment Check Report`
+2. `## Summary`
+3. `## Installation`
+4. `## Version Status`
+5. `## Registry Structure`
+6. `## Configuration File`
+7. `## Environment Variables`
+8. `## Feature Flags`
+9. `## Diagnostics`
+10. `## Recommendations`
+11. `## Next Steps`
+12. `## Work Note Entry`
 
-```markdown
-# vcpkg Environment Check Report
+### 1. Summary
+- Timestamp: ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
+- Outcome: `OK` | `WARN` | `ERROR`
+- VCPKG_ROOT: path or `unset`
+- Executable Path: absolute path or `not found`
 
-Date: 2025-11-26 10:35:12
+### 2. Installation
+- Root Exists: ✅/❌
+- Executable Found: ✅/❌ (with path)
+- Toolchain File: exists ✅/❌ (`scripts/buildsystems/vcpkg.cmake`)
+- Critical Directories: `scripts` / `ports` / `triplets` presence ✅/❌
 
-## vcpkg Installation
+### 3. Version Status
+- Detected Version: raw string from `vcpkg --version`
+- Parsed Date Tag: `<YYYY-MM-DD>` or `unknown`
+- Minimum Recommended: `2025-06-20` (adjust if policy changes)
+- Status: `current` | `outdated` | `unknown`
+- Upgrade URL: `https://github.com/microsoft/vcpkg-tool/releases` (if outdated)
 
-✅ VCPKG_ROOT: `C:\vcpkg`
-✅ Executable Path: `C:\vcpkg\vcpkg.exe`
-✅ Version: 2025-06-20-abc123def456
-✅ Toolchain File: `C:\vcpkg\scripts\buildsystems\vcpkg.cmake` (exists)
+### 4. Registry Structure
+- Registry Root: workspace path
+- Ports Folder: exists ✅/❌ + count of immediate subdirs
+- Versions Folder: exists ✅/❌ + baseline.json ✅/❌
+- Triplets Folder: exists ✅/❌ + count of triplet files
 
-### Version Status
-⚠️ Recommendation: vcpkg-tool version 2025-06-20+ recommended. Current: 2024-06-15
-Consider upgrading: https://github.com/microsoft/vcpkg-tool/releases
+### 5. Configuration File
+- vcpkg-configuration.json: path or `None`
+- Registries Declared: count or `None`
+- Default Registry: short summary (baseline SHA prefix) or `None`
 
-## Registry Configuration
+### 6. Environment Variables
+List each `VCPKG_*` variable present:
+- `VCPKG_ROOT=...`
+- `VCPKG_FEATURE_FLAGS=...`
+- `VCPKG_OVERLAY_PORTS=...`
+- `VCPKG_OVERLAY_TRIPLETS=...`
+- `VCPKG_BINARY_SOURCES=...`
+If >6 total variables, table allowed; else bullets. Missing variables omitted.
 
-✅ Registry Root: `C:\Users\user\vcpkg-registry`
-✅ Ports Folder: `C:\Users\user\vcpkg-registry\ports` (exists)
-✅ Versions Folder: `C:\Users\user\vcpkg-registry\versions` (exists)
-✅ Triplets Folder: `C:\Users\user\vcpkg-registry\triplets` (exists)
-✅ Baseline File: `C:\Users\user\vcpkg-registry\versions\baseline.json` (exists)
+### 7. Feature Flags
+- Raw Value: comma list or `None`
+- Parsed Flags: bullet each with 1-line meaning (versions, registries, binarycaching, manifests, compilertracking, metrics)
+- Unknown Flags: list or `None`
 
-### vcpkg-configuration.json
-✅ Found at: `C:\Users\user\vcpkg-registry\vcpkg-configuration.json`
+### 8. Diagnostics
+- PATH Contains vcpkg: yes/no
+- Inferred Root From Executable: path or `None`
+- Searched Fallback Paths: list checked (only if not found) or `None`
+- Missing Components: list of absent critical items or `None`
 
-## Environment Variables
+### 9. Recommendations
+Bulleted actions prioritized:
+- Set VCPKG_ROOT
+- Upgrade vcpkg-tool
+- Add feature flags (if empty) for versioning/registries
+- Add baseline.json (if missing)
+- Verify overlay paths
+If nothing to recommend: `None`
 
-| Variable | Value |
-|----------|-------|
-| `VCPKG_ROOT` | `C:\vcpkg` |
-| `VCPKG_FEATURE_FLAGS` | `versions,registries` |
-| `VCPKG_OVERLAY_PORTS` | (not set) |
-| `VCPKG_OVERLAY_TRIPLETS` | (not set) |
-| `VCPKG_BINARY_SOURCES` | (not set) |
+### 10. Next Steps
+Ordered immediate suggestions:
+1. For ERROR: install or set VCPKG_ROOT
+2. For WARN (outdated): upgrade tool
+3. For OK: proceed to `/search-port` or `/create-port`
 
-### Feature Flags Explanation
-
-`VCPKG_FEATURE_FLAGS=versions,registries`
-
-- versions: Enables versioning support for precise dependency control
-- registries: Enables custom registry support for private ports
-
-## Status Summary
-
-✅ vcpkg is properly configured for registry development
-⚠️ Consider upgrading vcpkg-tool to 2025-06-20+
-
-## Next Steps
-
-Use absolute path for vcpkg if not in PATH: `C:\vcpkg\vcpkg.exe`
+### 11. Work Note Entry
+Append block:
+```
+## <timestamp UTC> - /check-vcpkg-environment
+Outcome: OK|WARN|ERROR
+Root: <path|unset>
+Version: <parsed|unknown>
+Outdated: yes|no
+FeatureFlags: <value|None>
+Next: <primary action>
 ```
 
-### When VCPKG_ROOT Not Set (Using Executable Path)
+### Conventions
+- Icons: ✅ present, ❌ missing, ⚠️ warning (outdated / partial)
+- Avoid full file dumps; only list counts & paths
+- Use relative workspace paths when referencing registry folders
+- Do not duplicate installation details already shown; keep each item single line
 
-```markdown
-## vcpkg Installation
+### Failure Mode (vcpkg not found)
+Still emit all headings. Populate Installation/Diagnostics with missing items and list resolution steps under Recommendations.
 
-⚠️ `VCPKG_ROOT`: Not set (using executable location)
-✅ Executable Path: `C:\vcpkg\vcpkg.exe`
-✅ Inferred `VCPKG_ROOT`: `C:\vcpkg`
-```
+### Non-Blocking Warnings
+- Outdated version but functional
+- Missing optional overlay variables
 
-### When vcpkg Not Found
+### Blocking Errors
+- Executable missing
+- Toolchain file absent
+- Root folder inaccessible
 
-```markdown
-## vcpkg Installation
-
-❌ Error: vcpkg not found
-
-### Resolution Steps
-
-1. Check `VCPKG_ROOT`: Ensure environment variable is set
-   ```powershell
-   $env:VCPKG_ROOT = "C:\path\to\vcpkg"
-   ```
-
-2. Add to PATH: Make vcpkg accessible
-   ```powershell
-   $env:PATH += ";C:\path\to\vcpkg"
-   ```
-
-3. Install vcpkg: If not installed
-   ```powershell
-   git clone https://github.com/microsoft/vcpkg
-   cd vcpkg
-   .\bootstrap-vcpkg.bat
-   ```
-
-4. Searched Locations:
-   - `C:\vcpkg` (not found)
-   - `C:\tools\vcpkg` (not found)
-   - `C:\src\vcpkg` (not found)
-```
-
-## Work Note Entry
-
-```markdown
-## 2025-11-26 10:35:12 - /check-vcpkg-environment
-
-✅ vcpkg environment verified
-- VCPKG_ROOT: C:\vcpkg
-- Version: 2025-06-20 (recommended)
-- Registry structure: Valid
-- Feature flags: versions, registries
-```
+This specification replaces previous example reports; emit only real environment data.
