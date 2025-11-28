@@ -37,7 +37,7 @@ Extract port search criteria from natural language input:
 **Supported Patterns**:
 - Port names: `openssl3`, `zlib-ng`, `tensorflow-lite`
 - GitHub URLs: `https://github.com/openssl/openssl` → search for `openssl`
-- Keywords: `"ssl library"`, `"tensor flow"`
+- Keywords: `"open"`, `"-ng"`, `"tensorflow"`
 - Multiple ports: `openssl3, zlib-ng` (search each)
 
 **Examples**:
@@ -80,7 +80,7 @@ Check if tensorflow-lite exists
 
 #### Step 2.3: Filter feature results
 - Action: Parse vcpkg search output
-- Remove entries with `[feature]` pattern (e.g., `opencv4[openssl]`)
+- Remove entries with `[feature]` pattern (e.g., `libzip[openssl]`)
 - Keep only port entries (no square brackets)
 
 #### Step 2.4: Check versions baseline
