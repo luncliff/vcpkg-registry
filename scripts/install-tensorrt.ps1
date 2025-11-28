@@ -39,14 +39,11 @@ function EnsureAdmin {
 }
 if ($Admin) { EnsureAdmin }
 
-function DownloadToFile([string]$Uri, [string]$OutFile) {
-  try {
-    Invoke-WebRequest -Uri $Uri -OutFile $OutFile -TimeoutSec 600
-  }
-  catch {
-    Write-Error "[tensorrt] Download failed: $Uri"
-    exit 1
-  }
+# Already installed?
+if ($env:TENSORRT_HOME -and (Test-Path -LiteralPath $env:TENSORRT_HOME)) {
+  Write-Host "[tensorrt] Found at $env:TENSORRT_HOME";
+  Write-Output "$env:TENSORRT_HOME"
+  exit 0
 }
 
 function Add-PathOnce([string]$PathToAdd) {
@@ -54,13 +51,6 @@ function Add-PathOnce([string]$PathToAdd) {
   if ($cur -notcontains $PathToAdd) {
     [Environment]::SetEnvironmentVariable('Path', (($cur + $PathToAdd) -join ';'), 'Machine')
   }
-}
-
-# Already installed?
-if ($env:TENSORRT_HOME -and (Test-Path -LiteralPath $env:TENSORRT_HOME)) {
-  Write-Host "[tensorrt] Found at $env:TENSORRT_HOME";
-  Write-Output "$env:TENSORRT_HOME"
-  exit 0
 }
 
 function ChangeEnvironmentVariable {
@@ -78,6 +68,16 @@ function ChangeEnvironmentVariable {
 if (Test-Path -LiteralPath $ExtractRoot) {
   ChangeEnvironmentVariable -InstallRoot $ExtractRoot
   exit 0
+}
+
+function DownloadToFile([string]$Uri, [string]$OutFile) {
+  try {
+    Invoke-WebRequest -Uri $Uri -OutFile $OutFile -TimeoutSec 600
+  }
+  catch {
+    Write-Error "[tensorrt] Download failed: $Uri"
+    exit 1
+  }
 }
 
 $tempZip = Join-Path $env:TEMP ("tensorrt-" + [guid]::NewGuid() + ".zip")
