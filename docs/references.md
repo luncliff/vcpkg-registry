@@ -31,6 +31,17 @@
   - [CMake Scripts](https://github.com/microsoft/vcpkg/tree/master/scripts/cmake)
 - [Topic: vcpkg-registry](https://github.com/topics/vcpkg-registry)
 
+### GitHub Copilot Custom Agents
+
+- [GitHub Copilot Documentation](https://docs.github.com/en/copilot/)
+  - [Using Custom Agents](https://docs.github.com/en/copilot/using-github-copilot/using-custom-agents)
+  - [Creating Custom Agents](https://docs.github.com/en/copilot/building-custom-agents/creating-a-custom-agent-for-github-copilot)
+  - [Your First Prompt File](https://docs.github.com/en/copilot/building-custom-agents/your-first-prompt-file)
+  - [Custom Agents Configuration](https://docs.github.com/en/copilot/reference/custom-agents-configuration)
+  - [Supported Models](https://docs.github.com/en/copilot/using-github-copilot/using-copilot-with-different-models/about-using-copilot-with-different-models)
+  - [Model Comparison](https://docs.github.com/en/copilot/using-github-copilot/using-copilot-with-different-models/comparing-models-for-github-copilot)
+  - [Prompt Engineering Guide](https://docs.github.com/en/copilot/building-custom-agents/prompt-engineering-for-custom-agents)
+
 ### Community and Blogs
 
 - [Microsoft C++ Team Blog](https://devblogs.microsoft.com/cppblog/)
