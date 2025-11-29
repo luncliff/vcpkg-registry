@@ -119,10 +119,21 @@ jobs:
           New-Item -Type Directory -Force C:/vcpkg-caches
           Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
 
+      - name: "Setup CUDA"
+        if: runner.os == 'Windows'
+        id: setup-cuda-windows
+        run: |
+          $InstallPath=$(./scripts/install-cuda.ps1)
+          "CUDA_PATH=$InstallPath" >> $env:GITHUB_ENV
+          $InstallPath=$(./scripts/install-cudnn.ps1)
+          "CUDNN=$InstallPath" >> $env:GITHUB_ENV
+          $InstallPath=$(./scripts/install-tensorrt.ps1)
+          "TENSORRT_HOME=$InstallPath" >> $env:GITHUB_ENV
+
       - name: "Check CUDA Environment"
         run: |
           Write-Output "CUDA_PATH: ${env:CUDA_PATH}"
-          Write-Output "CUDNN_ROOT_DIR: ${env:CUDNN_ROOT_DIR}"
+          Write-Output "CUDNN: ${env:CUDNN}"
           Write-Output "TENSORRT_HOME: ${env:TENSORRT_HOME}"
 
       - uses: lukka/run-vcpkg@v11.5
