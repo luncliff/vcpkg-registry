@@ -353,3 +353,11 @@ If future extension allows multi-port upgrade, repeat sections 2–7 per port wi
 - Hardcoded REF acceptable if upstream tag pattern inconsistent; still warn
 
 This specification replaces prior sample reports. Generate only real execution data.
+
+### References
+
+Documents and Guides in this repository:
+
+- [Guide: Updating an Existing Port](../../docs/guide-update-port.md)
+- [Guide: Version Management for Port Updates](../../docs/guide-update-port-versioning.md)
+- [Port Change Review Checklist](../../docs/review-checklist.md)

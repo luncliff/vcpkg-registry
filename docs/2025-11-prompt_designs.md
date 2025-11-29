@@ -2,8 +2,11 @@
 
 This document summarizes the design decisions, structure, and rationale behind the 8 GitHub Copilot custom agents for vcpkg-registry management.
 
-**Design Session Date**: 2025-11-26  
-**GitHub Copilot AI Model**: Claude Sonnet 4 (default)
+**Document Version**: 1.0  
+**Last Updated**: 2025-11-26  
+**Authors**: GitHub Copilot (Claude Sonnet 4)
+
+See [copilot-chat-tools-reference.md](./copilot-chat-tools-reference.md) together.
 
 ---
 
@@ -41,7 +44,7 @@ This document summarizes the design decisions, structure, and rationale behind t
 
 ## Agent Structure
 
-All 8 custom agents follow a consistent structure:
+All custom agents follow a consistent structure:
 
 ### YAML Frontmatter
 
@@ -104,23 +107,7 @@ Multiple example reports showing different scenarios:
 
 ---
 
-### 2. Claude Sonnet 4 as Default Model
-
-**Decision**: Use Claude Sonnet 4 (not Claude Haiku 4.5 or GPT-4o)
-
-**Rationale**:
-- **General-purpose coding**: Balanced performance for complex tasks
-- **Comprehensive reasoning**: Handles multi-phase workflows
-- **Good at structured output**: Generates consistent markdown reports
-- **Cost-effective**: 1x multiplier (no premium charges)
-
-**Alternative Models**:
-- **GPT-5 mini**: Can be used for simple agents (check-environment, check-vcpkg-environment)
-- **Claude Haiku 4.5**
-
----
-
-### 3. Cross-Platform Command Translation
+### 2. Cross-Platform Command Translation
 
 **Decision**: Always provide PowerShell, Bash, and Zsh command variants
 
@@ -130,8 +117,8 @@ Multiple example reports showing different scenarios:
 - **Android/iOS development**: Requires Linux/macOS for cross-compilation
 - **Reduce friction**: Users don't need to manually translate commands
 
-**Implementation**:
-```markdown
+#### Implementation:
+
 **PowerShell**:
 ```powershell
 $env:VCPKG_ROOT
@@ -140,7 +127,6 @@ $env:VCPKG_ROOT
 **Bash/Zsh**:
 ```bash
 $VCPKG_ROOT
-```
 ```
 
 ---
@@ -215,9 +201,7 @@ If contributing to microsoft/vcpkg upstream:
 - **Clear workflow**: Documents recommended agent sequence
 - **Prevent runaway execution**: Avoid cascading agent calls
 
-**Pattern**:
-```markdown
-## Next Steps
+#### Pattern:
 
 Port created successfully. Test installation:
 ```powershell
@@ -227,7 +211,6 @@ Port created successfully. Test installation:
 After installation succeeds, review port:
 ```powershell
 /review-port {port-name}
-```
 ```
 
 ---
@@ -519,29 +502,6 @@ After installation succeeds, review port:
 3. **Actionable recommendations**: Provide specific fix instructions
 4. **Rollback guidance**: Show how to undo changes if needed
 
-### Reporting Standards
-
-All reports follow this structure:
-
-```markdown
-# {Agent Name} Report
-
-**Port**: `{port-name}`
-**Date**: {timestamp}
-
-## {Section 1}
-
-✅/⚠️/❌ Status summary
-
-### Details
-- Key point 1
-- Key point 2
-
-## Next Steps
-
-Actionable instructions with commands
-```
-
 ### Work Note Format
 
 ```markdown
@@ -601,9 +561,3 @@ Potential additions to the agent system:
 - [vcpkg Contribution Guidelines](https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md)
 - [vcpkg Maintainer Guide](https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md)
 - [Repository Copilot Instructions](../.github/copilot-instructions.md)
-
----
-
-**Document Version**: 1.0  
-**Last Updated**: 2025-11-26  
-**Authors**: GitHub Copilot (Claude Sonnet 4)

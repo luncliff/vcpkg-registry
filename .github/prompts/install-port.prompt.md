@@ -294,3 +294,9 @@ Parse feature spec inside brackets. If requested feature absent in manifest, cla
 - Absence of usage file when port installs only headers
 
 This specification replaces prior example reports; emit only live execution data.
+
+### References
+
+Documents and Guides in this repository:
+
+- [Guide: New Port (Build & Installation Patterns)](../../docs/guide-new-port-build.md)

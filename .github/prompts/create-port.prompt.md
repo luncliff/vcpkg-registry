@@ -356,3 +356,11 @@ Add explicit bullet: `❌ Creation blocked: <reason>`
 - Invalid SHA512 (length ≠128) unless placeholder strategy documented
 
 This specification replaces previous illustrative examples; emit only real creation data.
+
+### References
+
+Documents and Guides in this repository:
+
+- [Guide: Planning & Creating a New Port](../../docs/guide-new-port.md)
+- [Guide: New Port (Build & Installation Patterns)](../../docs/guide-new-port-build.md)
+- [Port Change Review Checklist](../../docs/review-checklist.md)

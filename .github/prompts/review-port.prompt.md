@@ -311,3 +311,10 @@ If a port intentionally omits a `usage` file (no exported targets), mark usage a
 Length must be 128 hex chars; case-insensitive match permitted but flag uppercase as warning.
 
 This specification replaces prior illustrative examples. Do not embed sample reports—emit only live analysis per execution.
+
+### References
+
+Documents and Guides in this repository:
+
+- [Guide: Updating an Existing Port](../../docs/guide-update-port.md)
+- [Port Change Review Checklist](../../docs/review-checklist.md)
