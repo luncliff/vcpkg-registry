@@ -102,7 +102,9 @@ Write-Host "[cuda] Downloading $DownloadURL"
 DownloadToFile -Uri $DownloadURL -OutFile $temp
 
 # Silent install with explicit components
-$compArgs = $Components -join ' '
+# The NVIDIA installer expects the -n flag to be followed by a space-separated list of component names.
+# If any component name contains spaces, it must be quoted. We quote each component name to be robust.
+$compArgs = $Components | ForEach-Object { '"{0}"' -f $_ } |  Join-String " "
 $arguments = "-s -n $compArgs"
 
 Write-Host "[cuda] Installing selected components:"

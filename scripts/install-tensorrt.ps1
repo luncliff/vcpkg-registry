@@ -87,13 +87,14 @@ DownloadToFile -Uri $DownloadURL -OutFile $tempZip
 New-Item -ItemType Directory -Force -Path $ExtractRoot | Out-Null
 Expand-Archive -Path $tempZip -DestinationPath $ExtractRoot -Force
 
+# After extraction, the archive is expected to contain a single top-level directory (e.g., "TensorRT-10.14.1.48") inside $ExtractRoot.
+# That directory should contain the actual TensorRT files, including a 'bin' subdirectory.
 $inner = Get-ChildItem -Directory $ExtractRoot | Select-Object -First 1
 if ($inner -and (Test-Path (Join-Path $inner.FullName 'bin'))) {
-  $others = Get-ChildItem $ExtractRoot
-  if ($others.Count -eq 1) {
-    Get-ChildItem $inner.FullName | Move-Item -Destination $ExtractRoot -Force
-    Remove-Item $inner.FullName -Recurse -Force
-  }
+  # If the only directory in $ExtractRoot contains 'bin', flatten the structure by moving its contents up one level.
+  # This handles archives that wrap all files in a single directory.
+  Get-ChildItem $inner.FullName | Move-Item -Destination $ExtractRoot -Force
+  Remove-Item $inner.FullName -Recurse -Force
 }
 
 if (-not (Test-Path (Join-Path $ExtractRoot 'bin'))) { throw "[tensorrt] Unexpected archive layout in $ExtractRoot" }

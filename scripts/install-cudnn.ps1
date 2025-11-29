@@ -83,8 +83,24 @@ New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "bin")     | O
 New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "include") | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "lib")     | Out-Null
 
-Copy-Item -Path (Join-Path $bin "cudnn*.dll") -Destination (Join-Path $ExtractRoot "bin") -Force
-Copy-Item -Path (Join-Path $inc "cudnn*.h")  -Destination (Join-Path $ExtractRoot "include") -Force
-Copy-Item -Path (Join-Path $lib "cudnn*.lib") -Destination (Join-Path $ExtractRoot "lib") -Force
+$dllFiles = Get-ChildItem -Path (Join-Path $bin "cudnn*.dll") -ErrorAction SilentlyContinue
+if (-not $dllFiles) {
+  Write-Error "[cudnn] No cuDNN DLLs found in $bin"
+  exit 1
+}
+Copy-Item -Path $dllFiles.FullName -Destination (Join-Path $ExtractRoot "bin") -Force
 
+$headerFiles = Get-ChildItem -Path (Join-Path $inc "cudnn*.h") -ErrorAction SilentlyContinue
+if (-not $headerFiles) {
+  Write-Error "[cudnn] No cuDNN headers found in $inc"
+  exit 1
+}
+Copy-Item -Path $headerFiles.FullName -Destination (Join-Path $ExtractRoot "include") -Force
+
+$libFiles = Get-ChildItem -Path (Join-Path $lib "cudnn*.lib") -ErrorAction SilentlyContinue
+if (-not $libFiles) {
+  Write-Error "[cudnn] No cuDNN libraries found in $lib"
+  exit 1
+}
+Copy-Item -Path $libFiles.FullName -Destination (Join-Path $ExtractRoot "lib") -Force
 ChangeEnvironmentVariable -InstallRoot $ExtractRoot

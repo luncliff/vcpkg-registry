@@ -123,11 +123,11 @@ jobs:
         if: runner.os == 'Windows'
         id: setup-cuda-windows
         run: |
-          $InstallPath=./scripts/install-cuda.ps1
+          $InstallPath=$(./scripts/install-cuda.ps1)
           "CUDA_PATH=$InstallPath" >> $env:GITHUB_ENV
-          $InstallPath=./scripts/install-cudnn.ps1
+          $InstallPath=$(./scripts/install-cudnn.ps1)
           "CUDNN=$InstallPath" >> $env:GITHUB_ENV
-          $InstallPath=./scripts/install-tensorrt.ps1
+          $InstallPath=$(./scripts/install-tensorrt.ps1)
           "TENSORRT_HOME=$InstallPath" >> $env:GITHUB_ENV
 
       - name: "Check CUDA Environment"
