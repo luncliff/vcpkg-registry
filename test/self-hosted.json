@@ -45,6 +45,14 @@
           ],
           "platform": "x64 & windows"
         },
+        "dawn",
+        {
+          "name": "dawn",
+          "features": [
+            "tools"
+          ],
+          "platform": "windows"
+        },
         {
           "name": "godot",
           "features": [
