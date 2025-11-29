@@ -36,26 +36,26 @@ This prompt requires no user input arguments. It automatically detects the curre
 ### Phase 1: Detect Operating System
 
 #### Step 1.1: Check OS type
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Windows: `$PSVersionTable.PSVersion`
 - Linux/macOS: `uname -s`
 - Purpose: Identify operating system family
 
 #### Step 1.2: Get detailed system info
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Windows: `Get-ComputerInfo | Select-Object CsName, WindowsVersion, OsArchitecture`
 - Linux: `uname -a; lsb_release -a 2>/dev/null || cat /etc/os-release`
 - macOS: `sw_vers; uname -m`
 - Purpose: Capture OS version and architecture
 
 #### Step 1.3: Capture output
-- Tool: `#terminalLastCommand`
+- Tool: #tool:runCommands/terminalLastCommand
 - Purpose: Store system information for reporting
 
 ### Phase 2: Detect Shell Environment
 
 #### Step 2.1: Identify active shell
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Windows: `$PSVersionTable.PSEdition; $PSVersionTable.PSVersion`
 - Linux/macOS: `echo $SHELL; $SHELL --version`
 - Purpose: Determine shell type and version
@@ -67,7 +67,7 @@ This prompt requires no user input arguments. It automatically detects the curre
 - Tool: Parse version from previous output
 
 #### Step 2.3: Test common development tools
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Purpose: Check availability and versions using an executable list with a command template
 
 Command templates (the agent will iterate executables and apply the template):
@@ -83,7 +83,7 @@ Command templates (the agent will iterate executables and apply the template):
 ### Phase 3: Cross-Platform Translation (if non-Windows detected)
 
 #### Step 3.1: Fetch GitHub Actions runner-images documentation
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - Purpose: Get standard environment configurations for reference
 - URLs: Fetch the following links to lookup proper documents
   - https://github.com/actions/runner-images/blob/main/README.md

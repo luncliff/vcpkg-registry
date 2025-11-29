@@ -52,12 +52,12 @@ Validate cpuinfo port files
 ### Phase 1: Locate Port Files
 
 #### Step 1.1: Find port directory
-- Tool: `#fileSearch`
+- Tool: #tool:search/fileSearch
 - Pattern: `ports/{port-name}/vcpkg.json`
 - Purpose: Verify port exists
 
 #### Step 1.2: List all port files
-- Tool: `#fileSearch`
+- Tool: #tool:search/fileSearch
 - Pattern: `ports/{port-name}/**/*`
 - Purpose: Get complete file inventory
 
@@ -68,29 +68,29 @@ Validate cpuinfo port files
 ### Phase 2: Fetch vcpkg Guidelines
 
 #### Step 2.1: Fetch contribution guidelines
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - URL: `https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md`
 - Purpose: Get latest contribution requirements
 
 #### Step 2.2: Fetch maintainer guide
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - URL: `https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md`
 - Purpose: Get port maintenance best practices
 
 #### Step 2.3: Load local review checklist
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `docs/review-checklist.md`
 - Purpose: Apply repository-specific checks
 
 #### Step 2.4: Load local copilot instructions
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `.github/copilot-instructions.md`
 - Purpose: Check for experimental guidelines (embedded CMakeLists.txt, patches)
 
 ### Phase 3: Validate vcpkg.json
 
 #### Step 3.1: Read vcpkg.json
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/vcpkg.json`
 
 #### Step 3.2: Check required fields
@@ -120,7 +120,7 @@ Validate cpuinfo port files
 ### Phase 4: Validate portfile.cmake
 
 #### Step 4.1: Read portfile.cmake
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/portfile.cmake`
 
 #### Step 4.2: Validate source acquisition
@@ -157,22 +157,22 @@ Validate cpuinfo port files
 ### Phase 5: Validate Additional Files
 
 #### Step 5.1: Check for usage file
-- Tool: `#fileSearch`
+- Tool: #tool:search/fileSearch
 - Pattern: `ports/{port-name}/usage`
 - Recommended: If port provides CMake config or pkg-config
 
 #### Step 5.2: Read usage file (if exists)
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/usage`
 - Validate: Provides clear `find_package` and `target_link_libraries` example
 
 #### Step 5.3: Check for embedded CMakeLists.txt
-- Tool: `#fileSearch`
+- Tool: #tool:search/fileSearch
 - Pattern: `ports/{port-name}/CMakeLists.txt`
 - Warning: Experimental approach, document rationale
 
 #### Step 5.4: Validate patch files (if exist)
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - Files: `ports/{port-name}/*.patch`
 - Check: Patches have descriptive names
 - Check: Patch context explains purpose (comments in portfile.cmake)
@@ -184,12 +184,12 @@ Validate cpuinfo port files
 ### Phase 6: Cross-Reference with Baseline
 
 #### Step 6.1: Check versions baseline
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `versions/baseline.json`
 - Validate: Port listed in baseline
 
 #### Step 6.2: Check version history
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `versions/{first-letter}-/{port-name}.json`
 - Validate: Version history exists (if port previously added)
 
@@ -200,7 +200,7 @@ Validate cpuinfo port files
 - Format: Structured markdown with pass/fail sections
 
 #### Step 7.2: Update work-note.md
-- Tool: `#editFiles` (append mode)
+- Tool: #tool:edit/editFiles (append mode)
 - Content: Review summary with timestamp
 
 ## Reporting
@@ -283,7 +283,7 @@ Branch based:
 - Recommendation: Non-mandatory enhancement, stylistic or future-proofing
 
 ### Output Conventions
-- Use consistent emoji indicators ✅/⚠️/❌
+- Tool: consistent emoji indicators ✅/⚠️/❌
 - Prefer bullet lists; avoid tables unless multiple patches (>3)
 - Keep code snippets minimal (single line) unless clarity demands more
 - Timestamp in ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)

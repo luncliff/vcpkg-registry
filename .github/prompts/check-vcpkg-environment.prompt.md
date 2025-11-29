@@ -37,13 +37,13 @@ No user input required. Automatically detects vcpkg configuration.
 ### Phase 1: Locate vcpkg Installation
 
 #### Step 1.1: Check VCPKG_ROOT environment variable
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Windows: `$env:VCPKG_ROOT; if ($env:VCPKG_ROOT) { Test-Path $env:VCPKG_ROOT }`
 - Linux/macOS: `echo $VCPKG_ROOT; [ -d "$VCPKG_ROOT" ] && echo "exists"`
 - Purpose: Primary method to find vcpkg root
 
 #### Step 1.2: Check vcpkg in PATH
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Windows: `Get-Command vcpkg -ErrorAction SilentlyContinue | Select-Object Source`
 - Linux/macOS: `command -v vcpkg`
 - Purpose: Fallback if VCPKG_ROOT not set
@@ -55,14 +55,14 @@ No user input required. Automatically detects vcpkg configuration.
 
 #### Step 1.4: Search common installation paths (fallback)
 - Condition: Both previous methods failed
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - URL: `https://raw.githubusercontent.com/actions/runner-images/main/images/windows/Windows2022-Readme.md`
 - Purpose: Get standard vcpkg installation locations
 - Common paths:
   - Windows: `C:\vcpkg`, `C:\tools\vcpkg`, `C:\src\vcpkg`
   - Linux: `/usr/local/vcpkg`, `$HOME/vcpkg`, `/opt/vcpkg`
   - macOS: `/usr/local/vcpkg`, `$HOME/vcpkg`
-- Tool: `#runInTerminal` - Test each path with `Test-Path` or `[ -d ]`
+- Tool: #tool:runCommands/runInTerminal - Test each path with `Test-Path` or `[ -d ]`
 
 #### Step 1.5: Report findings or error
 - Success: VCPKG_ROOT identified
@@ -71,7 +71,7 @@ No user input required. Automatically detects vcpkg configuration.
 ### Phase 2: Validate vcpkg Installation
 
 #### Step 2.1: Get vcpkg version
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command: `vcpkg --version` (or use absolute path if not in PATH)
 - Purpose: Check vcpkg-tool version
 
@@ -81,12 +81,12 @@ No user input required. Automatically detects vcpkg configuration.
 - Action: If older, issue warning with upgrade recommendation
 
 #### Step 2.3: Verify critical directories
-- Tool: `#fileSearch`
+- Tool: #tool:search/fileSearch
 - Patterns: `${VCPKG_ROOT}/scripts/**`, `${VCPKG_ROOT}/triplets/**`, `${VCPKG_ROOT}/ports/**`
 - Purpose: Ensure vcpkg installation is complete
 
 #### Step 2.4: Check vcpkg.cmake toolchain file
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake`
 - Purpose: Verify toolchain file exists
 - Note: Only verify existence, don't read full content
@@ -94,36 +94,36 @@ No user input required. Automatically detects vcpkg configuration.
 ### Phase 3: Check Registry Configuration
 
 #### Step 3.1: Search for vcpkg-configuration.json
-- Tool: `#fileSearch`
+- Tool: #tool:search/fileSearch
 - Pattern: `**/vcpkg-configuration.json`
 - Scope: Current workspace
 - Purpose: Find registry configuration
 
 #### Step 3.2: Read registry configuration (if exists)
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: Found vcpkg-configuration.json path
 - Purpose: Check registered registries
 
 #### Step 3.3: Verify registry folder structure
-- Tool: `#listDirectory`
+- Tool: #tool:search/listDirectory
 - Paths: `ports/`, `versions/`, `triplets/`
 - Purpose: Confirm registry layout
 
 #### Step 3.4: Check baseline.json
-- Tool: `#fileSearch`
+- Tool: #tool:search/fileSearch
 - Pattern: `versions/baseline.json`
 - Purpose: Verify version tracking exists
 
 ### Phase 4: Check Environment Variables
 
 #### Step 4.1: List all VCPKG_* variables
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Windows: `Get-ChildItem Env: | Where-Object Name -like 'VCPKG*' | Format-Table Name, Value`
 - Linux/macOS: `env | grep -i '^VCPKG' | sort`
 - Purpose: Capture all vcpkg environment variables
 
 #### Step 4.2: Capture variable output
-- Tool: `#terminalLastCommand`
+- Tool: #tool:runCommands/terminalLastCommand
 - Purpose: Store for reporting
 
 #### Step 4.3: Explain VCPKG_FEATURE_FLAGS (if set)
@@ -231,7 +231,7 @@ Ordered immediate suggestions:
 ### Conventions
 - Icons: ✅ present, ❌ missing, ⚠️ warning (outdated / partial)
 - Avoid full file dumps; only list counts & paths
-- Use relative workspace paths when referencing registry folders
+- Tool: relative workspace paths when referencing registry folders
 - Do not duplicate installation details already shown; keep each item single line
 
 ### Failure Mode (vcpkg not found)

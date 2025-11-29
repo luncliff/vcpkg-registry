@@ -58,7 +58,7 @@ Install opencv4[opengl] with x64-windows triplet
 
 #### Step 1.2: Determine port location
 - Check: Port exists in `ports/{port-name}/`
-- Tool: `#fileSearch`
+- Tool: #tool:search/fileSearch
 - Pattern: `ports/{port-name}/vcpkg.json`
 - Purpose: Verify port is in local registry
 
@@ -68,26 +68,26 @@ Install opencv4[opengl] with x64-windows triplet
 - Fallback: Use default host triplet (x64-windows, x64-linux, arm64-osx)
 
 #### Step 1.4: Check for features
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/vcpkg.json`
 - Purpose: Verify requested features exist in port manifest
 
 ### Phase 2: Pre-Installation Checks
 
 #### Step 2.1: Verify VCPKG_ROOT environment variable
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (PowerShell): `echo $env:VCPKG_ROOT`
 - Command (Bash/Zsh): `echo $VCPKG_ROOT`
 - Purpose: Ensure vcpkg installation accessible
 
 #### Step 2.2: Check vcpkg version
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command: `vcpkg version`
 - Purpose: Report vcpkg version for debugging
 
 #### Step 2.3: Clean previous install (optional)
 - Condition: User requested fresh install
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (PowerShell): `Remove-Item -Recurse -Force "packages/{port-name}_*"`
 - Command (Bash/Zsh): `rm -rf packages/{port-name}_*`
 - Purpose: Remove cached packages
@@ -103,7 +103,7 @@ Install opencv4[opengl] with x64-windows triplet
 - Add: Port specification with features
 
 #### Step 3.2: Run vcpkg install
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (example PowerShell):
   ```powershell
   vcpkg install --overlay-ports ./ports `
@@ -123,7 +123,7 @@ Install opencv4[opengl] with x64-windows triplet
 - Wait: Installation completion (can take several minutes)
 
 #### Step 3.3: Capture terminal output
-- Tool: `#terminalLastCommand`
+- Tool: #tool:runCommands/terminalLastCommand
 - Purpose: Get full installation log
 
 ### Phase 4: Analyze Results
@@ -137,7 +137,7 @@ Install opencv4[opengl] with x64-windows triplet
 - Extract: Installation time, dependencies built
 
 #### Step 4.3: Analyze build logs (if failure)
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - Files (check in order):
   1. `buildtrees/{port-name}/config-{triplet}-out.log`
   2. `buildtrees/{port-name}/install-{triplet}-out.log`
@@ -151,31 +151,31 @@ Install opencv4[opengl] with x64-windows triplet
 - Missing dependencies: `Package ... is not installed`
 
 #### Step 4.5: Extract error context
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - Read: 20 lines before and after first error
 - Purpose: Provide diagnostic context
 
 ### Phase 5: Post-Installation Verification (if success)
 
 #### Step 5.1: Check installed files
-- Tool: `#fileSearch`
+- Tool: #tool:search/fileSearch
 - Pattern: `packages/{port-name}_*/` or `installed/{triplet}/`
 - Purpose: Verify installation artifacts exist
 
 #### Step 5.2: List installed headers
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (PowerShell): `Get-ChildItem "installed/{triplet}/include/{port-name}*" -Recurse`
 - Command (Bash/Zsh): `ls -R installed/{triplet}/include/{port-name}*`
 - Purpose: Confirm header files installed
 
 #### Step 5.3: List installed libraries
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (PowerShell): `Get-ChildItem "installed/{triplet}/lib/*.lib"`
 - Command (Bash/Zsh): `ls installed/{triplet}/lib/*.{a,so,dylib}`
 - Purpose: Confirm library files built
 
 #### Step 5.4: Check usage file
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/usage`
 - Purpose: Include usage instructions in report (if available)
 
@@ -188,7 +188,7 @@ Install opencv4[opengl] with x64-windows triplet
 - Next steps: Recommendations
 
 #### Step 6.2: Update work-note.md
-- Tool: `#editFiles` (append mode)
+- Tool: #tool:edit/editFiles (append mode)
 - Content: Installation result with timestamp
 
 ## Reporting
