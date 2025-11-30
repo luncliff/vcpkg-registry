@@ -68,8 +68,10 @@ vcpkg_cmake_configure(
         -DDAWN_FETCH_DEPENDENCIES=OFF # call in portfile.cmake for explicit management
         -DDAWN_ENABLE_INSTALL=ON
         -DDAWN_ENABLE_NULL=ON # Null backend
+        # -DDAWN_ENABLE_WEBGPU_ON_WEBGPU=${VCPKG_TARGET_IS_EMSCRIPTEN}
         -DDAWN_BUILD_MONOLITHIC_LIBRARY=${DAWN_BUILD_MONOLITHIC_LIBRARY}
         -DDAWN_BUILD_PROTOBUF=OFF
+        -DDAWN_USE_WINDOWS_UI=${VCPKG_TARGET_IS_WINDOWS}
         -DDAWN_USE_BUILT_DXC=OFF # todo: use 'directx-dxc' port
         -DDAWN_BUILD_SAMPLES=OFF
         -DDAWN_BUILD_TESTS=OFF
@@ -83,13 +85,19 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/Dawn PACKAGE_NAME Dawn)
 
 if("tint" IN_LIST FEATURES)
     if("tools" IN_LIST FEATURES)
-        vcpkg_copy_tools(TOOL_NAMES tint tint_info DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}" AUTO_CLEAN)
+        vcpkg_copy_tools(TOOL_NAMES
+            tint # TARGET tint_cmd_tint_cmd
+            tint_info # TARGET tint_cmd_info_cmd
+            DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}" AUTO_CLEAN
+        )
     endif()
     # The installed DawnConfig.cmake won't use include/tint folder.
     # Manual configuration is required if the library user wants the files.
     # THIS IS INTENDED because these are internal headers.
     # Move the folder because tint/tint.h is using relative include "src/tint/..."
-    file(COPY "${CURRENT_PACKAGES_DIR}/include/src/tint/src" DESTINATION "${CURRENT_PACKAGES_DIR}/include/tint/")
+    if(EXISTS "${CURRENT_PACKAGES_DIR}/include/src/tint/src")
+        file(COPY "${CURRENT_PACKAGES_DIR}/include/src/tint/src" DESTINATION "${CURRENT_PACKAGES_DIR}/include/tint/")
+    endif()
 endif()
 
 file(REMOVE_RECURSE
