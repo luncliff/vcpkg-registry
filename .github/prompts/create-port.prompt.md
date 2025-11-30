@@ -1,7 +1,7 @@
 ---
 description: 'Create a new vcpkg port with portfile.cmake, vcpkg.json, and patches'
 agent: 'agent'
-tools: ['edit/createFile', 'edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/runInTerminal', 'fetch', 'githubRepo']
+tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/runInTerminal', 'fetch', 'githubRepo']
 model: Claude Haiku 4.5 (copilot)
 ---
 
@@ -56,30 +56,30 @@ Generate port files for farmhash
 
 #### Step 1.2: Fetch project repository information
 - Condition: GitHub URL provided
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - URL: GitHub repository API or raw README
 - Purpose: Get project description, license, homepage
 
 #### Step 1.3: Fetch latest release
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - URL: `{github-url}/releases/latest` or `{github-url}/tags`
 - Purpose: Get latest version number and release URL
 - Fallback: Use commit SHA if no releases
 
 #### Step 1.4: Identify build system
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - Files to check: `CMakeLists.txt`, `meson.build`, `configure.ac`, `Makefile`, `*.pro`
 - Purpose: Determine build system type
 - Note: CMake is most common and preferred
 
 #### Step 1.5: Check for vcpkg port in upstream
-- Tool: `#githubRepo`
+- Tool: #tool:githubRepo
 - Repo: `microsoft/vcpkg`
 - Query: `path:ports/{port-name} filename:vcpkg.json`
 - Purpose: Check if port already exists upstream (avoid duplication)
 
 #### Step 1.6: Identify dependencies
-- Tool: `#fetch` or `#readFile`
+- Tool: #tool:fetch or #tool:search/readFile
 - Files: `README.md`, `INSTALL.md`, `CMakeLists.txt`, `find_package` calls
 - Purpose: List required dependencies
 - Note: Map to vcpkg port names (e.g., `zlib` → `zlib-ng` if preferred)
@@ -93,25 +93,25 @@ Generate port files for farmhash
 ### Phase 2: Find Template Ports
 
 #### Step 2.1: Search for similar ports
-- Tool: `#fileSearch`
+- Tool: #tool:search/fileSearch
 - Pattern: `ports/**/portfile.cmake`
 - Criteria: Same build system, similar project size
 - Priority: Ports with clean, well-documented portfiles
 
 #### Step 2.2: Read template portfile.cmake
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - Files: 2-3 similar port portfiles
 - Purpose: Understand common patterns and functions
 
 #### Step 2.3: Read template vcpkg.json
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - Files: Corresponding vcpkg.json files
 - Purpose: Understand metadata structure
 
 ### Phase 3: Calculate SHA512 Checksums
 
 #### Step 3.1: Download source archive
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (PowerShell): 
   ```powershell
   $Version = "{version}"
@@ -121,7 +121,7 @@ Generate port files for farmhash
 - Purpose: Get source archive for checksum calculation
 
 #### Step 3.2: Calculate SHA512
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (PowerShell):
   ```powershell
   (Get-FileHash -Algorithm SHA512 "temp-${Version}.tar.gz").Hash.ToLower()
@@ -133,100 +133,117 @@ Generate port files for farmhash
 - Purpose: Generate SHA512 for `vcpkg_from_github` or `vcpkg_download_distfile`
 
 #### Step 3.3: Clean up downloaded archive
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (PowerShell): `Remove-Item "temp-${Version}.tar.gz"`
 - Command (Bash/Zsh): `rm "temp-${version}.tar.gz"`
 
 ### Phase 4: Generate Port Files
 
 #### Step 4.1: Create port directory
-- Tool: `#createFile` (directory creation automatic)
+- Tool: #tool:edit/createDirectory
 - Path: `ports/{port-name}/`
 
 #### Step 4.2: Generate vcpkg.json
-- Tool: `#createFile`
+- Tool: #tool:edit/createFile
 - File: `ports/{port-name}/vcpkg.json`
-- Content:
-  ```json
-  {
-    "name": "{port-name}",
-    "version": "{version}",
-    "description": "{project-description}",
-    "homepage": "{project-url}",
-    "license": "{license-spdx-id}",
-    "dependencies": [
-      { "name": "vcpkg-cmake", "host": true },
-      { "name": "vcpkg-cmake-config", "host": true }
-    ]
-  }
-  ```
-- Note: Add project dependencies to array
+- Note: Use `dependencies` to include host dependencies. Typically `vcpkg-*` helper ports like `vcpkg-get-python-packages`, `vcpkg-tool-meson`, `vcpkg-cmake`, etc.
+
+Content template:
+```json
+{
+  "name": "{port-name}",
+  "version": "{version}",
+  "description": "{project-description}",
+  "homepage": "{project-url}",
+  "license": "{license-spdx-id}",
+  "dependencies": [
+    { "name": "vcpkg-cmake", "host": true },
+    { "name": "vcpkg-cmake-config", "host": true }
+  ]
+}
+```
 
 #### Step 4.3: Generate portfile.cmake
-- Tool: `#createFile`
+- Tool: #tool:edit/createFile
 - File: `ports/{port-name}/portfile.cmake`
-- Content template (for GitHub projects with CMake):
-  ```cmake
-  vcpkg_from_github(
-      OUT_SOURCE_PATH SOURCE_PATH
-      REPO {owner}/{repo}
-      REF v${VERSION}
-      SHA512 {calculated-sha512}
-      HEAD_REF {main-branch}
-  )
-  
-  vcpkg_cmake_configure(
-      SOURCE_PATH "${SOURCE_PATH}"
-  )
-  
-  vcpkg_cmake_install()
-  vcpkg_cmake_config_fixup(PACKAGE_NAME {package-name})
-  
-  file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
-  file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
-  
-  vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
-  ```
+
+Content template (for GitHub projects with CMake):  
+
+```cmake
+vcpkg_from_github(
+  OUT_SOURCE_PATH SOURCE_PATH
+  REPO {owner}/{repo}
+  REF v${VERSION}
+  SHA512 {calculated-sha512}
+  HEAD_REF {main-branch}
+)
+
+vcpkg_cmake_configure(
+  SOURCE_PATH "${SOURCE_PATH}"
+  OPTIONS
+    ${FEATURE_OPTIONS} # placeholder for feature-specific options
+    -DBUILD_TESTING=OFF # No tests, benchmarks, examples(samples)
+    -DBUILD_BENCHMARKS=OFF
+    -DBUILD_EXAMPLES=OFF
+    -DBUILD_SAMPLES=OFF
+)
+vcpkg_cmake_install()
+vcpkg_cmake_config_fixup(PACKAGE_NAME {package-name})
+
+file(REMOVE_RECURSE
+  "${CURRENT_PACKAGES_DIR}/debug/include" # include files are same with release
+  "${CURRENT_PACKAGES_DIR}/debug/share"   # vcpkg_*_fixup relocated the debug/release shared files
+)
+
+# Install copyright files. The file name varies: LICENSE.txt, COPYING, etc.
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
+```
 
 #### Step 4.4: Create usage file (optional)
 - Condition: Port provides CMake config or pkg-config
-- Tool: `#createFile`
+- Tool: #tool:edit/createFile
 - File: `ports/{port-name}/usage`
-- Content:
-  ```markdown
-  {port-name} provides CMake targets:
-  
-      find_package({PackageName} CONFIG REQUIRED)
-      target_link_libraries(main PRIVATE {namespace}::{target})
-  ```
+
+Typically we don't have to create a usage file for header-only libraries without config targets.  
+If created, describe the usage example with CMake command `find_package`(CMake config files), `find_library`(library path), and `find_path`(header include directory):
+
+```markdown
+{port-name} provides CMake targets:
+
+    find_package({PackageName} CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE {namespace}::{target})
+```
 
 #### Step 4.5: Document special build requirements
 - Condition: Port requires patches or custom build steps
 - Action: Add comments to portfile.cmake explaining rationale
+- Comment:
+   - Some projects may use the GitHub Actions build workflows.
+   - Reference the files in `${SOURCE_PATH}/.github/workflows` folder in builtrees, so the reviewer can recognize the build step differences.
 
 ### Phase 5: Validate Port Structure
 
 #### Step 5.1: Check required files exist
-- Tool: `#fileSearch`
+- Tool: #tool:search/fileSearch
 - Files: `vcpkg.json`, `portfile.cmake`
 - Purpose: Ensure mandatory files created
 
 #### Step 5.2: Run vcpkg format-manifest
-- Tool: `#runInTerminal`
-- Command:
-  ```powershell
-  ./scripts/registry-format.ps1 -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
-  ```
+- Tool: #tool:runCommands/runInTerminal
 - Purpose: Format vcpkg.json according to vcpkg standards
 
+```powershell
+./scripts/registry-format.ps1 -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
+```
+
 #### Step 5.3: Validate vcpkg.json schema
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/vcpkg.json`
 - Check: Required fields (name, version, description)
 - Check: Version format (no leading 'v', use semver or date)
 
 #### Step 5.4: Validate portfile.cmake syntax
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/portfile.cmake`
 - Check: Uses vcpkg helper functions
 - Check: Proper SHA512 format (128 hex characters, lowercase)
@@ -239,7 +256,7 @@ Generate port files for farmhash
 - Format: Structured markdown
 
 #### Step 6.2: Update work-note.md
-- Tool: `#editFiles` (append mode)
+- Tool: #tool:edit/editFiles (append mode)
 - Content: Port creation details with timestamp
 
 #### Step 6.3: Instruct user to test installation

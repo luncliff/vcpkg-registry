@@ -52,12 +52,12 @@ Upgrade tensorflow-lite to 2.14.1
 ### Phase 1: Analyze Current Port
 
 #### Step 1.1: Read current vcpkg.json
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/vcpkg.json`
 - Extract: Current `version`, `homepage`
 
 #### Step 1.2: Read current portfile.cmake
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/portfile.cmake`
 - Extract: `REPO` (GitHub owner/repo), `REF`, `SHA512`, `HEAD_REF`
 
@@ -66,7 +66,7 @@ Upgrade tensorflow-lite to 2.14.1
   - Use: Specified version
 - Condition: Version not specified
   - Action: Fetch latest release from upstream (use `/check-port-upstream` logic)
-  - Tool: `#fetch`
+  - Tool: #tool:fetch
   - URL: `{homepage}/releases/latest` or `https://api.github.com/repos/{owner}/{repo}/releases/latest`
 
 ### Phase 2: Gather New Version Information
@@ -92,7 +92,7 @@ Upgrade tensorflow-lite to 2.14.1
 ### Phase 3: Calculate New SHA512
 
 #### Step 3.1: Download source archive
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (PowerShell):
   ```powershell
   $Version = "{target-version}"
@@ -108,7 +108,7 @@ Upgrade tensorflow-lite to 2.14.1
 - Wait: Download completion
 
 #### Step 3.2: Calculate SHA512
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (PowerShell):
   ```powershell
   (Get-FileHash -Algorithm SHA512 "temp-${Version}.tar.gz").Hash.ToLower()
@@ -125,7 +125,7 @@ Upgrade tensorflow-lite to 2.14.1
 - Purpose: Prevent malformed SHA512 values
 
 #### Step 3.4: Clean up downloaded archive
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (PowerShell): `Remove-Item "temp-${Version}.tar.gz"`
 - Command (Bash/Zsh): `rm "temp-${version}.tar.gz"`
 
@@ -137,13 +137,13 @@ Upgrade tensorflow-lite to 2.14.1
 ### Phase 4: Update Port Files
 
 #### Step 4.1: Update vcpkg.json version
-- Tool: `#editFiles`
+- Tool: #tool:edit/editFiles
 - File: `ports/{port-name}/vcpkg.json`
 - Change: `"version": "{old-version}"` → `"version": "{new-version}"`
 - Preserve: All other fields unchanged
 
 #### Step 4.2: Update portfile.cmake REF
-- Tool: `#editFiles`
+- Tool: #tool:edit/editFiles
 - File: `ports/{port-name}/portfile.cmake`
 - Change: `REF {old-ref}` → `REF {new-ref}`
 - Common patterns:
@@ -152,7 +152,7 @@ Upgrade tensorflow-lite to 2.14.1
   - `REF v1.2.3` → `REF v{new-version}` (hardcoded, needs update)
 
 #### Step 4.3: Update portfile.cmake SHA512
-- Tool: `#editFiles`
+- Tool: #tool:edit/editFiles
 - File: `ports/{port-name}/portfile.cmake`
 - Change: `SHA512 {old-sha512}` → `SHA512 {new-sha512}`
 - Ensure: 128 lowercase hex characters
@@ -170,7 +170,7 @@ Upgrade tensorflow-lite to 2.14.1
 - Documentation: https://learn.microsoft.com/en-us/vcpkg/commands/install#editable-mode
 
 #### Step 5.2: Run vcpkg install with --editable
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command (PowerShell):
   ```powershell
   vcpkg install --editable `
@@ -192,7 +192,7 @@ Upgrade tensorflow-lite to 2.14.1
 - Wait: Installation completion (may take several minutes)
 
 #### Step 5.3: Capture test results
-- Tool: `#terminalLastCommand`
+- Tool: #tool:runCommands/terminalLastCommand
 - Purpose: Get full installation log
 
 #### Step 5.4: Analyze test results
@@ -209,7 +209,7 @@ Upgrade tensorflow-lite to 2.14.1
 #### Step 6.2: If test fails with SHA512 error
 - Check: Error message contains "SHA512 mismatch"
 - Action: Extract correct SHA512 from error message
-- Tool: `#editFiles`
+- Tool: #tool:edit/editFiles
 - Update: portfile.cmake with correct SHA512
 - Retry: Run test installation again
 
@@ -227,18 +227,18 @@ Upgrade tensorflow-lite to 2.14.1
 ### Phase 7: Validate File Changes
 
 #### Step 7.1: Re-read updated vcpkg.json
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/vcpkg.json`
 - Verify: Version updated correctly
 
 #### Step 7.2: Re-read updated portfile.cmake
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/portfile.cmake`
 - Verify: SHA512 updated correctly
 - Verify: REF updated if needed
 
 #### Step 7.3: Run format-manifest (optional)
-- Tool: `#runInTerminal`
+- Tool: #tool:runCommands/runInTerminal
 - Command:
   ```powershell
   ./scripts/registry-format.ps1 -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
@@ -252,7 +252,7 @@ Upgrade tensorflow-lite to 2.14.1
 - Include: Any errors or warnings
 
 #### Step 8.2: Update work-note.md
-- Tool: `#editFiles` (append mode)
+- Tool: #tool:edit/editFiles (append mode)
 - Content: Upgrade details with timestamp
 
 ## Reporting

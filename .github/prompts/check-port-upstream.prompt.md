@@ -52,7 +52,7 @@ Check for newer versions of tensorflow-lite
 ### Phase 1: Read Current Port Version
 
 #### Step 1.1: Locate port vcpkg.json
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/vcpkg.json`
 - Purpose: Get current port version
 
@@ -62,7 +62,7 @@ Check for newer versions of tensorflow-lite
 - Note: Version format may be semver (`1.2.3`) or date (`2023-08-02`)
 
 #### Step 1.3: Read portfile.cmake for source info
-- Tool: `#readFile`
+- Tool: #tool:search/readFile
 - File: `ports/{port-name}/portfile.cmake`
 - Extract: `REPO` value from `vcpkg_from_github` (e.g., `pytorch/cpuinfo`)
 - Extract: `REF` value (git tag or commit)
@@ -75,14 +75,14 @@ Check for newer versions of tensorflow-lite
 - Format: `https://github.com/{owner}/{repo}`
 
 #### Step 2.2: Fetch latest release
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - URL: `{github-url}/releases/latest` (GitHub releases page)
 - Alternative: Use GitHub API `https://api.github.com/repos/{owner}/{repo}/releases/latest`
 - Purpose: Get latest version tag
 
 #### Step 2.3: Fetch latest tags (if no releases)
 - Condition: Project uses tags instead of releases
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - URL: `{github-url}/tags`
 - Purpose: Get latest version tag
 
@@ -98,19 +98,19 @@ Check for newer versions of tensorflow-lite
 ### Phase 3: Check microsoft/vcpkg Upstream
 
 #### Step 3.1: Search microsoft/vcpkg for port
-- Tool: `#githubRepo`
+- Tool: #tool:githubRepo
 - Repo: `microsoft/vcpkg`
 - Query: `path:ports/{port-name} filename:vcpkg.json`
 - Purpose: Check if port exists in upstream vcpkg
 
 #### Step 3.2: Fetch upstream port vcpkg.json
 - Condition: Port exists in microsoft/vcpkg
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - URL: `https://raw.githubusercontent.com/microsoft/vcpkg/master/ports/{port-name}/vcpkg.json`
 - Purpose: Get upstream port version
 
 #### Step 3.3: Fetch upstream version history
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - URL: `https://raw.githubusercontent.com/microsoft/vcpkg/master/versions/{first-letter}-/{port-name}.json`
 - Purpose: Get version history and latest version
 
@@ -144,7 +144,7 @@ Check for newer versions of tensorflow-lite
 ### Phase 5: Check for Breaking Changes
 
 #### Step 5.1: Fetch upstream changelog (optional)
-- Tool: `#fetch`
+- Tool: #tool:fetch
 - Files: `CHANGELOG.md`, `CHANGES.md`, `NEWS.md`, `HISTORY.md`
 - URL: `https://raw.githubusercontent.com/{owner}/{repo}/master/CHANGELOG.md`
 - Purpose: Identify breaking changes between versions
@@ -160,7 +160,7 @@ Check for newer versions of tensorflow-lite
 - Highlight: Differences and recommendations
 
 #### Step 6.2: Update work-note.md in workspace root
-- Tool: `#editFiles` (append mode)
+- Tool: #tool:edit/editFiles (append mode)
 - Content: Version check results with timestamp
 
 ## Reporting
