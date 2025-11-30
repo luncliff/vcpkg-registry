@@ -182,7 +182,7 @@
     },
     "onnx-optimizer": {
       "baseline": "0.3.19",
-      "port-version": 0
+      "port-version": 1
     },
     "onnxruntime": {
       "baseline": "1.22.1",
