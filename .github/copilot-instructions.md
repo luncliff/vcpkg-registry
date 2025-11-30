@@ -170,7 +170,7 @@ When patch files become too complex or frequently fail to apply due to upstream 
 
 Mostly we work in [ports/](../ports/) and [versions/](../versions/) folder.
 
-The ports in this vcpkg-registry checks the vcpkg upstream guides, but must of the ports may not follow them for experimental purpose.
+The ports in this vcpkg-registry checks the vcpkg upstream guides, but most of the ports may not follow them for experimental purpose.
 
 - [microsoft/vcpkg Contributing Guideline](https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md)
 - [Maintainer Guideline](https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md)
