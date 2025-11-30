@@ -146,7 +146,7 @@ Generate port files for farmhash
 #### Step 4.2: Generate vcpkg.json
 - Tool: #tool:edit/createFile
 - File: `ports/{port-name}/vcpkg.json`
-- Note: Add project dependencies to array
+- Note: Use `dependencies` to include host dependencies. Typically `vcpkg-*` helper ports like `vcpkg-get-python-packages`, `vcpkg-tool-meson`, `vcpkg-cmake`, etc.
 
 Content template:
 ```json
@@ -171,21 +171,21 @@ Content template (for GitHub projects with CMake):
 
 ```cmake
 vcpkg_from_github(
-    OUT_SOURCE_PATH SOURCE_PATH
-    REPO {owner}/{repo}
-    REF v${VERSION}
-    SHA512 {calculated-sha512}
-    HEAD_REF {main-branch}
+  OUT_SOURCE_PATH SOURCE_PATH
+  REPO {owner}/{repo}
+  REF v${VERSION}
+  SHA512 {calculated-sha512}
+  HEAD_REF {main-branch}
 )
 
 vcpkg_cmake_configure(
-    SOURCE_PATH "${SOURCE_PATH}"
-    OPTIONS
-      ${FEATURE_OPTIONS} # placeholder for feature-specific options
-      -DBUILD_TESTING=OFF # No tests, benchmarks, examples(samples)
-      -DBUILD_BENCHMARKS=OFF
-      -DBUILD_EXAMPLES=OFF
-      -DBUILD_SAMPLES=OFF
+  SOURCE_PATH "${SOURCE_PATH}"
+  OPTIONS
+    ${FEATURE_OPTIONS} # placeholder for feature-specific options
+    -DBUILD_TESTING=OFF # No tests, benchmarks, examples(samples)
+    -DBUILD_BENCHMARKS=OFF
+    -DBUILD_EXAMPLES=OFF
+    -DBUILD_SAMPLES=OFF
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(PACKAGE_NAME {package-name})
