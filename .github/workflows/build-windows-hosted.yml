@@ -140,7 +140,7 @@ jobs:
         name: "Run vcpkg(x64-windows)"
         with:
           vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
+          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
@@ -178,7 +178,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
+          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
           vcpkgJsonGlob: "test/self-hosted.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
