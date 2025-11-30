@@ -10,7 +10,16 @@
       "platform": "!emscripten"
     },
     "directx-headers",
+    {
+      "name": "glslang",
+      "features": [
+        "tools"
+      ]
+    },
+    "libprotobuf-mutator",
     "protobuf",
+    "spirv-headers",
+    "spirv-tools",
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -78,6 +87,10 @@
       "description": "OpenGL ES backend support",
       "supports": "android | linux | freebsd | openbsd",
       "dependencies": [
+        {
+          "name": "angle",
+          "platform": "windows"
+        },
         "egl-registry",
         "opengl-registry"
       ]
@@ -101,7 +114,7 @@
       "description": "Build/Install command line tool",
       "dependencies": [
         {
-          "name": "google-dawn",
+          "name": "dawn",
           "default-features": false,
           "features": [
             "tint"

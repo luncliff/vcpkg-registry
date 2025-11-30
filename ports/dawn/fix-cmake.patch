@@ -50,11 +50,13 @@ diff --git a/src/tint/cmd/info/BUILD.cmake b/src/tint/cmd/info/BUILD.cmake
 index 962cf67cf..341a1a381 100644
 --- a/src/tint/cmd/info/BUILD.cmake
 +++ b/src/tint/cmd/info/BUILD.cmake
-@@ -41,6 +41,7 @@
+@@ -41,6 +41,9 @@
  tint_add_target(tint_cmd_info_cmd cmd
    cmd/info/main.cc
  )
-+install(TARGETS tint_cmd_info_cmd DESTINATION "${CMAKE_INSTALL_BINDIR}")
++if(TARGET tint_cmd_info_cmd)
++    install(TARGETS tint_cmd_info_cmd DESTINATION "${CMAKE_INSTALL_BINDIR}")
++endif()
  
  tint_target_add_dependencies(tint_cmd_info_cmd cmd
    tint_api_common
@@ -62,11 +64,13 @@ diff --git a/src/tint/cmd/tint/BUILD.cmake b/src/tint/cmd/tint/BUILD.cmake
 index 2a0565743..c844dfac6 100644
 --- a/src/tint/cmd/tint/BUILD.cmake
 +++ b/src/tint/cmd/tint/BUILD.cmake
-@@ -41,6 +41,7 @@
+@@ -41,6 +41,9 @@
  tint_add_target(tint_cmd_tint_cmd cmd
    cmd/tint/main.cc
  )
-+install(TARGETS tint_cmd_tint_cmd DESTINATION "${CMAKE_INSTALL_BINDIR}")
++if(TARGET tint_cmd_tint_cmd)
++    install(TARGETS tint_cmd_tint_cmd DESTINATION "${CMAKE_INSTALL_BINDIR}")
++endif()
  
  tint_target_add_dependencies(tint_cmd_tint_cmd cmd
    tint_api
@@ -138,3 +142,199 @@ index 368dc9745..38d542e9f 100644
      message(STATUS "\nAdding DXC to build:\n")
      add_subdirectory(dxc
          # Disable all targets by default, and enable only the dxc and dxcompiler targets (below)
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3c3748464..2de177c02 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -182,22 +182,28 @@ set_if_not_defined(LLVM_SOURCE_DIR "${Dawn_LLVM_SOURCE_DIR}" "Directory to an LL
+ 
+ set_if_not_defined(DAWN_THIRD_PARTY_DIR "${Dawn_SOURCE_DIR}/third_party" "Directory in which to find third-party dependencies.")
+ 
+-set_if_not_defined(DAWN_ABSEIL_DIR "${DAWN_THIRD_PARTY_DIR}/abseil-cpp" "Directory in which to find Abseil")
+-set_if_not_defined(DAWN_GLFW_DIR "${DAWN_THIRD_PARTY_DIR}/glfw" "Directory in which to find GLFW")
++find_package(absl CONFIG REQUIRED GLOBAL)
++if(DAWN_USE_GLFW)
++  find_package(glfw3 CONFIG REQUIRED GLOBAL)
++endif()
+ set_if_not_defined(DAWN_JINJA2_DIR "${DAWN_THIRD_PARTY_DIR}/jinja2" "Directory in which to find Jinja2")
+ set_if_not_defined(DAWN_MARKUPSAFE_DIR "${DAWN_THIRD_PARTY_DIR}/markupsafe" "Directory in which to find MarkupSafe")
+ set_if_not_defined(DAWN_KHRONOS_DIR "${DAWN_THIRD_PARTY_DIR}/khronos" "Directory in which to find Khronos GL headers")
+ set_if_not_defined(DAWN_SWIFTSHADER_DIR "${DAWN_THIRD_PARTY_DIR}/swiftshader" "Directory in which to find swiftshader")
+-set_if_not_defined(DAWN_PROTOBUF_DIR "${DAWN_THIRD_PARTY_DIR}/protobuf" "Directory in which to find protobuf")
+-set_if_not_defined(DAWN_LPM_DIR "${DAWN_THIRD_PARTY_DIR}/libprotobuf-mutator/src" "Directory in which to find libprotobuf")
++find_package(Protobuf CONFIG REQUIRED GLOBAL) # protobuf::libprotobuf
++find_package(libprotobuf-mutator CONFIG REQUIRED GLOBAL) # libprotobuf-mutator::protobuf-mutator
+ set_if_not_defined(DAWN_EMDAWNWEBGPU_DIR "${DAWN_THIRD_PARTY_DIR}/emdawnwebgpu" "Directory in which to find Dawn specific Emscripten bindings")
+-set_if_not_defined(DAWN_GOOGLETEST_DIR "${DAWN_THIRD_PARTY_DIR}/googletest" "Directory in which to find googletest")
++if(DAWN_BUILD_TESTS)
++  find_package(GTest REQUIRED)
++endif()
+ 
+-set_if_not_defined(DAWN_SPIRV_TOOLS_DIR "${DAWN_THIRD_PARTY_DIR}/spirv-tools/src" "Directory in which to find SPIRV-Tools")
+-set_if_not_defined(DAWN_SPIRV_HEADERS_DIR "${DAWN_THIRD_PARTY_DIR}/spirv-headers/src" "Directory in which to find SPIRV-Headers")
+-set_if_not_defined(DAWN_GLSLANG_DIR "${DAWN_THIRD_PARTY_DIR}/glslang/src" "Directory in which to find GLSLang")
+-set_if_not_defined(DAWN_VULKAN_HEADERS_DIR "${DAWN_THIRD_PARTY_DIR}/vulkan-headers/src" "Directory in which to find Vulkan-Headers")
+-set_if_not_defined(DAWN_VULKAN_UTILITY_LIBRARIES_DIR "${DAWN_THIRD_PARTY_DIR}/vulkan-utility-libraries/src" "Directory in which to find Vulkan-Utility-Libraries")
++find_package(SPIRV-Tools CONFIG REQUIRED GLOBAL)
++find_package(SPIRV-Headers CONFIG REQUIRED GLOBAL)
++find_package(glslang CONFIG REQUIRED GLOBAL)
++if(DAWN_ENABLE_VULKAN)
++  find_package(VulkanHeaders CONFIG REQUIRED GLOBAL)
++  find_package(VulkanUtilityLibraries REQUIRED GLOBAL)
++endif()
+ 
+ # Handling of the type of monolithic library to build, if any.
+ set(DAWN_BUILD_MONOLITHIC_LIBRARY "STATIC" CACHE STRING "Build monolithic library: SHARED, STATIC, or OFF.")
+@@ -463,8 +469,6 @@ set(TINT_SPIRV_TOOLS_DIR   ${DAWN_SPIRV_TOOLS_DIR})
+ ################################################################################
+ # Run on all subdirectories
+ ################################################################################
+-find_package(absl CONFIG REQUIRED GLOBAL)
+-find_package(Protobuf CONFIG REQUIRED GLOBAL)
+ add_subdirectory(third_party)
+ 
+ # TODO(crbug.com/tint/455): Tint does not currently build with CMake when
+diff --git a/src/tint/CMakeLists.txt b/src/tint/CMakeLists.txt
+index 304567083..65a180f0c 100644
+--- a/src/tint/CMakeLists.txt
++++ b/src/tint/CMakeLists.txt
+@@ -217,8 +217,11 @@ function(tint_spvheaders_compile_options TARGET)
+ endfunction()
+ 
+ function(tint_spvtools_compile_options TARGET)
+-  target_link_libraries(${TARGET} PRIVATE SPIRV-Tools)
+-  target_include_directories(${TARGET} PRIVATE "${TINT_SPIRV_TOOLS_DIR}/include")
++  if(TARGET SPIRV-Tools-shared)
++    target_link_libraries(${TARGET} PRIVATE SPIRV-Tools-shared)
++  else()
++    target_link_libraries(${TARGET} PRIVATE SPIRV-Tools-static)
++  endif()
+ endfunction()
+ 
+ function(tint_lib_compile_options TARGET)
+@@ -528,11 +531,11 @@ function(tint_target_add_external_dependencies TARGET KIND)
+         target_link_libraries(${TARGET} PRIVATE dxcompiler)
+       endif()
+     elseif(${DEPENDENCY} STREQUAL "jsoncpp")
+-      target_link_libraries(${TARGET} PRIVATE jsoncpp_static)
++      target_link_libraries(${TARGET} PRIVATE JsonCpp::JsonCpp)
+     elseif(${DEPENDENCY} STREQUAL "langsvr")
+       target_link_libraries(${TARGET} PRIVATE langsvr)
+     elseif(${DEPENDENCY} STREQUAL "glslang")
+-      target_link_libraries(${TARGET} PRIVATE glslang)
++      target_link_libraries(${TARGET} PRIVATE glslang::glslang)
+       if(NOT MSVC)
+         target_compile_options(${TARGET} PRIVATE
+           -Wno-reserved-id-macro
+@@ -543,7 +546,7 @@ function(tint_target_add_external_dependencies TARGET KIND)
+       endif()
+     elseif(${DEPENDENCY} STREQUAL "glslang-res-limits")
+       target_link_libraries(${TARGET} PRIVATE
+-        glslang-default-resource-limits
++        glslang::glslang-default-resource-limits
+       )
+     elseif(${DEPENDENCY} STREQUAL "google-benchmark")
+       set_target_properties(${TARGET} PROPERTIES FOLDER "Benchmarks")
+@@ -563,19 +566,25 @@ function(tint_target_add_external_dependencies TARGET KIND)
+         ${MetalFramework}
+       )
+     elseif(${DEPENDENCY} STREQUAL "spirv-headers")
+-      tint_spvheaders_compile_options(${TARGET})
++      target_link_libraries(${TARGET} PRIVATE
++        SPIRV-Headers::SPIRV-Headers
++      )
+     elseif(${DEPENDENCY} STREQUAL "spirv-tools")
+-      tint_spvtools_compile_options(${TARGET})
++      if(TARGET SPIRV-Tools-shared)
++        target_link_libraries(${TARGET} PRIVATE SPIRV-Tools-shared)
++      else()
++        target_link_libraries(${TARGET} PRIVATE SPIRV-Tools-static)
++        # target_link_libraries(${TARGET} PRIVATE
++        #   SPIRV-Tools-link
++        #   SPIRV-Tools-lint
++        #   SPIRV-Tools-opt
++        #   SPIRV-Tools-reduce
++        # )
++      endif()
+     elseif(${DEPENDENCY} STREQUAL "spirv-opt-internal")
+       target_link_libraries(${TARGET} PRIVATE
+         SPIRV-Tools-opt
+       )
+-      target_include_directories(${TARGET} PRIVATE
+-        "${TINT_SPIRV_TOOLS_DIR}"
+-        "${TINT_SPIRV_TOOLS_DIR}/include"
+-        "${TINT_SPIRV_TOOLS_DIR}/source"
+-        "${spirv-tools_BINARY_DIR}"
+-      )
+     elseif(${DEPENDENCY} STREQUAL "thread")
+       find_package(Threads REQUIRED)
+       target_link_libraries(${TARGET} PRIVATE Threads::Threads)
+diff --git a/src/tint/lang/spirv/reader/parser/parser.cc b/src/tint/lang/spirv/reader/parser/parser.cc
+index baff4be46..4f0adac9d 100644
+--- a/src/tint/lang/spirv/reader/parser/parser.cc
++++ b/src/tint/lang/spirv/reader/parser/parser.cc
+@@ -46,6 +46,7 @@ TINT_BEGIN_DISABLE_WARNING(OLD_STYLE_CAST);
+ TINT_BEGIN_DISABLE_WARNING(SIGN_CONVERSION);
+ TINT_BEGIN_DISABLE_WARNING(WEAK_VTABLES);
+ TINT_BEGIN_DISABLE_WARNING(UNSAFE_BUFFER_USAGE);
++// requires SPIRV-Tools internal headers
+ #include "source/opt/build_module.h"
+ #include "source/opt/resolve_binding_conflicts_pass.h"
+ #include "source/opt/split_combined_image_sampler_pass.h"
+diff --git a/third_party/CMakeLists.txt b/third_party/CMakeLists.txt
+index 38d542e9f..cba0b1ab1 100644
+--- a/third_party/CMakeLists.txt
++++ b/third_party/CMakeLists.txt
+@@ -128,8 +128,7 @@ if (NOT TARGET SPIRV-Headers)
+     set(SPIRV_HEADERS_SKIP_INSTALL ON CACHE BOOL "" FORCE)
+ 
+     message(STATUS "Dawn: using SPIRV-Headers at ${DAWN_SPIRV_HEADERS_DIR}")
+-    # find_package(SPIRV-Headers CONFIG REQUIRED GLOBAL)
+-    add_subdirectory(${DAWN_SPIRV_HEADERS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/spirv-headers")
++    find_package(SPIRV-Headers CONFIG REQUIRED GLOBAL)
+ endif()
+ 
+ if (NOT TARGET SPIRV-Tools AND
+@@ -143,21 +142,14 @@ if (NOT TARGET SPIRV-Tools AND
+     set(SKIP_SPIRV_TOOLS_INSTALL ON CACHE BOOL "" FORCE)
+     set(SPIRV_WERROR OFF CACHE BOOL OFF FORCE)
+     message(STATUS "Dawn: using SPIRV-Tools at ${DAWN_SPIRV_TOOLS_DIR}")
+-    # find_package(SPIRV-Tools CONFIG REQUIRED GLOBAL)
+-    add_subdirectory(${DAWN_SPIRV_TOOLS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/spirv-tools" EXCLUDE_FROM_ALL)
++    find_package(SPIRV-Tools CONFIG REQUIRED GLOBAL)
+ endif()
+ 
+ if(NOT TARGET glslang AND (TINT_BUILD_GLSL_WRITER OR TINT_BUILD_GLSL_VALIDATOR) AND TINT_BUILD_CMD_TOOLS)
+     set(SKIP_GLSLANG_INSTALL ON CACHE BOOL "" FORCE)
+     set(ENABLE_OPT OFF CACHE BOOL "" FORCE)
+     message(STATUS "Dawn: using GLSLang at ${DAWN_GLSLANG_DIR}")
+-    # https://github.com/KhronosGroup/glslang/issues/2283
+-    # glslang does not export symbols properly when BUILD_SHARED_LIBS=1, so always build it as static for now.
+-    set(BUILD_SHARED_LIBS_SAVED ${BUILD_SHARED_LIBS})
+-    set(BUILD_SHARED_LIBS 0)
+-    # find_package(glslang CONFIG REQUIRED GLOBAL)
+-    add_subdirectory("${DAWN_GLSLANG_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/glslang" EXCLUDE_FROM_ALL)
+-    set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_SAVED})
++    find_package(glslang CONFIG REQUIRED GLOBAL)
+ endif()
+ 
+ if (NOT TARGET glfw AND DAWN_USE_GLFW)
+@@ -180,8 +172,8 @@ endif()
+ if (DAWN_ENABLE_DESKTOP_GL OR DAWN_ENABLE_OPENGLES)
+     # Header-only library for khrplatform.h
+     add_library(dawn_khronos_platform INTERFACE)
+-    target_sources(dawn_khronos_platform INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/khronos/EGL-Registry/api/KHR/khrplatform.h")
+-    target_include_directories(dawn_khronos_platform INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/khronos/EGL-Registry/api")
++    find_path(KHRONOS_INCLUDE_DIR NAMES KHR/khrplatform.h REQUIRED)
++    target_include_directories(dawn_khronos_platform INTERFACE "${KHRONOS_INCLUDE_DIR}")
+ endif()
+ 
+ if (NOT TARGET Vulkan::Headers AND DAWN_ENABLE_VULKAN)
+@@ -359,6 +351,6 @@ endif()
+ 
+ if (TINT_BUILD_TINTD)
+     set(LANGSVR_JSON_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp")
+-    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp" EXCLUDE_FROM_ALL)
++    find_package(jsoncpp CONFIG REQUIRED) # JsonCpp::JsonCpp
+     add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/langsvr" EXCLUDE_FROM_ALL)
+ endif()
