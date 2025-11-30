@@ -252,7 +252,7 @@ Up-to-Date Ports: list or `None`
 
 ### Conventions
 - Icons: ✅ current, ⚠️ attention (behind/major/ahead), ❌ missing
-- Tool: tables only for `Versions` and batch summary; otherwise bullets
+- Use tables only for `Versions` and batch summary; otherwise bullets
 - Normalize versions before comparison; preserve raw tag in Release Details
 - Do not dump full changelog; only list detected keywords
 

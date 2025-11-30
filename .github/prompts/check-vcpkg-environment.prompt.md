@@ -231,7 +231,7 @@ Ordered immediate suggestions:
 ### Conventions
 - Icons: ✅ present, ❌ missing, ⚠️ warning (outdated / partial)
 - Avoid full file dumps; only list counts & paths
-- Tool: relative workspace paths when referencing registry folders
+- Use relative workspace paths when referencing registry folders
 - Do not duplicate installation details already shown; keep each item single line
 
 ### Failure Mode (vcpkg not found)

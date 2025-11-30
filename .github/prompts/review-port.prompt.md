@@ -283,7 +283,7 @@ Branch based:
 - Recommendation: Non-mandatory enhancement, stylistic or future-proofing
 
 ### Output Conventions
-- Tool: consistent emoji indicators ✅/⚠️/❌
+- Use consistent emoji indicators ✅/⚠️/❌
 - Prefer bullet lists; avoid tables unless multiple patches (>3)
 - Keep code snippets minimal (single line) unless clarity demands more
 - Timestamp in ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)

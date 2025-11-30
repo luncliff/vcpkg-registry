@@ -146,28 +146,30 @@ Generate port files for farmhash
 #### Step 4.2: Generate vcpkg.json
 - Tool: #tool:edit/createFile
 - File: `ports/{port-name}/vcpkg.json`
-- Content:
-  ```json
-  {
-    "name": "{port-name}",
-    "version": "{version}",
-    "description": "{project-description}",
-    "homepage": "{project-url}",
-    "license": "{license-spdx-id}",
-    "dependencies": [
-      { "name": "vcpkg-cmake", "host": true },
-      { "name": "vcpkg-cmake-config", "host": true }
-    ]
-  }
-  ```
 - Note: Add project dependencies to array
+
+Content template:
+```json
+{
+  "name": "{port-name}",
+  "version": "{version}",
+  "description": "{project-description}",
+  "homepage": "{project-url}",
+  "license": "{license-spdx-id}",
+  "dependencies": [
+    { "name": "vcpkg-cmake", "host": true },
+    { "name": "vcpkg-cmake-config", "host": true }
+  ]
+}
+```
 
 #### Step 4.3: Generate portfile.cmake
 - Tool: #tool:edit/createFile
 - File: `ports/{port-name}/portfile.cmake`
 
+Content template (for GitHub projects with CMake):  
+
 ```cmake
-# Content template (for GitHub projects with CMake):
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO {owner}/{repo}
@@ -202,8 +204,8 @@ vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
 - Tool: #tool:edit/createFile
 - File: `ports/{port-name}/usage`
 
-Typically we don't have to create a usage file for header-only libraries without config targets.
-If created, content example:
+Typically we don't have to create a usage file for header-only libraries without config targets.  
+If created, describe the usage example with CMake command `find_package`(CMake config files), `find_library`(library path), and `find_path`(header include directory):
 
 ```markdown
 {port-name} provides CMake targets:
@@ -215,9 +217,9 @@ If created, content example:
 #### Step 4.5: Document special build requirements
 - Condition: Port requires patches or custom build steps
 - Action: Add comments to portfile.cmake explaining rationale
-
-Some projects may use the GitHub Actions build workflows.
-Reference the files in `${SOURCE_PATH}/.github/workflows` folder in builtrees, so the reviewer can recognize the build step differences.
+- Comment:
+   - Some projects may use the GitHub Actions build workflows.
+   - Reference the files in `${SOURCE_PATH}/.github/workflows` folder in builtrees, so the reviewer can recognize the build step differences.
 
 ### Phase 5: Validate Port Structure
 
