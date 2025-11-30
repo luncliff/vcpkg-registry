@@ -1,13 +1,11 @@
+# Instruction: vcpkg-registry maintenance
 
-# GitHub Copilot Instructions for vcpkg package manager
+The followings are minimal guidelines to get general ideas about this repository.
 
-Use [References](../docs/references.md) to fetch documents for working with vcpkg commands and build toolchains.
-
-If using prompts, check [prompt/agent description](./readme.md) together.
+- Use [References](../docs/references.md) to fetch documents for working with vcpkg commands and build toolchains.
+- Use [README.md](../README.md) and files in [the docs/ folder](../docs/). 
 
 ## How To
-
-The followings are minimal guidelines.
 
 ### Setup the environment
 
@@ -16,58 +14,25 @@ Follow the official [Getting Started Guide](https://learn.microsoft.com/en-us/vc
 - Required environment variables
   - `VCPKG_ROOT` to integrate with toolchains. For example, `C:\vcpkg` or `/usr/local/shared/vcpkg`
   - `PATH` to run `vcpkg` CLI program
-- Version check
-  - vcpkg program behavior may change as time flows. Report the `vcpkg` executable version with the command
-
-```console
-> vcpkg --version
-vcpkg package management program version 2025-03-13-7699e411ea11543de6abc0c7d5fd11cfe0039ae5
-...
-```
-
-#### For GitHub Actions
-
-Use the following project to integrate vcpkg into CI workflows
-
-- https://github.com/lukka/run-vcpkg
-- https://github.com/actions/runner-images
 
 ### Using the `vcpkg` command
 
-- https://github.com/microsoft/vcpkg-tool
-
-Use `vcpkg help` command to get descriptions.
-
-```console
-> vcpkg help
-usage: vcpkg <command> [--switches] [--options=values] [arguments] @response_file
-...
-For More Help:
-  help topics            Displays full list of help topics
-  help <topic>           Displays specific help topic
-  help commands          Displays full list of commands, including rare ones not listed here
-  help <command>         Displays help detail for <command>
-```
-
-Read the messages of the the following commands if you just started to use `vcpkg`.
+- Version check
+  - vcpkg program behavior may change as time flows. Report the [`vcpkg` executable version](https://github.com/microsoft/vcpkg-tool/releases) when the version is unknown.
+- Use `vcpkg help` command to get descriptions and test the CLI executable works.
 
 ```
+vcpkg --version
+```
+
+Commonly used commands can be checked with:
+
+```
+vcpkg help
 vcpkg help install
 vcpkg help remove
-```
-
-#### `search` for ports/features
-
-```
-# Example: Search for "ssl"
-vcpkg search "ssl"
-```
-
-#### Dependency Information: `depend-info`
-
-```
-# Example: Check dependencies for "assimp"
-vcpkg depend-info "assimp"
+vcpkg help search
+vcpkg help depend-info
 ```
 
 #### Working with Overlay ports/triplets
@@ -76,32 +41,33 @@ The "overlay ports" and "overlay triplets" may need more detailed options or swi
 
 - Overlay ports
   - https://learn.microsoft.com/en-us/vcpkg/concepts/overlay-ports
-  - https://learn.microsoft.com/en-us/vcpkg/consume/install-locally-modified-package#7---install-your-overlay-port
+  - https://learn.microsoft.com/en-us/vcpkg/consume/install-locally-modified-package
 - Overlay triplets
   - https://learn.microsoft.com/en-us/vcpkg/users/examples/overlay-triplets-linux-dynamic
 
-If you want to use the [openssl3](../ports/openssl3) port in the reigstry,
-You have to provide the `--overlay-ports` option, or `VCPKG_OVERLAY_PORTS` environment variable.
+Prevent using environment variable `VCPKG_OVERLAY_PORTS` and `VCPKG_OVERLAY_TRIPLETS` to avoid confusion.
 
 ```ps1
-# suppose you cloned the vcpkg-registry repository to "C:/vcpkg-registry"
-vcpkg install --overlay-ports "C:/vcpkg-registry/ports" openssl3
+# Both relative path and absolute path are allowed for overlay options
+$Workspace=$(Get-Location).Path
+vcpkg install `
+  --overlay-ports "$Workspace/ports" `
+  --overlay-triplets "$Workspace/triplets" `
+  cpuinfo
 ```
 
-You may not want to modify folders under `VCPKG_ROOT`(or `$env:VCPKG_ROOT` in PowerShell) to compare build logs under "buildtrees" folder, or port install outputs in "packages" folder
-In the case, you can to provide `--x-*-root` options to the `vcpkg install` command.
+Instead of using default folders under `VCPKG_ROOT`, you can provide custom folders for port build/install steps.
 
 ```ps1
-vcpkg install --overlay-ports "C:/vcpkg-registry/ports" `
+# RECOMMENDED: Create/use folders in the current workspace
+vcpkg install --overlay-ports "ports" `
   --x-buildtrees-root "buildtrees" `
   --x-packages-root "packages" `
   --x-install-root "installed" `
-  openssl3
+  eigen3
 ```
 
 ### Editing baseline files in vcpkg Registry
-
-- See [README.md](../README.md) to read more detailed references
 
 The vcpkg registry consists of
 
@@ -125,7 +91,7 @@ vcpkg format-manifest --all `
     --x-builtin-registry-versions-dir "$(Get-Location)/versions
 ```
 
-Update baseline adn version JSON files for a specific port
+Update baseline and version JSON files for a specific port
 
 ```ps1
 # vcpkg help x-add-version
@@ -158,7 +124,7 @@ When encountering compiler or linker errors, refer the following links
 
 ### Alternative Approach: Embedded CMakeLists.txt
 
-When patch files become too complex or frequently fail to apply due to upstream changes, you can use the **embedded CMakeLists.txt approach** as demonstrated in ports like `farmhash`.
+When patch files become too complex or frequently fail to apply due to upstream changes, you can use the **embedded CMakeLists.txt approach** as demonstrated in [ports like `farmhash`](../ports/farmhash/).
 
 #### How It Works
 
@@ -202,123 +168,17 @@ When patch files become too complex or frequently fail to apply due to upstream 
 
 ## Maintaining this repository
 
-This repository is for experiment with vcpkg.  
-Mostly for port creation/sharing without following the guidelines.
+Mostly we work in [ports/](../ports/) and [versions/](../versions/) folder.
+
+The ports in this vcpkg-registry checks the vcpkg upstream guides, but must of the ports may not follow them for experimental purpose.
 
 - [microsoft/vcpkg Contributing Guideline](https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md)
 - [Maintainer Guideline](https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md)
 
-Currently, the following scripts are used to maintain [ports/](../ports/) and [versions/](../versions/) folder.
-
-- [scripts/registry-format.ps1](../scripts/registry-format.ps1)
-- [scripts/registry-add-version.ps1](../scripts/registry-add-version.ps1)
-
 ### Updating a ports
 
-Here are the steps to update a port in the vcpkg registry with **explicit Git checkpoints**.
-
-#### Step 1: Modify [Port Files](../ports/)
-- Change the vcpkg.json file of the port (update version)
-- Change the portfile.cmake (update `REF` and `SHA512` values)
-- Run the port install test (`vcpkg install <port-name>`)
-- If the install failed, check the configure/build/install logs and create patches
-
->
-> [!NOTE]
->
-> The Microsoft/vcpkg upstream tries to reduce the patch by suggesting the Pull Requests to the ports' projects.(See guideline references above.)  
-> However, in this repository, we prefer adopting later versions of build toolchains, rather than providing a correct changes.  
-> If there is no existing(and helpful) issues & pull requests in the upstream, we will create a patches.  
-> When the patched port can be used without big issues, then we will consider reporting to the project and making a Pull Request with the patches.
->
-
-#### Step 2: Format The Changed [Port Files](../ports/) (Required)
-
-- Run formatting script to ensure consistent JSON formatting
-
-```ps1
-./scripts/registry-format.ps1 -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
-```
-
-#### **GIT CHECKPOINT 1**: Commit Port Changes
-
-```ps1
-git add ./ports/<port-name>/
-git commit -m "[<port-name>] use X.Y.Z" -m "- <link to release or commit URL>"
-```
-
-#### Step 3: Update Baseline and Version Files
-
-- Update registry baseline and version tracking files
-
-```ps1
-./scripts/registry-add-version.ps1 -PortName "<port-name>" -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
-```
-
-#### **GIT CHECKPOINT 2**: Commit [versions/](../versions/) changes
-```ps1
-git add ./versions/
-git commit -m "[<port-name>] update baseline and version files for X.Y.Z"
-```
-
->
-> [!NOTE]
->
-> Fresh git repo state is required by vcpkg tool, so always commit port changes before running registry-add-version.ps1
->
-
-#### Note: Calculating SHA512 for New Versions
-
-When updating to a new version, you need to calculate the `SHA512` hash:
-
-```ps1
-# Download the source archive
-$Version = "X.Y.Z"
-$Url = "https://github.com/OWNER/REPO/archive/v${Version}.tar.gz"
-curl -L -o "temp-${Version}.tar.gz" $Url
-
-# Calculate SHA512 (use lowercase for vcpkg)
-$Hash = (Get-FileHash -Algorithm SHA512 "temp-${Version}.tar.gz").Hash.ToLower()
-Write-Host "SHA512: $Hash"
-
-# Clean up
-Remove-Item "temp-${Version}.tar.gz"
-```
-
-If the hash calculation can't be done in the current Shell environment,
-use `0` for the `SHA512` value in the portfile.cmake.
-By running the `vcpkg install` command with the change, vcpkg tool will report the calculated `SHA512` value with its output message.
-
-#### Example
-
-Suppose we are updating the [`openssl3` port](../ports/openssl3/).
-
-```ps1
-Push-Location "C:/vcpkg-registry"
-  $RegistryRoot = Get-Location
-  $PortName = "openssl3"  # Replace with your port name
-  
-  # ... Suppose we edited files under ports/openssl3/ ...
-  
-  # Step 1: Test the port installation
-  vcpkg install --overlay-ports="ports" --triplet=x64-windows $PortName
-    
-  # Step 2: Format all vcpkg.json files (optional but recommended)
-  ./scripts/registry-format.ps1 -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$RegistryRoot"
-
-  # GIT CHECKPOINT 1: Commit port changes
-  git add ./ports/$PortName/
-  git commit -m "[$PortName] update to version X.Y.Z"
-
-  # Step 3: Update the baseline and version files
-  # This should be done after commit. Fresh git repo state is required by vcpkg tool
-  ./scripts/registry-add-version.ps1 -PortName $PortName -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$RegistryRoot"
-  
-  # GIT CHECKPOINT 3: Commit version files
-  git add ./versions/
-  git commit -m "[$PortName] update baseline and version files"
-Pop-Location
-```
+- Use [guide-update-port.md](../docs/guide-update-port.md) to generate steps and todo list.
+- Update todo list as each step is done.
 
 ### Testing a port
 
