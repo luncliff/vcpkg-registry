@@ -143,54 +143,8 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
         continue-on-error: true
 
-      - uses: actions/upload-artifact@v5.0.0
-        if: failure()
-        with:
-          name: log-${{ runner.os }}
-          path: |
-            buildtrees/*/*.txt
-            buildtrees/*/*.log
-
-  host-tools:
-    name: "Host Tools"
-    runs-on: ${{ matrix.runner_image }} # https://github.com/actions/runner-images
-    needs: [validate, overlay]
-    strategy:
-      matrix:
-        include:
-          - runner_image: "ubuntu-24.04"
-          # - runner_image: "macos-13"
-          # - runner_image: "windows-latest"
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v5
-      - uses: aws-actions/configure-aws-credentials@v5
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      - uses: lukka/run-vcpkg@v11.5
-        with:
-          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
-          runVcpkgInstall: false
-
-      - name: "Run apt"
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt update -y
-          sudo apt install --fix-missing -y $(cat test/packages-apt.txt)
-
-      - name: "Run homebrew"
-        if: runner.os == 'macOS'
-        run: brew install autoconf automake libtool
-
-      - uses: microsoft/setup-msbuild@v2
-        if: runner.os == 'Windows'
-        with:
-          msbuild-architecture: x64
-
-      - uses: lukka/run-vcpkg@v11.5
+      - name: "Run vcpkg(host-tools)"
+        uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
@@ -198,15 +152,11 @@ jobs:
           runVcpkgFormatString: '[`install`, `--x-feature`, `host-tools`, `--clean-after-build`]'
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
-        env:
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
-          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
-          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
 
       - uses: actions/upload-artifact@v5.0.0
         if: failure()
         with:
-          name: log-host-tools
+          name: log-${{ runner.os }}
           path: |
             buildtrees/*/*.txt
             buildtrees/*/*.log
@@ -232,7 +182,7 @@ jobs:
 
       - uses: nttld/setup-ndk@v1.5.0
         with:
-          ndk-version: 'r29-beta3' # https://github.com/android/ndk/releases
+          ndk-version: 'r29' # https://github.com/android/ndk/releases
           local-cache: true
 
       - name: "Run vcpkg(arm64-android)"
