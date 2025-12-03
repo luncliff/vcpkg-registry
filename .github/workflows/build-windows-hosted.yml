@@ -33,7 +33,7 @@ jobs:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: x64
@@ -105,7 +105,7 @@ jobs:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: x64
@@ -161,7 +161,7 @@ jobs:
     runs-on: ["self-hosted", "x64", "Windows", "Vulkan"]
     needs: overlay
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
