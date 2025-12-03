@@ -1,0 +1,139 @@
+name: Maintenance
+
+on:
+  schedule:
+    - cron: "0 22 * * 5" # Every friday 10 PM
+  push:
+    tags:
+      - "*.*.*"
+  pull_request:
+    types: [closed, opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Name of the Git branch'
+        required: true
+        default: 'main'
+
+jobs:
+  close-stale:
+    name: "Close Stale Items"
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+    steps:
+      - uses: actions/stale@v10
+        with:
+          repo-token: ${{ secrets.GH_TOKEN }}
+          days-before-issue-stale: 21
+          days-before-issue-close: 7
+          stale-issue-label: "stale"
+          days-before-pr-stale: 21
+          days-before-pr-close: 7
+
+  clean-cache:
+    name: "Cleanup Cache"
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: "Run gh(auth)"
+        run: |
+          gh auth status
+          gh extension install actions/gh-actions-cache
+      - name: "Run gh-cleanup-cache.ps1"
+        run: |
+          $branch = "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
+          ./scripts/gh-cleanup-cache.ps1 -Branch "$branch"
+        shell: pwsh
+
+  clean-runs:
+    name: "Cleanup Runs"
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: "Run gh(auth)"
+        run: |
+          gh auth status
+      - name: "Run gh-cleanup-runs.ps1"
+        run: |
+          $branch = "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
+          ./scripts/gh-cleanup-runs.ps1 -Branch "$branch" `
+            -Workflow "build.yml" `
+          ./scripts/gh-cleanup-runs.ps1 -Branch "$branch" `
+            -Workflow "build-windows-hosted.yml" `
+        shell: pwsh
+
+  pr-labeler:
+    name: "Label Pull Requests"
+    if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'synchronize')
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/labeler@v6
+        with:
+          configuration-path: '.github/label-configuration.yml'
+          sync-labels: true
+
+  pr-assign:
+    name: "Assign Pull Request"
+    if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened')
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/github-script@v8
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Get the owner from CODEOWNERS or repository owner
+            const owner = context.repo.owner;
+            github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              reviewers: [owner]
+            });
+
+  prerelease:
+    name: "Prerelease"
+    if: github.event_name == 'tag' 
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: "Run gh(auth)"
+        run: |
+          gh auth setup-git
+          gh auth status
+      - name: "Run make-configuration.ps1"
+        run: |
+          $text = scripts/make-configuration.ps1 -Dump
+          Write-Output "## Configuration" >> ${env:GITHUB_STEP_SUMMARY}
+          Write-Output '```json' >> ${env:GITHUB_STEP_SUMMARY}
+          Write-Output $text >> ${env:GITHUB_STEP_SUMMARY}
+          Write-Output '```' >> ${env:GITHUB_STEP_SUMMARY}
+        shell: pwsh
+      - name: "Run gh(release)"
+        run: |
+          gh release create ${{ github.ref_name }} \
+            -t ${{ github.ref_name }} \
+            --discussion-category "General" \
+            --generate-notes --prerelease
+          gh release upload ${{ github.ref_name }} \
+            vcpkg-configuration.json

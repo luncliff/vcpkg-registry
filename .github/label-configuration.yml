@@ -1,16 +1,14 @@
 # Automatically label PRs based on changed files
+# See https://github.com/actions/labeler/tree/v6/
 
-'documentation':
-  - 'docs/**'
-  - '*.md'
-  - 'triplets/**'
-  - 'scripts/**'
+documentation:
+- changed-files:
+  - any-glob-to-any-file:
+    - 'docs/*'
+    - '*.md'
+    - 'triplets/*'
+    - 'scripts/*'
 
 'ci: GitHub Actions':
-  - '.github/**'
-
-# 'port-update':
-#   - changed-files:
-#     - any-glob-to-any-file: 'ports/**/vcpkg.json'
-#     - any-glob-to-any-file: 'ports/**/portfile.cmake'
-#     - any-glob-to-any-file: 'versions/**'
+- changed-files:
+  - any-glob-to-any-file: '.github/*'

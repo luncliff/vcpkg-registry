@@ -38,7 +38,7 @@ jobs:
       matrix:
         include:
           - runner_image: "ubuntu-24.04"
-          # - runner_image: "macos-13"
+          - runner_image: "macos-latest"
           - runner_image: "windows-latest"
       fail-fast: false
     env:
@@ -55,7 +55,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
+          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
           runVcpkgInstall: false
 
       - name: "Run apt"
@@ -67,11 +67,6 @@ jobs:
       - name: "Run homebrew"
         if: runner.os == 'macOS'
         run: brew install autoconf automake libtool
-
-      - uses: mobiledevops/xcode-select-version-action@v1.0.0
-        if: matrix.runner_image == 'macos-13'
-        with:
-          xcode-select-version: "15.2"
 
       - uses: microsoft/setup-msbuild@v2
         if: runner.os == 'Windows'
@@ -177,7 +172,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
+          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
           runVcpkgInstall: false
 
       - name: "Run apt"
@@ -198,7 +193,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
+          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--x-feature`, `host-tools`, `--clean-after-build`]'
           vcpkgJsonGlob: "test/vcpkg.json"
@@ -232,7 +227,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
+          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
           runVcpkgInstall: false
 
       - uses: nttld/setup-ndk@v1.5.0

@@ -24,8 +24,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2025.07.25"
-            vcpkg_commit: "dd3097e305afa53f7b4312371f62058d2e665320"
+          - vcpkg_tag: "2025.09.17"
+            vcpkg_commit: "4334d8b4c8916018600212ab4dd4bbdc343065d1" # 2025.09.17
+          - vcpkg_tag: "2025.10.17"
+            vcpkg_commit: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -140,7 +142,7 @@ jobs:
         name: "Run vcpkg(x64-windows)"
         with:
           vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
+          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
@@ -178,7 +180,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "C:/vcpkg"
-          vcpkgGitCommitId: "dd3097e305afa53f7b4312371f62058d2e665320" # 2025.07.25
+          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
           vcpkgJsonGlob: "test/self-hosted.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
