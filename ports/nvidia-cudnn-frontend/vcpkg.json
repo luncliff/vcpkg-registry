@@ -1,6 +1,6 @@
 {
   "name": "nvidia-cudnn-frontend",
-  "version": "1.13.0",
+  "version": "1.14.1",
   "description": "Redirection port for 'cudnn-frontend'",
   "homepage": "https://github.com/NVIDIA/cudnn-frontend",
   "license": "MIT",
