@@ -5,11 +5,9 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO dmlc/dlpack
-    REF v1.0
-    SHA512 bdf27bdb6d24db2da9155b9c78e62faf043e0aa4d54dba4cadac312c2b87533ae1b44ecebd462a764141297baa35884c1379902d655bab8a71fe65838c7b1e9b
+    REF v1.2
+    SHA512 73628feddeb07c7942a4f5e0a9cdfbc95c3035e39e4b41e33b9a5b83f5da400f42e79d15507d4b7487be725b1a9983abb9050f6ffd5c909c9185809a02976755
     HEAD_REF main
-    PATCHES
-        fix-cmake.patch
 )
 
 vcpkg_cmake_configure(
