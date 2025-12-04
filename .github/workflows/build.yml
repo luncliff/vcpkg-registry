@@ -143,6 +143,17 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
         continue-on-error: true
 
+      - name: "Run vcpkg(host-tools)" # skip temporary
+        if: false
+        uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
+          runVcpkgInstall: true
+          runVcpkgFormatString: '[`install`, `--x-feature`, `host-tools`, `--clean-after-build`]'
+          vcpkgJsonGlob: "test/vcpkg.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+
       - uses: actions/upload-artifact@v5.0.0
         if: failure()
         with:
@@ -151,16 +162,17 @@ jobs:
             buildtrees/*/*.txt
             buildtrees/*/*.log
 
-  host-tools:
-    name: "Host Tools"
-    runs-on: ${{ matrix.runner_image }} # https://github.com/actions/runner-images
-    needs: [validate, overlay]
+  android:
+    name: "Android"
+    runs-on: "ubuntu-24.04" # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#environment-variables-2
+    needs: validate
+    # container: # https://circleci.com/developer/images/image/cimg/android
+    #   image: cimg/android:2025.01.1-ndk # 28.0.12674087
     strategy:
       matrix:
         include:
-          - runner_image: "ubuntu-24.04"
-          # - runner_image: "macos-13"
-          # - runner_image: "windows-latest"
+          - triplet: "arm64-android"
+          - triplet: "x64-android"
       fail-fast: false
     steps:
       - uses: actions/checkout@v6
@@ -175,89 +187,25 @@ jobs:
           vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
           runVcpkgInstall: false
 
-      - name: "Run apt"
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt update -y
-          sudo apt install --fix-missing -y $(cat test/packages-apt.txt)
-
-      - name: "Run homebrew"
-        if: runner.os == 'macOS'
-        run: brew install autoconf automake libtool
-
-      - uses: microsoft/setup-msbuild@v2
-        if: runner.os == 'Windows'
-        with:
-          msbuild-architecture: x64
-
-      - uses: lukka/run-vcpkg@v11.5
-        with:
-          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
-          runVcpkgInstall: true
-          runVcpkgFormatString: '[`install`, `--x-feature`, `host-tools`, `--clean-after-build`]'
-          vcpkgJsonGlob: "test/vcpkg.json"
-          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
-        env:
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
-          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
-          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
-
-      - uses: actions/upload-artifact@v5.0.0
-        if: failure()
-        with:
-          name: log-host-tools
-          path: |
-            buildtrees/*/*.txt
-            buildtrees/*/*.log
-
-  android:
-    name: "Android"
-    runs-on: "ubuntu-24.04" # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#environment-variables-2
-    needs: validate
-    # container: # https://circleci.com/developer/images/image/cimg/android
-    #   image: cimg/android:2025.01.1-ndk # 28.0.12674087
-    steps:
-      - uses: actions/checkout@v6
-      - uses: aws-actions/configure-aws-credentials@v5
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      - uses: lukka/run-vcpkg@v11.5
-        with:
-          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
-          runVcpkgInstall: false
-
-      - uses: nttld/setup-ndk@v1.5.0
-        with:
-          ndk-version: 'r29-beta3' # https://github.com/android/ndk/releases
-          local-cache: true
+      # - uses: nttld/setup-ndk@v1.5.0
+      #   with:
+      #     ndk-version: 'r29' # https://github.com/android/ndk/releases
+      #     local-cache: true
 
       - name: "Run vcpkg(arm64-android)"
         run: |
+          export ANDROID_NDK=$ANDROID_NDK_LATEST_HOME
+          export ANDROID_NDK_HOME=$ANDROID_NDK
+          export ANDROID_NDK_ROOT=$ANDROID_NDK
           vcpkg install --keep-going \
-            --clean-packages-after-build --x-buildtrees-root buildtrees \
+            --clean-after-build --x-buildtrees-root buildtrees \
             --x-manifest-root test --x-feature test
         shell: bash
         env:
           VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
           VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
-          VCPKG_DEFAULT_TRIPLET: "arm64-android"
-
-      - name: "Run vcpkg(x64-android)"
-        run: |
-          vcpkg install --keep-going \
-            --clean-packages-after-build --x-buildtrees-root buildtrees \
-            --x-manifest-root test --x-feature test
-        shell: bash
-        env:
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
-          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
-          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
-          VCPKG_DEFAULT_TRIPLET: "x64-android"
+          VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
 
       - uses: actions/upload-artifact@v5.0.0
         if: failure()
