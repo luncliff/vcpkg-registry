@@ -1,7 +1,7 @@
 ---
 description: 'Install vcpkg port with overlay-ports and analyze build logs'
 agent: 'agent'
-tools: ['edit/editFiles', 'edit/createFile', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal']
+tools: ['edit/createFile', 'edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'todos']
 model: GPT-5 mini (copilot)
 ---
 

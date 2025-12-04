@@ -1,7 +1,7 @@
 ---
 description: 'Search for existing ports by name, URL, or keywords'
 agent: 'agent'
-tools: ['search/fileSearch', 'search/textSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'githubRepo']
+tools: ['search/fileSearch', 'search/textSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'githubRepo', 'todos']
 model: Claude Haiku 4.5 (copilot)
 ---
 

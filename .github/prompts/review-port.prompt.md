@@ -1,7 +1,7 @@
 ---
 description: 'Review port files against vcpkg guidelines and best practices'
 agent: 'agent'
-tools: ['edit/editFiles', 'edit/createFile', 'search/fileSearch', 'search/textSearch', 'search/readFile', 'fetch']
+tools: ['edit/createFile', 'edit/editFiles', 'search/fileSearch', 'search/textSearch', 'search/readFile', 'fetch', 'todos']
 model: Claude Sonnet 4 (copilot)
 ---
 

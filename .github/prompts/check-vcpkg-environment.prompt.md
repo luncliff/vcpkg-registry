@@ -1,7 +1,7 @@
 ---
 description: 'Verify vcpkg installation, configuration, and registry structure'
 agent: 'agent'
-tools: ['search/fileSearch', 'search/listDirectory', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'edit/createFile']
+tools: ['edit/createFile', 'search/fileSearch', 'search/listDirectory', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'todos']
 model: Claude Haiku 4.5 (copilot)
 ---
 

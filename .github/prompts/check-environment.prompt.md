@@ -1,7 +1,7 @@
 ---
 description: 'Detect and verify host system environment for vcpkg development'
 agent: 'agent'
-tools: ['runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch']
+tools: ['runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'todos']
 model: Claude Haiku 4.5 (copilot)
 ---
 

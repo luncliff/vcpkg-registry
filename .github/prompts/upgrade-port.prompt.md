@@ -1,7 +1,7 @@
 ---
 description: 'Upgrade port to newer version with SHA512 calculation and testing'
 agent: 'agent'
-tools: ['edit/editFiles', 'edit/createFile', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch']
+tools: ['edit/createFile', 'edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'todos']
 model: Claude Sonnet 4 (copilot)
 ---
 

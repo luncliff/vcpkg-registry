@@ -1,7 +1,7 @@
 ---
 description: 'Create a new vcpkg port with portfile.cmake, vcpkg.json, and patches'
 agent: 'agent'
-tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/runInTerminal', 'fetch', 'githubRepo']
+tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/runInTerminal', 'fetch', 'githubRepo', 'todos']
 model: Claude Haiku 4.5 (copilot)
 ---
 

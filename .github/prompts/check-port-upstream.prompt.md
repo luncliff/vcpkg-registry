@@ -1,7 +1,7 @@
 ---
 description: 'Check for upstream project updates and newer versions'
 agent: 'agent'
-tools: ['edit/editFiles', 'edit/createFile', 'search/textSearch', 'search/readFile', 'fetch', 'githubRepo']
+tools: ['edit/createFile', 'edit/editFiles', 'search/textSearch', 'search/readFile', 'fetch', 'githubRepo', 'todos']
 model: Claude Haiku 4.5 (copilot)
 ---
 
