@@ -11,6 +11,7 @@ vcpkg_from_github(
     PATCHES
         fix-sources.patch
         fix-cmake.patch
+        fix-cmake-abseil.patch
         fix-cmake-cuda.patch
         fix-cmake-training.patch
         fix-cmake-tensorrt.patch
