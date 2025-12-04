@@ -67,9 +67,9 @@ jobs:
         run: |
           $branch = "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
           ./scripts/gh-cleanup-runs.ps1 -Branch "$branch" `
-            -Workflow "build.yml" `
+            -Workflow "build.yml"
           ./scripts/gh-cleanup-runs.ps1 -Branch "$branch" `
-            -Workflow "build-windows-hosted.yml" `
+            -Workflow "build-windows-hosted.yml"
         shell: pwsh
 
   pr-labeler:
