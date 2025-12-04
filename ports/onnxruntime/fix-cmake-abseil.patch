@@ -2,8 +2,7 @@ diff --git a/cmake/external/abseil-cpp.cmake b/cmake/external/abseil-cpp.cmake
 index 1234567..abcdefg 100644
 --- a/cmake/external/abseil-cpp.cmake
 +++ b/cmake/external/abseil-cpp.cmake
-@@ -114,7 +114,10 @@ absl::function_ref
- absl::hash_function_defaults
+@@ -114,7 +114,10 @@ absl::hash_function_defaults
  absl::function_ref
  absl::city
 -absl::low_level_hash
