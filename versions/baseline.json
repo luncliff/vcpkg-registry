@@ -189,11 +189,11 @@
       "port-version": 0
     },
     "opencl": {
-      "baseline": "v2025.07.22",
+      "baseline": "v2024.10.24",
       "port-version": 0
     },
     "opencl-headers": {
-      "baseline": "v2025.07.22",
+      "baseline": "v2024.10.24",
       "port-version": 0
     },
     "opencl-on-dx12": {
