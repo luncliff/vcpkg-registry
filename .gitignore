@@ -5,6 +5,9 @@ vcpkg-configuration.json
 buildtrees
 installed
 packages
+test-buildtrees
+test-install
+test-packages
 
 *.log
 
