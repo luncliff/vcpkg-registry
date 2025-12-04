@@ -143,7 +143,8 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
         continue-on-error: true
 
-      - name: "Run vcpkg(host-tools)"
+      - name: "Run vcpkg(host-tools)" # skip temporary
+        if: false
         uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
@@ -167,6 +168,12 @@ jobs:
     needs: validate
     # container: # https://circleci.com/developer/images/image/cimg/android
     #   image: cimg/android:2025.01.1-ndk # 28.0.12674087
+    strategy:
+      matrix:
+        include:
+          - triplet: "arm64-android"
+          - triplet: "x64-android"
+      fail-fast: false
     steps:
       - uses: actions/checkout@v5
       - uses: aws-actions/configure-aws-credentials@v5
@@ -180,34 +187,25 @@ jobs:
           vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
           runVcpkgInstall: false
 
-      - uses: nttld/setup-ndk@v1.5.0
-        with:
-          ndk-version: 'r29' # https://github.com/android/ndk/releases
-          local-cache: true
+      # - uses: nttld/setup-ndk@v1.5.0
+      #   with:
+      #     ndk-version: 'r29' # https://github.com/android/ndk/releases
+      #     local-cache: true
 
       - name: "Run vcpkg(arm64-android)"
         run: |
+          export ANDROID_NDK=$ANDROID_NDK_LATEST_HOME
+          export ANDROID_NDK_HOME=$ANDROID_NDK
+          export ANDROID_NDK_ROOT=$ANDROID_NDK
           vcpkg install --keep-going \
-            --clean-packages-after-build --x-buildtrees-root buildtrees \
+            --clean-after-build --x-buildtrees-root buildtrees \
             --x-manifest-root test --x-feature test
         shell: bash
         env:
           VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
           VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
-          VCPKG_DEFAULT_TRIPLET: "arm64-android"
-
-      - name: "Run vcpkg(x64-android)"
-        run: |
-          vcpkg install --keep-going \
-            --clean-packages-after-build --x-buildtrees-root buildtrees \
-            --x-manifest-root test --x-feature test
-        shell: bash
-        env:
-          VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
-          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
-          VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
-          VCPKG_DEFAULT_TRIPLET: "x64-android"
+          VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
 
       - uses: actions/upload-artifact@v5.0.0
         if: failure()
