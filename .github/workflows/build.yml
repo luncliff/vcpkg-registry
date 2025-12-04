@@ -224,8 +224,14 @@ jobs:
       env:
         EMSDK_NODE: /emsdk/node/20.18.0_64bit/bin/node
         EMCC_CFLAGS: "-mbulk-memory -matomics -pthread"
+        VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
     steps:
       - uses: actions/checkout@v6
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: "Run apt"
         run: |
@@ -244,6 +250,7 @@ jobs:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+          runVcpkgFormatString: '[`install`, `--clean-after-build`]'
           runVcpkgInstall: true
         env:
           VCPKG_DEFAULT_TRIPLET: "wasm32-emscripten"

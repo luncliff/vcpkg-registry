@@ -11,6 +11,7 @@
       "name": "curl",
       "default-features": false
     },
+    "onnx",
     "tensorflow-lite",
     "xnnpack"
   ]
