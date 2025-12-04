@@ -2,8 +2,8 @@ diff --git a/cmake/onnxruntime_providers_cuda.cmake b/cmake/onnxruntime_provider
 index 795f019..25765dc 100644
 --- a/cmake/onnxruntime_providers_cuda.cmake
 +++ b/cmake/onnxruntime_providers_cuda.cmake
-@@ -232,8 +232,8 @@
-       target_link_libraries(${target} PRIVATE CUDA::cuda_driver)
+@@ -262,8 +262,8 @@
+               ${ABSEIL_LIBS} ${ONNXRUNTIME_PROVIDERS_SHARED} Boost::mp11 safeint_interface)
      endif()
  
 -    include(cutlass)

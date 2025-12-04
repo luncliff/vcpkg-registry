@@ -3,7 +3,7 @@ index 2714e6f..c800455 100644
 --- a/cmake/CMakeLists.txt
 +++ b/cmake/CMakeLists.txt
 @@ -1169,7 +1169,7 @@ function(onnxruntime_set_compile_flags target_name)
-       target_compile_definitions(${target_name} PRIVATE ENABLE_ATEN)
+       target_compile_definitions(${target_name} PRIVATE USE_KLEIDIAI)
      endif()
  
 -    set_target_properties(${target_name} PROPERTIES COMPILE_WARNING_AS_ERROR ON)
@@ -19,7 +19,7 @@ index cd93a8d..0e48bcd 100644
      URL_HASH SHA1=${DEP_SHA1_abseil_cpp}
      EXCLUDE_FROM_ALL
      PATCH_COMMAND ${ABSL_PATCH_COMMAND}
--    FIND_PACKAGE_ARGS 20240722 NAMES absl
+-    FIND_PACKAGE_ARGS 20250512 NAMES absl
 +    FIND_PACKAGE_ARGS NAMES absl CONFIG
  )
  
