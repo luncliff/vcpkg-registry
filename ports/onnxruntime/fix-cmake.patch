@@ -11,3 +11,23 @@ index 6c1d448..69eef03 100644
  
  
  if (WIN32 AND NOT CMAKE_CXX_STANDARD_LIBRARIES MATCHES kernel32.lib)
+diff --git a/cmake/external/abseil-cpp.cmake b/cmake/external/abseil-cpp.cmake
+index 0e48bcd..be0085e 100644
+--- a/cmake/external/abseil-cpp.cmake
++++ b/cmake/external/abseil-cpp.cmake
+@@ -114,7 +114,6 @@ absl::absl_check
+ absl::hash_function_defaults
+ absl::function_ref
+ absl::city
+-absl::low_level_hash
+ absl::fixed_array
+ absl::variant
+ absl::meta
+@@ -150,3 +149,7 @@ absl::memory
+ absl::charset
+ absl::endian
+ absl::config)
++# Support both old and new abseil-cpp versions
++if(TARGET absl::low_level_hash)
++  list(APPEND ABSEIL_LIBS absl::low_level_hash)
++endif()
