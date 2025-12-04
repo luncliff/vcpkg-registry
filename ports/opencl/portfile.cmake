@@ -4,7 +4,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO KhronosGroup/OpenCL-ICD-Loader
     REF ${VERSION}
-    SHA512 86e7aa831d3278645cd40c01b7e4262ed9cbfaa2ee8ffb4e9e012dd5bde7b29725508342f05178e09c496dbe3483e5e9b40e46a767d7f5bab504be931eaa95ef
+    SHA512 29043eff21076440046314edf62bb488b7e4e17d9fbdac4c3727d8e2523c0c8fbf89ee7fcf762528af761ddbcb4be24e5f062ffa82f778401d6365faa35344a8
     HEAD_REF main
 )
 
@@ -31,6 +31,3 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
 endif()
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
-
-# see opencl-headers port
-set(VCPKG_POLICY_EMPTY_INCLUDE_FOLDER enabled)
