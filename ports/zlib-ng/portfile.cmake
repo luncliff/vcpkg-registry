@@ -3,7 +3,7 @@ vcpkg_from_github(
     REPO zlib-ng/zlib-ng
     REF 2.3.2
     SHA512 8781ee4bfda7cb8c8c5150c2e6a067d699580616b61af2ea4cf03cbe14c6715b31a29a20b7c3dd97254a9e487c72c5228c9cfa817ff71aa765fe7043ab136f04
-    HEAD_REF 2.2.x
+    HEAD_REF 2.3.x
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
