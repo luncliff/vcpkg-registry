@@ -1,16 +1,19 @@
-vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
-
-set(ORT_GIT_COMMIT "89746dc19a0a1ae59ebf4b16df9acab8f99f3925")
-set(ORT_GIT_BRANCH "v${VERSION}")
+# https://github.com/microsoft/onnxruntime/blob/v1.22.1/tools/python/util/vcpkg_helpers.py
+message(WARNING "The port requires 'onnx' port build with CMake option ONNX_DISABLE_STATIC_REGISTRATION=ON")
+if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+    if("framework" IN_LIST FEATURES)
+        # The Objective-C API requires onnxruntime_BUILD_SHARED_LIB
+        vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
+    endif()
+endif()
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
-    REF ${ORT_GIT_BRANCH}
+    REF "v${VERSION}"
     SHA512 373c51575ada457b8aead5d195a5f3eba62fb747b6370a2a9889fff875c40ea30af8fd49104d58cc86f79247410e829086b0979f37ca8635c6dd34960e9cc424
     PATCHES
-        fix-sources.patch
-        fix-cmake.patch
+        fix-cmake.patch # .framework install, external library workarounds(abseil-cpp, eigen3)
         fix-cmake-cuda.patch
         fix-cmake-training.patch
 )
@@ -24,7 +27,6 @@ message(STATUS "Using flatc: ${FLATC}")
 vcpkg_find_acquire_program(PYTHON3)
 get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
 message(STATUS "Using python3: ${PYTHON3}")
-vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
 
 vcpkg_execute_required_process(
     COMMAND "${PYTHON3}" onnxruntime/core/flatbuffers/schema/compile_schema.py --flatc "${FLATC}"
@@ -100,11 +102,7 @@ if("tensorrt" IN_LIST FEATURES)
     endif()
 endif()
 
-# see vcpkg_check_linkage above ...
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
-
-# future works?
-# onnxruntime_ORT_MINIMAL_BUILD=${BUILD_MINIMAL}
 
 # see tools/ci_build/build.py
 vcpkg_cmake_configure(
@@ -129,20 +127,17 @@ vcpkg_cmake_configure(
         -Donnxruntime_ENABLE_LAZY_TENSOR=OFF
         -Donnxruntime_DISABLE_RTTI=OFF
         -Donnxruntime_DISABLE_ABSEIL=OFF
-        # for ORT_BUILD_INFO
-        -DORT_GIT_COMMIT=${ORT_GIT_COMMIT}
-        -DORT_GIT_BRANCH=${ORT_GIT_BRANCH}
         # some other customizations ...
         --compile-no-warning-as-error
     OPTIONS_DEBUG
         -Donnxruntime_ENABLE_MEMLEAK_CHECKER=OFF
-        -Donnxruntime_ENABLE_MEMORY_PROFILE=OFF
         -Donnxruntime_DEBUG_NODE_INPUTS_OUTPUTS=1
     MAYBE_UNUSED_VARIABLES
+        Python_EXECUTABLE
         onnxruntime_TENSORRT_PLACEHOLDER_BUILDER
-        onnxruntime_USE_CUSTOM_DIRECTML
         onnxruntime_NVCC_THREADS
         CMAKE_CUDA_FLAGS
+        onnxruntime_USE_CUSTOM_DIRECTML
 )
 if("cuda" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET onnxruntime_providers_cuda LOGFILE_BASE build-cuda)
