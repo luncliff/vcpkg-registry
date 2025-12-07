@@ -7,7 +7,6 @@
   "supports": "!emscripten",
   "dependencies": [
     "abseil",
-    "directx-headers",
     {
       "name": "glslang",
       "features": [
@@ -70,7 +69,15 @@
       "description": "Direct3D 12 backend support",
       "supports": "windows",
       "dependencies": [
-        "directx-dxc"
+        {
+          "name": "dawn",
+          "default-features": false,
+          "features": [
+            "d3d11"
+          ]
+        },
+        "directx-dxc",
+        "directx-headers"
       ]
     },
     "gl": {
