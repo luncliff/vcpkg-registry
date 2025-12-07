@@ -3,12 +3,11 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO onnx/onnx
-    REF v1.16.2
-    SHA512 7a9a8493b9c007429629484156487395044506f34e72253640e626351cb623b390750b36af78a290786131e3dcac35f4eb269e8693b594b7ce7cb105bcf9318d
+    REF "v${VERSION}"
+    SHA512 e6f7b5782a43a91783607549e4d0f0a9cbd46dfb67a602f81aaffc7bcdd8f450fe9c225f0bc314704f2923e396f0df5b03ea91af4a7887203c0b8372bc2749d0
     PATCHES
-        fix-cmake.patch
-        fix-cmake-protobuf.patch
-        support-test.patch
+        fix-pr-7390.patch
+        fix-cmakelists.patch
 )
 
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
@@ -21,7 +20,6 @@ message(STATUS "Using protoc: ${PROTOC}")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        test    ONNX_BUILD_TESTS
         python  BUILD_ONNX_PYTHON
         protobuf-lite   ONNX_USE_LITE_PROTO
         disable-exception   ONNX_DISABLE_EXCEPTIONS
@@ -29,40 +27,28 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 )
 
 vcpkg_find_acquire_program(PYTHON3)
-get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
 message(STATUS "Using python3: ${PYTHON3}")
-vcpkg_add_to_path(PREPEND "${PYTHON_PATH}")
-
-if("python" IN_LIST FEATURES)
-    get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
-    find_path(pybind11_DIR NAMES pybind11Targets.cmake PATHS "${PYTHON_ROOT}/Lib/site-packages/pybind11/share/cmake/pybind11" REQUIRED)
-    message(STATUS "Using pybind11: ${pybind11_DIR}")
-    list(APPEND FEATURE_OPTIONS "-Dpybind11_DIR:PATH=${pybind11_DIR}")
-endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
-        "-DPYTHON_EXECUTABLE:FILEPATH=${PYTHON3}"
-        "-D_PROTOBUF_INSTALL_PREFIX=${CURRENT_INSTALLED_DIR}"
+        "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
+        "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}"
         "-DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
-        "-DONNX_CUSTOM_PROTOC_EXECUTABLE=${PROTOC}"
-        -DONNX_VERIFY_PROTO3=ON # --protoc_path for gen_proto.py
         -DONNX_ML=ON
-        -DONNX_GEN_PB_TYPE_STUBS=ON
+        -DONNX_USE_PROTOBUF_SHARED_LIBS=${USE_PROTOBUF_SHARED}
+        -DONNX_USE_LITE_PROTO=OFF
         -DONNX_USE_MSVC_STATIC_RUNTIME=${USE_STATIC_RUNTIME}
-        -DONNX_BUILD_BENCHMARKS=OFF
+        -DONNX_BUILD_TESTS=OFF
+        -DONNX_BUILD_CUSTOM_PROTOBUF=OFF
     MAYBE_UNUSED_VARIABLES
         ONNX_USE_MSVC_STATIC_RUNTIME
-        ONNX_CUSTOM_PROTOC_EXECUTABLE
-        PROTOBUF_SEARCH_DIRS
+        Python_EXECUTABLE
+        Python3_EXECUTABLE
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/ONNX PACKAGE_NAME ONNX)
-if("test" IN_LIST FEATURES)
-    vcpkg_copy_tools(TOOL_NAMES onnx_gtests AUTO_CLEAN)
-endif()
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"

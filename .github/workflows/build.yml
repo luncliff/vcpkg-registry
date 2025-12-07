@@ -220,17 +220,30 @@ jobs:
     runs-on: "ubuntu-24.04"
     # needs: overlay
     container:
-      image: "emscripten/emsdk:4.0.13" # https://hub.docker.com/r/emscripten/emsdk
+      image: "emscripten/emsdk:4.0.21" # https://hub.docker.com/r/emscripten/emsdk
       env:
-        EMSDK_NODE: /emsdk/node/20.18.0_64bit/bin/node
+        EMSDK_NODE: /emsdk/node/22.16.0_64bit/bin/node
         EMCC_CFLAGS: "-mbulk-memory -matomics -pthread"
+        VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }}"
     steps:
       - uses: actions/checkout@v6
-
       - name: "Run apt"
         run: |
           sudo apt update -y
-          sudo apt install -y pkg-config python3-pip
+          sudo apt install -y pkg-config python3-pip unzip
+
+      - name: "Install AWS CLI" # https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip -q awscliv2.zip
+          sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+          aws --version
+
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: "Run git config"
         run: |
@@ -244,6 +257,7 @@ jobs:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+          runVcpkgFormatString: '[`install`, `--clean-after-build`]'
           runVcpkgInstall: true
         env:
           VCPKG_DEFAULT_TRIPLET: "wasm32-emscripten"
