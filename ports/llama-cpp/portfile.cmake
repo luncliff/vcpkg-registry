@@ -12,6 +12,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-3rdparty.patch
+        fix-chat-cpp-conversion.patch
 )
 file(REMOVE_RECURSE
     "${SOURCE_PATH}/vendor/nlohmann" # nlohmann-json
@@ -140,6 +141,7 @@ vcpkg_cmake_configure(
         # ${SOURCE_PATH}/CMakeLists.txt
         -DLLAMA_STANDALONE=ON
         -DLLAMA_CURL=ON
+        -DLLAMA_HTTPLIB=OFF
         -DLLAMA_LLGUIDANCE=OFF
         -DLLAMA_ALL_WARNINGS=OFF
         # ${SOURCE_PATH}/ggml/CMakeLists.txt
@@ -172,7 +174,6 @@ vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/llama" PACKAGE_NAME "llama")
 
 file(COPY "${SOURCE_PATH}/grammars"
           "${SOURCE_PATH}/models"
-          "${SOURCE_PATH}/prompts"
     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
 )
 

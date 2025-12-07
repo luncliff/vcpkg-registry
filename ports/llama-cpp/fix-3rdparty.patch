@@ -63,28 +63,29 @@ diff --git a/tools/server/server-http.cpp b/tools/server/server-http.cpp
 index 1..2 100644
 --- a/tools/server/server-http.cpp
 +++ b/tools/server/server-http.cpp
-@@ -2,7 +2,7 @@
+@@ -1,8 +1,8 @@
+ #include "common.h"
  #include "server-http.h"
- #include "download.h"
+ #include "server-common.h"
  
 -#include <cpp-httplib/httplib.h>
 +#include <httplib.h>
- // HTTP implementation using cpp-httplib
  
- static bool server_http_validate_api_key(const httplib::Request & req, const server_params & params) {
+ #include <functional>
+ #include <string>
 diff --git a/tools/server/server-models.cpp b/tools/server/server-models.cpp
 index 1..2 100644
 --- a/tools/server/server-models.cpp
 +++ b/tools/server/server-models.cpp
 @@ -3,7 +3,7 @@
- #include "server-common.h"
+ 
  #include "download.h"
  
 -#include <cpp-httplib/httplib.h> // TODO: remove this once we use HTTP client from download.h
 +#include <httplib.h> // TODO: remove this once we use HTTP client from download.h
- #include <nlohmann/json.hpp>
+ #include <sheredom/subprocess.h>
  
- #include <cstdio>
+ #include <functional>
 diff --git a/tools/tts/CMakeLists.txt b/tools/tts/CMakeLists.txt
 index 1..2 100644
 --- a/tools/tts/CMakeLists.txt
