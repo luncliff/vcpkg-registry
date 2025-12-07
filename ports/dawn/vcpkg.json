@@ -102,7 +102,7 @@
     },
     "glfw": {
       "description": "GLFW integration support",
-      "supports": "windows | osx | emscripten",
+      "supports": "windows | linux | osx | emscripten",
       "dependencies": [
         "glfw3"
       ]

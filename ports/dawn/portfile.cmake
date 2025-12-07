@@ -99,6 +99,7 @@ if("tint" IN_LIST FEATURES)
         file(COPY "${CURRENT_PACKAGES_DIR}/include/src/tint/src" DESTINATION "${CURRENT_PACKAGES_DIR}/include/tint/")
     endif()
 endif()
+file(INSTALL "${SOURCE_PATH}/include/webgpu" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
