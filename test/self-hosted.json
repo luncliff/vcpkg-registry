@@ -32,7 +32,14 @@
             "tools"
           ]
         },
-        "nvidia-tools-extension-sdk"
+        "nvidia-tools-extension-sdk",
+        {
+          "name": "onnxruntime",
+          "features": [
+            "tensorrt"
+          ],
+          "platform": "x64 & windows"
+        }
       ]
     },
     "test": {
