@@ -73,6 +73,15 @@
         },
         "glslang",
         {
+          "name": "imgui",
+          "default-features": false,
+          "features": [
+            "glfw-binding",
+            "osx-binding"
+          ],
+          "platform": "osx"
+        },
+        {
           "name": "libdispatch",
           "platform": "windows | android"
         },

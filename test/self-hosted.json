@@ -52,6 +52,16 @@
           ],
           "platform": "x64 & windows"
         },
+        {
+          "name": "imgui",
+          "default-features": false,
+          "features": [
+            "dx12-binding",
+            "glfw-binding",
+            "webgpu-binding",
+            "win32-binding"
+          ]
+        },
         "liblzma",
         {
           "name": "llama-cpp",
@@ -92,6 +102,14 @@
       "supports": "x64 & windows",
       "dependencies": [
         "glslang",
+        {
+          "name": "imgui",
+          "default-features": false,
+          "features": [
+            "glfw-binding",
+            "vulkan-binding"
+          ]
+        },
         {
           "name": "llama-cpp",
           "features": [
