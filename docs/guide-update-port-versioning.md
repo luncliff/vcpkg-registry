@@ -135,16 +135,18 @@ Contains the complete version history:
 
 ## 4. Version Update Workflow
 
+Here, we assume `<port-name>` is a name of the port being updated.
+
 ### Step 1: Update Port Version
 
 Update the version in `vcpkg.json`:
 ```json
 {
-  "name": "openssl3",
+  "name": "<port-name>",
   "version": "3.1.4",
-  "description": "OpenSSL is an open source project that provides a robust, commercial-grade, and full-featured toolkit for the Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols.",
-  "homepage": "https://www.openssl.org",
-  "license": "Apache-2.0"
+  "description": "...",
+  "homepage": "...",
+  "license": null
 }
 ```
 
@@ -154,8 +156,8 @@ Update `REF` and calculate new `SHA512` in `portfile.cmake`:
 ```cmake
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO openssl/openssl
-    REF openssl-3.1.4  # Updated
+    REPO "${org}/${repo}"
+    REF ${repo-git-release-or-tag}
     SHA512 a1b2c3d4e5f6...  # New hash
     HEAD_REF master
 )
@@ -165,8 +167,8 @@ vcpkg_from_github(
 
 ```powershell
 # Clean test installation
-vcpkg remove openssl3
-vcpkg install --overlay-ports=ports openssl3
+vcpkg remove <port-name>
+vcpkg install --overlay-ports=ports <port-name>
 ```
 
 ### Step 4: Format Port Files
@@ -179,21 +181,21 @@ vcpkg install --overlay-ports=ports openssl3
 
 **CRITICAL:** Always commit port changes before running version registration:
 ```powershell
-git add ./ports/openssl3/
-git commit -m "[openssl3] update to v3.1.4" -m "- https://github.com/openssl/openssl/releases/tag/openssl-3.1.4"
+git add ./ports/<port-name>/
+git commit -m "[<port-name>] update to v3.1.4" -m "- https://github.com/<org>/<repo>/releases/tag/<release-name>"
 ```
 
 ### Step 6: Register New Version
 
 ```powershell
-./scripts/registry-add-version.ps1 -PortName "openssl3" -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
+./scripts/registry-add-version.ps1 -PortName "<port-name>" -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
 ```
 
 ### Step 7: Commit Version Files
 
 ```powershell
 git add ./versions/
-git commit -m "[openssl3] update baseline and version files for v3.1.4"
+git commit -m "[<port-name>] update baseline and version files for v3.1.4"
 ```
 
 ## 5. Version Management Best Practices
