@@ -4,6 +4,10 @@
       "baseline": "20250814.0",
       "port-version": 0
     },
+    "angle": {
+      "baseline": "2025-12-06",
+      "port-version": 0
+    },
     "apple-crypto": {
       "baseline": "3.0.0",
       "port-version": 0
