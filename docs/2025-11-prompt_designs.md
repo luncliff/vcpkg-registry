@@ -441,7 +441,7 @@ After installation succeeds, review port:
   ↓
 [User commits changes]
   ↓
-[User runs registry-add-version.ps1]
+[User runs registry-add-version.ps1] or /update-port-baseline {port-name}
 ```
 
 ### Pattern 2: Upgrading an Existing Port
@@ -457,7 +457,7 @@ After installation succeeds, review port:
   ↓
 [User commits changes]
   ↓
-[User runs registry-add-version.ps1]
+[User runs registry-add-version.ps1] or /update-port-baseline {port-name}
 ```
 
 ### Pattern 3: Troubleshooting Port Issues
