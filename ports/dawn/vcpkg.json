@@ -4,11 +4,9 @@
   "description": "Dawn is an open-source and cross-platform implementation of the WebGPU standard.",
   "homepage": "https://github.com/google/dawn",
   "license": "BSD-3-Clause",
+  "supports": "!emscripten",
   "dependencies": [
-    {
-      "name": "abseil",
-      "platform": "!emscripten"
-    },
+    "abseil",
     "directx-headers",
     {
       "name": "glslang",
@@ -48,7 +46,7 @@
     },
     {
       "name": "gles",
-      "platform": "android | linux | freebsd | openbsd"
+      "platform": "android"
     },
     {
       "name": "metal",
@@ -56,7 +54,7 @@
     },
     {
       "name": "vulkan",
-      "platform": "(windows & !uwp) | android | linux | freebsd | openbsd"
+      "platform": "android"
     },
     {
       "name": "x11",
@@ -85,7 +83,7 @@
     },
     "gles": {
       "description": "OpenGL ES backend support",
-      "supports": "android | linux | freebsd | openbsd",
+      "supports": "windows | android | linux | freebsd | openbsd",
       "dependencies": [
         {
           "name": "angle",

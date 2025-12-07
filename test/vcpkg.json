@@ -68,6 +68,10 @@
           "platform": "windows"
         },
         {
+          "name": "dawn",
+          "platform": "windows | linux | osx"
+        },
+        {
           "name": "fbgemm",
           "platform": "x64"
         },
