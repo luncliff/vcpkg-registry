@@ -2,7 +2,7 @@
 description: 'Upgrade port to newer version with SHA512 calculation and testing'
 agent: 'agent'
 tools: ['edit/createFile', 'edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'todos']
-model: Claude Sonnet 4 (copilot)
+model: GPT-5 mini (copilot)
 ---
 
 # Upgrade Port
