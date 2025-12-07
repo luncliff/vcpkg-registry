@@ -40,6 +40,10 @@
       "baseline": "2025-05-22",
       "port-version": 0
     },
+    "dawn": {
+      "baseline": "20251030.221451",
+      "port-version": 0
+    },
     "directml": {
       "baseline": "1.15.3",
       "port-version": 0
