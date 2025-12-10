@@ -68,6 +68,13 @@
           "platform": "windows"
         },
         {
+          "name": "dawn",
+          "features": [
+            "glfw"
+          ],
+          "platform": "windows | linux | osx"
+        },
+        {
           "name": "fbgemm",
           "platform": "x64"
         },
