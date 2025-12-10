@@ -19,8 +19,8 @@ vcpkg_from_github(
     REF "v${VERSION}"
     SHA512 f0b2a614c2a275864e4e78a5ac686f347f7a27b022e796955a9cf6633a30ff3690229c4577458b46ffa31118ed9ec4ec25eddf38de3c6d99f92ef93bf2ee59d4
     HEAD_REF main
-    PATCHES
-        fix-cmake.patch # to change CMakeLists.txt file in the SOURCE_PATH, working with editable mode
+    # PATCHES
+    #     fix-cmake.patch # to change CMakeLists.txt file in the SOURCE_PATH, working with editable mode
 )
 
 vcpkg_find_acquire_program(GIT)
@@ -28,20 +28,18 @@ get_filename_component(GIT_PATH "${GIT}" PATH)
 vcpkg_add_to_path("${GIT_PATH}" PREPEND)
 
 # Download the third-party repository sources with the script.
-# TODO: The dependencies will be replaced to use other vcpkg ports. Need detailed review with the developers.
-vcpkg_find_acquire_program(PYTHON3)
-vcpkg_execute_required_process(
-    COMMAND "${PYTHON3}" tools/fetch_dawn_dependencies.py # requires git
-    LOGNAME fetch-dependencies
-    WORKING_DIRECTORY "${SOURCE_PATH}"
+x_vcpkg_get_python_packages(
+    PYTHON_VERSION 3
+    PACKAGES numpy jinja2
+    OUT_PYTHON_VAR PYTHON3
 )
-if(FALSE) # if(NOT _VCPKG_EDITABLE) # These will be used when the port becomes stable
-    file(REMOVE_RECURSE
-        "${SOURCE_PATH}/third_party/abseil-cpp"
-        "${SOURCE_PATH}/third_party/glfw"
-        "${SOURCE_PATH}/third_party/khronos"
-    )
-endif()
+# TODO: The dependencies will be replaced to use other vcpkg ports. Need detailed review with the developers.
+# vcpkg_execute_required_process(
+#     COMMAND "${PYTHON3}" tools/fetch_dawn_dependencies.py # requires git
+#     LOGNAME fetch-dependencies
+#     WORKING_DIRECTORY "${SOURCE_PATH}"
+# )
+file(REMOVE_RECURSE "${SOURCE_PATH}/third_party")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
@@ -83,20 +81,20 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/Dawn PACKAGE_NAME Dawn)
 
+if("tools" IN_LIST FEATURES)
+    vcpkg_copy_tools(TOOL_NAMES
+        tint # TARGET tint_cmd_tint_cmd
+        tint_info # TARGET tint_cmd_info_cmd
+        DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}" AUTO_CLEAN
+    )
+endif()
 if("tint" IN_LIST FEATURES)
-    if("tools" IN_LIST FEATURES)
-        vcpkg_copy_tools(TOOL_NAMES
-            tint # TARGET tint_cmd_tint_cmd
-            tint_info # TARGET tint_cmd_info_cmd
-            DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}" AUTO_CLEAN
-        )
-    endif()
     # The installed DawnConfig.cmake won't use include/tint folder.
     # Manual configuration is required if the library user wants the files.
     # THIS IS INTENDED because these are internal headers.
     # Move the folder because tint/tint.h is using relative include "src/tint/..."
-    if(EXISTS "${CURRENT_PACKAGES_DIR}/include/src/tint/src")
-        file(COPY "${CURRENT_PACKAGES_DIR}/include/src/tint/src" DESTINATION "${CURRENT_PACKAGES_DIR}/include/tint/")
+    if(EXISTS "${CURRENT_PACKAGES_DIR}/include/src/tint")
+        file(COPY "${CURRENT_PACKAGES_DIR}/include/src" DESTINATION "${CURRENT_PACKAGES_DIR}/include/tint/")
     endif()
 endif()
 file(INSTALL "${SOURCE_PATH}/include/webgpu" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
