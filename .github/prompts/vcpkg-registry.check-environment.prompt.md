@@ -1,7 +1,7 @@
 ---
 description: 'Detect OS/shell, validate vcpkg setup, and emit one combined environment report'
 agent: 'agent'
-tools: ['runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'search/fileSearch', 'search/listDirectory', 'search/readFile', 'todos']
+tools: ['execute/runInTerminal', 'read/readFile', 'read/terminalLastCommand', 'search/fileSearch', 'search/listDirectory', 'web/fetch', 'todo']
 model: Claude Haiku 4.5 (copilot)
 ---
 
@@ -36,32 +36,32 @@ No input required. Automatically detects environment and vcpkg configuration.
 ### Phase 1: Detect Operating System & Shell
 
 #### Step 1.1: OS detection
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Windows: `$PSVersionTable.PSVersion`
 - Linux/macOS: `uname -s`
 - Purpose: Determine OS family
 
 #### Step 1.2: System details
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Windows: `Get-ComputerInfo | Select-Object CsName, WindowsVersion, OsArchitecture`
 - Linux: `uname -a; lsb_release -a 2>/dev/null || cat /etc/os-release`
 - macOS: `sw_vers; uname -m`
 - Purpose: Capture version/architecture
 
 #### Step 1.3: Shell info
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Windows: `$PSVersionTable.PSEdition; $PSVersionTable.PSVersion`
 - Linux/macOS: `echo $SHELL; $SHELL --version`
 - Purpose: Determine shell type/version
 
 #### Step 1.4: Tool availability (Windows template used on Windows)
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Windows (PowerShell): iterate `curl`, `tar`, `zip`, `unzip`, `git`, `cmake`, `ninja`
   - Template: `Get-Command <exe> -ErrorAction SilentlyContinue | Select-Object Source`
 - POSIX shells: `command -v <exe>; <exe> --version 2>/dev/null`
 
 #### Step 1.5: Cross-platform translation references (non-Windows only)
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URLs: 
   - https://github.com/actions/runner-images/blob/main/README.md
   - https://docs.github.com/en/actions/concepts/runners/github-hosted-runners
@@ -70,12 +70,12 @@ No input required. Automatically detects environment and vcpkg configuration.
 ### Phase 2: Locate and Validate vcpkg
 
 #### Step 2.1: Check `VCPKG_ROOT`
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Windows: `$env:VCPKG_ROOT; if ($env:VCPKG_ROOT) { Test-Path $env:VCPKG_ROOT }`
 - Linux/macOS: `echo $VCPKG_ROOT; [ -d "$VCPKG_ROOT" ] && echo "exists"`
 
 #### Step 2.2: Check `vcpkg` in PATH
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Windows: `Get-Command vcpkg -ErrorAction SilentlyContinue | Select-Object Source`
 - Linux/macOS: `command -v vcpkg`
 
@@ -83,16 +83,16 @@ No input required. Automatically detects environment and vcpkg configuration.
 - Action: Parse executable path parent directory
 
 #### Step 2.4: Fallback search (if still unknown)
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URL: https://raw.githubusercontent.com/actions/runner-images/main/images/windows/Windows2022-Readme.md
 - Common paths to test:
   - Windows: `C:\vcpkg`, `C:\tools\vcpkg`, `C:\src\vcpkg`
   - Linux: `/usr/local/vcpkg`, `$HOME/vcpkg`, `/opt/vcpkg`
   - macOS: `/usr/local/vcpkg`, `$HOME/vcpkg`
-- Tool: #tool:runCommands/runInTerminal — `Test-Path` / `[ -d ]`
+- Tool: #tool:execute/runInTerminal — `Test-Path` / `[ -d ]`
 
 #### Step 2.5: Get vcpkg version
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command: `vcpkg --version` (use absolute path if needed)
 - Minimum recommended: `2025-06-20`
 
@@ -101,7 +101,7 @@ No input required. Automatically detects environment and vcpkg configuration.
 - Patterns: `${VCPKG_ROOT}/scripts/**`, `${VCPKG_ROOT}/triplets/**`, `${VCPKG_ROOT}/ports/**`
 
 #### Step 2.7: Check toolchain file
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake`
 - Purpose: Existence check only
 
@@ -112,7 +112,7 @@ No input required. Automatically detects environment and vcpkg configuration.
 - Pattern: `**/vcpkg-configuration.json`
 
 #### Step 3.2: Read config (if found)
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 
 #### Step 3.3: Verify folders
 - Tool: #tool:search/listDirectory
@@ -123,7 +123,7 @@ No input required. Automatically detects environment and vcpkg configuration.
 - Pattern: `versions/baseline.json`
 
 #### Step 3.5: List vcpkg-related environment variables
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Windows: `Get-ChildItem Env: | Where-Object Name -like 'VCPKG*' | Format-Table Name, Value`
 - Linux/macOS: `env | grep -i '^VCPKG' | sort`
 
@@ -222,7 +222,7 @@ The agent MUST output a single markdown report containing the exact headings (in
 - `None` if nothing to recommend
 
 ### 13. Next Steps
-- For READY: suggest `/search-port` or `/create-port`
+- For READY: suggest `/vcpkg-registry.search-port` or `/vcpkg-registry.create-port`
 - For WARN: perform upgrades then re-run check
 - For ERROR: install/fix missing items first
 

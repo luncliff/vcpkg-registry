@@ -1,7 +1,7 @@
 ---
 description: 'Register new port versions into registry baseline and versions files'
 agent: 'agent'
-tools: ['search/fileSearch', 'search/readFile', 'runCommands/getTerminalOutput', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'todos']
+tools: ['execute/getTerminalOutput', 'execute/runInTerminal', 'read/readFile', 'read/terminalLastCommand', 'search/fileSearch', 'todo']
 model: GPT-5 mini (copilot)
 ---
 
@@ -52,7 +52,7 @@ Add version entry for tensorflow-lite
 - If user provides names, use them directly.
 
 #### Step 1.2: Infer from chat history or git logs
-- Tool: #tool:runCommands/getTerminalOutput
+- Tool: #tool:execute/getTerminalOutput
 - If no names, extract last discussed ports from recent messages.
 - If recent messages lack port names, analyze last 3 git commit messages for port references.
 - Heuristics: filenames like `ports/<name>/...`, mentions like `upgrade <name>`.
@@ -63,7 +63,7 @@ Add version entry for tensorflow-lite
 - If missing, report and skip that name.
 
 #### Step 1.4: Format the port files
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell):
   ```powershell
   ./scripts/registry-format.ps1 -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
@@ -72,7 +72,7 @@ Add version entry for tensorflow-lite
 ### Phase 2: Execute Registry Add-Version
 
 #### Step 2.1: Commit if files in ports folder changed
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell):
   ```powershell
   git add ./ports/port-name/
@@ -80,7 +80,7 @@ Add version entry for tensorflow-lite
   ```
 
 #### Step 2.2: Run script per port
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell):
 ```powershell
 $RegistryRoot = (Get-Location).Path
@@ -91,7 +91,7 @@ foreach ($p in $Ports) {
 ```
 
 #### Step 2.3: Capture output
-- Tool: #tool:runCommands/getTerminalOutput
+- Tool: #tool:execute/getTerminalOutput
 - Collect success lines and any errors from terminal.
 
 ### Phase 3: Results & Recommendations
@@ -100,7 +100,7 @@ foreach ($p in $Ports) {
 - List updated files under `versions/` (including `baseline.json`).
 
 #### Step 3.2: Create commit for versions folder changes
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Commit changes:
 ```powershell
 git add ./versions

@@ -1,7 +1,7 @@
 ---
 description: 'Upgrade port to newer version with SHA512 calculation and testing'
 agent: 'agent'
-tools: ['edit/createFile', 'edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'todos']
+tools: ['execute/runInTerminal', 'read/readFile', 'read/terminalLastCommand', 'edit/createFile', 'edit/editFiles', 'search/fileSearch', 'web/fetch', 'todo']
 model: Claude Sonnet 4 (copilot)
 ---
 
@@ -29,7 +29,7 @@ Update existing port to newer upstream version by modifying vcpkg.json and portf
 
 **Prompt Forwarding**:
 - If upgrade test succeeds: User should commit changes and run `./scripts/registry-add-version.ps1`
-- If upgrade test fails: User must fix issues and retry `/install-port`
+- If upgrade test fails: User must fix issues and retry `/vcpkg-registry.install-port`
 
 ## User Input
 
@@ -52,12 +52,12 @@ Upgrade tensorflow-lite to 2.14.1
 ### Phase 1: Analyze Current Port
 
 #### Step 1.1: Read current vcpkg.json
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/vcpkg.json`
 - Extract: Current `version`, `homepage`
 
 #### Step 1.2: Read current portfile.cmake
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/portfile.cmake`
 - Extract: `REPO` (GitHub owner/repo), `REF`, `SHA512`, `HEAD_REF`
 
@@ -65,8 +65,8 @@ Upgrade tensorflow-lite to 2.14.1
 - Condition: Version specified in user input
   - Use: Specified version
 - Condition: Version not specified
-  - Action: Fetch latest release from upstream (use `/check-port-upstream` logic)
-  - Tool: #tool:fetch
+  - Action: Fetch latest release from upstream (use `/vcpkg-registry.check-port-upstream` logic)
+  - Tool: #tool:web/fetch
   - URL: `{homepage}/releases/latest` or `https://api.github.com/repos/{owner}/{repo}/releases/latest`
 
 ### Phase 2: Gather New Version Information
@@ -92,7 +92,7 @@ Upgrade tensorflow-lite to 2.14.1
 ### Phase 3: Calculate New SHA512
 
 #### Step 3.1: Download source archive
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell):
   ```powershell
   $Version = "{target-version}"
@@ -108,7 +108,7 @@ Upgrade tensorflow-lite to 2.14.1
 - Wait: Download completion
 
 #### Step 3.2: Calculate SHA512
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell):
   ```powershell
   (Get-FileHash -Algorithm SHA512 "temp-${Version}.tar.gz").Hash.ToLower()
@@ -125,7 +125,7 @@ Upgrade tensorflow-lite to 2.14.1
 - Purpose: Prevent malformed SHA512 values
 
 #### Step 3.4: Clean up downloaded archive
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell): `Remove-Item "temp-${Version}.tar.gz"`
 - Command (Bash/Zsh): `rm "temp-${version}.tar.gz"`
 
@@ -170,7 +170,7 @@ Upgrade tensorflow-lite to 2.14.1
 - Documentation: https://learn.microsoft.com/en-us/vcpkg/commands/install#editable-mode
 
 #### Step 5.2: Run vcpkg install with --editable
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell):
   ```powershell
   vcpkg install --editable `
@@ -192,13 +192,13 @@ Upgrade tensorflow-lite to 2.14.1
 - Wait: Installation completion (may take several minutes)
 
 #### Step 5.3: Capture test results
-- Tool: #tool:runCommands/terminalLastCommand
+- Tool: #tool:read/terminalLastCommand
 - Purpose: Get full installation log
 
 #### Step 5.4: Analyze test results
 - Success: Exit code 0, "successfully installed" message
 - Failure: Non-zero exit code, error messages
-- If failed: Read build logs (same as `/install-port` Phase 4)
+- If failed: Read build logs (same as `/vcpkg-registry.install-port` Phase 4)
 
 ### Phase 6: Handle Test Results
 
@@ -214,7 +214,7 @@ Upgrade tensorflow-lite to 2.14.1
 - Retry: Run test installation again
 
 #### Step 6.3: If test fails with build errors
-- Action: Analyze build logs (use `/install-port` logic)
+- Action: Analyze build logs (use `/vcpkg-registry.install-port` logic)
 - Report: Common error patterns
 - Suggest: Port may need patches for new version
 - Next: User must fix build issues
@@ -227,18 +227,18 @@ Upgrade tensorflow-lite to 2.14.1
 ### Phase 7: Validate File Changes
 
 #### Step 7.1: Re-read updated vcpkg.json
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/vcpkg.json`
 - Verify: Version updated correctly
 
 #### Step 7.2: Re-read updated portfile.cmake
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/portfile.cmake`
 - Verify: SHA512 updated correctly
 - Verify: REF updated if needed
 
 #### Step 7.3: Run format-manifest (optional)
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command:
   ```powershell
   ./scripts/registry-format.ps1 -VcpkgRoot "$env:VCPKG_ROOT" -RegistryRoot "$(Get-Location)"
@@ -329,7 +329,7 @@ Bulleted actionable items only.
 Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
 
 ```
-## <timestamp UTC> - /upgrade-port <port>
+## <timestamp UTC> - /vcpkg-registry.upgrade-port <port>
 Outcome: SUCCESS|FAILURE|MAJOR|SHA512-CORRECTED
 Old→New: <old> → <new>
 SHA512: updated|placeholder|corrected

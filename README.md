@@ -1,26 +1,18 @@
 # vcpkg-registry
 
-[![Build Status](https://dev.azure.com/luncliff/personal/_apis/build/status/luncliff.vcpkg-registry?branchName=main)](https://dev.azure.com/luncliff/personal/_build/latest?definitionId=52&branchName=main)
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/luncliff/vcpkg-registry/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/luncliff/vcpkg-registry/tree/main)
 [![Check](https://github.com/luncliff/vcpkg-registry/actions/workflows/build.yml/badge.svg)](https://github.com/luncliff/vcpkg-registry/actions/workflows/build.yml)
-
-Targets...
 
 * [vcpkg](https://github.com/microsoft/vcpkg): recommend [2024.06.15](https://github.com/microsoft/vcpkg/releases/tag/2024.06.15) or later
 * [vcpkg-tool](https://github.com/microsoft/vcpkg-tool) follows the vcpkg
 
 ## Documentation
 
-### Port Development Guides
+### Guides
 
 - [Port Creation Guide](docs/guide-new-port.md)
-- [Port Updates](docs/guide-update-port.md)
+- [Port Update Guide](docs/guide-update-port.md)
 
-### Quality Assurance
-- [Review Checklist](docs/review-checklist.md)
-- [Pull Request Template](docs/pull_request_template.md)
-
-### [References](docs/references.md)
+### Quick [References](docs/references.md)
 
 * Microsoft C++ Team Blog: https://devblogs.microsoft.com/cppblog/
     * https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/
@@ -37,82 +29,81 @@ Targets...
 
 ## How To
 
-### Setup
+### Setup vcpkg
 
-```console
-user@host:~$ git clone https://github.com/microsoft/vcpkg
-...
-user@host:~$ pushd ./vcpkg/
-~/vcpkg ~
-user@host:~/vcpkg$ git clone https://github.com/luncliff/vcpkg-registry registry
-...
-```
-
+Follow the official [Getting Started Guide](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started) to setup your environment.
 Don't forget to check [the vcpkg environment variables](https://github.com/microsoft/vcpkg/blob/master/docs/users/config-environment.md) are correct.
 
-The overall file organization is like the following.
+- Required environment variables?
+  - `VCPKG_ROOT` to integrate with toolchains. For example, `C:\vcpkg` or `/usr/local/shared/vcpkg`
+  - `PATH` to run `vcpkg` CLI program.
+
+Use `vcpkg help` command to get descriptions and test the CLI executable works.  
+Commonly used commands can be checked with:
+
+```
+vcpkg help install
+vcpkg help remove
+vcpkg help search
+```
+
+### Setup vcpkg-registry
+
+Simply clone the repository and use path for the vcpkg commands.
+
+For example, you can put the registry files just under `VCPKG_ROOT` for easy navigation.
+
+```powershell
+$env:VCPKG_ROOT="C:/vcpkg"
+Set-Location $env:VCPKG_ROOT
+    git clone "https://github.com/luncliff/vcpkg-registry"
+Pop-Location
+```
+
+```bash
+export VCPKG_ROOT="/usr/local/share/vcpkg"
+pushd $VCPKG_ROOT
+    git clone https://github.com/luncliff/vcpkg-registry
+popd
+```
+
+#### File Organization
+
+Confirm the files are like our expectation.
 
 ```console
-user@host:~/vcpkg$ tree -L 2 ./registry/
-./registry/
-├── LICENSE
+user@host:~/vcpkg$ tree -L 2 ./vcpkg-registry/
+./vcpkg-registry/
+├── docs
+│   ├── guide-*.md
+│   └── references.md
 ├── README.md
-├── azure-pipelines.yml
+├── .github
+│   ├── workflows/
+│   └── prompts/
 ├── versions
-│   ├── ...
+│   ├── ... # files for vcpkg manifest mode
 │   └── baseline.json
 ├── ports
-│   ├── ...
-│   ├── directml
-│   ├── libdispatch
+│   ├── ... # files for --overlay-ports
 │   ├── openssl3
 │   └── tensorflow-lite
 └── triplets
+    ├── ... # files for --overlay-triplets
     ├── arm64-android.cmake
-    ├── x64-android.cmake
-    ├── x64-linux.cmake
-    ├── arm64-ios-simulator.cmake
     └── x64-ios-simulator.cmake
 ```
 
-#### For Registry
+### Use vcpkg-registry
 
-For registry customization, configure your [vcpkg-configuration.json](https://github.com/microsoft/vcpkg/blob/master/docs/specifications/registries.md).
+Both vcpkg's classic mode and manifest mode are available.
 
-```console
-user@host:~/vcpkg$ cat ./vcpkg-configuration.json | jq
-{
-  "registries": [
-...
-```
+- [classic mode](https://learn.microsoft.com/en-us/vcpkg/concepts/classic-mode): `vcpkg install` with overlay(`--overlay-ports` and `--overlay-triplets`).
+- [manifest mode](https://learn.microsoft.com/en-us/vcpkg/concepts/manifest-mode): use the git repository in vcpkg-configuration.json file.
 
-The sample configuration can be like this.
-The `ports/` folder contains `openssl3` and `tensorflow-lite`. Put them in the "packages".
+The vcpkg command may need more detailed options or switches to work properly.
 
-```json
-{
-    "default-registry": {
-        "kind": "git",
-        "repository": "https://github.com/Microsoft/vcpkg",
-        "baseline": "0000..."
-    },
-    "registries": [
-        {
-            "kind": "git",
-            "repository": "https://github.com/luncliff/vcpkg-registry",
-            "packages": [
-                "openssl3",
-                "tensorflow-lite"
-            ],
-            "baseline": "0000..."
-        }
-    ]
-}
-```
-
-### Install
-
-#### with Ports (Overlay)
+#### with [Overlay Ports](https://learn.microsoft.com/en-us/vcpkg/concepts/overlay-ports) (Classic)
 
 Just provide the path of `port/` folder. 
 
@@ -132,10 +123,14 @@ Options:
 ...
 ```
 
-#### with Triplets (Overlay)
+#### with [Overlay Triplets](https://learn.microsoft.com/en-us/vcpkg/concepts/triplets) (Classic)
 
-```console
-user@host:~/vcpkg$ ./vcpkg install --overlay-triplets="registry/triplets" --triplet x64-ios-simulator zlib-ng
+The [triplets/](./triplets/) folder contains CMake scripts for Android NDK and iOS Simulator SDK.
+
+You can use envionment variable `VCPKG_OVERLAY_TRIPLETS`, but I recomment you to use `--overlay-triplets` to avoid confusion.
+
+```bash
+vcpkg install --overlay-triplets="vcpkg-registry/triplets" --triplet x64-ios-simulator zlib-ng
 ```
 
 If it doesn't work, check the command options.
@@ -150,58 +145,54 @@ Options:
 ...
 ```
 
-##### 1. Android
+For more detailed usage, check the vcpkg documents.
+- [Using Overlay Triplets](https://learn.microsoft.com/en-us/vcpkg/users/examples/overlay-triplets-linux-dynamic)
+- [Vcpkg and Android](https://learn.microsoft.com/en-us/vcpkg/users/platforms/android)
 
-* `arm64-android`
-* `arm-android`
-* `x64-android`
+> [!NOTE]
+>
+> Triplets won't affect your project's configuration and build.  
+> These files are not for [`VCPKG_CHAINLOAD_TOOLCHAIN_FILE`](https://github.com/microsoft/vcpkg/blob/master/docs/users/triplets.md#vcpkg_chainload_toolchain_file).
+> 
 
-Check [Vcpkg and Android](https://learn.microsoft.com/en-us/vcpkg/users/platforms/android) for more detailed usage.
+#### with vcpkg.json (Manifest)
 
-The triplets help 
-```console
-user@host:~/vcpkg$ export ANDROID_NDK_HOME="/.../Library/Android/sdk/ndk/23.0.7599858/"
-user@host:~/vcpkg$ ./vcpkg install --overlay-triplets=./registry/triplets vulkan:arm64-android
-Starting package 1/1: vulkan:arm64-android
-Building package vulkan[core]:arm64-android...
--- [OVERLAY] Loading triplet configuration from: /.../Desktop/vcpkg/vcpkg-registry/triplets/arm64-android.cmake
--- Using NDK_HOST_TAG: darwin-x86_64
--- Using NDK_API_LEVEL: 24
--- Found NDK: 23.0.7599858 (23.0)
--- Using ENV{VULKAN_SDK}: /.../Library/Android/sdk/ndk/23.0.7599858/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr
--- Found libvulkan.so: /.../Library/Android/sdk/ndk/23.0.7599858/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/x86_64-linux-android/24/libvulkan.so
--- 
--- Querying VULKAN_SDK Enviroment variable
--- Searching /.../Library/Android/sdk/ndk/23.0.7599858/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/vulkan/ for vulkan.h
--- Found vulkan.h
--- Performing post-build validation
--- Performing post-build validation done
-```
+- https://learn.microsoft.com/en-us/vcpkg/consume/git-registries
 
-##### 2. iOS Simulator
+With the baseline and version JSON files in [versions/](./versions/) folder, you can use 
 
-* `arm64-ios-simulator`
-* `x64-ios-simulator`
-
-These triplets acquire `VCPKG_OSX_SYSROOT` for iOS Simulator SDK. Also, specifies C/C++ flags minimum SDK version to iOS 11.0 if `VCPKG_CMAKE_SYSTEM_VERSION` is not provided.
-
-These triplets won't do much work. I recommend you to use https://github.com/leetal/ios-cmake with [`VCPKG_CHAINLOAD_TOOLCHAIN_FILE`](https://github.com/microsoft/vcpkg/blob/master/docs/users/triplets.md#vcpkg_chainload_toolchain_file).
-
-#### with Registry
-
-Provide the feature flags to install with registry informations in `vcpkg-configuration.json`.
+For registry customization, create your [vcpkg-configuration.json](https://github.com/microsoft/vcpkg/blob/master/docs/specifications/registries.md).
 
 ```console
-user@host:~/vcpkg$ ./vcpkg install --feature-flags=registries openssl3
-Computing installation plan...
+user@host:~/vcpkg$ cat ./vcpkg-configuration.json | jq
+{
+  "registries": [
 ...
 ```
 
-After the installation, you can `list` the packages.
+The sample configuration can be like this.
+The `ports/` folder contains `openssl3` and `tensorflow-lite`. Put them in the "packages".
 
-```console
-user@host:~/vcpkg$ ./vcpkg list openssl3
-...
+```json
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg-configuration.schema.json",
+    "default-registry": {
+        "kind": "git",
+        "repository": "https://github.com/Microsoft/vcpkg",
+        "baseline": "0000..."
+    },
+    "registries": [
+        {
+            "kind": "git",
+            "repository": "https://github.com/luncliff/vcpkg-registry",
+            "baseline": "0000...",
+            "packages": [
+                "openssl3",
+                "tensorflow-lite"
+            ]
+        }
+    ]
+}
 ```
 
 ## License

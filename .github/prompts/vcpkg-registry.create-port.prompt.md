@@ -1,7 +1,7 @@
 ---
 description: 'Create a new vcpkg port with portfile.cmake, vcpkg.json, and patches'
 agent: 'agent'
-tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/runInTerminal', 'fetch', 'githubRepo', 'todos']
+tools: ['execute/runInTerminal', 'read/readFile', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/fileSearch', 'web', 'todo']
 model: Claude Haiku 4.5 (copilot)
 ---
 
@@ -25,9 +25,9 @@ Generate a new vcpkg port from scratch using project information, existing port 
 
 **Stop Conditions**:
 - Port files created and validated
-- User instructed to test with `/install-port`
+- User instructed to test with `/vcpkg-registry.install-port`
 
-**Prompt Forwarding**: Always forward to `/install-port` for testing after creation
+**Prompt Forwarding**: Always forward to `/vcpkg-registry.install-port` for testing after creation
 
 ## User Input
 
@@ -56,30 +56,30 @@ Generate port files for farmhash
 
 #### Step 1.2: Fetch project repository information
 - Condition: GitHub URL provided
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URL: GitHub repository API or raw README
 - Purpose: Get project description, license, homepage
 
 #### Step 1.3: Fetch latest release
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URL: `{github-url}/releases/latest` or `{github-url}/tags`
 - Purpose: Get latest version number and release URL
 - Fallback: Use commit SHA if no releases
 
 #### Step 1.4: Identify build system
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - Files to check: `CMakeLists.txt`, `meson.build`, `configure.ac`, `Makefile`, `*.pro`
 - Purpose: Determine build system type
 - Note: CMake is most common and preferred
 
 #### Step 1.5: Check for vcpkg port in upstream
-- Tool: #tool:githubRepo
+- Tool: #tool:web/githubRepo
 - Repo: `microsoft/vcpkg`
 - Query: `path:ports/{port-name} filename:vcpkg.json`
 - Purpose: Check if port already exists upstream (avoid duplication)
 
 #### Step 1.6: Identify dependencies
-- Tool: #tool:fetch or #tool:search/readFile
+- Tool: #tool:web/fetch or #tool:read/readFile
 - Files: `README.md`, `INSTALL.md`, `CMakeLists.txt`, `find_package` calls
 - Purpose: List required dependencies
 - Note: Map to vcpkg port names (e.g., `zlib` → `zlib-ng` if preferred)
@@ -99,19 +99,19 @@ Generate port files for farmhash
 - Priority: Ports with clean, well-documented portfiles
 
 #### Step 2.2: Read template portfile.cmake
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - Files: 2-3 similar port portfiles
 - Purpose: Understand common patterns and functions
 
 #### Step 2.3: Read template vcpkg.json
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - Files: Corresponding vcpkg.json files
 - Purpose: Understand metadata structure
 
 ### Phase 3: Calculate SHA512 Checksums
 
 #### Step 3.1: Download source archive
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell): 
   ```powershell
   $Version = "{version}"
@@ -121,7 +121,7 @@ Generate port files for farmhash
 - Purpose: Get source archive for checksum calculation
 
 #### Step 3.2: Calculate SHA512
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell):
   ```powershell
   (Get-FileHash -Algorithm SHA512 "temp-${Version}.tar.gz").Hash.ToLower()
@@ -133,7 +133,7 @@ Generate port files for farmhash
 - Purpose: Generate SHA512 for `vcpkg_from_github` or `vcpkg_download_distfile`
 
 #### Step 3.3: Clean up downloaded archive
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell): `Remove-Item "temp-${Version}.tar.gz"`
 - Command (Bash/Zsh): `rm "temp-${version}.tar.gz"`
 
@@ -229,7 +229,7 @@ If created, describe the usage example with CMake command `find_package`(CMake c
 - Purpose: Ensure mandatory files created
 
 #### Step 5.2: Run vcpkg format-manifest
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Purpose: Format vcpkg.json according to vcpkg standards
 
 ```powershell
@@ -237,13 +237,13 @@ If created, describe the usage example with CMake command `find_package`(CMake c
 ```
 
 #### Step 5.3: Validate vcpkg.json schema
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/vcpkg.json`
 - Check: Required fields (name, version, description)
 - Check: Version format (no leading 'v', use semver or date)
 
 #### Step 5.4: Validate portfile.cmake syntax
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/portfile.cmake`
 - Check: Uses vcpkg helper functions
 - Check: Proper SHA512 format (128 hex characters, lowercase)
@@ -260,7 +260,7 @@ If created, describe the usage example with CMake command `find_package`(CMake c
 - Content: Port creation details with timestamp
 
 #### Step 6.3: Instruct user to test installation
-- Forward to: `/install-port {port-name}`
+- Forward to: `/vcpkg-registry.install-port {port-name}`
 - Note: Test before adding to versions
 
 ## Reporting
@@ -332,7 +332,7 @@ If none: `None`
 
 ### 9. Next Steps
 Ordered actionable list:
-1. Test installation: `/install-port <name>`
+1. Test installation: `/vcpkg-registry.install-port <name>`
 2. (If success) Add version: `./scripts/registry-add-version.ps1 -PortName "<name>"`
 3. (Optional) Create usage file if missing
 4. (If experimental) Convert embedded script to patch before upstream contribution
@@ -342,14 +342,14 @@ Ordered actionable list:
 Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
 
 ```
-## <timestamp UTC> - /create-port
+## <timestamp UTC> - /vcpkg-registry.create-port
 Port: <name>
 Version: <version>
 Outcome: CREATED|FAILED
 Checksum: <sha512|placeholder>
 BuildSystem: <detected>
 Experimental: yes|no
-Next: /install-port <name>
+Next: /vcpkg-registry.install-port <name>
 ```
 
 ### Failure Mode Reporting

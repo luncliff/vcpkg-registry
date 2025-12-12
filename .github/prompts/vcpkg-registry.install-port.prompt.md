@@ -1,7 +1,7 @@
 ---
 description: 'Install vcpkg port with overlay-ports and analyze build logs'
 agent: 'agent'
-tools: ['edit/createFile', 'edit/editFiles', 'search/fileSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'todos']
+tools: ['execute/runInTerminal', 'read/readFile', 'read/terminalLastCommand', 'edit/createFile', 'edit/editFiles', 'search/fileSearch', 'todo']
 model: GPT-5 mini (copilot)
 ---
 
@@ -27,8 +27,8 @@ Execute vcpkg port installation with overlay-ports, monitor build process, and a
 - Installation fails (analyze logs, report errors)
 
 **Prompt Forwarding**:
-- If installation succeeds: User may proceed to `/review-port` for validation
-- If installation fails: User may need to fix port files, then retry `/install-port`
+- If installation succeeds: User may proceed to `/vcpkg-registry.review-port` for validation
+- If installation fails: User may need to fix port files, then retry `/vcpkg-registry.install-port`
 
 ## User Input
 
@@ -68,26 +68,26 @@ Install opencv4[opengl] with x64-windows triplet
 - Fallback: Use default host triplet (x64-windows, x64-linux, arm64-osx)
 
 #### Step 1.4: Check for features
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/vcpkg.json`
 - Purpose: Verify requested features exist in port manifest
 
 ### Phase 2: Pre-Installation Checks
 
 #### Step 2.1: Verify VCPKG_ROOT environment variable
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell): `echo $env:VCPKG_ROOT`
 - Command (Bash/Zsh): `echo $VCPKG_ROOT`
 - Purpose: Ensure vcpkg installation accessible
 
 #### Step 2.2: Check vcpkg version
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command: `vcpkg version`
 - Purpose: Report vcpkg version for debugging
 
 #### Step 2.3: Clean previous install (optional)
 - Condition: User requested fresh install
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell): `Remove-Item -Recurse -Force "packages/{port-name}_*"`
 - Command (Bash/Zsh): `rm -rf packages/{port-name}_*`
 - Purpose: Remove cached packages
@@ -103,7 +103,7 @@ Install opencv4[opengl] with x64-windows triplet
 - Add: Port specification with features
 
 #### Step 3.2: Run vcpkg install
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (example PowerShell):
   ```powershell
   vcpkg install --overlay-ports ./ports `
@@ -123,7 +123,7 @@ Install opencv4[opengl] with x64-windows triplet
 - Wait: Installation completion (can take several minutes)
 
 #### Step 3.3: Capture terminal output
-- Tool: #tool:runCommands/terminalLastCommand
+- Tool: #tool:read/terminalLastCommand #tool:read/readFile 
 - Purpose: Get full installation log
 
 ### Phase 4: Analyze Results
@@ -137,7 +137,7 @@ Install opencv4[opengl] with x64-windows triplet
 - Extract: Installation time, dependencies built
 
 #### Step 4.3: Analyze build logs (if failure)
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - Files (check in order):
   1. `buildtrees/{port-name}/config-{triplet}-out.log`
   2. `buildtrees/{port-name}/install-{triplet}-out.log`
@@ -151,7 +151,7 @@ Install opencv4[opengl] with x64-windows triplet
 - Missing dependencies: `Package ... is not installed`
 
 #### Step 4.5: Extract error context
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - Read: 20 lines before and after first error
 - Purpose: Provide diagnostic context
 
@@ -163,19 +163,19 @@ Install opencv4[opengl] with x64-windows triplet
 - Purpose: Verify installation artifacts exist
 
 #### Step 5.2: List installed headers
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell): `Get-ChildItem "installed/{triplet}/include/{port-name}*" -Recurse`
 - Command (Bash/Zsh): `ls -R installed/{triplet}/include/{port-name}*`
 - Purpose: Confirm header files installed
 
 #### Step 5.3: List installed libraries
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command (PowerShell): `Get-ChildItem "installed/{triplet}/lib/*.lib"`
 - Command (Bash/Zsh): `ls installed/{triplet}/lib/*.{a,so,dylib}`
 - Purpose: Confirm library files built
 
 #### Step 5.4: Check usage file
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/usage`
 - Purpose: Include usage instructions in report (if available)
 
@@ -253,14 +253,14 @@ If none: `None`
 ### 9. Next Steps
 - Ordered short list; first item is highest priority
 - Failure example order: Fix manifest → Re-run install → Consider patches
-- Success example order: /review-port → add version → optional feature tests
+- Success example order: /vcpkg-registry.review-port → add version → optional feature tests
 
 ### Post Report Action: Work Note Update
 
 Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
 
 ```
-## <timestamp UTC> - /install-port
+## <timestamp UTC> - /vcpkg-registry.install-port
 Port: <spec>
 Outcome: SUCCESS|FAILURE
 Duration: <value>
