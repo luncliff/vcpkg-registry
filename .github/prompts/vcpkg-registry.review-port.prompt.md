@@ -28,7 +28,7 @@ Validate port files (vcpkg.json, portfile.cmake, patches, usage) against vcpkg c
 - All violations documented with fix recommendations
 
 **Prompt Forwarding**:
-- If review passes: User may proceed to add version (`./scripts/registry-add-version.ps1`)
+- If review passes: User may proceed to add version ([registry-add-version.ps1](../../scripts/registry-add-version.ps1)
 - If review fails: User must fix violations and re-run `/review-port`
 
 ## User Input
@@ -69,12 +69,12 @@ Validate cpuinfo port files
 
 #### Step 2.1: Fetch contribution guidelines
 - Tool: #tool:fetch
-- URL: `https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md`
+- URL: [microsoft/vcpkg Contribution Guide](https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md)
 - Purpose: Get latest contribution requirements
 
 #### Step 2.2: Fetch maintainer guide
 - Tool: #tool:fetch
-- URL: `https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md`
+- URL: [microsoft/vcpkg-docs Maintainer guide](https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md)
 - Purpose: Get port maintenance best practices
 
 #### Step 2.3: Load local review checklist

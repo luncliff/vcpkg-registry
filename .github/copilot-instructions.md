@@ -3,37 +3,22 @@
 The followings are minimal guidelines to get general ideas about this repository.
 
 - Use [References](../docs/references.md) to fetch documents for working with vcpkg commands and build toolchains.
-- Use [README.md](../README.md) and files in [the docs/ folder](../docs/). 
+- Use [README.md](../README.md) and files in [the docs/ folder](../docs/).
+
+## Tasks
+
+The vcpkg-registry holds vcpkg ports(package build receipe) and related files to use and test them.
+Here are the major tasks for the repository maintenance.
+
+1. Port Creation(experimental work, fork from vcpkg upstream, etc.)
+2. Port Update(support new version, fix toolchain issues, etc.)
+3. Port Testing([test list](../test) inclusion/exclusion, new port feature, etc.)
+
+### Prompts
+
+The GitHub Copilot prompt files to help the tasks are located in [.github/prompts](./prompts/) folder.
 
 ## How To
-
-### Setup the environment
-
-Follow the official [Getting Started Guide](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started) to setup your environment
-
-- Required environment variables
-  - `VCPKG_ROOT` to integrate with toolchains. For example, `C:\vcpkg` or `/usr/local/shared/vcpkg`
-  - `PATH` to run `vcpkg` CLI program
-
-### Using the `vcpkg` command
-
-- Version check
-  - vcpkg program behavior may change as time flows. Report the [`vcpkg` executable version](https://github.com/microsoft/vcpkg-tool/releases) when the version is unknown.
-- Use `vcpkg help` command to get descriptions and test the CLI executable works.
-
-```
-vcpkg --version
-```
-
-Commonly used commands can be checked with:
-
-```
-vcpkg help
-vcpkg help install
-vcpkg help remove
-vcpkg help search
-vcpkg help depend-info
-```
 
 #### Working with Overlay ports/triplets
 
@@ -107,78 +92,11 @@ vcpkg x-add-version $PortName `
 
 A triplet file is basically a set of CMake variables for `$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake`.
 
-Refer [the concepts](https://learn.microsoft.com/en-us/vcpkg/concepts/triplets) and [pre-defined variables](https://learn.microsoft.com/en-us/vcpkg/users/triplets).
+You have to check 2 official guide documents.
+- [vcpkg concepts: Triplets](https://learn.microsoft.com/en-us/vcpkg/concepts/triplets)
+- [Triplet variables](https://learn.microsoft.com/en-us/vcpkg/users/triplets)
 
-This repository contains some examples in [triplets/](../triplets/) folder.
-
-- [x64-windows.cmake](../triplets/x64-windows.cmake)
-- [arm64-android.cmake](../triplets/arm64-android.cmake)
-- [arm64-ios-simulator.cmake](../triplets/arm64-ios-simulator.cmake)
-
-## Troubleshooting Port Installation Errors
-
-When encountering compiler or linker errors, refer the following links
-
-- https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options
-- https://learn.microsoft.com/en-us/cpp/build/reference/linker-options
-
-### Alternative Approach: Embedded CMakeLists.txt
-
-When patch files become too complex or frequently fail to apply due to upstream changes, you can use the **embedded CMakeLists.txt approach** as demonstrated in [ports like `farmhash`](../ports/farmhash/).
-
-#### How It Works
-
-1. **Download Original**: Download the original CMakeLists.txt from the target version
-   ```bash
-   curl -o "ports/port-name/CMakeLists.txt" "https://raw.githubusercontent.com/OWNER/REPO/vX.Y.Z/CMakeLists.txt"
-   ```
-
-2. **Embed and Modify**: Place the file directly in your port directory and modify it in-place to work with vcpkg dependencies
-
-3. **Copy in Portfile**: Use `file(COPY)` to overwrite the original during build:
-   ```cmake
-   # Copy our modified CMakeLists.txt
-   file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")
-   ```
-
-#### Benefits
-- **Easier Maintenance**: Direct file editing instead of complex patch management
-- **Clearer Review**: Developers can see exact changes in the embedded file
-- **No Patch Failures**: Eliminates patch application context mismatches
-- **Rapid Prototyping**: Faster iteration during port development
-
-#### ⚠️ **Important Warning for Upstream Contributions**
-
-> **This approach is primarily for experimental/private registries.** 
-> 
-> If you plan to contribute the port to **microsoft/vcpkg upstream**, you **MUST** convert the embedded CMakeLists.txt changes back to proper patch files before submitting. The vcpkg upstream strongly prefers patch files over embedded source files for the following reasons:
-> 
-> - **Maintainability**: Patches show exactly what changed
-> - **Upstream Compatibility**: Easier to review and maintain
-> - **Standards Compliance**: Follows vcpkg contribution guidelines
-> - **Conflict Reduction**: Minimizes merge conflicts with upstream changes
-> 
-> **Conversion Process**: Use `git diff` or `diff` tools to generate proper patch files from your embedded changes before submitting to upstream.
-
-#### When to Use This Approach
-- ✅ Complex build systems with frequent CMakeLists.txt changes
-- ✅ Experimental ports in private registries  
-- ✅ Rapid prototyping and testing
-- ✅ When traditional patches repeatedly fail to apply
-
-## Maintaining this repository
-
-Mostly we work in [ports/](../ports/) and [versions/](../versions/) folder.
-
-The ports in this vcpkg-registry checks the vcpkg upstream guides, but most of the ports may not follow them for experimental purpose.
-
-- [microsoft/vcpkg Contributing Guideline](https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md)
-- [Maintainer Guideline](https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md)
-
-### Updating a ports
-
-- Use [guide-update-port.md](../docs/guide-update-port.md) to generate steps and todo list.
-- Update todo list as each step is done.
+This repository contains some examples in [triplets/](../triplets/) folder. Reference the files when new triplets are requested.
 
 ### Testing a port
 
@@ -189,3 +107,10 @@ However, if the port has some features, and they are important. We have to test 
 2. Use `vcpkg search` command to list the port's features.
 3. If there is no feature, the port is tested.
 4. If there are some features, run `vcpkg install` command with each of the features.
+
+## Troubleshooting
+
+Use the following guides.
+
+- [Port Installation Errors](../docs/guide-troubleshooting.md)
+
