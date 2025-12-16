@@ -53,6 +53,14 @@
           "platform": "x64 & windows"
         },
         {
+          "name": "dawn",
+          "features": [
+            "glfw",
+            "tools"
+          ],
+          "platform": "x64 & windows"
+        },
+        {
           "name": "godot",
           "features": [
             "spine-runtimes"

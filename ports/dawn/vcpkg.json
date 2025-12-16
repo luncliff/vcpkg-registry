@@ -1,0 +1,148 @@
+{
+  "name": "dawn",
+  "version": "20251030.221451",
+  "description": "Dawn is an open-source and cross-platform implementation of the WebGPU standard.",
+  "homepage": "https://github.com/google/dawn",
+  "license": "BSD-3-Clause",
+  "supports": "!emscripten",
+  "dependencies": [
+    "abseil",
+    "egl-registry",
+    {
+      "name": "glslang",
+      "features": [
+        "tools"
+      ]
+    },
+    "libprotobuf-mutator",
+    "protobuf",
+    "spirv-headers",
+    "spirv-tools",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    {
+      "name": "vcpkg-get-python-packages",
+      "host": true
+    }
+  ],
+  "default-features": [
+    {
+      "name": "d3d11",
+      "platform": "windows"
+    },
+    {
+      "name": "d3d12",
+      "platform": "windows"
+    },
+    {
+      "name": "gl",
+      "platform": "linux | freebsd | openbsd"
+    },
+    {
+      "name": "gles",
+      "platform": "android"
+    },
+    {
+      "name": "metal",
+      "platform": "osx | ios"
+    },
+    {
+      "name": "vulkan",
+      "platform": "android"
+    },
+    {
+      "name": "x11",
+      "platform": "linux | freebsd | openbsd"
+    }
+  ],
+  "features": {
+    "d3d11": {
+      "description": "Direct3D 11 backend support",
+      "supports": "windows"
+    },
+    "d3d12": {
+      "description": "Direct3D 12 backend support",
+      "supports": "windows",
+      "dependencies": [
+        {
+          "name": "dawn",
+          "default-features": false,
+          "features": [
+            "d3d11"
+          ]
+        },
+        "directx-dxc",
+        "directx-headers"
+      ]
+    },
+    "gl": {
+      "description": "Desktop OpenGL backend support",
+      "supports": "linux | freebsd | openbsd",
+      "dependencies": [
+        "egl-registry",
+        "opengl-registry"
+      ]
+    },
+    "gles": {
+      "description": "OpenGL ES backend support",
+      "supports": "windows | android | linux | freebsd | openbsd",
+      "dependencies": [
+        {
+          "name": "angle",
+          "platform": "windows"
+        },
+        "egl-registry",
+        "opengl-registry"
+      ]
+    },
+    "glfw": {
+      "description": "GLFW integration support",
+      "supports": "windows | linux | osx | emscripten",
+      "dependencies": [
+        "glfw3"
+      ]
+    },
+    "metal": {
+      "description": "Metal backend support",
+      "supports": "osx | ios"
+    },
+    "tint": {
+      "description": "Build/Install tint command line tool",
+      "supports": "windows"
+    },
+    "tools": {
+      "description": "Build/Install command line tool",
+      "dependencies": [
+        {
+          "name": "dawn",
+          "default-features": false,
+          "features": [
+            "tint"
+          ]
+        }
+      ]
+    },
+    "vulkan": {
+      "description": "Vulkan backend support",
+      "supports": "(windows & !uwp) | android | linux | freebsd | openbsd",
+      "dependencies": [
+        "vulkan-headers",
+        "vulkan-utility-libraries"
+      ]
+    },
+    "wayland": {
+      "description": "Wayland support",
+      "supports": "linux | freebsd | openbsd"
+    },
+    "x11": {
+      "description": "X11 support",
+      "supports": "linux | freebsd | openbsd"
+    }
+  }
+}
