@@ -1,7 +1,6 @@
 #
 # NOTE:
-#  - spirv-tools, spirv-headers: dawn uses internal(generated with python command) header file
-#  - glslang: use embedded sources
+#  - spirv-tools: tint uses internal(generated with python command?) header file
 #
 
 # BUILD_SHARED_LIBS=OFF. Dawn's intent seems like it's preventing problems with DLLs
@@ -19,8 +18,8 @@ vcpkg_from_github(
     REF "v${VERSION}"
     SHA512 f0b2a614c2a275864e4e78a5ac686f347f7a27b022e796955a9cf6633a30ff3690229c4577458b46ffa31118ed9ec4ec25eddf38de3c6d99f92ef93bf2ee59d4
     HEAD_REF main
-    # PATCHES
-    #     fix-cmake.patch # to change CMakeLists.txt file in the SOURCE_PATH, working with editable mode
+    PATCHES
+        fix-cmake.patch
 )
 
 vcpkg_find_acquire_program(GIT)
@@ -33,13 +32,14 @@ x_vcpkg_get_python_packages(
     PACKAGES numpy jinja2
     OUT_PYTHON_VAR PYTHON3
 )
+
 # TODO: The dependencies will be replaced to use other vcpkg ports. Need detailed review with the developers.
-# vcpkg_execute_required_process(
-#     COMMAND "${PYTHON3}" tools/fetch_dawn_dependencies.py # requires git
-#     LOGNAME fetch-dependencies
-#     WORKING_DIRECTORY "${SOURCE_PATH}"
-# )
-file(REMOVE_RECURSE "${SOURCE_PATH}/third_party")
+vcpkg_execute_required_process(
+    COMMAND "${PYTHON3}" tools/fetch_dawn_dependencies.py # requires git
+    LOGNAME fetch-dependencies
+    WORKING_DIRECTORY "${SOURCE_PATH}"
+)
+# file(REMOVE_RECURSE "${SOURCE_PATH}/third_party")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
@@ -58,7 +58,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
-    # WINDOWS_USE_MSBUILD
+    WINDOWS_USE_MSBUILD
     OPTIONS
         ${FEATURE_OPTIONS}
         -DBUILD_SHARED_LIBS=OFF # Force static linking to avoid DLL linking issues on Windows
@@ -87,15 +87,6 @@ if("tools" IN_LIST FEATURES)
         tint_info # TARGET tint_cmd_info_cmd
         DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}" AUTO_CLEAN
     )
-endif()
-if("tint" IN_LIST FEATURES)
-    # The installed DawnConfig.cmake won't use include/tint folder.
-    # Manual configuration is required if the library user wants the files.
-    # THIS IS INTENDED because these are internal headers.
-    # Move the folder because tint/tint.h is using relative include "src/tint/..."
-    if(EXISTS "${CURRENT_PACKAGES_DIR}/include/src/tint")
-        file(COPY "${CURRENT_PACKAGES_DIR}/include/src" DESTINATION "${CURRENT_PACKAGES_DIR}/include/tint/")
-    endif()
 endif()
 file(INSTALL "${SOURCE_PATH}/include/webgpu" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
 
