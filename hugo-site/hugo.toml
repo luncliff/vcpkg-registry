@@ -1,0 +1,42 @@
+baseURL = 'https://luncliff.github.io/vcpkg-registry/'
+languageCode = 'en-us'
+title = 'vcpkg-registry Documentation'
+theme = 'hugo-book'
+
+# Enable multi-language support
+defaultContentLanguage = 'en'
+enableGitInfo = true
+
+[params]
+  # Book theme specific parameters
+  BookRepo = 'https://github.com/luncliff/vcpkg-registry'
+  BookEditPath = 'edit/main'
+  BookSearch = true
+  BookToC = true
+  BookComments = false
+  BookSection = '*'
+
+[languages]
+  [languages.en]
+    languageName = 'English'
+    weight = 1
+    title = 'vcpkg-registry Documentation'
+  [languages.ko]
+    languageName = '한국어'
+    weight = 2
+    title = 'vcpkg-registry 문서'
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.tableOfContents]
+    endLevel = 3
+    ordered = false
+    startLevel = 2
+
+[menu]
+  [[menu.before]]
+    name = 'GitHub'
+    url = 'https://github.com/luncliff/vcpkg-registry'
+    weight = 10
