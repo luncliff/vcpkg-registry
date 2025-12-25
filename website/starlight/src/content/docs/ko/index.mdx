@@ -1,0 +1,63 @@
+---
+title: vcpkg-registry에 오신 것을 환영합니다
+description: 향상된 패키지 관리를 위한 오버레이 지원이 포함된 사용자 정의 vcpkg 포트 레지스트리
+template: splash
+hero:
+  tagline: 고급 패키지 관리 시나리오를 위한 오버레이 포트 및 트리플릿을 제공하는 사용자 정의 vcpkg 레지스트리입니다.
+  image:
+    file: ../../../assets/houston.webp
+  actions:
+    - text: 시작하기
+      link: /vcpkg-registry/ko/guides/create-port/
+      icon: right-arrow
+      variant: primary
+    - text: GitHub에서 보기
+      link: https://github.com/luncliff/vcpkg-registry
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## 빠른 시작
+
+<CardGrid stagger>
+	<Card title="포트 생성" icon="add-document">
+		라이브러리를 위한 사용자 정의 vcpkg 포트를 생성하는 방법을 배웁니다.
+	</Card>
+	<Card title="포트 업데이트" icon="pencil">
+		최신 버전으로 포트를 업데이트하세요.
+	</Card>
+	<Card title="문제 해결" icon="warning">
+		포트 설치 및 빌드와 관련된 일반적인 문제를 해결하세요.
+	</Card>
+	<Card title="참고 자료" icon="open-book">
+		외부 문서 및 리소스에 빠르게 액세스하세요.
+	</Card>
+</CardGrid>
+
+## 요구 사항
+
+- **vcpkg**: [2025.12.12](https://github.com/microsoft/vcpkg/releases/tag/2025.12.12) 이상 권장
+- **vcpkg-tool**: [2025-12-16](https://github.com/microsoft/vcpkg-tool/releases/tag/2025-12-16) 이상 권장
+
+## 기능
+
+이 레지스트리는 다음을 제공합니다:
+
+- 특수 라이브러리를 위한 사용자 정의 오버레이 포트
+- Android NDK 및 iOS 시뮬레이터용 사용자 정의 트리플릿
+- 포트 생성 및 유지 관리를 위한 포괄적인 문서
+- 자동화된 워크플로를 위한 GitHub Copilot 프롬프트
+
+## 설정
+
+공식 [시작 가이드](https://learn.microsoft.com/ko-kr/vcpkg/get_started/get-started)를 따라 vcpkg 환경을 설정한 다음 이 레지스트리를 복제하세요:
+
+```bash
+export VCPKG_ROOT="/usr/local/share/vcpkg"
+pushd $VCPKG_ROOT
+    git clone https://github.com/luncliff/vcpkg-registry
+popd
+```
+
+자세한 설정 지침은 [포트 생성 가이드](/vcpkg-registry/ko/guides/create-port/)를 확인하세요.
