@@ -34,7 +34,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Reference',
-      items: ['guides/references', 'guides/troubleshooting'],
+      items: ['guides/references', 'guides/troubleshooting', 'guides/workflow-diagrams'],
     },
   ],
 

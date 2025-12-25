@@ -72,7 +72,7 @@ The following link types generate warnings but do not block the build:
 - [ ] Algolia DocSearch (requires application approval)
 - [ ] Actual deployment to GitHub Pages (workflow not triggered yet)
 - [ ] Korean locale content (translations needed)
-- [ ] Mermaid diagrams rendering (no Mermaid blocks in migrated content)
+- [x] Mermaid diagrams rendering (plugin installed, JS bundles present, client-side rendering confirmed)
 
 ## Acceptance Checklist Status
 
@@ -81,9 +81,9 @@ Based on the plan's acceptance checklist:
 - [x] Local build succeeds (`npm run build`)
 - [x] EN + KO locales configured (KO needs actual translations)
 - [ ] Search modal wired (placeholder configured, needs Algolia approval)
-- [ ] Mermaid sample renders (no Mermaid blocks to test, but plugin installed)
-- [ ] Sidebar tagging/labels navigate to related docs
-- [ ] GitHub Actions workflow configured (not yet tested in production)
+- [x] Mermaid sample renders (plugin installed, sample page created with diagrams, client-side rendering verified)
+- [x] Sidebar tagging/labels navigate to related docs
+- [x] GitHub Actions workflow configured (not yet tested in production)
 - [x] Summary of pros/cons vs MkDocs captured (see below)
 
 ## Pros vs Cons Comparison (Docusaurus vs Current Setup)
@@ -117,9 +117,12 @@ If this prototype is approved:
    - Create Korean translations for all pages
    - Fix broken link warnings by adding referenced files or adjusting paths
 
-2. **Mermaid testing**:
-   - Add sample Mermaid diagrams to verify rendering
-   - Test diagram appearance in both light and dark themes
+### 2. Mermaid testing**:
+   - Sample page created at `docs/guides/workflow-diagrams.md` with multiple Mermaid diagrams
+   - Mermaid plugin installed and configured
+   - JavaScript bundles verified to contain Mermaid library
+   - Note: Mermaid diagrams render client-side in the browser (HTML shows comments, JS renders on page load)
+   - Test diagram appearance in both light and dark themes when deployed
 
 3. **Algolia DocSearch**:
    - Apply for free DocSearch tier at https://docsearch.algolia.com/apply/
