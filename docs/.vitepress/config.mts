@@ -82,6 +82,16 @@ export default defineConfig({
           { text: 'Review Checklist', link: '/review-checklist' },
           { text: 'Pull Request Template', link: '/pull_request_template' },
         ]
+      },
+      {
+        text: 'VitePress Experiment',
+        collapsed: true,
+        items: [
+          { text: 'Quick Start', link: '/vitepress-quickstart' },
+          { text: 'Overview', link: '/vitepress-experiment' },
+          { text: 'Enhancements Guide', link: '/vitepress-enhancements' },
+          { text: 'MkDocs vs VitePress', link: '/mkdocs-vs-vitepress' },
+        ]
       }
     ],
 
