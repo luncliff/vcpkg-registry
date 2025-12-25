@@ -14,12 +14,13 @@ Canonical design spec for GitHub Copilot prompts and their relationship to guide
 - Logging: no work-note.md; use PR descriptions and commits.
 
 ## Artifact Map (Guides ↔ Prompts)
-- Guide: docs/guide-create-port.md → Prompt: .github/prompts/create-port.prompt.md
-- Guide: docs/guide-create-port-download.md, docs/guide-create-port-build.md → Support create-port prompt
-- Guide: docs/guide-update-port.md → Prompt: .github/prompts/update-port.prompt.md
-- Guide: docs/guide-update-version-baseline.md → Prompt: .github/prompts/update-version-baseline.prompt.md
-- Guide: docs/troubleshooting.md → Prompts: install-port (for logs), review-port (for validation)
-- Guide: README.md + docs/references.md → Prompt: check-environment.prompt.md
+- 📝 [guide-create-port.md](./guide-create-port.md) → 🛠️ [create-port.prompt.md](../.github/prompts/create-port.prompt.md)
+   - [guide-create-port-download.md](./guide-create-port-download.md)
+   - [guide-create-port-build.md](./guide-create-port-build.md)
+- 📝 [guide-update-port.md](./guide-update-port.md) → 🛠️ [update-port.prompt.md](../.github/prompts/update-port.prompt.md)
+- 📝 [guide-update-version-baseline.md](./guide-update-version-baseline.md) → 🛠️ [update-version-baseline.prompt.md](../.github/prompts/update-version-baseline.prompt.md)
+- 📝 [troubleshooting.md](./troubleshooting.md) → 🛠️ install-port (for logs), review-port (for validation)
+- 📝 [README](../README.md) + [References](./references.md) → 🛠️ [check-environment.prompt.md](../.github/prompts/check-environment.prompt.md)
 
 ## Prompt Set
 
