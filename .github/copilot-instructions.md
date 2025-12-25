@@ -20,10 +20,10 @@ The primary maintenance tasks for this registry are:
 - [docs/guide-create-port-download.md](../docs/guide-create-port-download.md) – Download & SHA512
 
 **Prompts:**
-- `/search-port` – [.github/prompts/search-port.prompt.md](./prompts/search-port.prompt.md)
-- `/create-port` – [.github/prompts/create-port.prompt.md](./prompts/create-port.prompt.md)
-- `/install-port` – [.github/prompts/install-port.prompt.md](./prompts/install-port.prompt.md)
-- `/review-port` – [.github/prompts/review-port.prompt.md](./prompts/review-port.prompt.md)
+- `/search-port`
+- `/create-port`
+- `/install-port`
+- `/review-port`
 
 ### 2. Update Port
 **Goal:** Update an existing port to a newer version or adjust its build configuration.
@@ -32,10 +32,10 @@ The primary maintenance tasks for this registry are:
 - [docs/guide-update-port.md](../docs/guide-update-port.md) – Update procedures
 
 **Prompts:**
-- `/check-port-upstream` – [.github/prompts/check-port-upstream.prompt.md](./prompts/check-port-upstream.prompt.md)
-- `/update-port` – [.github/prompts/update-port.prompt.md](./prompts/update-port.prompt.md)
-- `/install-port` – [.github/prompts/install-port.prompt.md](./prompts/install-port.prompt.md)
-- `/review-port` – [.github/prompts/review-port.prompt.md](./prompts/review-port.prompt.md)
+- `/check-port-upstream`
+- `/update-port`
+- `/install-port`
+- `/review-port`
 
 ### 3. Update Version Baseline
 **Goal:** Synchronize `versions/` JSON files with changes to ports.
@@ -44,7 +44,7 @@ The primary maintenance tasks for this registry are:
 - [docs/guide-update-version-baseline.md](../docs/guide-update-version-baseline.md) – Baseline update procedures
 
 **Prompts:**
-- `/update-version-baseline` – [.github/prompts/update-version-baseline.prompt.md](./prompts/update-version-baseline.prompt.md)
+- `/update-version-baseline`
 
 ### 4. Troubleshoot Port
 **Goal:** Diagnose and fix issues with port installation or build.
@@ -53,9 +53,9 @@ The primary maintenance tasks for this registry are:
 - [docs/troubleshooting.md](../docs/troubleshooting.md) – Common issues and solutions
 
 **Prompts:**
-- `/check-environment` – [.github/prompts/check-environment.prompt.md](./prompts/check-environment.prompt.md)
-- `/install-port` – [.github/prompts/install-port.prompt.md](./prompts/install-port.prompt.md)
-- `/review-port` – [.github/prompts/review-port.prompt.md](./prompts/review-port.prompt.md)
+- `/check-environment`
+- `/install-port`
+- `/review-port`
 
 ## How Copilot Should Use Documentation
 
@@ -63,11 +63,11 @@ When assisting with tasks:
 
 1. **For setup and environment:** Reference [README.md](../README.md) and [docs/references.md](../docs/references.md)
 2. **For step-by-step instructions:** Use the specific guides in `docs/`:
-   - [docs/guide-create-port.md](../docs/guide-create-port.md)
-   - [docs/guide-update-port.md](../docs/guide-update-port.md)
-   - [docs/guide-update-version-baseline.md](../docs/guide-update-version-baseline.md)
-   - [docs/troubleshooting.md](../docs/troubleshooting.md)
-3. **For external resources:** Use [docs/references.md](../docs/references.md)
+   - docs/guide-create-port.md
+   - docs/guide-update-port.md
+   - docs/guide-update-version-baseline.md
+   - docs/troubleshooting.md
+3. **For external resources:** Use docs/references.md
 4. **Prompt behavior must follow the corresponding guide's process**
 
 ## How Copilot Should Use Prompts
@@ -76,28 +76,27 @@ When assisting with tasks:
 
 | Task | Prompts | Primary Guides |
 |------|---------|----------------|
-| **Create port** | `/search-port` → `/create-port` → `/install-port` → `/review-port` | `guide-create-port.md`, `guide-create-port-build.md`, `guide-create-port-download.md` |
-| **Update port** | `/check-port-upstream` → `/update-port` → `/install-port` → `/review-port` | `guide-update-port.md` |
-| **Update version baseline** | `/update-version-baseline` | `guide-update-version-baseline.md` |
-| **Troubleshoot** | `/check-environment` → `/install-port` | `troubleshooting.md` |
+| **Create port** | `/search-port` → `/create-port` → `/install-port` → `/review-port` | guide-create-port.md, guide-create-port-build.md, guide-create-port-download.md |
+| **Update port** | `/check-port-upstream` → `/update-port` → `/install-port` → `/review-port` | guide-update-port.md |
+| **Update version baseline** | `/update-version-baseline` | guide-update-version-baseline.md |
+| **Troubleshoot** | `/check-environment` → `/install-port` | troubleshooting.md |
 
 ### Prompt Guidelines
 
 - Prompts are for **process execution** with clear pass/fail outcomes
 - Each prompt should report structured results with ✅ ⚠️ ❌ indicators
 - Follow the workflow defined in the prompt's corresponding guide
-- **Do not create or reference `work-note.md`** – use PR descriptions for history
 
 ## Command Usage Guidelines
 
 ### Overlay Usage
 - Use explicit CLI options (`--overlay-ports`, `--overlay-triplets`) instead of environment variables
-- See [docs/guide-create-port.md](../docs/guide-create-port.md) and [docs/troubleshooting.md](../docs/troubleshooting.md) for examples
+- See docs/guide-create-port.md and docs/troubleshooting.md for examples
 
 ### Helper Scripts
 Prefer helper scripts in `scripts/` when available:
-- [scripts/registry-add-version.ps1](../scripts/registry-add-version.ps1) – Update version baseline
-- [scripts/registry-format.ps1](../scripts/registry-format.ps1) – Format manifests
+- scripts/registry-add-version.ps1 – Update version baseline
+- scripts/registry-format.ps1 – Format manifests
 
 ### Minimal Changes
 - Keep changes focused on the requested task
