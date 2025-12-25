@@ -1,7 +1,7 @@
 ---
 description: 'Search for existing ports by name, URL, or keywords'
 agent: 'agent'
-tools: ['search/fileSearch', 'search/textSearch', 'search/readFile', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'githubRepo', 'todos']
+tools: ['execute/runInTerminal', 'read/readFile', 'read/terminalLastCommand', 'search/fileSearch', 'search/textSearch', 'web', 'todo']
 model: Claude Haiku 4.5 (copilot)
 ---
 
@@ -11,6 +11,10 @@ Find existing vcpkg ports by name, GitHub URL, or keywords in local registry and
 
 ## Prompt Goals
 
+- PASS: Clearly identified whether the port exists locally/upstream and recommended next step.
+- FAIL: Could not determine port status; search criteria unclear or no results found.
+
+**Additional Goals**:
 - Search for ports in local registry (priority)
 - Search microsoft/vcpkg upstream repository
 - Extract port information from GitHub URLs
@@ -27,8 +31,8 @@ Find existing vcpkg ports by name, GitHub URL, or keywords in local registry and
 - No ports found (report empty results)
 
 **Prompt Forwarding**: 
-- If port exists: User decides next action (/install-port or /review-port)
-- If port doesn't exist: User may proceed to /create-port
+- If port exists: User decides next action (`/install-port` or `/review-port`)
+- If port doesn't exist: User may proceed to `/create-port`
 
 ## User Input
 
@@ -73,7 +77,7 @@ Check if tensorflow-lite exists
 - Purpose: Find matching port directories
 
 #### Step 2.2: Run vcpkg search command
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command: `vcpkg search "{port-name}" --overlay-ports ./ports`
 - Purpose: Get port list with descriptions
 - Note: May include features in results
@@ -90,12 +94,12 @@ Check if tensorflow-lite exists
 - Purpose: Confirm port is in registry
 
 #### Step 2.5: Read port vcpkg.json (if found)
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/vcpkg.json`
 - Purpose: Get port metadata (version, description, homepage, dependencies)
 
 #### Step 2.6: Check for deprecation markers
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/portfile.cmake`
 - Search for: `set(VCPKG_POLICY_EMPTY_PACKAGE enabled)`
 - Purpose: Identify deprecated/redirect ports
@@ -103,18 +107,18 @@ Check if tensorflow-lite exists
 ### Phase 3: Search Upstream vcpkg Repository
 
 #### Step 3.1: Search microsoft/vcpkg ports
-- Tool: #tool:githubRepo
+- Tool: #tool:web/githubRepo
 - Repo: `microsoft/vcpkg`
 - Query: `path:ports/{port-name} filename:vcpkg.json`
 - Purpose: Check if port exists upstream
 
 #### Step 3.2: Fetch upstream port files (if found)
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URL: `https://raw.githubusercontent.com/microsoft/vcpkg/master/ports/{port-name}/vcpkg.json`
 - Purpose: Get upstream port metadata
 
 #### Step 3.3: Fetch upstream version
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URL: `https://raw.githubusercontent.com/microsoft/vcpkg/master/versions/{first-letter}-/{port-name}.json`
 - Purpose: Get upstream version history
 
@@ -122,12 +126,12 @@ Check if tensorflow-lite exists
 
 #### Step 4.1: Fetch project repository
 - Condition: GitHub URL provided in input
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URL: Provided GitHub repository URL
 - Purpose: Get project overview
 
 #### Step 4.2: Fetch latest release
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URL: `{github-url}/releases/latest`
 - Purpose: Get latest upstream version
 
@@ -135,12 +139,12 @@ Check if tensorflow-lite exists
 
 #### Step 5.1: Run vcpkg depend-info
 - Condition: Port found in local registry or upstream
-- Tool: #tool:runCommands/runInTerminal
+- Tool: #tool:execute/runInTerminal
 - Command: `vcpkg depend-info {port-name} --overlay-ports ./ports`
 - Purpose: Get dependency tree
 
 #### Step 5.2: Capture dependency output
-- Tool: #tool:runCommands/terminalLastCommand
+- Tool: #tool:read/terminalLastCommand
 - Purpose: Include in report
 
 ### Phase 6: Generate Report

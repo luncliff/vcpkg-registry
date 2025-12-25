@@ -1,8 +1,8 @@
 # 📝 Pull Request
 
-Leave one of "New Port" or "Port Update" below...
+Leave one of "Create Port" or "Port Update" below...
 
-## 🆕 New Port
+## 🆕 Create Port
 
 *Delete this section if this is a port update*
 
@@ -12,7 +12,7 @@ Leave one of "New Port" or "Port Update" below...
 
 Link `#<issue-number>` (if applicable)
 
-### 📋 New Port Checklist
+### 📋 Create Port Checklist
 
 - [ ] Port installs successfully with overlay(`vcpkg install --overlay-ports`)
 - [ ] No unexpected files in port directory
@@ -22,9 +22,9 @@ Link `#<issue-number>` (if applicable)
 
 For Reviewers🔎, check the followings.
 
-- [Port Creation Guide](./guide-new-port.md)
-- [Source Acquisition](./guide-new-port-download.md)
-- [Build Patterns](./guide-new-port-build.md)
+- [Create Port Guide](./guide-create-port.md)
+- [Source Acquisition](./guide-create-port-download.md)
+- [Build Patterns](./guide-create-port-build.md)
 - [Review Checklist](./review-checklist.md)
 
 #### Build System
@@ -51,7 +51,7 @@ List the tested triplets:
 
 ## 🔄 Port Update
 
-*Delete this section if this is a new port*
+*Delete this section if this is a create port PR*
 
 - **Port Name:** `<port-name>`
 - **New Version:** `<new-version>`
@@ -68,8 +68,8 @@ Link `#<issue-number>` (if applicable)
 
 For Reviewers🔎, check the followings.
 
-- [Port Update Guide](./guide-update-port.md)
-- [Version Management](./guide-update-port-versioning.md)
+- [Update Port Guide](./guide-update-port.md)
+- [Update Version Baseline](./guide-update-version-baseline.md)
 - [Review Checklist](./review-checklist.md)
 
 #### Changes Made
