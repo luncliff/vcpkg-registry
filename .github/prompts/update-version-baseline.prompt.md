@@ -1,16 +1,20 @@
 ---
-description: 'Register new port versions into registry baseline and versions files'
+description: 'Update registry baseline and version JSON files for ports'
 agent: 'agent'
 tools: ['execute/getTerminalOutput', 'execute/runInTerminal', 'read/readFile', 'read/terminalLastCommand', 'search/fileSearch', 'todo']
 model: GPT-5 mini (copilot)
 ---
 
-# Update Port Baseline
+# Update Version Baseline
 
-Register one or more ports into the registry `versions/` tracking using the helper script `./scripts/registry-add-version.ps1`. Falls back to inferring ports from recent chat when explicit names are not provided.
+Register one or more ports into the registry `versions/` tracking (modifies `versions/baseline.json` and `versions/<letter>-/<port>.json` files, not port files) using the helper script `./scripts/registry-add-version.ps1`. Falls back to inferring ports from recent chat when explicit names are not provided.
 
 ## Prompt Goals
 
+- PASS: Version baseline updated consistently for target ports; `versions/` JSON files validated.
+- FAIL: Baseline update incomplete or invalid; errors reported with actionable fixes.
+
+**Additional Goals**:
 - Accept port names (single or multiple) or infer from session context
 - Validate ports exist in `ports/` folder
 - Run `registry-add-version.ps1` for each port
@@ -39,7 +43,7 @@ Supported patterns:
 
 Examples:
 ```
-Update baseline for miniaudio
+Update version baseline for miniaudio
 Register versions for onnx, farmhash, dlpack
 Add version entry for tensorflow-lite
 ```
@@ -109,7 +113,7 @@ git commit -m "[<port-name>] update baseline"
 
 ## Error Handling
 
-- Missing `vcpkg` or CLI tool execution error: print instructions to run [/check-vcpkg-environment](./check-vcpkg-environment.prompt.md)
+- Missing `vcpkg` or CLI tool execution error: print instructions to run `/check-environment`
 - Port unknown: suggest checking name or creating the port.
 - Script failure: show last terminal output and diagnose the terminal output messages.
 
@@ -117,7 +121,7 @@ git commit -m "[<port-name>] update baseline"
 
 Emit a markdown report with the headings below (in order). If a section has no data, write `None`.
 
-1. `# Update Baseline Report`
+1. `# Update Version Baseline Report`
 2. `## Summary`
 3. `## Ports`
 5. `## Changes`
@@ -149,4 +153,4 @@ Emit a markdown report with the headings below (in order). If a section has no d
 Documents and Guides in this repository:
 
 - [Guide: Updating an Existing Port](../../docs/guide-update-port.md): Step 5 "Format and Register"
-- [Guide: Version Management for Port Updates](../../docs/guide-update-port-versioning.md): Step 4 and later
+- [Guide: Update Version Baseline](../../docs/guide-update-version-baseline.md): Step 4 and later

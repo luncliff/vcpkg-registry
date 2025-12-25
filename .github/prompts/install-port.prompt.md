@@ -11,12 +11,15 @@ Execute vcpkg port installation with overlay-ports, monitor build process, and a
 
 ## Prompt Goals
 
+- PASS: Port installed successfully with overlays; key checks validated; artifacts confirmed.
+- FAIL: Install failed with clear error classification (CMake/compiler/linker/vcpkg configuration) and suggested next steps.
+
+**Additional Goals**:
 - Parse port installation request with features
 - Execute `vcpkg install` with correct overlay-ports configuration
 - Monitor terminal output for errors
 - Analyze build logs if installation fails
 - Report installation results with actionable recommendations
-- Update work-note.md with installation status
 
 ## Workflow Expectation
 
@@ -27,8 +30,8 @@ Execute vcpkg port installation with overlay-ports, monitor build process, and a
 - Installation fails (analyze logs, report errors)
 
 **Prompt Forwarding**:
-- If installation succeeds: User may proceed to `/vcpkg-registry.review-port` for validation
-- If installation fails: User may need to fix port files, then retry `/vcpkg-registry.install-port`
+- If installation succeeds: User may proceed to `/review-port` for validation
+- If installation fails: User must fix port files, then retry `/install-port`
 
 ## User Input
 
@@ -187,10 +190,6 @@ Install opencv4[opengl] with x64-windows triplet
 - Errors: Error messages (if failed)
 - Next steps: Recommendations
 
-#### Step 6.2: Update work-note.md
-- Tool: #tool:edit/editFiles (append mode)
-- Content: Installation result with timestamp
-
 ## Reporting
 
 Replace example reports with a deterministic structure. The agent MUST output a markdown document with the headings below (in order). Every heading must appear; use `None` when no data. Keep bullets concise; avoid narrative paragraphs.
@@ -253,23 +252,11 @@ If none: `None`
 ### 9. Next Steps
 - Ordered short list; first item is highest priority
 - Failure example order: Fix manifest → Re-run install → Consider patches
-- Success example order: /vcpkg-registry.review-port → add version → optional feature tests
+- Success example order: /review-port → add version → optional feature tests
 
-### Post Report Action: Work Note Update
+### Post Report Action
 
-Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
-
-```
-## <timestamp UTC> - /vcpkg-registry.install-port
-Port: <spec>
-Outcome: SUCCESS|FAILURE
-Duration: <value>
-Dependencies: <count>
-Features: <list|None>
-Errors: <count|None>
-Primary Error: <type|None>
-Next: <primary next action>
-```
+If needed, users can include the installation summary in PR descriptions or issue reports for tracking purposes.
 
 ### Conventions
 - Icons: ✅ success, ❌ failure, ⚠️ warning (non-blocking issues)
@@ -299,4 +286,5 @@ This specification replaces prior example reports; emit only live execution data
 
 Documents and Guides in this repository:
 
-- [Guide: New Port (Build & Installation Patterns)](../../docs/guide-new-port-build.md)
+- [Guide: Create Port – Build Patterns](../../docs/guide-create-port-build.md)
+- [Troubleshooting: Port Installation & Build Errors](../../docs/troubleshooting.md)

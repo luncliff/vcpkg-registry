@@ -11,6 +11,10 @@ Validate port files (vcpkg.json, portfile.cmake, patches, usage) against vcpkg c
 
 ## Prompt Goals
 
+- PASS: Port satisfies all mandatory checklist items; ready for PR and version baseline update.
+- FAIL: List of failing checks with recommended fixes; port needs corrections.
+
+**Additional Goals**:
 - Locate and read all port files
 - Fetch vcpkg contribution guidelines and maintainer guide
 - Validate vcpkg.json structure (schema compliance, version format, dependencies)
@@ -28,8 +32,8 @@ Validate port files (vcpkg.json, portfile.cmake, patches, usage) against vcpkg c
 - All violations documented with fix recommendations
 
 **Prompt Forwarding**:
-- If review passes: User may proceed to add version ([registry-add-version.ps1](../../scripts/registry-add-version.ps1)
-- If review fails: User must fix violations and re-run `/vcpkg-registry.review-port`
+- If review passes: User may proceed to add version (`./scripts/registry-add-version.ps1` or `/update-version-baseline`)
+- If review fails: User must fix violations and re-run `/review-port`
 
 ## User Input
 
@@ -199,10 +203,6 @@ Validate cpuinfo port files
 - Categorize: Critical issues, warnings, suggestions
 - Format: Structured markdown with pass/fail sections
 
-#### Step 7.2: Update work-note.md
-- Tool: #tool:edit/editFiles (append mode)
-- Content: Review summary with timestamp
-
 ## Reporting
 
 Replace example-filled output with a structured, deterministic report. The agent MUST emit a markdown document with the following top-level headings (in order) and required subsections. Each heading must be present even if the section is empty; write `None` for empty content. Avoid embellishment; focus on factual validation results.
@@ -287,19 +287,6 @@ Branch based:
 - Prefer bullet lists; avoid tables unless multiple patches (>3)
 - Keep code snippets minimal (single line) unless clarity demands more
 - Timestamp in ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
-
-### Post Report Action: Work Note Update
-
-Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
-
-```
-## <timestamp UTC> - /vcpkg-registry.review-port <port>[, <port>...]
-Result: PASS | PASS (experimental) | FAIL
-Critical: <count>
-Warnings: <count>
-Experimental: yes|no
-Next: <concise next action>
-```
 
 ### Multi-Port Review
 If multiple ports requested, produce one consolidated document with a `## Port: <name>` block repeating sections 2–7 per port, then a global Issues Summary / Recommendations / Next Steps.

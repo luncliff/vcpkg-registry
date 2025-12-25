@@ -1,6 +1,6 @@
 # Port Change Review Checklist
 
-This document is a checklist for reviewing [new port contributions](./guide-new-port.md) and [existing port updates](./guide-update-port.md).
+This document is a checklist for reviewing [create port contributions](./guide-create-port.md) and [existing port updates](./guide-update-port.md).
 
 ## 📋 Source Acquisition
 

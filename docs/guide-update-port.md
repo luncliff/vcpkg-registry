@@ -1,9 +1,9 @@
-# Guide: Updating an Existing Port
+# Guide: Update Port
 
-This document provides the **end-to-end workflow** for updating existing ports in this registry. For creating new ports, see the [new port creation guide](./guide-new-port.md).
+This document provides the **end-to-end workflow** for updating existing ports in this registry. For creating ports, see the [create port guide](./guide-create-port.md).
 
 Companion documents:
-- [Version management patterns](./guide-update-port-versioning.md)
+- [Version management patterns](./guide-update-version-baseline.md)
 
 ## 1. High-Level Update Phases
 
@@ -68,7 +68,7 @@ Document any special decisions or known issues discovered during the update.
 
 ### Step 2: Update Version Information
 
-Following the [version management guide](./guide-update-port-versioning.md):
+Following the [version management guide](./guide-update-version-baseline.md):
 
 1. **Update `vcpkg.json`:**
    ```json
@@ -255,8 +255,8 @@ Following the [version management guide](./guide-update-port-versioning.md):
 
 ## 6. Related Resources
 
-- [New Port Creation](./guide-new-port.md)
-- [Version Management](./guide-update-port-versioning.md)
+- [Create Port Guide](./guide-create-port.md)
+- [Update Version Baseline](./guide-update-version-baseline.md)
 - [Review Checklist](./review-checklist.md)
 - [vcpkg Documentation](https://learn.microsoft.com/en-us/vcpkg/)
 - [Registry Scripts](../scripts/)

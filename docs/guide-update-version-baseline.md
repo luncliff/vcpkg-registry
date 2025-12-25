@@ -1,6 +1,6 @@
-# Guide: Version Management for Port Updates
+# Guide: Update Version Baseline
 
-This document covers version management, SHA512 calculation, and registry version tracking for port updates. It complements the main [port update guide](./guide-update-port.md).
+This document covers version management, SHA512 calculation, and registry version tracking for port updates. It complements the main [update port guide](./guide-update-port.md).
 
 ## 1. Version Field Types
 

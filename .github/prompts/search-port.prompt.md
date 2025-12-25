@@ -11,6 +11,10 @@ Find existing vcpkg ports by name, GitHub URL, or keywords in local registry and
 
 ## Prompt Goals
 
+- PASS: Clearly identified whether the port exists locally/upstream and recommended next step.
+- FAIL: Could not determine port status; search criteria unclear or no results found.
+
+**Additional Goals**:
 - Search for ports in local registry (priority)
 - Search microsoft/vcpkg upstream repository
 - Extract port information from GitHub URLs
@@ -27,8 +31,8 @@ Find existing vcpkg ports by name, GitHub URL, or keywords in local registry and
 - No ports found (report empty results)
 
 **Prompt Forwarding**: 
-- If port exists: User decides next action (/vcpkg-registry.install-port or /vcpkg-registry.review-port)
-- If port doesn't exist: User may proceed to /vcpkg-registry.create-port
+- If port exists: User decides next action (`/install-port` or `/review-port`)
+- If port doesn't exist: User may proceed to `/create-port`
 
 ## User Input
 
@@ -208,7 +212,7 @@ If all found: `None`.
 Decision guidance based on results:
 - If deprecated ports: suggest installing alternative
 - If upstream-only ports: suggest install command `vcpkg install <port>`
-- If not found but repo detected: suggest `/vcpkg-registry.create-port <url>`
+- If not found but repo detected: suggest `/create-port <url>`
 - If local newer than upstream: note potential contribution
 Bulleted actionable lines, else `None`.
 

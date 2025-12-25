@@ -2,15 +2,16 @@
 
 [![Check](https://github.com/luncliff/vcpkg-registry/actions/workflows/build.yml/badge.svg)](https://github.com/luncliff/vcpkg-registry/actions/workflows/build.yml)
 
-* [vcpkg](https://github.com/microsoft/vcpkg): recommend [2024.06.15](https://github.com/microsoft/vcpkg/releases/tag/2024.06.15) or later
-* [vcpkg-tool](https://github.com/microsoft/vcpkg-tool) follows the vcpkg
+* [vcpkg](https://github.com/microsoft/vcpkg): recommend [2025.12.12](https://github.com/microsoft/vcpkg/releases/tag/2025.12.12) or later
+* [vcpkg-tool](https://github.com/microsoft/vcpkg-tool): recommend [2025-12-16](https://github.com/microsoft/vcpkg-tool/releases/tag/2025-12-16) or later
 
 ## Documentation
 
 ### Guides
 
-- [Port Creation Guide](docs/guide-new-port.md)
-- [Port Update Guide](docs/guide-update-port.md)
+- [Create Port Guide](docs/guide-create-port.md)
+- [Update Port Guide](docs/guide-update-port.md)
+- [Troubleshooting Guide](docs/troubleshooting.md)
 
 ### Quick [References](docs/references.md)
 
@@ -194,6 +195,11 @@ The `ports/` folder contains `openssl3` and `tensorflow-lite`. Put them in the "
     ]
 }
 ```
+
+## Prompts and Agents
+
+- 🌱 [.github/prompts](./.github/prompts/): [GitHub Copilot Prompt Designs](./docs/prompt-designs.md)
+- :construction: .github/agents experiment in progress. Currently no files.
 
 ## License
 

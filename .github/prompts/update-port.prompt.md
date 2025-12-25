@@ -1,23 +1,26 @@
 ---
-description: 'Upgrade port to newer version with SHA512 calculation and testing'
+description: 'Update port to newer version with SHA512 calculation and testing'
 agent: 'agent'
 tools: ['execute/runInTerminal', 'read/readFile', 'read/terminalLastCommand', 'edit/createFile', 'edit/editFiles', 'search/fileSearch', 'web/fetch', 'todo']
 model: Claude Sonnet 4 (copilot)
 ---
 
-# Upgrade Port
+# Update Port
 
 Update existing port to newer upstream version by modifying vcpkg.json and portfile.cmake, calculating new SHA512, and testing with --editable flag.
 
 ## Prompt Goals
 
+- PASS: Port updated and tested successfully; ready for review and version baseline update.
+- FAIL: Update blocked by unresolved errors; clear classification and suggested fixes provided.
+
+**Additional Goals**:
 - Read current port files (vcpkg.json, portfile.cmake)
 - Update version in vcpkg.json
 - Update REF and SHA512 in portfile.cmake
 - Calculate new SHA512 for source archive
 - Test installation with `--editable` flag
 - Generate upgrade report with validation results
-- Update work-note.md
 
 ## Workflow Expectation
 
@@ -28,23 +31,23 @@ Update existing port to newer upstream version by modifying vcpkg.json and portf
 - Port upgraded but test failed (report errors for user to fix)
 
 **Prompt Forwarding**:
-- If upgrade test succeeds: User should commit changes and run `./scripts/registry-add-version.ps1`
-- If upgrade test fails: User must fix issues and retry `/vcpkg-registry.install-port`
+- If upgrade test succeeds: User should commit changes and run `./scripts/registry-add-version.ps1` or use `/update-version-baseline`
+- If upgrade test fails: User must fix issues and retry `/install-port`
 
 ## User Input
 
 Extract port name and target version from natural language input:
 
 **Supported Patterns**:
-- Port name with version: `openssl3 3.0.15`, `upgrade cpuinfo to 2024-01-15`
-- Without version: `upgrade tensorflow-lite` (fetch latest from upstream)
-- With URL: `upgrade openssl3 from https://github.com/openssl/openssl/releases/tag/openssl-3.0.15`
+- Port name with version: `openssl3 3.0.15`, `update cpuinfo to 2024-01-15`
+- Without version: `update tensorflow-lite` (fetch latest from upstream)
+- With URL: `update openssl3 from https://github.com/openssl/openssl/releases/tag/openssl-3.0.15`
 
 **Examples**:
 ```
-Upgrade openssl3 to 3.0.15
+Update openssl3 to 3.0.15
 Update cpuinfo to latest version
-Upgrade tensorflow-lite to 2.14.1
+Update tensorflow-lite to 2.14.1
 ```
 
 ## Process
@@ -65,7 +68,7 @@ Upgrade tensorflow-lite to 2.14.1
 - Condition: Version specified in user input
   - Use: Specified version
 - Condition: Version not specified
-  - Action: Fetch latest release from upstream (use `/vcpkg-registry.check-port-upstream` logic)
+  - Action: Fetch latest release from upstream (use `/check-port-upstream` logic)
   - Tool: #tool:web/fetch
   - URL: `{homepage}/releases/latest` or `https://api.github.com/repos/{owner}/{repo}/releases/latest`
 
@@ -198,7 +201,7 @@ Upgrade tensorflow-lite to 2.14.1
 #### Step 5.4: Analyze test results
 - Success: Exit code 0, "successfully installed" message
 - Failure: Non-zero exit code, error messages
-- If failed: Read build logs (same as `/vcpkg-registry.install-port` Phase 4)
+- If failed: Read build logs (same as `/install-port` Phase 4)
 
 ### Phase 6: Handle Test Results
 
@@ -214,7 +217,7 @@ Upgrade tensorflow-lite to 2.14.1
 - Retry: Run test installation again
 
 #### Step 6.3: If test fails with build errors
-- Action: Analyze build logs (use `/vcpkg-registry.install-port` logic)
+- Action: Analyze build logs (use `/install-port` logic)
 - Report: Common error patterns
 - Suggest: Port may need patches for new version
 - Next: User must fix build issues
@@ -250,10 +253,6 @@ Upgrade tensorflow-lite to 2.14.1
 #### Step 8.1: Compile upgrade summary
 - List: Version change, SHA512 change, test results
 - Include: Any errors or warnings
-
-#### Step 8.2: Update work-note.md
-- Tool: #tool:edit/editFiles (append mode)
-- Content: Upgrade details with timestamp
 
 ## Reporting
 
@@ -324,20 +323,9 @@ Branch by outcome:
 - MAJOR VERSION WARNING: choose (proceed | create alternate port | revert)
 Bulleted actionable items only.
 
-### Post Report Action: Work Note Update
+### Post Report Action
 
-Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
-
-```
-## <timestamp UTC> - /vcpkg-registry.upgrade-port <port>
-Outcome: SUCCESS|FAILURE|MAJOR|SHA512-CORRECTED
-Old→New: <old> → <new>
-SHA512: updated|placeholder|corrected
-Test: passed|failed
-Critical: <count>
-Warnings: <count>
-Next: <primary action>
-```
+Users should include the upgrade summary in their PR description for tracking and review purposes.
 
 ### 10. Conventions
 - Icons: ✅ valid, ⚠️ warning, ❌ error
@@ -359,5 +347,5 @@ This specification replaces prior sample reports. Generate only real execution d
 Documents and Guides in this repository:
 
 - [Guide: Updating an Existing Port](../../docs/guide-update-port.md)
-- [Guide: Version Management for Port Updates](../../docs/guide-update-port-versioning.md)
+- [Guide: Update Version Baseline](../../docs/guide-update-version-baseline.md)
 - [Port Change Review Checklist](../../docs/review-checklist.md)

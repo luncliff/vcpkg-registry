@@ -1,9 +1,9 @@
-# Guide: New Port (Build & Installation Patterns)
+# Guide: Create Port – Build Patterns
 
-This guide covers how to configure, build, and install sources after acquisition. Acquisition helpers are documented in `guide-new-port-download.md`.
+This guide covers how to configure, build, and install sources after acquisition. Acquisition helpers are documented in [guide-create-port-download.md](./guide-create-port-download.md).
 
 See also:
-- [Planning overview](./guide-new-port.md)
+- [Planning overview](./guide-create-port.md)
 
 ## 1. Build System Scenarios
 
@@ -235,4 +235,4 @@ To keep a single authoritative checklist for contributors, please follow the con
 [Contributor Checklist](./pull_request_template.md)
 
 ---
-Next: see [guide-new-port.md](./guide-new-port.md) for the end-to-end workflow.
+Next: see [guide-create-port.md](./guide-create-port.md) for the end-to-end workflow.

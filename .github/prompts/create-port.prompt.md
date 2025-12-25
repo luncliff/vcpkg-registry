@@ -11,6 +11,10 @@ Generate a new vcpkg port from scratch using project information, existing port 
 
 ## Prompt Goals
 
+- PASS: Port files created and validated for next-step installation; structure checks passed.
+- FAIL: Port creation blocked or invalid; missing critical information or template issues.
+
+**Additional Goals**:
 - Gather comprehensive project information (name, version, license, dependencies)
 - Find similar ports to use as templates
 - Calculate SHA512 checksums for source archives
@@ -25,9 +29,9 @@ Generate a new vcpkg port from scratch using project information, existing port 
 
 **Stop Conditions**:
 - Port files created and validated
-- User instructed to test with `/vcpkg-registry.install-port`
+- User instructed to test with `/install-port`
 
-**Prompt Forwarding**: Always forward to `/vcpkg-registry.install-port` for testing after creation
+**Prompt Forwarding**: Always forward to `/install-port` for testing after creation
 
 ## User Input
 
@@ -255,12 +259,8 @@ If created, describe the usage example with CMake command `find_package`(CMake c
 - List: Created files, detected build system, calculated checksums
 - Format: Structured markdown
 
-#### Step 6.2: Update work-note.md
-- Tool: #tool:edit/editFiles (append mode)
-- Content: Port creation details with timestamp
-
-#### Step 6.3: Instruct user to test installation
-- Forward to: `/vcpkg-registry.install-port {port-name}`
+#### Step 6.2: Instruct user to test installation
+- Forward to: `/install-port {port-name}`
 - Note: Test before adding to versions
 
 ## Reporting
@@ -332,25 +332,10 @@ If none: `None`
 
 ### 9. Next Steps
 Ordered actionable list:
-1. Test installation: `/vcpkg-registry.install-port <name>`
+1. Test installation: `/install-port <name>`
 2. (If success) Add version: `./scripts/registry-add-version.ps1 -PortName "<name>"`
 3. (Optional) Create usage file if missing
 4. (If experimental) Convert embedded script to patch before upstream contribution
-
-### Post Report Action: Work Note Update
-
-Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
-
-```
-## <timestamp UTC> - /vcpkg-registry.create-port
-Port: <name>
-Version: <version>
-Outcome: CREATED|FAILED
-Checksum: <sha512|placeholder>
-BuildSystem: <detected>
-Experimental: yes|no
-Next: /vcpkg-registry.install-port <name>
-```
 
 ### Failure Mode Reporting
 If Outcome = FAILED, still emit sections 1–11:
@@ -378,6 +363,6 @@ This specification replaces previous illustrative examples; emit only real creat
 
 Documents and Guides in this repository:
 
-- [Guide: Planning & Creating a New Port](../../docs/guide-new-port.md)
-- [Guide: New Port (Build & Installation Patterns)](../../docs/guide-new-port-build.md)
+- [Guide: Create Port](../../docs/guide-create-port.md)
+- [Guide: Create Port – Build Patterns](../../docs/guide-create-port-build.md)
 - [Port Change Review Checklist](../../docs/review-checklist.md)

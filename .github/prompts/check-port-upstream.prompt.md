@@ -11,6 +11,10 @@ Monitor upstream project for new releases and compare with current port version 
 
 ## Prompt Goals
 
+- PASS: Clear version comparison with recommendation (update vs. no action needed).
+- FAIL: Unable to confirm upstream status; missing homepage or inaccessible repository.
+
+**Additional Goals**:
 - Read current port version from vcpkg.json
 - Fetch latest upstream release from project repository
 - Check microsoft/vcpkg for upstream port version
@@ -28,7 +32,7 @@ Monitor upstream project for new releases and compare with current port version 
 - Upgrade recommendations provided (if newer version available)
 
 **Prompt Forwarding**:
-- If newer version found: User may proceed to `/vcpkg-registry.upgrade-port` to update the port
+- If newer version found: User may proceed to `/update-port` to update the port
 - If port is up-to-date: No action needed
 
 ## User Input
@@ -159,10 +163,6 @@ Check for newer versions of tensorflow-lite
 - Format: Table comparing local, microsoft/vcpkg, upstream project
 - Highlight: Differences and recommendations
 
-#### Step 6.2: Update work-note.md in workspace root
-- Tool: #tool:edit/editFiles (append mode)
-- Content: Version check results with timestamp
-
 ## Reporting
 
 Replace example reports with a deterministic specification. The agent MUST output a markdown document with required headings below (in order). Emit all headings even if a section is empty (use `None`). Keep bullets concise (≤120 chars). Tables only when comparing ≥2 sources or batch mode.
@@ -222,7 +222,7 @@ Scan changelog lines (if fetched) for keywords:
 
 ### 8. Recommendations
 Prioritized actionable bullets:
-- Upgrade command suggestion (`/vcpkg-registry.upgrade-port <name> <version>`) if behind
+- Upgrade command suggestion (`/update-port <name> <version>`) if behind
 - Delay suggestion for major bump (advise review / separate port)
 - Contribute upstream (if local ahead of microsoft/vcpkg)
 - Re-check later (if no upstream release for long period)

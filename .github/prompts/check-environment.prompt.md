@@ -11,6 +11,10 @@ Run a unified check that first detects the host OS and shell, verifies key devel
 
 ## Prompt Goals
 
+- PASS: Environment is suitable for building ports with vcpkg-registry; all critical tools and paths validated.
+- FAIL: Missing critical tools or misconfigured environment; actionable fixes provided.
+
+**Additional Goals**:
 - Identify operating system and shell (Windows/PowerShell prioritized)
 - Verify minimum tool availability (curl, tar, zip, unzip, git, cmake, ninja)
 - Locate and validate vcpkg (`VCPKG_ROOT` or PATH)
@@ -222,7 +226,7 @@ The agent MUST output a single markdown report containing the exact headings (in
 - `None` if nothing to recommend
 
 ### 13. Next Steps
-- For READY: suggest `/vcpkg-registry.search-port` or `/vcpkg-registry.create-port`
+- For READY: suggest `/search-port` or `/create-port`
 - For WARN: perform upgrades then re-run check
 - For ERROR: install/fix missing items first
 
