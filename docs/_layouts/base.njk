@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ site.description or 'Learn Vcpkg package manager with 한글(Korean)' }}">
+    <title>{{ title or site.name }} - {{ site.name or '한글로 쓴 Vcpkg 설명서' }}</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nanum Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #1e1e1e;
+        }
+        
+        header {
+            background-color: #3949ab;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        nav {
+            background-color: #283593;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #3949ab;
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        nav a {
+            color: #90caf9;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #42a5f5;
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        article {
+            background-color: #2d2d2d;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        article h1, article h2, article h3, article h4 {
+            color: #90caf9;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        article h1 {
+            font-size: 2rem;
+            border-bottom: 2px solid #3949ab;
+            padding-bottom: 0.5rem;
+        }
+        
+        article h2 {
+            font-size: 1.5rem;
+        }
+        
+        article h3 {
+            font-size: 1.25rem;
+        }
+        
+        article a {
+            color: #42a5f5;
+            text-decoration: none;
+        }
+        
+        article a:hover {
+            text-decoration: underline;
+        }
+        
+        article code {
+            background-color: #1e1e1e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Cascade Mono', 'Consolas', monospace;
+            font-size: 0.9em;
+            color: #ce9178;
+        }
+        
+        article pre {
+            background-color: #1e1e1e;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid #3949ab;
+        }
+        
+        article pre code {
+            background: none;
+            padding: 0;
+            color: #d4d4d4;
+        }
+        
+        article ul, article ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        article li {
+            margin-bottom: 0.5rem;
+        }
+        
+        article blockquote {
+            border-left: 4px solid #3949ab;
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: #b0b0b0;
+            font-style: italic;
+        }
+        
+        article table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        article th, article td {
+            border: 1px solid #3949ab;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        
+        article th {
+            background-color: #283593;
+            color: white;
+            font-weight: bold;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background-color: #1e1e1e;
+            color: #888;
+            margin-top: 3rem;
+            border-top: 1px solid #3949ab;
+        }
+        
+        footer a {
+            color: #42a5f5;
+            text-decoration: none;
+        }
+        
+        .admonition {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+            border-left: 4px solid #42a5f5;
+            background-color: rgba(66, 165, 245, 0.1);
+        }
+        
+        .admonition-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{{ site.name or '한글로 쓴 Vcpkg 설명서' }}</h1>
+        <p>{{ site.description or 'Learn Vcpkg package manager with 한글(Korean)' }}</p>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/references/">References</a></li>
+            <li><a href="/guide-create-port/">Create Port</a></li>
+            <li><a href="/guide-update-port/">Update Port</a></li>
+            <li><a href="/troubleshooting/">Troubleshooting</a></li>
+        </ul>
+    </nav>
+    
+    <main>
+        <article>
+            {{ content | safe }}
+        </article>
+    </main>
+    
+    <footer>
+        <p>
+            <a href="https://github.com/luncliff/vcpkg-registry">GitHub Repository</a> | 
+            <a href="mailto:luncliff@gmail.com">Contact</a> | 
+            <a href="https://creativecommons.org/publicdomain/zero/1.0/deed.ko">CC0 1.0 Public Domain</a>
+        </p>
+    </footer>
+</body>
+</html>

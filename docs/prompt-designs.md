@@ -1,3 +1,8 @@
+---
+layout: base.njk
+title: Prompt Designs
+---
+
 # Prompt Designs for vcpkg-registry
 
 Canonical design spec for GitHub Copilot prompts and their relationship to guides. 

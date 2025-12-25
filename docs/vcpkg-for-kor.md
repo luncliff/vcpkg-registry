@@ -1,3 +1,8 @@
+---
+layout: base.njk
+title: 한국어로 쓴 Vcpkg 설명서
+---
+
 # 한국어로 쓴 Vcpkg 설명서
 
 > [JetBrains 2021 Developer Ecosystem Survey](https://www.jetbrains.com/lp/devecosystem-2021/cpp/)를 보면 상당히 많은 개발자분들이 여전히 패키지 매니저의 도움을 받지 않고 계신 것 같습니다.

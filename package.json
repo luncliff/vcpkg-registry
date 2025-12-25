@@ -1,0 +1,25 @@
+{
+  "name": "vcpkg-registry",
+  "version": "1.0.0",
+  "description": "[![Check](https://github.com/luncliff/vcpkg-registry/actions/workflows/build.yml/badge.svg)](https://github.com/luncliff/vcpkg-registry/actions/workflows/build.yml)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "start": "eleventy --serve",
+    "build": "eleventy",
+    "watch": "eleventy --watch",
+    "debug": "DEBUG=Eleventy* eleventy"
+  },
+  "keywords": ["vcpkg", "documentation", "eleventy", "static-site"],
+  "author": "luncliff@gmail.com",
+  "license": "Unlicense",
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.2",
+    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2",
+    "markdown-it": "^14.1.0",
+    "markdown-it-attrs": "^4.3.1"
+  }
+}

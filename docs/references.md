@@ -1,3 +1,8 @@
+---
+layout: base.njk
+title: References
+---
+
 ## References
 
 This page organizes external documentation and resources by workflow stage. For internal guides, see the [README](../README.md).

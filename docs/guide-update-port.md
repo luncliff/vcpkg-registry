@@ -1,3 +1,8 @@
+---
+layout: base.njk
+title: Guide - Update Port
+---
+
 # Guide: Update Port
 
 This document provides the **end-to-end workflow** for updating existing ports in this registry. For creating ports, see the [create port guide](./guide-create-port.md).
