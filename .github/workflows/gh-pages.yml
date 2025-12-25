@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - "main"
-      - "docs"
+      - "docs/*"
     paths:
       - 'docs/**'
       - '.github/workflows/gh-pages.yml'
@@ -20,46 +20,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  mkdocs:
+  build-pages:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    # Currently just document build check in GitHuib Actions environment.
+    # It will be enabled after SSG tool has selected.
+    # # if: github.ref == 'refs/heads/main'
+    # environment:
+    #   name: github-pages
+    #   url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6.1.0
-        with:
-          python-version: 3.11
-          architecture: x64
-          cache: 'pip'
-
-      - name: "Run pip install"
-        run: >
-          python3 -m pip install -r requirements.txt
-      - name: "Run MkDocs(build)"
-        run: >
-          python3 -m mkdocs build --site-dir _site
-
-      - uses: actions/configure-pages@v5.0.0
-      - uses: actions/upload-pages-artifact@v4.0.0
-        with:
-          path: '_site'
-      - uses: actions/deploy-pages@v4.0.5
-
-  mkdocs_test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6.1.0
-        with:
-          python-version: 3.11
-          architecture: x64
-          cache: 'pip'
-
-      - name: "Run pip install"
-        run: >
-          python3 -m pip install -r requirements.txt
-      - name: "Run MkDocs(build)"
-        run: >
-          python3 -m mkdocs build --site-dir _site
