@@ -1,0 +1,12 @@
+# Ignore all node_modules in subdirectories
+**/node_modules/
+**/dist/
+**/.astro/
+**/package-lock.json
+
+# Logs
+**/*.log
+
+# OS files
+.DS_Store
+Thumbs.db

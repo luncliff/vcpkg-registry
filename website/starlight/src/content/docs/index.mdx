@@ -1,0 +1,63 @@
+---
+title: Welcome to vcpkg-registry
+description: Custom vcpkg ports registry with overlay support for enhanced package management
+template: splash
+hero:
+  tagline: A custom vcpkg registry providing overlay ports and triplets for advanced package management scenarios.
+  image:
+    file: ../../assets/houston.webp
+  actions:
+    - text: Get Started
+      link: /vcpkg-registry/guides/create-port/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/luncliff/vcpkg-registry
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Quick Start
+
+<CardGrid stagger>
+	<Card title="Create Ports" icon="add-document">
+		Learn how to create custom vcpkg ports for your libraries.
+	</Card>
+	<Card title="Update Ports" icon="pencil">
+		Keep your ports up-to-date with the latest versions.
+	</Card>
+	<Card title="Troubleshooting" icon="warning">
+		Solve common issues with port installation and building.
+	</Card>
+	<Card title="References" icon="open-book">
+		Quick access to external documentation and resources.
+	</Card>
+</CardGrid>
+
+## Requirements
+
+- **vcpkg**: recommend [2025.12.12](https://github.com/microsoft/vcpkg/releases/tag/2025.12.12) or later
+- **vcpkg-tool**: recommend [2025-12-16](https://github.com/microsoft/vcpkg-tool/releases/tag/2025-12-16) or later
+
+## Features
+
+This registry provides:
+
+- Custom overlay ports for specialized libraries
+- Custom triplets for Android NDK and iOS Simulator
+- Comprehensive documentation for port creation and maintenance
+- GitHub Copilot prompts for automated workflows
+
+## Setup
+
+Follow the official [Getting Started Guide](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started) to setup your vcpkg environment, then clone this registry:
+
+```bash
+export VCPKG_ROOT="/usr/local/share/vcpkg"
+pushd $VCPKG_ROOT
+    git clone https://github.com/luncliff/vcpkg-registry
+popd
+```
+
+For more detailed setup instructions, check out the [Create Port Guide](/vcpkg-registry/guides/create-port/).
