@@ -1,10 +1,10 @@
-# Guide: Planning & Creating a New Port
+# Guide: Create Port
 
-This document gives the **end-to-end workflow** for adding a new port to this registry. Use it as a checklist and follow the linked focused guides for deeper details.
+This document gives the **end-to-end workflow** for creating a port in this registry. Use it as a checklist and follow the linked focused guides for deeper details.
 
 Companion documents:
-- [Source acquisition patterns](./guide-new-port-download.md)
-- [Build & installation patterns](./guide-new-port-build.md)
+- [Source acquisition patterns](./guide-create-port-download.md)
+- [Build & installation patterns](./guide-create-port-build.md)
 
 ## 1. High-Level Development Phases
 
@@ -44,11 +44,7 @@ Validate the port works correctly across target platforms and configurations.
 
 Register the port version in the registry's version database.
 
-### Documentation Phase
-**Goal:** Record special decisions  
-**Output:** Notes in work-note.md (optional)
-
-Document any special implementation decisions or known issues for future reference.
+---
 
 ## 2. Phase Details & Checklist
 
@@ -63,14 +59,14 @@ Questions to answer:
 - Are there bundled third-party sources that should be removed to avoid duplication?
 
 ### Phase 2: Acquisition Draft
-See [Source acquisition patterns](./guide-new-port-download.md).
+See [Source acquisition patterns](./guide-create-port-download.md).
 - Choose helper: [vcpkg_from_github](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_from_github) / [vcpkg_from_gitlab](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_from_gitlab) / [vcpkg_from_sourceforge](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_from_sourceforge) / [vcpkg_download_distfile](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_download_distfile).
 - Use `SHA512 0` initially to obtain real hash.
 - Remove vendored dependencies (if any) using `file(REMOVE_RECURSE ...)`.
 - Add minimal `vcpkg.json` skeleton (name, version, description, homepage, license, tool dependencies like `vcpkg-cmake`).
 
 ### Phase 3: Build Draft
-See [Build & installation patterns](./guide-new-port-build.md).
+See [Build & installation patterns](./guide-create-port-build.md).
 - Add build helper calls: [vcpkg_cmake_configure](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_cmake_configure) / [vcpkg_configure_meson](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_configure_meson) / relocation logic.
 - Map optional features using [vcpkg_check_features](https://learn.microsoft.com/en-us/vcpkg/maintainers/functions/vcpkg_check_features) or Meson boolean conversion.
 - Disable tests/examples unless required (`-DBUILD_TESTING=OFF`).
@@ -112,13 +108,6 @@ git commit -m "[mylib] add v1.2.3"
 git add versions
 git commit -m "[mylib] version metadata v1.2.3"
 ```
-
-### Phase 7: Documentation (Optional but Recommended)
-Create/update `work-note.md` (ignored by git) to record:
-- Upstream tag/commit & rationale.
-- Applied patches and short justification.
-- Removed bundled components.
-- Known caveats (platform exclusions, tool feature not enabled, etc.).
 
 ## 3. Example Minimal Port Structure
 ```
@@ -168,8 +157,8 @@ Review your work with the [Contributor Checklist](./pull_request_template.md)
 
 ## 6. Next Steps
 Proceed to either:
-- Deepen acquisition options → [guide-new-port-download.md](./guide-new-port-download.md)
-- Tune build & packaging → [guide-new-port-build.md](./guide-new-port-build.md)
+- Deepen acquisition options → [guide-create-port-download.md](./guide-create-port-download.md)
+- Tune build & packaging → [guide-create-port-build.md](./guide-create-port-build.md)
 
 ---
 Happy porting!
