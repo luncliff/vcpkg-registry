@@ -1,3 +1,8 @@
+---
+layout: base.njk
+title: Eleventy Setup Guide
+---
+
 # Eleventy Documentation Setup
 
 This directory contains an [Eleventy](https://www.11ty.dev/) (11ty) static site generator setup as an experimental alternative to MkDocs for the vcpkg-registry documentation.
@@ -111,6 +116,25 @@ title: Page Title
 
 ## Features
 
+### Search Functionality
+
+The site includes [Pagefind](https://pagefind.app/) for fast, client-side search:
+
+- **Bilingual Support**: Indexes both English and Korean content
+- **Instant Results**: No server required, all search happens in the browser
+- **Smart Highlighting**: Search terms are highlighted in results
+- **Korean Translations**: Search UI translated for Korean users
+
+The search is automatically generated during the build process:
+```bash
+npm run build  # Builds site and indexes search
+```
+
+Search index is stored in `_site/pagefind/` and includes:
+- Full-text index of all documentation pages
+- Excerpts with highlighted matches
+- Page titles and URLs
+
 ### Syntax Highlighting
 
 Code blocks are automatically highlighted using Prism.js:
@@ -150,36 +174,41 @@ The base layout includes inline CSS with a dark theme inspired by Material Desig
 | Language | Python | JavaScript/Node.js |
 | Setup | `pip install` | `npm install` |
 | Configuration | `mkdocs.yml` | `.eleventy.js` |
-| Build Speed | Moderate | Fast |
+| Build Speed | Moderate | Fast (0.35s for 13 pages) |
 | Template Engine | Jinja2 | Multiple (Nunjucks, Liquid, etc.) |
 | Flexibility | Themed | Highly customizable |
 | Korean Support | ✅ | ✅ |
-| Search | Built-in | Plugin required |
+| Search | Built-in | Pagefind (client-side) |
+| Search Korean | ✅ | ✅ |
 
 ## Future Enhancements
 
 Potential improvements for this setup:
 
-1. **Search Integration**
-   - Add [Pagefind](https://pagefind.app/) or [Lunr.js](https://lunrjs.com/)
-   - Support bilingual search (English + Korean)
-
-2. **Enhanced Navigation**
+1. **Enhanced Navigation**
    - Add breadcrumbs
    - Implement sidebar navigation
-   - Add table of contents
+   - Add table of contents for long pages
 
-3. **Image Optimization**
+2. **Image Optimization**
    - Add `@11ty/eleventy-img` plugin
    - Optimize images during build
+   - Support responsive images
 
-4. **RSS Feed**
+3. **RSS Feed**
    - Generate RSS feed for documentation updates
+   - Add atom feed support
 
-5. **Asset Pipeline**
+4. **Asset Pipeline**
    - Separate CSS into external files
    - Add JavaScript bundling
    - Minify assets for production
+   - Add PostCSS for CSS processing
+
+5. **Search Improvements**
+   - Add search filters by document type
+   - Implement search analytics
+   - Add keyboard shortcuts for search
 
 ## Troubleshooting
 

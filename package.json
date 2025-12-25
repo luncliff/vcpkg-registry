@@ -9,17 +9,25 @@
   },
   "scripts": {
     "start": "eleventy --serve",
-    "build": "eleventy",
+    "build": "eleventy && npm run search:index",
+    "build:site": "eleventy",
+    "search:index": "pagefind --site _site --output-subdir pagefind",
     "watch": "eleventy --watch",
     "debug": "DEBUG=Eleventy* eleventy"
   },
-  "keywords": ["vcpkg", "documentation", "eleventy", "static-site"],
+  "keywords": [
+    "vcpkg",
+    "documentation",
+    "eleventy",
+    "static-site"
+  ],
   "author": "luncliff@gmail.com",
   "license": "Unlicense",
   "devDependencies": {
     "@11ty/eleventy": "^3.1.2",
     "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2",
     "markdown-it": "^14.1.0",
-    "markdown-it-attrs": "^4.3.1"
+    "markdown-it-attrs": "^4.3.1",
+    "pagefind": "^1.4.0"
   }
 }

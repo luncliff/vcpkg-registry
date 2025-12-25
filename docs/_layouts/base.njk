@@ -187,7 +187,21 @@
             font-weight: bold;
             margin-bottom: 0.5rem;
         }
+        
+        /* Pagefind search styles */
+        #search-container {
+            max-width: 1200px;
+            margin: 1rem auto;
+            padding: 0 2rem;
+        }
+        
+        #search {
+            width: 100%;
+            max-width: 600px;
+        }
     </style>
+    <link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+    <script src="/pagefind/pagefind-ui.js"></script>
 </head>
 <body>
     <header>
@@ -205,8 +219,12 @@
         </ul>
     </nav>
     
+    <div id="search-container">
+        <div id="search"></div>
+    </div>
+    
     <main>
-        <article>
+        <article data-pagefind-body>
             {{ content | safe }}
         </article>
     </main>
@@ -218,5 +236,28 @@
             <a href="https://creativecommons.org/publicdomain/zero/1.0/deed.ko">CC0 1.0 Public Domain</a>
         </p>
     </footer>
+    
+    <script>
+        window.addEventListener('DOMContentLoaded', (event) => {
+            new PagefindUI({ 
+                element: "#search",
+                showImages: false,
+                showSubResults: true,
+                translations: {
+                    placeholder: "Search documentation (검색)...",
+                    clear_search: "Clear (지우기)",
+                    load_more: "Load more (더 보기)",
+                    search_label: "Search (검색)",
+                    filters_label: "Filters (필터)",
+                    zero_results: "No results for [SEARCH_TERM] ([SEARCH_TERM]에 대한 결과 없음)",
+                    many_results: "[COUNT] results for [SEARCH_TERM] ([SEARCH_TERM]에 대한 [COUNT]개 결과)",
+                    one_result: "[COUNT] result for [SEARCH_TERM] ([SEARCH_TERM]에 대한 [COUNT]개 결과)",
+                    alt_search: "No results for [SEARCH_TERM]. Showing results for [DIFFERENT_TERM] instead",
+                    search_suggestion: "No results for [SEARCH_TERM]. Try one of the following searches:",
+                    searching: "Searching for [SEARCH_TERM]... ([SEARCH_TERM] 검색 중...)"
+                }
+            });
+        });
+    </script>
 </body>
 </html>
