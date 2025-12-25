@@ -1,3 +1,8 @@
+---
+layout: base.njk
+title: Guide - Create Port
+---
+
 # Guide: Create Port
 
 This document gives the **end-to-end workflow** for creating a port in this registry. Use it as a checklist and follow the linked focused guides for deeper details.

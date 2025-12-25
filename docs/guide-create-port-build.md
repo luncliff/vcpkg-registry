@@ -1,3 +1,8 @@
+---
+layout: base.njk
+title: Guide - Create Port (Build Patterns)
+---
+
 # Guide: Create Port – Build Patterns
 
 This guide covers how to configure, build, and install sources after acquisition. Acquisition helpers are documented in [guide-create-port-download.md](./guide-create-port-download.md).

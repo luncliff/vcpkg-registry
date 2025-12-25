@@ -1,3 +1,8 @@
+---
+layout: base.njk
+title: Guide - Create Port (Download & SHA512)
+---
+
 # Guide: Create Port – Download & SHA512
 
 This guide focuses on downloading (acquiring) upstream source for a port in this registry. After reading it you should be able to choose the correct helper function and produce a minimal `vcpkg.json` + `portfile.cmake` skeleton.

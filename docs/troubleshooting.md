@@ -1,3 +1,8 @@
+---
+layout: base.njk
+title: Troubleshooting
+---
+
 # Troubleshooting: Port Installation & Build Errors
 
 This guide helps diagnose and fix common issues when creating or updating ports. It serves as a central troubleshooting hub in the workflow:

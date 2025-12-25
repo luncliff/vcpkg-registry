@@ -1,3 +1,8 @@
+---
+layout: base.njk
+title: Pull Request Template
+---
+
 # 📝 Pull Request
 
 Leave one of "Create Port" or "Port Update" below...

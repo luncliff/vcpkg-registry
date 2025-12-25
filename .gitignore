@@ -2,6 +2,12 @@ work-note.md
 .vscode
 vcpkg-configuration.json
 
+# Node.js & Eleventy
+node_modules/
+_site/
+package-lock.json
+.cache/
+
 buildtrees
 installed
 packages
