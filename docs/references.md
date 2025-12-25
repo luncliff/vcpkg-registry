@@ -1,22 +1,49 @@
 ## References
 
-### Official Documentation
+This page organizes external documentation and resources by workflow stage. For internal guides, see the [README](../README.md).
+
+### Setup & Basics
+
+Getting started with vcpkg and registries:
 
 - [Vcpkg Documentation](https://learn.microsoft.com/en-us/vcpkg/)
-  - [Getting Started Guide](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started)
-  - [Using Git-based Registries](https://learn.microsoft.com/en-us/vcpkg/consume/git-registries)
-  - [Creating Registries](https://learn.microsoft.com/en-us/vcpkg/maintainers/registries)
-  - [Concepts: Triplets](https://learn.microsoft.com/en-us/vcpkg/concepts/triplets)
-  - [Concepts: Overlay Ports](https://learn.microsoft.com/en-us/vcpkg/concepts/overlay-ports)
-  - [Example: Overlay Triplets](https://learn.microsoft.com/en-us/vcpkg/users/examples/overlay-triplets-linux-dynamic)
+- [Getting Started Guide](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started)
+- [Using Git-based Registries](https://learn.microsoft.com/en-us/vcpkg/consume/git-registries)
+- [Creating Registries](https://learn.microsoft.com/en-us/vcpkg/maintainers/registries)
+- [Vcpkg Configuration JSON](https://learn.microsoft.com/en-us/vcpkg/reference/vcpkg-configuration-json)
 
-### Port Development and Maintenance
+### Create Port
+
+Resources for adding ports to the registry:
+
+- [Concepts: Overlay Ports](https://learn.microsoft.com/en-us/vcpkg/concepts/overlay-ports)
+- [Apply Patches to Dependencies](https://learn.microsoft.com/en-us/vcpkg/produce/patches)
+- [Concepts: Triplets](https://learn.microsoft.com/en-us/vcpkg/concepts/triplets)
+- [Example: Overlay Triplets](https://learn.microsoft.com/en-us/vcpkg/users/examples/overlay-triplets-linux-dynamic)
+- [CMake Scripts](https://github.com/microsoft/vcpkg/tree/master/scripts/cmake) - helper functions for portfiles
+
+### Update Port
+
+Resources for updating existing ports:
 
 - [Tutorial: Update an Existing vcpkg Dependency](https://learn.microsoft.com/en-us/vcpkg/produce/update-package-version)
+- [Versioning Concepts](https://learn.microsoft.com/en-us/vcpkg/concepts/versioning)
+
+### Update Version Baseline
+
+Resources for managing registry versions:
+
 - [vcpkg x-add-version Command](https://learn.microsoft.com/en-us/vcpkg/commands/add-version)
 - [Registries Concepts](https://learn.microsoft.com/en-us/vcpkg/concepts/registries)
 - [Versioning Concepts](https://learn.microsoft.com/en-us/vcpkg/concepts/versioning)
-- [Apply Patches to Dependencies](https://learn.microsoft.com/en-us/vcpkg/produce/patches)
+
+### Troubleshooting and Advanced Topics
+
+- [MSVC Compiler Options](https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options)
+- [LINK.exe Options](https://learn.microsoft.com/en-us/cpp/build/reference/linker-options)
+- [Clang Compiler User Manual](https://clang.llvm.org/docs/UsersManual.html)
+- [Clang Command Line Argument Reference](https://clang.llvm.org/docs/ClangCommandLineReference.html)
+- [Android Support](https://learn.microsoft.com/en-us/vcpkg/users/platforms/android)
 
 ### GitHub Resources
 

@@ -91,8 +91,7 @@
         {
           "name": "onnx",
           "features": [
-            "disable-static-registration",
-            "test"
+            "disable-static-registration"
           ]
         },
         {
