@@ -1,0 +1,22 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.guideSidebar.category.Getting Started": {
+    "message": "Getting Started",
+    "description": "The label for category 'Getting Started' in sidebar 'guideSidebar'"
+  },
+  "sidebar.guideSidebar.category.How-To Guides": {
+    "message": "How-To Guides",
+    "description": "The label for category 'How-To Guides' in sidebar 'guideSidebar'"
+  },
+  "sidebar.guideSidebar.category.Reference": {
+    "message": "Reference",
+    "description": "The label for category 'Reference' in sidebar 'guideSidebar'"
+  },
+  "sidebar.promptsSidebar.category.Copilot Prompts": {
+    "message": "Copilot Prompts",
+    "description": "The label for category 'Copilot Prompts' in sidebar 'promptsSidebar'"
+  }
+}
