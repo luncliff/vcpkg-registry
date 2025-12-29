@@ -12,3 +12,7 @@ libxinerama-dev
 libxcursor-dev
 xorg-dev
 libglu1-mesa
+autoconf
+autoconf-archive
+automake
+libtoolize
