@@ -23,33 +23,25 @@ jobs:
     env:
       HUGO_VERSION: 0.153.2
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Install Hugo CLI
+      - name: "Install Hugo CLI" # https://gohugo.io/installation/linux/
         run: |
-          wget -O ${{ runner.temp }}/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb \
-          && sudo dpkg -i ${{ runner.temp }}/hugo.deb
+          sudo snap install hugo
 
-      - name: Build with Hugo
+      - name: "Change document links"
+        run: |
+          scripts/fix-hugo-links.ps1 -Root docs/en
+          scripts/fix-hugo-links.ps1 -Root docs/ko
+        shell: pwsh
+
+      - name: "Build with Hugo"
         working-directory: hugo-site
         run: |
-          hugo \
-            --gc \
-            --minify \
-            --cleanDestinationDir
+          hugo --gc --minify --cleanDestinationDir
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: hugo-site
           path: hugo-site/public
           retention-days: 7
-
-      - name: Display build info
-        working-directory: hugo-site
-        run: |
-          echo "Hugo version: $(hugo version)"
-          echo "Build completed successfully"
-          echo "Total pages generated:"
-          find public -name "*.html" | wc -l

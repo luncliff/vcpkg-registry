@@ -1,5 +1,5 @@
 baseURL = 'https://luncliff.github.io/vcpkg-registry/'
-languageCode = 'en-us'
+languageCode = 'ko-kr'
 title = 'vcpkg-registry Documentation'
 theme = 'hugo-book'
 
@@ -15,6 +15,7 @@ enableGitInfo = true
   BookToC = true
   BookComments = false
   BookSection = '*'
+  BookTheme = 'dark'
 
 [languages]
   [languages.en]
@@ -34,6 +35,27 @@ enableGitInfo = true
     endLevel = 3
     ordered = false
     startLevel = 2
+
+[module]
+  # Mount language-specific content directories
+  [[module.mounts]]
+    source = '../docs/en'
+    target = 'content'
+    lang = 'en'
+
+  [[module.mounts]]
+    source = '../docs/ko'
+    target = 'content'
+    lang = 'ko'
+
+  # Mount shared files (available to all languages)
+  [[module.mounts]]
+    source = '../docs/prompt-designs.md'
+    target = 'content/prompt-designs.md'
+
+  [[module.mounts]]
+    source = '../docs/references.md'
+    target = 'content/references.md'
 
 [menu]
   [[menu.before]]
