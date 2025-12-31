@@ -1,6 +1,6 @@
 {
   "name": "minja",
-  "version-date": "2025-05-15",
+  "version-date": "2025-09-22",
   "description": "A minimalistic C++ Jinja templating engine for LLM chat templates",
   "homepage": "https://github.com/google/minja",
   "license": "MIT",
