@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/tensorpipe
-    REF af0118d13e52f5a08841464a768e01a0bf3e3075
-    SHA512 f2b4464d69afdffd5e98930b84f41344aa01aa912549e2d842c5950aa188abd9c45ac741cb3c2a74e135d44803497c33bc9260e219e3b4c105cb0f99ee7e1d0c
+    REF b4b77d1006e764fb5cc42597d17d2b110211c2d1
+    SHA512 bd0deccfb7289d324615d5bacb0ae7c9da1e2ec1a9a8ba84aacc61373e74f54668f7a60b7751a0b91579fcb5c45aca47852cec66fc39ec14b2023c57d653d723
     PATCHES
         fix-cmakelists.patch
 )
