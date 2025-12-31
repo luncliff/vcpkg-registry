@@ -1,7 +1,7 @@
 ---
 description: 'Review port files against vcpkg guidelines and best practices'
 agent: 'agent'
-tools: ['edit/createFile', 'edit/editFiles', 'search/fileSearch', 'search/textSearch', 'search/readFile', 'fetch', 'todos']
+tools: ['read/readFile', 'edit/createFile', 'edit/editFiles', 'search/fileSearch', 'search/textSearch', 'web/fetch', 'todo']
 model: Claude Sonnet 4 (copilot)
 ---
 
@@ -11,6 +11,10 @@ Validate port files (vcpkg.json, portfile.cmake, patches, usage) against vcpkg c
 
 ## Prompt Goals
 
+- PASS: Port satisfies all mandatory checklist items; ready for PR and version baseline update.
+- FAIL: List of failing checks with recommended fixes; port needs corrections.
+
+**Additional Goals**:
 - Locate and read all port files
 - Fetch vcpkg contribution guidelines and maintainer guide
 - Validate vcpkg.json structure (schema compliance, version format, dependencies)
@@ -28,7 +32,7 @@ Validate port files (vcpkg.json, portfile.cmake, patches, usage) against vcpkg c
 - All violations documented with fix recommendations
 
 **Prompt Forwarding**:
-- If review passes: User may proceed to add version (`./scripts/registry-add-version.ps1`)
+- If review passes: User may proceed to add version (`./scripts/registry-add-version.ps1` or `/update-version-baseline`)
 - If review fails: User must fix violations and re-run `/review-port`
 
 ## User Input
@@ -68,29 +72,29 @@ Validate cpuinfo port files
 ### Phase 2: Fetch vcpkg Guidelines
 
 #### Step 2.1: Fetch contribution guidelines
-- Tool: #tool:fetch
-- URL: `https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md`
+- Tool: #tool:web/fetch
+- URL: [microsoft/vcpkg Contribution Guide](https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md)
 - Purpose: Get latest contribution requirements
 
 #### Step 2.2: Fetch maintainer guide
-- Tool: #tool:fetch
-- URL: `https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md`
+- Tool: #tool:web/fetch
+- URL: [microsoft/vcpkg-docs Maintainer guide](https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md)
 - Purpose: Get port maintenance best practices
 
 #### Step 2.3: Load local review checklist
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `docs/review-checklist.md`
 - Purpose: Apply repository-specific checks
 
 #### Step 2.4: Load local copilot instructions
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `.github/copilot-instructions.md`
 - Purpose: Check for experimental guidelines (embedded CMakeLists.txt, patches)
 
 ### Phase 3: Validate vcpkg.json
 
 #### Step 3.1: Read vcpkg.json
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/vcpkg.json`
 
 #### Step 3.2: Check required fields
@@ -120,7 +124,7 @@ Validate cpuinfo port files
 ### Phase 4: Validate portfile.cmake
 
 #### Step 4.1: Read portfile.cmake
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/portfile.cmake`
 
 #### Step 4.2: Validate source acquisition
@@ -162,7 +166,7 @@ Validate cpuinfo port files
 - Recommended: If port provides CMake config or pkg-config
 
 #### Step 5.2: Read usage file (if exists)
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/usage`
 - Validate: Provides clear `find_package` and `target_link_libraries` example
 
@@ -172,7 +176,7 @@ Validate cpuinfo port files
 - Warning: Experimental approach, document rationale
 
 #### Step 5.4: Validate patch files (if exist)
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - Files: `ports/{port-name}/*.patch`
 - Check: Patches have descriptive names
 - Check: Patch context explains purpose (comments in portfile.cmake)
@@ -184,12 +188,12 @@ Validate cpuinfo port files
 ### Phase 6: Cross-Reference with Baseline
 
 #### Step 6.1: Check versions baseline
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `versions/baseline.json`
 - Validate: Port listed in baseline
 
 #### Step 6.2: Check version history
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `versions/{first-letter}-/{port-name}.json`
 - Validate: Version history exists (if port previously added)
 
@@ -198,10 +202,6 @@ Validate cpuinfo port files
 #### Step 7.1: Compile validation results
 - Categorize: Critical issues, warnings, suggestions
 - Format: Structured markdown with pass/fail sections
-
-#### Step 7.2: Update work-note.md
-- Tool: #tool:edit/editFiles (append mode)
-- Content: Review summary with timestamp
 
 ## Reporting
 
@@ -287,19 +287,6 @@ Branch based:
 - Prefer bullet lists; avoid tables unless multiple patches (>3)
 - Keep code snippets minimal (single line) unless clarity demands more
 - Timestamp in ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
-
-### Post Report Action: Work Note Update
-
-Use #tool:edit/createFile or #tool:edit/editFiles when appending to work-note.md.
-
-```
-## <timestamp UTC> - /review-port <port>[, <port>...]
-Result: PASS | PASS (experimental) | FAIL
-Critical: <count>
-Warnings: <count>
-Experimental: yes|no
-Next: <concise next action>
-```
 
 ### Multi-Port Review
 If multiple ports requested, produce one consolidated document with a `## Port: <name>` block repeating sections 2–7 per port, then a global Issues Summary / Recommendations / Next Steps.

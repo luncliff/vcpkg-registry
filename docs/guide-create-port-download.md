@@ -1,10 +1,10 @@
-# Guide: New Port (Source Acquisition)
+# Guide: Create Port – Download & SHA512
 
-This guide focuses on downloading (acquiring) upstream source for a new port in this registry. After reading it you should be able to choose the correct helper function and produce a minimal `vcpkg.json` + `portfile.cmake` skeleton.
+This guide focuses on downloading (acquiring) upstream source for a port in this registry. After reading it you should be able to choose the correct helper function and produce a minimal `vcpkg.json` + `portfile.cmake` skeleton.
 
 See also:
-- Build / install patterns: `guide-new-port-build.md`
-- Planning & workflow overview: `guide-new-port.md`
+- Build / install patterns: [guide-create-port-build.md](./guide-create-port-build.md)
+- Planning & workflow overview: [guide-create-port.md](./guide-create-port.md)
 
 ## 1. Source Acquisition Scenarios
 
@@ -216,6 +216,6 @@ file(REMOVE_RECURSE "${SOURCE_PATH}/third_party" "${SOURCE_PATH}/external/libpng
 
 
 ---
-**Next:** proceed to build configuration ([guide-new-port-build.md](./guide-new-port-build.md)).
+**Next:** proceed to build configuration ([guide-create-port-build.md](./guide-create-port-build.md)).
 
 Review your work with the [Contributor Checklist](./pull_request_template.md)

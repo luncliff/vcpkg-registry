@@ -1,7 +1,7 @@
 ---
 description: 'Check for upstream project updates and newer versions'
 agent: 'agent'
-tools: ['edit/createFile', 'edit/editFiles', 'search/textSearch', 'search/readFile', 'fetch', 'githubRepo', 'todos']
+tools: ['read/readFile', 'edit/createFile', 'edit/editFiles', 'search/textSearch', 'web', 'todo']
 model: Claude Haiku 4.5 (copilot)
 ---
 
@@ -11,6 +11,10 @@ Monitor upstream project for new releases and compare with current port version 
 
 ## Prompt Goals
 
+- PASS: Clear version comparison with recommendation (update vs. no action needed).
+- FAIL: Unable to confirm upstream status; missing homepage or inaccessible repository.
+
+**Additional Goals**:
 - Read current port version from vcpkg.json
 - Fetch latest upstream release from project repository
 - Check microsoft/vcpkg for upstream port version
@@ -28,7 +32,7 @@ Monitor upstream project for new releases and compare with current port version 
 - Upgrade recommendations provided (if newer version available)
 
 **Prompt Forwarding**:
-- If newer version found: User may proceed to `/upgrade-port` to update the port
+- If newer version found: User may proceed to `/update-port` to update the port
 - If port is up-to-date: No action needed
 
 ## User Input
@@ -52,7 +56,7 @@ Check for newer versions of tensorflow-lite
 ### Phase 1: Read Current Port Version
 
 #### Step 1.1: Locate port vcpkg.json
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/vcpkg.json`
 - Purpose: Get current port version
 
@@ -62,7 +66,7 @@ Check for newer versions of tensorflow-lite
 - Note: Version format may be semver (`1.2.3`) or date (`2023-08-02`)
 
 #### Step 1.3: Read portfile.cmake for source info
-- Tool: #tool:search/readFile
+- Tool: #tool:read/readFile
 - File: `ports/{port-name}/portfile.cmake`
 - Extract: `REPO` value from `vcpkg_from_github` (e.g., `pytorch/cpuinfo`)
 - Extract: `REF` value (git tag or commit)
@@ -75,14 +79,14 @@ Check for newer versions of tensorflow-lite
 - Format: `https://github.com/{owner}/{repo}`
 
 #### Step 2.2: Fetch latest release
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URL: `{github-url}/releases/latest` (GitHub releases page)
 - Alternative: Use GitHub API `https://api.github.com/repos/{owner}/{repo}/releases/latest`
 - Purpose: Get latest version tag
 
 #### Step 2.3: Fetch latest tags (if no releases)
 - Condition: Project uses tags instead of releases
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URL: `{github-url}/tags`
 - Purpose: Get latest version tag
 
@@ -98,19 +102,19 @@ Check for newer versions of tensorflow-lite
 ### Phase 3: Check microsoft/vcpkg Upstream
 
 #### Step 3.1: Search microsoft/vcpkg for port
-- Tool: #tool:githubRepo
+- Tool: #tool:web/githubRepo
 - Repo: `microsoft/vcpkg`
 - Query: `path:ports/{port-name} filename:vcpkg.json`
 - Purpose: Check if port exists in upstream vcpkg
 
 #### Step 3.2: Fetch upstream port vcpkg.json
 - Condition: Port exists in microsoft/vcpkg
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URL: `https://raw.githubusercontent.com/microsoft/vcpkg/master/ports/{port-name}/vcpkg.json`
 - Purpose: Get upstream port version
 
 #### Step 3.3: Fetch upstream version history
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - URL: `https://raw.githubusercontent.com/microsoft/vcpkg/master/versions/{first-letter}-/{port-name}.json`
 - Purpose: Get version history and latest version
 
@@ -144,7 +148,7 @@ Check for newer versions of tensorflow-lite
 ### Phase 5: Check for Breaking Changes
 
 #### Step 5.1: Fetch upstream changelog (optional)
-- Tool: #tool:fetch
+- Tool: #tool:web/fetch
 - Files: `CHANGELOG.md`, `CHANGES.md`, `NEWS.md`, `HISTORY.md`
 - URL: `https://raw.githubusercontent.com/{owner}/{repo}/master/CHANGELOG.md`
 - Purpose: Identify breaking changes between versions
@@ -158,10 +162,6 @@ Check for newer versions of tensorflow-lite
 #### Step 6.1: Compile version comparison
 - Format: Table comparing local, microsoft/vcpkg, upstream project
 - Highlight: Differences and recommendations
-
-#### Step 6.2: Update work-note.md in workspace root
-- Tool: #tool:edit/editFiles (append mode)
-- Content: Version check results with timestamp
 
 ## Reporting
 
@@ -222,7 +222,7 @@ Scan changelog lines (if fetched) for keywords:
 
 ### 8. Recommendations
 Prioritized actionable bullets:
-- Upgrade command suggestion (`/upgrade-port <name> <version>`) if behind
+- Upgrade command suggestion (`/update-port <name> <version>`) if behind
 - Delay suggestion for major bump (advise review / separate port)
 - Contribute upstream (if local ahead of microsoft/vcpkg)
 - Re-check later (if no upstream release for long period)
