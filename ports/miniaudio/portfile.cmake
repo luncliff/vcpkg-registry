@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO mackron/miniaudio
-    REF 0.11.22
-    SHA512 6027109fd6427eb52eea6535dded0f419d79d1a31a2bf4a1a11c1fb48485fa4e65cac04fb0b7c82811663ce86227e0527a49e681ce966934c0159ccbc1ad094c
+    REF 0.11.23
+    SHA512 b12566432e0167082dd9ad5b5c5fc3d80a80c7803016a59c670f5fb3436c2db8b16411e3f10571eafbf6791c53b761c3deeabb22b6329f80bbe891c760365c3c
 )
 
 # Build as a C++ or Objective-C++. Not in C language
