@@ -7,6 +7,8 @@ vcpkg_from_github(
     REPO openssl/openssl
     REF "openssl-${VERSION}"
     SHA512 3e1796708155454c118550ba0964b42c0c1055b651fec00cfb55038e8a8abbf5f85df02449e62b50b99d2a4a2f7b47862067f8a965e9c8a72f71dee0153672d9
+    PATCHES
+        install-programs.diff # https://github.com/openssl/openssl/issues/28744
 )
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
