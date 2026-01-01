@@ -28,7 +28,7 @@ The primary maintenance tasks for this registry are:
 **Goal:** Update an existing port to a newer version or adjust its build configuration.
 
 **Documentation:**
-- [docs/guide-update-port.md](../docs/guide-update-port.md) – Update procedures
+- docs/guide-update-port.md – Update procedures
 
 **Prompts:**
 - `/check-port-upstream` – .github/prompts/check-port-upstream.prompt.md
