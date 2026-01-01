@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY) # the project doesn't support SHARED
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO EsotericSoftware/spine-runtimes
-    REF 1cdbf9be1a92e0a3015af8e0f0e1b05b872e33c9
-    SHA512 444c8409c25e92b6c02a4d05f3ec84fced9622b62fbe68a4c4ce813b1451da5188b08be6df37dacde7da7a0bd01cb7d476afc531574793871b850025ec3c505a
+    REF 07b8d96e19504e9a957b7b994fd143739fc6ea6a
+    SHA512 4d031c5681ed61c5e97ea3bd516e3477caf73b01f066021a7dcbc45cfb02f4a1918e033363c5679269963d142c7f98f50b424951cf7cd99ce1481958e83e29f0
     HEAD_REF 4.2
     PATCHES
         fix-cmake.patch
