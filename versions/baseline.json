@@ -129,7 +129,7 @@
       "port-version": 0
     },
     "ml-dtypes": {
-      "baseline": "0.5.3",
+      "baseline": "0.5.4",
       "port-version": 0
     },
     "neon2sse": {
