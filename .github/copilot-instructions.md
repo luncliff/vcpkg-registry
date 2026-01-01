@@ -14,16 +14,15 @@ The primary maintenance tasks for this registry are:
 **Goal:** Add a new vcpkg port to this registry.
 
 **Documentation:**
-- [README.md](../README.md) – Setup and environment
-- [docs/guide-create-port.md](../docs/guide-create-port.md) – Main creation guide
-- [docs/guide-create-port-build.md](../docs/guide-create-port-build.md) – Build patterns
-- [docs/guide-create-port-download.md](../docs/guide-create-port-download.md) – Download & SHA512
+- docs/guide-create-port.md – Main creation guide
+- docs/guide-create-port-build.md – Build patterns
+- docs/guide-create-port-download.md – Download & SHA512
 
 **Prompts:**
-- `/search-port` – .github/prompts/search-port.prompt.md](./prompts/search-port.prompt.md)
-- `/create-port` – .github/prompts/create-port.prompt.md](./prompts/create-port.prompt.md)
-- `/install-port` – .github/prompts/install-port.prompt.md](./prompts/install-port.prompt.md)
-- `/review-port` – .github/prompts/review-port.prompt.md](./prompts/review-port.prompt.md)
+- `/search-port` – .github/prompts/search-port.prompt.md
+- `/create-port` – .github/prompts/create-port.prompt.md
+- `/install-port` – .github/prompts/install-port.prompt.md
+- `/review-port` – .github/prompts/review-port.prompt.md
 
 ### 2. Update Port
 **Goal:** Update an existing port to a newer version or adjust its build configuration.
@@ -41,7 +40,7 @@ The primary maintenance tasks for this registry are:
 **Goal:** Synchronize `versions/` JSON files with changes to ports.
 
 **Documentation:**
-- [docs/guide-update-version-baseline.md](../docs/guide-update-version-baseline.md) – Baseline update procedures
+- docs/guide-update-version-baseline.md – Baseline update procedures
 
 **Prompts:**
 - `/update-version-baseline` – .github/prompts/update-version-baseline.prompt.md
@@ -50,7 +49,7 @@ The primary maintenance tasks for this registry are:
 **Goal:** Diagnose and fix issues with port installation or build.
 
 **Documentation:**
-- [docs/troubleshooting.md](../docs/troubleshooting.md) – Common issues and solutions
+- docs/troubleshooting.md – Common issues and solutions
 
 **Prompts:**
 - `/check-environment` – .github/prompts/check-environment.prompt.md
@@ -61,13 +60,13 @@ The primary maintenance tasks for this registry are:
 
 When assisting with tasks:
 
-1. **For setup and environment:** Reference [README.md](../README.md) and [docs/references.md](../docs/references.md)
+1. **For setup and environment:** Reference README.md and docs/references.md
 2. **For step-by-step instructions:** Use the specific guides in `docs/`:
-   - [docs/guide-create-port.md](../docs/guide-create-port.md)
-   - [docs/guide-update-port.md](../docs/guide-update-port.md)
-   - [docs/guide-update-version-baseline.md](../docs/guide-update-version-baseline.md)
-   - [docs/troubleshooting.md](../docs/troubleshooting.md)
-3. **For external resources:** Use [docs/references.md](../docs/references.md)
+   - docs/guide-create-port.md
+   - docs/guide-update-port.md
+   - docs/guide-update-version-baseline.md
+   - docs/troubleshooting.md
+3. **For external resources:** Use docs/references.md
 4. **Prompt behavior must follow the corresponding guide's process**
 
 ## How Copilot Should Use Prompts
@@ -91,7 +90,7 @@ When assisting with tasks:
 
 ### Overlay Usage
 - Use explicit CLI options (`--overlay-ports`, `--overlay-triplets`) instead of environment variables
-- See [docs/guide-create-port.md](../docs/guide-create-port.md) and [docs/troubleshooting.md](../docs/troubleshooting.md) for examples
+- See docs/guide-create-port.md and docs/troubleshooting.md for examples
 
 ### Helper Scripts
 Prefer helper scripts in `scripts/` when available:
