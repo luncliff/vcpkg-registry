@@ -1,191 +1,134 @@
-# Instruction: vcpkg-registry maintenance
+# GitHub Copilot Instructions: vcpkg-registry maintenance
 
-The followings are minimal guidelines to get general ideas about this repository.
+## Introduction
 
-- Use [References](../docs/references.md) to fetch documents for working with vcpkg commands and build toolchains.
-- Use [README.md](../README.md) and files in [the docs/ folder](../docs/). 
+This vcpkg registry provides an overlay of custom ports for the vcpkg package manager. This file defines how GitHub Copilot should assist with repository maintenance tasks.
 
-## How To
+For repository overview and setup instructions, see [README.md](../README.md).
 
-### Setup the environment
+## Core Maintenance Tasks
 
-Follow the official [Getting Started Guide](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started) to setup your environment
+The primary maintenance tasks for this registry are:
 
-- Required environment variables
-  - `VCPKG_ROOT` to integrate with toolchains. For example, `C:\vcpkg` or `/usr/local/shared/vcpkg`
-  - `PATH` to run `vcpkg` CLI program
+### 1. Create Port
+**Goal:** Add a new vcpkg port to this registry.
 
-### Using the `vcpkg` command
+**Documentation:**
+- docs/guide-create-port.md – Main creation guide
+- docs/guide-create-port-build.md – Build patterns
+- docs/guide-create-port-download.md – Download & SHA512
 
-- Version check
-  - vcpkg program behavior may change as time flows. Report the [`vcpkg` executable version](https://github.com/microsoft/vcpkg-tool/releases) when the version is unknown.
-- Use `vcpkg help` command to get descriptions and test the CLI executable works.
+**Prompts:**
+- `/search-port` – .github/prompts/search-port.prompt.md
+- `/create-port` – .github/prompts/create-port.prompt.md
+- `/install-port` – .github/prompts/install-port.prompt.md
+- `/review-port` – .github/prompts/review-port.prompt.md
 
+### 2. Update Port
+**Goal:** Update an existing port to a newer version or adjust its build configuration.
+
+**Documentation:**
+- docs/guide-update-port.md – Update procedures
+
+**Prompts:**
+- `/check-port-upstream` – .github/prompts/check-port-upstream.prompt.md
+- `/update-port` – .github/prompts/update-port.prompt.md
+- `/install-port` – .github/prompts/install-port.prompt.md
+- `/review-port` – .github/prompts/review-port.prompt.md
+
+### 3. Update Version Baseline
+**Goal:** Synchronize `versions/` JSON files with changes to ports.
+
+**Documentation:**
+- docs/guide-update-version-baseline.md – Baseline update procedures
+
+**Prompts:**
+- `/update-version-baseline` – .github/prompts/update-version-baseline.prompt.md
+
+### 4. Troubleshoot Port
+**Goal:** Diagnose and fix issues with port installation or build.
+
+**Documentation:**
+- docs/troubleshooting.md – Common issues and solutions
+
+**Prompts:**
+- `/check-environment` – .github/prompts/check-environment.prompt.md
+- `/install-port` – .github/prompts/install-port.prompt.md
+- `/review-port` – .github/prompts/review-port.prompt.md
+
+## How Copilot Should Use Documentation
+
+When assisting with tasks:
+
+1. **For setup and environment:** Reference README.md and docs/references.md
+2. **For step-by-step instructions:** Use the specific guides in `docs/`:
+   - docs/guide-create-port.md
+   - docs/guide-update-port.md
+   - docs/guide-update-version-baseline.md
+   - docs/troubleshooting.md
+3. **For external resources:** Use docs/references.md
+4. **Prompt behavior must follow the corresponding guide's process**
+
+## How Copilot Should Use Prompts
+
+### Task-to-Prompt-to-Guide Mapping
+
+| Task | Prompts | Primary Guides |
+|------|---------|----------------|
+| **Create port** | `/search-port` → `/create-port` → `/install-port` → `/review-port` | `guide-create-port.md`, `guide-create-port-build.md`, `guide-create-port-download.md` |
+| **Update port** | `/check-port-upstream` → `/update-port` → `/install-port` → `/review-port` | `guide-update-port.md` |
+| **Update version baseline** | `/update-version-baseline` | `guide-update-version-baseline.md` |
+| **Troubleshoot** | `/check-environment` → `/install-port` | `troubleshooting.md` |
+
+### Prompt Guidelines
+
+- Prompts are for **process execution** with clear pass/fail outcomes
+- Each prompt should report structured results with ✅ ⚠️ ❌ indicators
+- Follow the workflow defined in the prompt's corresponding guide
+
+## Command Usage Guidelines
+
+### Overlay Usage
+- Use explicit CLI options (`--overlay-ports`, `--overlay-triplets`) instead of environment variables
+- See docs/guide-create-port.md and docs/troubleshooting.md for examples
+
+### Helper Scripts
+Prefer helper scripts in `scripts/` when available:
+- registry-add-version.ps1 – Update version baseline
+- registry-format.ps1 – Format manifests files in ports folder
+
+### Minimal Changes
+- Keep changes focused on the requested task
+- Avoid unrelated refactoring
+- Test only what's relevant to the change
+
+## Safety and Scope Constraints
+
+- **No automatic commits** unless explicitly requested
+- **Stay within task scope** – don't modify unrelated ports or versions
+- **Run tests/installs only when relevant** to the requested change
+- **Follow vcpkg best practices** as documented in guides
+
+## Navigation Graphs
+
+### Mermaid Diagram
+
+```mermaid
+graph TD
+  README[README.md] --> CreateGuide[docs/guide-create-port.md]
+  CreateGuide -- prompt --> CreatePrompt[create-port.prompt.md]
+  CreateGuide --> BuildGuide[docs/guide-create-port-build.md]
+  CreateGuide --> DownloadGuide[docs/guide-create-port-download.md]
+  CreateGuide --> Troubleshoot[docs/troubleshooting.md]
+
+  UpdateGuide[docs/guide-update-port.md] -- prompt --> UpdatePrompt[update-port.prompt.md]
+  UpdateGuide --> BaselineGuide[docs/guide-update-version-baseline.md]
+  BaselineGuide -- prompt --> BaselinePrompt[update-version-baseline.prompt.md]
+  BaselineGuide --> Troubleshoot
+
+  Troubleshoot -- prompt --> InstallPrompt[install-port.prompt.md]
+  Troubleshoot -- prompt --> CheckEnvPrompt[check-environment.prompt.md]
+
+  References[docs/references.md] --> CreateGuide
+  References --> UpdateGuide
 ```
-vcpkg --version
-```
-
-Commonly used commands can be checked with:
-
-```
-vcpkg help
-vcpkg help install
-vcpkg help remove
-vcpkg help search
-vcpkg help depend-info
-```
-
-#### Working with Overlay ports/triplets
-
-The "overlay ports" and "overlay triplets" may need more detailed options or switches to work properly.
-
-- Overlay ports
-  - https://learn.microsoft.com/en-us/vcpkg/concepts/overlay-ports
-  - https://learn.microsoft.com/en-us/vcpkg/consume/install-locally-modified-package
-- Overlay triplets
-  - https://learn.microsoft.com/en-us/vcpkg/users/examples/overlay-triplets-linux-dynamic
-
-Prevent using environment variable `VCPKG_OVERLAY_PORTS` and `VCPKG_OVERLAY_TRIPLETS` to avoid confusion.
-
-```ps1
-# Both relative path and absolute path are allowed for overlay options
-$Workspace=$(Get-Location).Path
-vcpkg install `
-  --overlay-ports "$Workspace/ports" `
-  --overlay-triplets "$Workspace/triplets" `
-  cpuinfo
-```
-
-Instead of using default folders under `VCPKG_ROOT`, you can provide custom folders for port build/install steps.
-
-```ps1
-# RECOMMENDED: Create/use folders in the current workspace
-vcpkg install --overlay-ports "ports" `
-  --x-buildtrees-root "buildtrees" `
-  --x-packages-root "packages" `
-  --x-install-root "installed" `
-  eigen3
-```
-
-### Editing baseline files in vcpkg Registry
-
-The vcpkg registry consists of
-
-- Port Scripts: located in [ports/](../ports/) folder
-- Baseline JSON files: located in [versions/](../versions/) folder
-
-Here, suppose we are in the root folder of the registry with the following commands
-
-```ps1
-git clone "https://github.com/luncliff/vcpkg-registry"
-Set-Location "vcpkg-registry"
-```
-
-Format all `vcpkg.json` files under [ports/](../ports/) folder.
-
-```ps1
-# vcpkg help format-manifest
-vcpkg format-manifest --all `
-    --vcpkg-root "${env:VCPKG_ROOT}" `
-    --x-builtin-ports-root "$(Get-Location)/ports" `
-    --x-builtin-registry-versions-dir "$(Get-Location)/versions
-```
-
-Update baseline and version JSON files for a specific port
-
-```ps1
-# vcpkg help x-add-version
-$PortName="some-port"
-vcpkg x-add-version $PortName `
-    --overwrite-version `
-    --vcpkg-root "${env:VCPKG_ROOT}" `
-    --x-builtin-ports-root "$(Get-Location)/ports" `
-    --x-builtin-registry-versions-dir "$(Get-Location)/versions
-```
-
-### Writing triplet files
-
-A triplet file is basically a set of CMake variables for `$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake`.
-
-Refer [the concepts](https://learn.microsoft.com/en-us/vcpkg/concepts/triplets) and [pre-defined variables](https://learn.microsoft.com/en-us/vcpkg/users/triplets).
-
-This repository contains some examples in [triplets/](../triplets/) folder.
-
-- [x64-windows.cmake](../triplets/x64-windows.cmake)
-- [arm64-android.cmake](../triplets/arm64-android.cmake)
-- [arm64-ios-simulator.cmake](../triplets/arm64-ios-simulator.cmake)
-
-## Troubleshooting Port Installation Errors
-
-When encountering compiler or linker errors, refer the following links
-
-- https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options
-- https://learn.microsoft.com/en-us/cpp/build/reference/linker-options
-
-### Alternative Approach: Embedded CMakeLists.txt
-
-When patch files become too complex or frequently fail to apply due to upstream changes, you can use the **embedded CMakeLists.txt approach** as demonstrated in [ports like `farmhash`](../ports/farmhash/).
-
-#### How It Works
-
-1. **Download Original**: Download the original CMakeLists.txt from the target version
-   ```bash
-   curl -o "ports/port-name/CMakeLists.txt" "https://raw.githubusercontent.com/OWNER/REPO/vX.Y.Z/CMakeLists.txt"
-   ```
-
-2. **Embed and Modify**: Place the file directly in your port directory and modify it in-place to work with vcpkg dependencies
-
-3. **Copy in Portfile**: Use `file(COPY)` to overwrite the original during build:
-   ```cmake
-   # Copy our modified CMakeLists.txt
-   file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")
-   ```
-
-#### Benefits
-- **Easier Maintenance**: Direct file editing instead of complex patch management
-- **Clearer Review**: Developers can see exact changes in the embedded file
-- **No Patch Failures**: Eliminates patch application context mismatches
-- **Rapid Prototyping**: Faster iteration during port development
-
-#### ⚠️ **Important Warning for Upstream Contributions**
-
-> **This approach is primarily for experimental/private registries.** 
-> 
-> If you plan to contribute the port to **microsoft/vcpkg upstream**, you **MUST** convert the embedded CMakeLists.txt changes back to proper patch files before submitting. The vcpkg upstream strongly prefers patch files over embedded source files for the following reasons:
-> 
-> - **Maintainability**: Patches show exactly what changed
-> - **Upstream Compatibility**: Easier to review and maintain
-> - **Standards Compliance**: Follows vcpkg contribution guidelines
-> - **Conflict Reduction**: Minimizes merge conflicts with upstream changes
-> 
-> **Conversion Process**: Use `git diff` or `diff` tools to generate proper patch files from your embedded changes before submitting to upstream.
-
-#### When to Use This Approach
-- ✅ Complex build systems with frequent CMakeLists.txt changes
-- ✅ Experimental ports in private registries  
-- ✅ Rapid prototyping and testing
-- ✅ When traditional patches repeatedly fail to apply
-
-## Maintaining this repository
-
-Mostly we work in [ports/](../ports/) and [versions/](../versions/) folder.
-
-The ports in this vcpkg-registry checks the vcpkg upstream guides, but most of the ports may not follow them for experimental purpose.
-
-- [microsoft/vcpkg Contributing Guideline](https://github.com/microsoft/vcpkg/blob/master/CONTRIBUTING.md)
-- [Maintainer Guideline](https://github.com/microsoft/vcpkg-docs/blob/main/vcpkg/contributing/maintainer-guide.md)
-
-### Updating a ports
-
-- Use [guide-update-port.md](../docs/guide-update-port.md) to generate steps and todo list.
-- Update todo list as each step is done.
-
-### Testing a port
-
-Mostly, the port's default installation works, it is enough.
-However, if the port has some features, and they are important. We have to test install with the features repetitively.
-
-1. Run `vcpkg install` command with the port name. Here, the installation needs to be "overlay install"(`--x-overlay-ports`) to prevent mix/conflict with vcpkg upstream.
-2. Use `vcpkg search` command to list the port's features.
-3. If there is no feature, the port is tested.
-4. If there are some features, run `vcpkg install` command with each of the features.

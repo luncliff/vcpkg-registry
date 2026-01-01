@@ -1,123 +1,155 @@
 ---
-description: 'Detect and verify host system environment for vcpkg development'
+description: 'Detect OS/shell, validate vcpkg setup, and emit one combined environment report'
 agent: 'agent'
-tools: ['runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'fetch', 'todos']
+tools: ['execute/runInTerminal', 'read/readFile', 'read/terminalLastCommand', 'search/fileSearch', 'search/listDirectory', 'web/fetch', 'todo']
 model: Claude Haiku 4.5 (copilot)
 ---
 
-# Check Environment
+# vcpkg-registry: Check Environment (Merged)
 
-Detect the host operating system, shell environment, and basic system configuration to ensure compatibility with vcpkg port development workflows.
+Run a unified check that first detects the host OS and shell, verifies key developer tools, then validates vcpkg installation and registry structure. Produces a single consolidated markdown report.
 
 ## Prompt Goals
 
-- Identify the operating system (Windows, Linux, macOS)
-- Detect the active shell and its version (PowerShell, Bash, Zsh)
-- Verify minimum required versions for development tools
-- Provide cross-platform command translations when needed
-- Generate a structured environment report for reproducibility
+- PASS: Environment is suitable for building ports with vcpkg-registry; all critical tools and paths validated.
+- FAIL: Missing critical tools or misconfigured environment; actionable fixes provided.
+
+**Additional Goals**:
+- Identify operating system and shell (Windows/PowerShell prioritized)
+- Verify minimum tool availability (curl, tar, zip, unzip, git, cmake, ninja)
+- Locate and validate vcpkg (`VCPKG_ROOT` or PATH)
+- Check vcpkg-tool version and critical directories
+- Verify registry folders in current workspace (`ports/`, `versions/`, `triplets/`)
+- Enumerate `VCPKG_*` environment variables and explain `VCPKG_FEATURE_FLAGS`
+- Emit one structured report for reproducibility
 
 ## Workflow Expectation
 
-**Default Behavior**: This prompt runs autonomously and generates a comprehensive environment report. It automatically translates PowerShell commands to Bash/Zsh equivalents when non-Windows systems are detected.
-
-**Stop Conditions**: 
-- Execution completes successfully with full environment report
-- PowerShell version below 7.1 detected (warning issued, execution continues)
-
-**Prompt Forwarding**: No automatic forwarding. Users typically invoke `/check-vcpkg-environment` next.
+- Default Behavior: Runs autonomously end-to-end and emits a single combined report.
+- Stop Conditions: Report generated, even if warnings/errors are present.
+- Eagerness: Prevent asking user for question or additional input.
 
 ## User Input
 
-This prompt requires no user input arguments. It automatically detects the current environment.
+No input required. Automatically detects environment and vcpkg configuration.
 
 ## Process
 
-### Phase 1: Detect Operating System
+- Do use short shell commands. Do NOT use complicated scripts.
 
-#### Step 1.1: Check OS type
-- Tool: #tool:runCommands/runInTerminal
+### Phase 1: Detect Operating System & Shell
+
+#### Step 1.1: OS detection
+- Tool: #tool:execute/runInTerminal
 - Windows: `$PSVersionTable.PSVersion`
 - Linux/macOS: `uname -s`
-- Purpose: Identify operating system family
+- Purpose: Determine OS family
 
-#### Step 1.2: Get detailed system info
-- Tool: #tool:runCommands/runInTerminal
+#### Step 1.2: System details
+- Tool: #tool:execute/runInTerminal
 - Windows: `Get-ComputerInfo | Select-Object CsName, WindowsVersion, OsArchitecture`
 - Linux: `uname -a; lsb_release -a 2>/dev/null || cat /etc/os-release`
 - macOS: `sw_vers; uname -m`
-- Purpose: Capture OS version and architecture
+- Purpose: Capture version/architecture
 
-#### Step 1.3: Capture output
-- Tool: #tool:runCommands/terminalLastCommand
-- Purpose: Store system information for reporting
-
-### Phase 2: Detect Shell Environment
-
-#### Step 2.1: Identify active shell
-- Tool: #tool:runCommands/runInTerminal
+#### Step 1.3: Shell info
+- Tool: #tool:execute/runInTerminal
 - Windows: `$PSVersionTable.PSEdition; $PSVersionTable.PSVersion`
 - Linux/macOS: `echo $SHELL; $SHELL --version`
-- Purpose: Determine shell type and version
+- Purpose: Determine shell type/version
 
-#### Step 2.2: Check PowerShell minimum version (if applicable)
-- Condition: Windows or PowerShell detected
-- Requirement: PowerShell 7.1+
-- Action: If below 7.1, issue warning but continue
-- Tool: Parse version from previous output
-
-#### Step 2.3: Test common development tools
-- Tool: #tool:runCommands/runInTerminal
-- Purpose: Check availability and versions using an executable list with a command template
-
-Command templates (the agent will iterate executables and apply the template):
-
-- Windows (PowerShell):
+#### Step 1.4: Tool availability (Windows template used on Windows)
+- Tool: #tool:execute/runInTerminal
+- Windows (PowerShell): iterate `curl`, `tar`, `zip`, `unzip`, `git`, `cmake`, `ninja`
   - Template: `Get-Command <exe> -ErrorAction SilentlyContinue | Select-Object Source`
-  - Executables: `curl`, `tar`, `zip`, `unzip`, `git`, `cmake`, `ninja`
+- POSIX shells: `command -v <exe>; <exe> --version 2>/dev/null`
 
-- Linux/macOS (POSIX shells):
-  - Template: `command -v <exe>; <exe> --version 2>/dev/null`
-  - Executables: `curl`, `tar`, `zip`, `unzip`, `git`, `cmake`, `ninja`
-
-### Phase 3: Cross-Platform Translation (if non-Windows detected)
-
-#### Step 3.1: Fetch GitHub Actions runner-images documentation
-- Tool: #tool:fetch
-- Purpose: Get standard environment configurations for reference
-- URLs: Fetch the following links to lookup proper documents
+#### Step 1.5: Cross-platform translation references (non-Windows only)
+- Tool: #tool:web/fetch
+- URLs: 
   - https://github.com/actions/runner-images/blob/main/README.md
   - https://docs.github.com/en/actions/concepts/runners/github-hosted-runners
+- Purpose: Inform translation of PowerShell → Bash/Zsh examples
 
-#### Step 3.2: Generate command translation guide
-- Action: Create Bash/Zsh equivalents for PowerShell commands used in other prompts
-- Examples:
-  - PowerShell: `$env:VCPKG_ROOT` → Bash: `$VCPKG_ROOT`
-  - PowerShell: `Get-ChildItem Env:` → Bash: `env | sort`
-  - PowerShell: `Test-Path` → Bash: `[ -e <path> ] && echo "true" || echo "false"`
+### Phase 2: Locate and Validate vcpkg
 
-### Phase 4: Generate Report
+#### Step 2.1: Check `VCPKG_ROOT`
+- Tool: #tool:execute/runInTerminal
+- Windows: `$env:VCPKG_ROOT; if ($env:VCPKG_ROOT) { Test-Path $env:VCPKG_ROOT }`
+- Linux/macOS: `echo $VCPKG_ROOT; [ -d "$VCPKG_ROOT" ] && echo "exists"`
 
-#### Step 4.1: Compile environment summary
-- Collect all detected information
-- Format as structured markdown report
+#### Step 2.2: Check `vcpkg` in PATH
+- Tool: #tool:execute/runInTerminal
+- Windows: `Get-Command vcpkg -ErrorAction SilentlyContinue | Select-Object Source`
+- Linux/macOS: `command -v vcpkg`
 
-## Reporting
+#### Step 2.3: Infer `VCPKG_ROOT` from executable (if unset but found)
+- Action: Parse executable path parent directory
 
-Replace example outputs with a deterministic specification.
-The agent MUST emit a markdown report containing the headings below (in order). Emit all headings; if a section has no data write `None`.
-Keep bullets concise (≤120 chars). Use tables only when listing >5 tools or >5 command translations.
+#### Step 2.4: Fallback search (if still unknown)
+- Tool: #tool:web/fetch
+- URL: https://raw.githubusercontent.com/actions/runner-images/main/images/windows/Windows2022-Readme.md
+- Common paths to test:
+  - Windows: `C:\vcpkg`, `C:\tools\vcpkg`, `C:\src\vcpkg`
+  - Linux: `/usr/local/vcpkg`, `$HOME/vcpkg`, `/opt/vcpkg`
+  - macOS: `/usr/local/vcpkg`, `$HOME/vcpkg`
+- Tool: #tool:execute/runInTerminal — `Test-Path` / `[ -d ]`
 
-### Required Top-Level Headings
-1. `# Environment Check Report`
+#### Step 2.5: Get vcpkg version
+- Tool: #tool:execute/runInTerminal
+- Command: `vcpkg --version` (use absolute path if needed)
+- Minimum recommended: `2025-06-20`
+
+#### Step 2.6: Verify critical directories
+- Tool: #tool:search/fileSearch
+- Patterns: `${VCPKG_ROOT}/scripts/**`, `${VCPKG_ROOT}/triplets/**`, `${VCPKG_ROOT}/ports/**`
+
+#### Step 2.7: Check toolchain file
+- Tool: #tool:read/readFile
+- File: `${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake`
+- Purpose: Existence check only
+
+### Phase 3: Check Registry Structure (Current Workspace)
+
+#### Step 3.1: Locate `vcpkg-configuration.json`
+- Tool: #tool:search/fileSearch
+- Pattern: `**/vcpkg-configuration.json`
+
+#### Step 3.2: Read config (if found)
+- Tool: #tool:read/readFile
+
+#### Step 3.3: Verify folders
+- Tool: #tool:search/listDirectory
+- Paths: `ports/`, `versions/`, `triplets/`
+
+#### Step 3.4: Check `baseline.json`
+- Tool: #tool:search/fileSearch
+- Pattern: `versions/baseline.json`
+
+#### Step 3.5: List vcpkg-related environment variables
+- Tool: #tool:execute/runInTerminal
+- Windows: `Get-ChildItem Env: | Where-Object Name -like 'VCPKG*' | Format-Table Name, Value`
+- Linux/macOS: `env | grep -i '^VCPKG' | sort`
+
+### Phase 4: Generate Combined Report
+
+The agent MUST output a single markdown report containing the exact headings (in order) below. If a section has no data, write `None`. Use emojis for status lines (✅ ⚠️ ❌). Keep bullets concise (≤120 chars). Use tables only when listing >6 environment variables or >5 tool translations.
+
+#### Required Top-Level Headings
+1. `# Combined Environment Report`
 2. `## Summary`
 3. `## System`
 4. `## Shell`
 5. `## Tools`
-6. `## Cross-Platform Translations`
-7. `## Status`
-8. `## Recommendations`
-9. `## Next Steps`
+6. `## vcpkg Installation`
+7. `## Version Status`
+8. `## Registry Structure`
+9. `## Configuration File`
+10. `## Environment Variables`
+11. `## Feature Flags`
+12. `## Diagnostics`
+13. `## Recommendations`
+14. `## Next Steps`
 
 ### 1. Summary
 - Timestamp: ISO 8601 UTC (`YYYY-MM-DD HH:MM:SS UTC`)
@@ -127,10 +159,10 @@ Keep bullets concise (≤120 chars). Use tables only when listing >5 tools or >5
 - Outcome: `READY` | `WARN` | `ERROR`
 
 ### 2. System
-- OS Detailed: version/build string
+- OS Detailed: version/build
 - Hostname: or `None`
 - Kernel (Unix): `uname -r` or `None`
-- Distribution (Linux): from `/etc/os-release` or `None`
+- Distribution (Linux): `/etc/os-release` or `None`
 
 ### 3. Shell
 - Shell Name: `PowerShell` | `bash` | `zsh` | other
@@ -139,51 +171,66 @@ Keep bullets concise (≤120 chars). Use tables only when listing >5 tools or >5
 - Minimum Requirement (PowerShell ≥7.1): met ✅ / unmet ❌ / not applicable
 
 ### 4. Tools
-Reflect bootstrap requirements:
-- Required (Unix): `curl`, `zip`, `unzip`, `tar`
-- Optional (Unix): `cmake`, `ninja`, `git`
-- Windows: `curl` is sufficient for bootstrap; others optional (`git`, `cmake`, `ninja`)
-- python: version or `missing` (optional)
-Report each detected tool as `version` or `missing`. If more than 5, use a table.
+- Report each of: `curl`, `tar`, `zip`, `unzip`, `git`, `cmake`, `ninja`
+- Value: `version` (raw first token) or `missing`
+- Optional: `python` version or `missing`
 
-### 5. Cross-Platform Translations
-Only emit if shell ≠ PowerShell OR user is on non-Windows:
-Bullets mapping common PowerShell commands to bash/zsh equivalents:
-- `$env:VAR` → `$VAR`
-- `Get-ChildItem Env:` → `env | sort`
-- `Test-Path <path>` → `[ -e <path> ]`
-- `Get-Command name` → `command -v name`
-- `Remove-Item path` → `rm -rf path`
-If Windows/PowerShell: `None` (note PowerShell is native).
+### 5. vcpkg Installation
+- VCPKG_ROOT: path or `unset`
+- Root Exists: ✅/❌
+- Executable Found: ✅/❌ (with path)
+- Toolchain File: exists ✅/❌ (`scripts/buildsystems/vcpkg.cmake`)
+- Critical Dirs: `scripts` / `ports` / `triplets` presence ✅/❌
 
-### 6. Status
-- Readiness: one line summary (e.g., `All required tools present`)
-- Warnings: list (e.g., outdated PowerShell, missing optional tool) or `None`
-- Errors: blocking issues (missing git/cmake) or `None`
+### 6. Version Status
+- Detected Version: raw `vcpkg --version`
+- Parsed Date Tag: `<YYYY-MM-DD>` or `unknown`
+- Minimum Recommended: `2025-06-20`
+- Status: `current` | `outdated` | `unknown`
+- Upgrade URL: `https://github.com/microsoft/vcpkg-tool/releases` (if outdated)
 
-### 7. Recommendations
-Prioritized actions:
-- Install missing tools
-- Upgrade PowerShell if <7.1
-- Add optional tools (python) if port development requires
-`None` if no actions.
+### 7. Registry Structure
+- Registry Root: workspace path
+- Ports Folder: exists ✅/❌ + count of immediate subdirs
+- Versions Folder: exists ✅/❌ + baseline.json ✅/❌
+- Triplets Folder: exists ✅/❌ + count of triplet files
 
-### 8. Next Steps
-Ordered list (max 5):
-- If READY: suggest `/check-vcpkg-environment`
-- If WARN: perform upgrades then re-run check
-- If ERROR: install missing tools first
+### 8. Configuration File
+- vcpkg-configuration.json: path or `None`
+- Registries Declared: count or `None`
+- Default Registry: short summary (baseline SHA prefix) or `None`
 
-### Conventions
-- Icons: ✅ present, ⚠️ warning, ❌ error
-- Do not include full multi-line system dumps; extract key fields only
-- All versions raw from tool output without extra parsing beyond first token
+### 9. Environment Variables
+- List each `VCPKG_*` variable present
+- If >6 total, use a table
 
-### Non-Blocking Warnings
-- PowerShell version ≥7.0 but <7.1
-- Missing optional tools (python) not strictly required
+### 10. Feature Flags
+- Raw Value: comma list or `None`
+- Parsed Flags: brief meaning for: versions, registries, binarycaching, manifests, compilertracking, metrics
+- Unknown Flags: list or `None`
 
-### Blocking Errors
-- Shell detection failed (no command execution)
+### 11. Diagnostics
+- PATH Contains vcpkg: yes/no
+- Inferred Root From Executable: path or `None`
+- Searched Fallback Paths: list checked (only if not found) or `None`
+- Missing Components: absent critical items or `None`
+- Cross-Platform Translations: emit mappings only if shell ≠ PowerShell OR non-Windows; else `None`
+  - `$env:VAR` → `$VAR`
+  - `Get-ChildItem Env:` → `env | sort`
+  - `Test-Path <path>` → `[ -e <path> ]`
+  - `Get-Command name` → `command -v name`
+  - `Remove-Item path` → `rm -rf path`
 
-This specification replaces previous example reports; output only real environment data.
+### 12. Recommendations
+- Prioritized actions: install missing tools, set `VCPKG_ROOT`, upgrade vcpkg-tool, validate overlays
+- `None` if nothing to recommend
+
+### 13. Next Steps
+- For READY: suggest `/search-port` or `/create-port`
+- For WARN: perform upgrades then re-run check
+- For ERROR: install/fix missing items first
+
+## Conventions
+- Use ✅ ⚠️ ❌ where applicable
+- Keep results concise; no full dumps
+- Prefer PowerShell commands on Windows; provide POSIX translations only when needed

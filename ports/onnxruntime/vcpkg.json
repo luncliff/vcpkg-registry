@@ -1,12 +1,16 @@
 {
   "name": "onnxruntime",
-  "version-semver": "1.22.1",
+  "version-semver": "1.23.2",
   "port-version": 1,
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://github.com/microsoft/onnxruntime",
   "license": "MIT",
+  "supports": "!uwp",
   "dependencies": [
-    "abseil",
+    {
+      "name": "abseil",
+      "version>=": "20250512.1"
+    },
     {
       "name": "boost-config",
       "version>=": "1.82.0"
@@ -33,7 +37,7 @@
     "nlohmann-json",
     {
       "name": "onnx",
-      "version>=": "1.16.0"
+      "version>=": "1.19.0"
     },
     "optional-lite",
     {
@@ -64,6 +68,7 @@
   "features": {
     "cuda": {
       "description": "Build with CUDA support",
+      "supports": "(x64 & windows & !static) | (x64 & linux)",
       "dependencies": [
         "cuda",
         "cudnn",

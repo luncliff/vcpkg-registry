@@ -35,6 +35,7 @@
         },
         {
           "name": "llama-cpp",
+          "host": true,
           "features": [
             "tools"
           ]
@@ -100,8 +101,7 @@
         {
           "name": "onnx",
           "features": [
-            "disable-static-registration",
-            "test"
+            "disable-static-registration"
           ]
         },
         {

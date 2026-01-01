@@ -32,7 +32,14 @@
             "tools"
           ]
         },
-        "nvidia-tools-extension-sdk"
+        "nvidia-tools-extension-sdk",
+        {
+          "name": "onnxruntime",
+          "features": [
+            "tensorrt"
+          ],
+          "platform": "x64 & windows"
+        }
       ]
     },
     "test": {
@@ -73,8 +80,7 @@
         {
           "name": "onnx",
           "features": [
-            "disable-static-registration",
-            "test"
+            "disable-static-registration"
           ]
         },
         {
@@ -108,12 +114,6 @@
           "features": [
             "glfw-binding",
             "vulkan-binding"
-          ]
-        },
-        {
-          "name": "llama-cpp",
-          "features": [
-            "vulkan"
           ]
         },
         "smol-v",

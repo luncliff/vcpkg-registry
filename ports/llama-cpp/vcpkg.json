@@ -1,10 +1,11 @@
 {
   "name": "llama-cpp",
-  "version": "6301",
+  "version": "7599",
   "description": "LLM inference in C/C++",
   "homepage": "https://github.com/ggml-org/llama.cpp",
   "license": "MIT",
   "dependencies": [
+    "cpp-httplib",
     {
       "name": "curl",
       "default-features": false
@@ -65,23 +66,6 @@
         },
         "miniaudio",
         "stb"
-      ]
-    },
-    "vulkan": {
-      "description": "Use Vulkan",
-      "dependencies": [
-        {
-          "name": "glslang",
-          "host": true,
-          "features": [
-            "tools"
-          ]
-        },
-        {
-          "name": "shaderc",
-          "host": true
-        },
-        "vulkan"
       ]
     }
   }
