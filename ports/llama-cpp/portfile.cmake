@@ -206,11 +206,13 @@ if("tools" IN_LIST FEATURES)
         llama-server
         llama-tokenize
         llama-tts
+        llama-fit-params
+        llama-completion
     )
-    file(INSTALL
-        "${SOURCE_PATH}/examples/chat.sh"
-        DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
-    )
+    # file(INSTALL
+    #     "${SOURCE_PATH}/examples/chat.sh"
+    #     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
+    # )
 endif()
 
 file(REMOVE_RECURSE
