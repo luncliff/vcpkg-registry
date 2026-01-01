@@ -20,10 +20,10 @@ The primary maintenance tasks for this registry are:
 - [docs/guide-create-port-download.md](../docs/guide-create-port-download.md) – Download & SHA512
 
 **Prompts:**
-- `/search-port` – [.github/prompts/search-port.prompt.md](./prompts/search-port.prompt.md)
-- `/create-port` – [.github/prompts/create-port.prompt.md](./prompts/create-port.prompt.md)
-- `/install-port` – [.github/prompts/install-port.prompt.md](./prompts/install-port.prompt.md)
-- `/review-port` – [.github/prompts/review-port.prompt.md](./prompts/review-port.prompt.md)
+- `/search-port` – .github/prompts/search-port.prompt.md](./prompts/search-port.prompt.md)
+- `/create-port` – .github/prompts/create-port.prompt.md](./prompts/create-port.prompt.md)
+- `/install-port` – .github/prompts/install-port.prompt.md](./prompts/install-port.prompt.md)
+- `/review-port` – .github/prompts/review-port.prompt.md](./prompts/review-port.prompt.md)
 
 ### 2. Update Port
 **Goal:** Update an existing port to a newer version or adjust its build configuration.
@@ -32,10 +32,10 @@ The primary maintenance tasks for this registry are:
 - [docs/guide-update-port.md](../docs/guide-update-port.md) – Update procedures
 
 **Prompts:**
-- `/check-port-upstream` – [.github/prompts/check-port-upstream.prompt.md](./prompts/check-port-upstream.prompt.md)
-- `/update-port` – [.github/prompts/update-port.prompt.md](./prompts/update-port.prompt.md)
-- `/install-port` – [.github/prompts/install-port.prompt.md](./prompts/install-port.prompt.md)
-- `/review-port` – [.github/prompts/review-port.prompt.md](./prompts/review-port.prompt.md)
+- `/check-port-upstream` – .github/prompts/check-port-upstream.prompt.md
+- `/update-port` – .github/prompts/update-port.prompt.md
+- `/install-port` – .github/prompts/install-port.prompt.md
+- `/review-port` – .github/prompts/review-port.prompt.md
 
 ### 3. Update Version Baseline
 **Goal:** Synchronize `versions/` JSON files with changes to ports.
@@ -44,7 +44,7 @@ The primary maintenance tasks for this registry are:
 - [docs/guide-update-version-baseline.md](../docs/guide-update-version-baseline.md) – Baseline update procedures
 
 **Prompts:**
-- `/update-version-baseline` – [.github/prompts/update-version-baseline.prompt.md](./prompts/update-version-baseline.prompt.md)
+- `/update-version-baseline` – .github/prompts/update-version-baseline.prompt.md
 
 ### 4. Troubleshoot Port
 **Goal:** Diagnose and fix issues with port installation or build.
@@ -53,9 +53,9 @@ The primary maintenance tasks for this registry are:
 - [docs/troubleshooting.md](../docs/troubleshooting.md) – Common issues and solutions
 
 **Prompts:**
-- `/check-environment` – [.github/prompts/check-environment.prompt.md](./prompts/check-environment.prompt.md)
-- `/install-port` – [.github/prompts/install-port.prompt.md](./prompts/install-port.prompt.md)
-- `/review-port` – [.github/prompts/review-port.prompt.md](./prompts/review-port.prompt.md)
+- `/check-environment` – .github/prompts/check-environment.prompt.md
+- `/install-port` – .github/prompts/install-port.prompt.md
+- `/review-port` – .github/prompts/review-port.prompt.md
 
 ## How Copilot Should Use Documentation
 
@@ -86,7 +86,6 @@ When assisting with tasks:
 - Prompts are for **process execution** with clear pass/fail outcomes
 - Each prompt should report structured results with ✅ ⚠️ ❌ indicators
 - Follow the workflow defined in the prompt's corresponding guide
-- **Do not create or reference `work-note.md`** – use PR descriptions for history
 
 ## Command Usage Guidelines
 
@@ -96,8 +95,8 @@ When assisting with tasks:
 
 ### Helper Scripts
 Prefer helper scripts in `scripts/` when available:
-- [scripts/registry-add-version.ps1](../scripts/registry-add-version.ps1) – Update version baseline
-- [scripts/registry-format.ps1](../scripts/registry-format.ps1) – Format manifests
+- registry-add-version.ps1 – Update version baseline
+- registry-format.ps1 – Format manifests files in ports folder
 
 ### Minimal Changes
 - Keep changes focused on the requested task
@@ -118,21 +117,19 @@ Prefer helper scripts in `scripts/` when available:
 ```mermaid
 graph TD
   README[README.md] --> CreateGuide[docs/guide-create-port.md]
-  CreateGuide -- prompt --> CreatePrompt[.github/prompts/create-port.prompt.md]
+  CreateGuide -- prompt --> CreatePrompt[create-port.prompt.md]
   CreateGuide --> BuildGuide[docs/guide-create-port-build.md]
   CreateGuide --> DownloadGuide[docs/guide-create-port-download.md]
   CreateGuide --> Troubleshoot[docs/troubleshooting.md]
 
-  UpdateGuide[docs/guide-update-port.md] -- prompt --> UpdatePrompt[.github/prompts/update-port.prompt.md]
+  UpdateGuide[docs/guide-update-port.md] -- prompt --> UpdatePrompt[update-port.prompt.md]
   UpdateGuide --> BaselineGuide[docs/guide-update-version-baseline.md]
-  BaselineGuide -- prompt --> BaselinePrompt[.github/prompts/update-version-baseline.prompt.md]
+  BaselineGuide -- prompt --> BaselinePrompt[update-version-baseline.prompt.md]
   BaselineGuide --> Troubleshoot
 
-  Troubleshoot -- prompt --> InstallPrompt[.github/prompts/install-port.prompt.md]
-  Troubleshoot -- prompt --> CheckEnvPrompt[.github/prompts/check-environment.prompt.md]
+  Troubleshoot -- prompt --> InstallPrompt[install-port.prompt.md]
+  Troubleshoot -- prompt --> CheckEnvPrompt[check-environment.prompt.md]
 
   References[docs/references.md] --> CreateGuide
   References --> UpdateGuide
 ```
-
-
