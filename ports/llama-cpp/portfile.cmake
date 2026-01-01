@@ -3,12 +3,12 @@ if(VCPKG_TARGET_IS_WINDOWS)
 endif()
 set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
-# https://github.com/ggml-org/llama.cpp/releases/tag/b6301
+# https://github.com/ggml-org/llama.cpp/releases/tag/b7599
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggml-org/llama.cpp
     REF "b${VERSION}"
-    SHA512 8f7900829f1b0f99e4b59f8e24def0e975ac6e7186619daaa77477506f93609243188589285f9fc46b924f215a1eed1ae20b386340c507d40c0865de8c1eb3be
+    SHA512 82e6109994aaea55a640e43840505653eb34cc4a770addef6856a2379350660cf53ad125c3bee827251e6552935f4f524e0b7d1182ee01247ce0bb24e97dc3ca
     HEAD_REF master
     PATCHES
         fix-3rdparty.patch
@@ -172,9 +172,13 @@ vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/llama" PACKAGE_NAME "llama")
 
 file(COPY "${SOURCE_PATH}/grammars"
           "${SOURCE_PATH}/models"
-          "${SOURCE_PATH}/prompts"
     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
 )
+if(EXISTS "${SOURCE_PATH}/prompts")
+    file(COPY "${SOURCE_PATH}/prompts"
+        DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
+    )
+endif()
 
 if("tools" IN_LIST FEATURES)
     vcpkg_copy_tools(AUTO_CLEAN TOOL_NAMES

@@ -1,22 +1,43 @@
-diff --git a/common/CMakeLists.txt b/common/CMakeLists.txt
-index 0ae4d69..5265331 100644
---- a/common/CMakeLists.txt
-+++ b/common/CMakeLists.txt
-@@ -133,7 +133,8 @@ if (LLAMA_LLGUIDANCE)
-     set(LLAMA_COMMON_EXTRA_LIBS ${LLAMA_COMMON_EXTRA_LIBS} llguidance ${LLGUIDANCE_PLATFORM_LIBS})
- endif ()
+diff -Naur llama.cpp-b7599-original/CMakeLists.txt llama.cpp-b7599-patched/CMakeLists.txt
+--- llama.cpp-b7599-original/CMakeLists.txt	2026-01-01 05:43:54.690952446 +0000
++++ llama.cpp-b7599-patched/CMakeLists.txt	2026-01-01 05:47:24.065432004 +0000
+@@ -217,7 +217,6 @@
+ if (LLAMA_BUILD_COMMON)
+     add_subdirectory(common)
+     if (LLAMA_HTTPLIB)
+-        add_subdirectory(vendor/cpp-httplib)
+     endif()
+ endif()
+ 
+diff -Naur llama.cpp-b7599-original/common/CMakeLists.txt llama.cpp-b7599-patched/common/CMakeLists.txt
+--- llama.cpp-b7599-original/common/CMakeLists.txt	2026-01-01 05:43:54.693952454 +0000
++++ llama.cpp-b7599-patched/common/CMakeLists.txt	2026-01-01 05:47:24.051431975 +0000
+@@ -85,7 +85,8 @@
+     unicode.h
+     )
  
 -target_include_directories(${TARGET} PUBLIC . ../vendor)
 +find_path(MINJA_INCLUDE_DIRS "minja/chat-template.hpp" REQUIRED)
 +target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MINJA_INCLUDE_DIRS})
  target_compile_features   (${TARGET} PUBLIC cxx_std_17)
- target_link_libraries     (${TARGET} PRIVATE ${LLAMA_COMMON_EXTRA_LIBS} PUBLIC llama Threads::Threads)
  
-diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
-index d64956b..9611d76 100644
---- a/tools/CMakeLists.txt
-+++ b/tools/CMakeLists.txt
-@@ -3,6 +3,14 @@
+ if (BUILD_SHARED_LIBS)
+diff -Naur llama.cpp-b7599-original/common/chat.cpp llama.cpp-b7599-patched/common/chat.cpp
+--- llama.cpp-b7599-original/common/chat.cpp	2026-01-01 05:43:54.693952454 +0000
++++ llama.cpp-b7599-patched/common/chat.cpp	2026-01-01 05:47:24.067432008 +0000
+@@ -1697,7 +1697,7 @@
+     };
+ 
+     auto prompt = apply(tmpl, inputs,
+-                       /* messages_override= */ inputs.messages,
++                       /* messages_override= */ std::optional<json>(inputs.messages),
+                        /* tools_override= */ std::nullopt,
+                        additional_context);
+     data.prompt = prompt;
+diff -Naur llama.cpp-b7599-original/tools/CMakeLists.txt llama.cpp-b7599-patched/tools/CMakeLists.txt
+--- llama.cpp-b7599-original/tools/CMakeLists.txt	2026-01-01 05:43:54.816952753 +0000
++++ llama.cpp-b7599-patched/tools/CMakeLists.txt	2026-01-01 05:47:24.054431981 +0000
+@@ -3,6 +3,30 @@
  find_package(Threads REQUIRED)
  
  # third-party
@@ -28,14 +49,29 @@ index d64956b..9611d76 100644
 +        link_libraries("-framework Security" "-framework SystemConfiguration")
 +    endif()
 +endif()
++if(LLAMA_SERVER_SSL)
++    find_package(ZLIB REQUIRED)
++    find_package(OpenSSL REQUIRED)
++    link_libraries(ZLIB::ZLIB OpenSSL::SSL OpenSSL::Crypto)
++    if(APPLE)
++        link_libraries("-framework Security" "-framework SystemConfiguration")
++    endif()
++endif()
++if(LLAMA_SERVER_SSL)
++    find_package(ZLIB REQUIRED)
++    find_package(OpenSSL REQUIRED)
++    link_libraries(ZLIB::ZLIB OpenSSL::SSL OpenSSL::Crypto)
++    if(APPLE)
++        link_libraries("-framework Security" "-framework SystemConfiguration")
++    endif()
++endif()
  
  # ...
  
-diff --git a/tools/mtmd/CMakeLists.txt b/tools/mtmd/CMakeLists.txt
-index 4baa15b..d459931 100644
---- a/tools/mtmd/CMakeLists.txt
-+++ b/tools/mtmd/CMakeLists.txt
-@@ -17,7 +17,9 @@ target_link_libraries     (mtmd PUBLIC ggml llama)
+diff -Naur llama.cpp-b7599-original/tools/mtmd/CMakeLists.txt llama.cpp-b7599-patched/tools/mtmd/CMakeLists.txt
+--- llama.cpp-b7599-original/tools/mtmd/CMakeLists.txt	2026-01-01 05:43:54.818952758 +0000
++++ llama.cpp-b7599-patched/tools/mtmd/CMakeLists.txt	2026-01-01 05:47:24.055431983 +0000
+@@ -39,7 +39,9 @@
  target_link_libraries     (mtmd PRIVATE Threads::Threads)
  target_include_directories(mtmd PUBLIC  .)
  target_include_directories(mtmd PRIVATE ../..)
@@ -46,10 +82,9 @@ index 4baa15b..d459931 100644
  target_compile_features   (mtmd PRIVATE cxx_std_17)
  
  if (BUILD_SHARED_LIBS)
-diff --git a/tools/mtmd/mtmd-helper.cpp b/tools/mtmd/mtmd-helper.cpp
-index 686f42f..eabe20e 100644
---- a/tools/mtmd/mtmd-helper.cpp
-+++ b/tools/mtmd/mtmd-helper.cpp
+diff -Naur llama.cpp-b7599-original/tools/mtmd/mtmd-helper.cpp llama.cpp-b7599-patched/tools/mtmd/mtmd-helper.cpp
+--- llama.cpp-b7599-original/tools/mtmd/mtmd-helper.cpp	2026-01-01 05:43:54.819952760 +0000
++++ llama.cpp-b7599-patched/tools/mtmd/mtmd-helper.cpp	2026-01-01 05:47:24.058431989 +0000
 @@ -27,10 +27,10 @@
  #define MA_NO_ENGINE
  #define MA_NO_GENERATION
@@ -61,41 +96,64 @@ index 686f42f..eabe20e 100644
 -#include "stb/stb_image.h"
 +#include <stb_image.h>
  
- #define LOG_INF(...) fprintf(stdout, __VA_ARGS__)
- #define LOG_ERR(...) fprintf(stderr, __VA_ARGS__)
-diff --git a/tools/server/CMakeLists.txt b/tools/server/CMakeLists.txt
-index c2a56aa..fd740e8 100644
---- a/tools/server/CMakeLists.txt
-+++ b/tools/server/CMakeLists.txt
-@@ -37,6 +37,8 @@ target_include_directories(${TARGET} PRIVATE ../llava)
+ #ifdef MTMD_INTERNAL_HEADER
+ #error "mtmd-helper is a public library outside of mtmd. it must not include internal headers"
+diff -Naur llama.cpp-b7599-original/tools/server/CMakeLists.txt llama.cpp-b7599-patched/tools/server/CMakeLists.txt
+--- llama.cpp-b7599-original/tools/server/CMakeLists.txt	2026-01-01 05:43:54.821952765 +0000
++++ llama.cpp-b7599-patched/tools/server/CMakeLists.txt	2026-01-01 05:47:24.060431993 +0000
+@@ -63,6 +63,15 @@
  target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR})
- target_link_libraries(${TARGET} PRIVATE common mtmd ${CMAKE_THREAD_LIBS_INIT})
+ target_link_libraries(${TARGET} PRIVATE server-context PUBLIC common cpp-httplib ${CMAKE_THREAD_LIBS_INIT})
  
 +find_package(httplib CONFIG REQUIRED)
 +target_link_libraries(${TARGET} PRIVATE httplib::httplib)
- if (LLAMA_SERVER_SSL)
-     find_package(OpenSSL REQUIRED)
-     target_link_libraries(${TARGET} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
-diff --git a/tools/server/utils.hpp b/tools/server/utils.hpp
-index f3dfc82..02c0d14 100644
---- a/tools/server/utils.hpp
-+++ b/tools/server/utils.hpp
-@@ -15,7 +15,7 @@
- #define CPPHTTPLIB_LISTEN_BACKLOG 512
- // disable Nagle's algorithm
- #define CPPHTTPLIB_TCP_NODELAY true
++
++find_package(httplib CONFIG REQUIRED)
++target_link_libraries(${TARGET} PRIVATE httplib::httplib)
++
++find_package(httplib CONFIG REQUIRED)
++target_link_libraries(${TARGET} PRIVATE httplib::httplib)
++
+ if (WIN32)
+     TARGET_LINK_LIBRARIES(${TARGET} PRIVATE ws2_32)
+ endif()
+diff -Naur llama.cpp-b7599-original/tools/server/server-http.cpp llama.cpp-b7599-patched/tools/server/server-http.cpp
+--- llama.cpp-b7599-original/tools/server/server-http.cpp	2026-01-01 05:43:54.823952770 +0000
++++ llama.cpp-b7599-patched/tools/server/server-http.cpp	2026-01-01 05:47:24.062431997 +0000
+@@ -2,7 +2,7 @@
+ #include "server-http.h"
+ #include "server-common.h"
+ 
 -#include <cpp-httplib/httplib.h>
 +#include <httplib.h>
  
- #define JSON_ASSERT GGML_ASSERT
- #include <nlohmann/json.hpp>
-diff --git a/tools/tts/CMakeLists.txt b/tools/tts/CMakeLists.txt
-index c72bd81..821d0e7 100644
---- a/tools/tts/CMakeLists.txt
-+++ b/tools/tts/CMakeLists.txt
-@@ -3,3 +3,5 @@ add_executable(${TARGET} tts.cpp)
- install(TARGETS ${TARGET} RUNTIME)
- target_link_libraries(${TARGET} PRIVATE llama common ${CMAKE_THREAD_LIBS_INIT})
- target_compile_features(${TARGET} PRIVATE cxx_std_17)
+ #include <functional>
+ #include <string>
+diff -Naur llama.cpp-b7599-original/tools/server/server-models.cpp llama.cpp-b7599-patched/tools/server/server-models.cpp
+--- llama.cpp-b7599-original/tools/server/server-models.cpp	2026-01-01 05:43:54.824952772 +0000
++++ llama.cpp-b7599-patched/tools/server/server-models.cpp	2026-01-01 05:47:24.063431999 +0000
+@@ -4,7 +4,7 @@
+ #include "preset.h"
+ #include "download.h"
+ 
+-#include <cpp-httplib/httplib.h> // TODO: remove this once we use HTTP client from download.h
++#include <httplib.h> // TODO: remove this once we use HTTP client from download.h
+ #include <sheredom/subprocess.h>
+ 
+ #include <functional>
+diff -Naur llama.cpp-b7599-original/tools/tts/CMakeLists.txt llama.cpp-b7599-patched/tools/tts/CMakeLists.txt
+--- llama.cpp-b7599-original/tools/tts/CMakeLists.txt	2026-01-01 05:43:54.842952816 +0000
++++ llama.cpp-b7599-patched/tools/tts/CMakeLists.txt	2026-01-01 05:47:24.064432002 +0000
+@@ -6,3 +6,12 @@
+ if(LLAMA_TOOLS_INSTALL)
+     install(TARGETS ${TARGET} RUNTIME)
+ endif()
++
++find_package(nlohmann_json CONFIG REQUIRED)
++target_link_libraries(${TARGET} PRIVATE nlohmann_json::nlohmann_json)
++
++find_package(nlohmann_json CONFIG REQUIRED)
++target_link_libraries(${TARGET} PRIVATE nlohmann_json::nlohmann_json)
++
 +find_package(nlohmann_json CONFIG REQUIRED)
 +target_link_libraries(${TARGET} PRIVATE nlohmann_json::nlohmann_json)
