@@ -1,3 +1,8 @@
+# Vulkan feature temporarily disabled due to shader compilation failures:
+# Error: mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem.spv file not found during
+# vulkan-shaders-gen.exe execution, causing unresolved external symbols
+# mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem_data and mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem_len
+
 if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 endif()
@@ -151,6 +156,11 @@ vcpkg_cmake_configure(
         -DGGML_BACKEND_DL=OFF # requires BUILD_SHARED_LIBS
         -DGGML_OPENCL_PROFILING=OFF
         -DGGML_FATAL_WARNINGS=OFF
+        # Explicitly disable test/benchmark executables
+        -DLLAMA_BUILD_TESTS=OFF
+        -DGGML_BUILD_TESTS=OFF
+        -DLLAMA_BUILD_EXAMPLES=OFF
+        -DGGML_BUILD_EXAMPLES=OFF
     OPTIONS_DEBUG
         -DGGML_VULKAN_DEBUG=ON
         -DGGML_VULKAN_VALIDATE=ON

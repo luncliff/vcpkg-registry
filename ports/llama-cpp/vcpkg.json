@@ -66,23 +66,6 @@
         "miniaudio",
         "stb"
       ]
-    },
-    "vulkan": {
-      "description": "Use Vulkan",
-      "dependencies": [
-        {
-          "name": "glslang",
-          "host": true,
-          "features": [
-            "tools"
-          ]
-        },
-        {
-          "name": "shaderc",
-          "host": true
-        },
-        "vulkan"
-      ]
     }
   }
 }
