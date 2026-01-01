@@ -210,7 +210,7 @@ jobs:
       - uses: actions/upload-artifact@v5.0.0
         if: failure()
         with:
-          name: log-Android
+          name: log-${{ matrix.triplet }}
           path: |
             buildtrees/*/*.txt
             buildtrees/*/*.log

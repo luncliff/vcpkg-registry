@@ -97,7 +97,7 @@
       "port-version": 0
     },
     "libdispatch": {
-      "baseline": "5.10.1",
+      "baseline": "6.1",
       "port-version": 0
     },
     "libkineto": {
