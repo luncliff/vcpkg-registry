@@ -1,24 +1,22 @@
 cmake_minimum_required(VERSION 3.16)
 project(imgui CXX)
 
-set(CMAKE_DEBUG_POSTFIX d)
-
 if(APPLE)
     set(CMAKE_CXX_STANDARD 11)
     enable_language(OBJCXX)
 endif()
 
-add_library(${PROJECT_NAME} "")
-add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(imgui "")
+add_library(imgui::imgui ALIAS imgui)
 target_include_directories(
-    ${PROJECT_NAME}
+    imgui
     PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_CURRENT_SOURCE_DIR}/test-engine>"
         $<INSTALL_INTERFACE:include>
 )
 
 target_sources(
-    ${PROJECT_NAME}
+    imgui
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/imgui.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/imgui_demo.cpp
@@ -28,122 +26,122 @@ target_sources(
         ${CMAKE_CURRENT_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
 )
 
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
+target_compile_features(imgui PUBLIC cxx_std_11)
 
 if(IMGUI_BUILD_ALLEGRO5_BINDING)
     find_package(Allegro CONFIG REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PRIVATE Allegro::allegro Allegro::allegro_ttf Allegro::allegro_font Allegro::allegro_main)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_allegro5.cpp)
+    target_link_libraries(imgui PRIVATE Allegro::allegro Allegro::allegro_ttf Allegro::allegro_font Allegro::allegro_main)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_allegro5.cpp)
 endif()
 
 if(IMGUI_BUILD_ANDROID_BINDING)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_android.cpp)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_android.cpp)
 endif()
 
 if(IMGUI_BUILD_DX9_BINDING)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_dx9.cpp)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_dx9.cpp)
 endif()
 
 if(IMGUI_BUILD_DX10_BINDING)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_dx10.cpp)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_dx10.cpp)
 endif()
 
 if(IMGUI_BUILD_DX11_BINDING)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_dx11.cpp)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_dx11.cpp)
 endif()
 
 if(IMGUI_BUILD_DX12_BINDING)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_dx12.cpp)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_dx12.cpp)
 endif()
 
 if(IMGUI_BUILD_GLFW_BINDING)
     if(NOT EMSCRIPTEN)
         find_package(glfw3 CONFIG REQUIRED)
-        target_link_libraries(${PROJECT_NAME} PUBLIC glfw)
+        target_link_libraries(imgui PUBLIC glfw)
     endif()
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
 endif()
 
 if(IMGUI_BUILD_GLUT_BINDING)
     find_package(GLUT REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC GLUT::GLUT)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_glut.cpp)
+    target_link_libraries(imgui PUBLIC GLUT::GLUT)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_glut.cpp)
 endif()
 
 if(IMGUI_BUILD_METAL_BINDING)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_metal.mm)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_metal.mm)
     set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_metal.mm PROPERTIES COMPILE_FLAGS -fobjc-weak)
 endif()
 
 if(IMGUI_BUILD_OPENGL2_BINDING)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_opengl2.cpp)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_opengl2.cpp)
 endif()
 
 if(IMGUI_BUILD_OPENGL3_BINDING)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
 endif()
 
 if(IMGUI_BUILD_OSX_BINDING)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_osx.mm)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_osx.mm)
 endif()
 
 if(IMGUI_BUILD_SDL3_BINDING)
     find_package(SDL3 CONFIG REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp)
+    target_link_libraries(imgui PUBLIC SDL3::SDL3)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp)
 endif()
 
 if(IMGUI_BUILD_SDLGPU3_BINDING)
     find_package(SDL3 CONFIG REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.cpp)
+    target_link_libraries(imgui PUBLIC SDL3::SDL3)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.cpp)
 endif()
 
 if(IMGUI_BUILD_SDL3_RENDERER_BINDING)
     find_package(SDL3 CONFIG REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp)
+    target_link_libraries(imgui PUBLIC SDL3::SDL3)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp)
 endif()
 
 if(IMGUI_BUILD_VULKAN_BINDING)
     find_package(Vulkan REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan::Vulkan)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp)
+    target_link_libraries(imgui PUBLIC Vulkan::Vulkan)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp)
 endif()
 
 if(IMGUI_BUILD_WIN32_BINDING)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_win32.cpp)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_win32.cpp)
 endif()
 
 if(IMGUI_BUILD_WEBGPU_BINDING)
     find_package(Dawn CONFIG REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC dawn::webgpu_dawn)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_IMPL_WEBGPU_BACKEND_DAWN)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_wgpu.cpp)
+    target_link_libraries(imgui PUBLIC dawn::webgpu_dawn)
+    target_compile_definitions(imgui PRIVATE IMGUI_IMPL_WEBGPU_BACKEND_DAWN)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_wgpu.cpp)
 endif()
 
 if(IMGUI_FREETYPE)
     find_package(freetype CONFIG REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC freetype)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_ENABLE_FREETYPE)
+    target_link_libraries(imgui PUBLIC freetype)
+    target_sources(imgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp)
+    target_compile_definitions(imgui PUBLIC IMGUI_ENABLE_FREETYPE)
 endif()
 
 if(IMGUI_FREETYPE_SVG)
     find_package(plutosvg CONFIG REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC plutosvg::plutosvg)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_ENABLE_FREETYPE_PLUTOSVG)
+    target_link_libraries(imgui PUBLIC plutosvg::plutosvg)
+    target_compile_definitions(imgui PUBLIC IMGUI_ENABLE_FREETYPE_PLUTOSVG)
 endif()
 
 if(IMGUI_USE_WCHAR32)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_USE_WCHAR32)
+    target_compile_definitions(imgui PUBLIC IMGUI_USE_WCHAR32)
 endif()
 
 if(IMGUI_TEST_ENGINE)
     find_package(Stb REQUIRED)
-    target_include_directories(${PROJECT_NAME} PRIVATE ${Stb_INCLUDE_DIR})
+    target_include_directories(imgui PRIVATE ${Stb_INCLUDE_DIR})
     target_sources(
-        ${PROJECT_NAME}
+        imgui
         PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/test-engine/imgui_capture_tool.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/test-engine/imgui_te_context.cpp
@@ -159,8 +157,8 @@ endif()
 list(REMOVE_DUPLICATES BINDINGS_SOURCES)
 
 install(
-    TARGETS ${PROJECT_NAME}
-    EXPORT ${PROJECT_NAME}_target
+    TARGETS imgui
+    EXPORT imgui_target
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin
@@ -169,7 +167,7 @@ install(
 foreach(BINDING_TARGET ${BINDING_TARGETS})
     install(
         TARGETS ${BINDING_TARGET}
-        EXPORT ${PROJECT_NAME}_target
+        EXPORT imgui_target
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin
@@ -301,8 +299,8 @@ configure_package_config_file(imgui-config.cmake.in imgui-config.cmake INSTALL_D
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/imgui-config.cmake DESTINATION share/imgui)
 
 install(
-    EXPORT ${PROJECT_NAME}_target
-    NAMESPACE ${PROJECT_NAME}::
-    FILE ${PROJECT_NAME}-targets.cmake
-    DESTINATION share/${PROJECT_NAME}
+    EXPORT imgui_target
+    NAMESPACE imgui::
+    FILE imgui-targets.cmake
+    DESTINATION share/imgui
 )

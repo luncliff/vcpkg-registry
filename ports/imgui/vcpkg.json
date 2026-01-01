@@ -25,9 +25,6 @@
       "description": "Make available Android native app support",
       "supports": "android"
     },
-    "docking-experimental": {
-      "description": "Build with docking support"
-    },
     "dx10-binding": {
       "description": "Make available DirectX10 binding",
       "supports": "windows & !uwp"
@@ -122,14 +119,6 @@
           ]
         },
         "sdl3"
-      ]
-    },
-    "test-engine": {
-      "description": "Build test engine",
-      "supports": "!uwp",
-      "license": null,
-      "dependencies": [
-        "stb"
       ]
     },
     "vulkan-binding": {

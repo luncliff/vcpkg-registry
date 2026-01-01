@@ -1,22 +1,12 @@
 vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 
-if ("docking-experimental" IN_LIST FEATURES)
-    vcpkg_from_github(
-        OUT_SOURCE_PATH SOURCE_PATH
-        REPO ocornut/imgui
-        REF "v${VERSION}-docking"
-        SHA512 4618b8bd6e65ac27cd7cecb3469d135622279d83f8a580c028231578f7023c4465911c5878ee7e40c2f6dda606aef86f27c3cecfb7bc9a6022bd1d89eed17c29
-        HEAD_REF docking
-    )
-else()
-    vcpkg_from_github(
-        OUT_SOURCE_PATH SOURCE_PATH
-        REPO ocornut/imgui
-        REF "v${VERSION}"
-        SHA512 382b862a285464bd311c79a0ff07885e42300d79704bb65cd1cbbf35cef63f7f50784ed23f7479e4490bbaae0d23ea1b2b067a3571e0b442d390824f9611bd59
-        HEAD_REF master
-    )
-endif()
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO ocornut/imgui
+    REF "v${VERSION}"
+    SHA512 382b862a285464bd311c79a0ff07885e42300d79704bb65cd1cbbf35cef63f7f50784ed23f7479e4490bbaae0d23ea1b2b067a3571e0b442d390824f9611bd59
+    HEAD_REF master
+)
 
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/imgui-config.cmake.in" DESTINATION "${SOURCE_PATH}")
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")
@@ -60,23 +50,6 @@ if ("libigl-imgui" IN_LIST FEATURES)
     file(INSTALL "${IMGUI_FONTS_DROID_SANS_H}" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
 endif()
 
-if ("test-engine" IN_LIST FEATURES)
-    vcpkg_from_github(
-        OUT_SOURCE_PATH TEST_ENGINE_SOURCE_PATH
-        REPO ocornut/imgui_test_engine
-        REF "v${VERSION}"
-        SHA512 7acaffb9bb9f5ae0171d5de78a310d167b01c40722f8cceb8e34a85abecda92a8e5481d6110301654afaa6f4eb0406c19e7049f33d446774c32dc181e9255a64
-        HEAD_REF master
-    )
-
-    file(REMOVE_RECURSE "${SOURCE_PATH}/test-engine")
-    file(COPY "${TEST_ENGINE_SOURCE_PATH}/imgui_test_engine/" DESTINATION "${SOURCE_PATH}/test-engine")
-    file(REMOVE_RECURSE "${SOURCE_PATH}/test-engine/thirdparty/stb")
-    vcpkg_replace_string("${SOURCE_PATH}/test-engine/imgui_capture_tool.cpp" "//#define IMGUI_STB_IMAGE_WRITE_FILENAME \"my_folder/stb_image_write.h\"" "#define IMGUI_STB_IMAGE_WRITE_FILENAME <stb_image_write.h>\n#define STB_IMAGE_WRITE_STATIC")
-    vcpkg_replace_string("${SOURCE_PATH}/imconfig.h" "#pragma once" "#pragma  once\n\n#include \"imgui_te_imconfig.h\"")
-    vcpkg_replace_string("${SOURCE_PATH}/test-engine/imgui_te_imconfig.h" "#define IMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL 0" "#define IMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL 1")
-endif()
-
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
@@ -100,8 +73,4 @@ endif()
 vcpkg_copy_pdbs()
 vcpkg_cmake_config_fixup()
 
-if ("test-engine" IN_LIST FEATURES)
-    vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt" "${SOURCE_PATH}/test-engine/LICENSE.txt")
-else()
-    vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")
-endif()
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")
