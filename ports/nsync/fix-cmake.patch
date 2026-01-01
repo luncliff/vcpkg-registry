@@ -1,16 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index fcc3f41..15fce06 100644
+index e1f0d98..5f9e58d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,4 +1,6 @@
--cmake_minimum_required (VERSION 2.8.12)
-+cmake_minimum_required (VERSION 3.22)
+-cmake_minimum_required (VERSION 2.8.12...4.0)
++cmake_minimum_required (VERSION 3.22...4.0)
 +set(CMAKE_CXX_STANDARD 11)
 +set(CMAKE_C_STANDARD 11)
  
  # nsync provides portable synchronization primitives, such as mutexes and
  # condition variables.
-@@ -88,7 +90,7 @@ if ("${CMAKE_C_COMPILER_ID}X" STREQUAL "MSVCX")
+@@ -88,7 +90,7 @@ endif ()
  endif ()
  
  # Pick the include directory for the operating system.
@@ -28,7 +28,7 @@ index fcc3f41..15fce06 100644
  	include_directories ("${PROJECT_SOURCE_DIR}/platform/macos")
  	# Some versions of MacOS, such as Sierra, require _DARWIN_C_SOURCE
  	# when including certin C++ standard header files, such as <mutex>.
-@@ -232,7 +234,7 @@ elseif (("${CMAKE_SYSTEM_PROCESSOR}X" STREQUAL "ppc64X"))
+@@ -231,7 +233,7 @@ elseif (("${CMAKE_SYSTEM_PROCESSOR}X" STREQUAL "ppc64X"))
  endif ()
  
  # Windows uses some include files from the posix directory also.
