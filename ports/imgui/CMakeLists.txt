@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(imgui CXX)
+project(imgui C CXX)
 
 if(APPLE)
     set(CMAKE_CXX_STANDARD 11)

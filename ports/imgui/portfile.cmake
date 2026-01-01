@@ -57,8 +57,8 @@ vcpkg_cmake_configure(
     OPTIONS_DEBUG
         -DIMGUI_SKIP_HEADERS=ON
 )
-
 vcpkg_cmake_install()
+vcpkg_cmake_config_fixup()
 
 if ("freetype" IN_LIST FEATURES)
     vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/include/imconfig.h" "//#define IMGUI_ENABLE_FREETYPE\n" "#define IMGUI_ENABLE_FREETYPE\n")
@@ -69,8 +69,5 @@ endif()
 if ("wchar32" IN_LIST FEATURES)
     vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/include/imconfig.h" "//#define IMGUI_USE_WCHAR32" "#define IMGUI_USE_WCHAR32")
 endif()
-
-vcpkg_copy_pdbs()
-vcpkg_cmake_config_fixup()
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")
