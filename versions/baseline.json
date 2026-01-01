@@ -109,7 +109,7 @@
       "port-version": 0
     },
     "llama-cpp": {
-      "baseline": "6301",
+      "baseline": "7599",
       "port-version": 0
     },
     "magma": {
