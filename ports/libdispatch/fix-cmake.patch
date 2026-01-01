@@ -118,3 +118,29 @@ index 0176a06..94df578 100644
      execute_process(COMMAND
                        "${CMAKE_COMMAND}" -E copy_directory "${PROJECT_SOURCE_DIR}/private"
                        "${CMAKE_CURRENT_BINARY_DIR}/dispatch")
+diff --git a/cmake/modules/DispatchCompilerWarnings.cmake b/cmake/modules/DispatchCompilerWarnings.cmake
+index acc7b60..dc6a11f 100644
+--- a/cmake/modules/DispatchCompilerWarnings.cmake
++++ b/cmake/modules/DispatchCompilerWarnings.cmake
+@@ -7,7 +7,7 @@ elseif(WIN32)
+   # so that we can use __popcnt64
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-fms-extensions>)
+ else()
+-  add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Werror>)
++  # add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Werror>)
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wall>)
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wextra>)
+ 
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 8a368ca..da95ca1 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -147,7 +147,7 @@ if(CMAKE_C_COMPILER_ID MATCHES Clang)
+   target_compile_options(dispatch PRIVATE -fblocks)
+ endif()
+ 
+-check_c_compiler_flag("-momit-leaf-frame-pointer -Werror -Wall -O3" C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
++check_c_compiler_flag("-momit-leaf-frame-pointer -Wall -O3" C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
+ if (C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
+   target_compile_options(dispatch PRIVATE -momit-leaf-frame-pointer)
+ endif()
