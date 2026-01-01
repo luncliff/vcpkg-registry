@@ -98,12 +98,6 @@
       "supports": "x64 & windows",
       "dependencies": [
         "glslang",
-        {
-          "name": "llama-cpp",
-          "features": [
-            "vulkan"
-          ]
-        },
         "smol-v",
         "vulkan",
         "vulkan-headers"

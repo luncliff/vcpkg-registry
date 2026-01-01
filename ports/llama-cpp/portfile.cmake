@@ -1,14 +1,19 @@
+# Vulkan feature temporarily disabled due to shader compilation failures:
+# Error: mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem.spv file not found during
+# vulkan-shaders-gen.exe execution, causing unresolved external symbols
+# mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem_data and mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem_len
+
 if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 endif()
 set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
-# https://github.com/ggml-org/llama.cpp/releases/tag/b6301
+# https://github.com/ggml-org/llama.cpp/releases/tag/b7599
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggml-org/llama.cpp
     REF "b${VERSION}"
-    SHA512 8f7900829f1b0f99e4b59f8e24def0e975ac6e7186619daaa77477506f93609243188589285f9fc46b924f215a1eed1ae20b386340c507d40c0865de8c1eb3be
+    SHA512 82e6109994aaea55a640e43840505653eb34cc4a770addef6856a2379350660cf53ad125c3bee827251e6552935f4f524e0b7d1182ee01247ce0bb24e97dc3ca
     HEAD_REF master
     PATCHES
         fix-3rdparty.patch
@@ -151,6 +156,11 @@ vcpkg_cmake_configure(
         -DGGML_BACKEND_DL=OFF # requires BUILD_SHARED_LIBS
         -DGGML_OPENCL_PROFILING=OFF
         -DGGML_FATAL_WARNINGS=OFF
+        # Explicitly disable test/benchmark executables
+        -DLLAMA_BUILD_TESTS=OFF
+        -DGGML_BUILD_TESTS=OFF
+        -DLLAMA_BUILD_EXAMPLES=OFF
+        -DGGML_BUILD_EXAMPLES=OFF
     OPTIONS_DEBUG
         -DGGML_VULKAN_DEBUG=ON
         -DGGML_VULKAN_VALIDATE=ON
@@ -172,9 +182,13 @@ vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/llama" PACKAGE_NAME "llama")
 
 file(COPY "${SOURCE_PATH}/grammars"
           "${SOURCE_PATH}/models"
-          "${SOURCE_PATH}/prompts"
     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
 )
+if(EXISTS "${SOURCE_PATH}/prompts")
+    file(COPY "${SOURCE_PATH}/prompts"
+        DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
+    )
+endif()
 
 if("tools" IN_LIST FEATURES)
     vcpkg_copy_tools(AUTO_CLEAN TOOL_NAMES
@@ -192,11 +206,13 @@ if("tools" IN_LIST FEATURES)
         llama-server
         llama-tokenize
         llama-tts
+        llama-fit-params
+        llama-completion
     )
-    file(INSTALL
-        "${SOURCE_PATH}/examples/chat.sh"
-        DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
-    )
+    # file(INSTALL
+    #     "${SOURCE_PATH}/examples/chat.sh"
+    #     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
+    # )
 endif()
 
 file(REMOVE_RECURSE

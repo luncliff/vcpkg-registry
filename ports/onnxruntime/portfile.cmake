@@ -84,7 +84,9 @@ if("cuda" IN_LIST FEATURES)
     list(APPEND FEATURE_OPTIONS
         "-DCMAKE_CUDA_COMPILER=${NVCC}"
         "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
-        # "-DCMAKE_CUDA_ARCHITECTURES=native"
+        # Set CUDA architectures for CUDA 13.0+ support
+        # Support: Ampere (80, 86), Ada (89), Hopper (90)
+        "-DCMAKE_CUDA_ARCHITECTURES=80;86;89;90"
         # too much warnings about attribute
         "-DCMAKE_CUDA_FLAGS=-Xcudafe --diag_suppress=2803 -Wno-deprecated-gpu-targets"
     )
