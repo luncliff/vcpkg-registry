@@ -8,7 +8,7 @@ index c231ec0..fa33fa2 100644
      if (LLAMA_HTTPLIB)
 -        add_subdirectory(vendor/cpp-httplib)
 +        # vendor-managed httplib is optional; prefer system package when available
-+        find_package(httplib CONFIG REQUIRED)
++        find_package(httplib CONFIG REQUIRED GLOBAL)
      endif()
  endif()
  
@@ -35,7 +35,7 @@ index f7b9915..2044299 100644
 +    # otherwise, use system-provided httplib (preferred)
      target_compile_definitions(${TARGET} PUBLIC LLAMA_USE_HTTPLIB)
 -    set(LLAMA_COMMON_EXTRA_LIBS ${LLAMA_COMMON_EXTRA_LIBS} cpp-httplib)
-+    find_package(httplib CONFIG REQUIRED)
++    find_package(httplib CONFIG REQUIRED GLOBAL)
 +    set(LLAMA_COMMON_EXTRA_LIBS ${LLAMA_COMMON_EXTRA_LIBS} httplib::httplib)
  endif()
  
@@ -62,8 +62,8 @@ index 8df3f41..53df766 100644
  
  # third-party
 +if(LLAMA_SERVER_SSL)
-+    find_package(ZLIB REQUIRED)
-+    find_package(OpenSSL REQUIRED)
++    find_package(ZLIB REQUIRED GLOBAL)
++    find_package(OpenSSL REQUIRED GLOBAL)
 +    link_libraries(ZLIB::ZLIB OpenSSL::SSL OpenSSL::Crypto)
 +    if(APPLE)
 +        link_libraries("-framework Security" "-framework SystemConfiguration")
@@ -120,7 +120,7 @@ index a39b4c5..b343597 100644
  target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR})
 -target_link_libraries(${TARGET} PRIVATE server-context PUBLIC common cpp-httplib ${CMAKE_THREAD_LIBS_INIT})
 +target_link_libraries(${TARGET} PRIVATE server-context PUBLIC common ${CMAKE_THREAD_LIBS_INIT})
-+find_package(httplib CONFIG REQUIRED)
++find_package(httplib CONFIG REQUIRED GLOBAL)
 +target_link_libraries(${TARGET} PRIVATE httplib::httplib)
  
  if (WIN32)
@@ -160,5 +160,5 @@ index 76320d4..3b65445 100644
      install(TARGETS ${TARGET} RUNTIME)
  endif()
 +
-+find_package(nlohmann_json CONFIG REQUIRED)
++find_package(nlohmann_json CONFIG REQUIRED GLOBAL)
 +target_link_libraries(${TARGET} PRIVATE nlohmann_json::nlohmann_json)

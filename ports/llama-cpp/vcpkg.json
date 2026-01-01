@@ -5,6 +5,7 @@
   "homepage": "https://github.com/ggml-org/llama.cpp",
   "license": "MIT",
   "dependencies": [
+    "cpp-httplib",
     {
       "name": "curl",
       "default-features": false
