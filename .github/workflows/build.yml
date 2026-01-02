@@ -220,7 +220,7 @@ jobs:
     runs-on: "ubuntu-24.04"
     # needs: overlay
     container:
-      image: "emscripten/emsdk:4.0.21" # https://hub.docker.com/r/emscripten/emsdk
+      image: "emscripten/emsdk:4.0.22" # https://hub.docker.com/r/emscripten/emsdk
       env:
         EMSDK_NODE: /emsdk/node/22.16.0_64bit/bin/node
         EMCC_CFLAGS: "-mbulk-memory -matomics -pthread"
