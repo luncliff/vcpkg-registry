@@ -14,8 +14,8 @@ vcpkg_download_distfile(ARCHIVE
 )
 
 # Extract the archive
-vcpkg_extract_source_archive(
-    SOURCE_PATH
+vcpkg_extract_source_archive_ex(
+    OUT_SOURCE_PATH SOURCE_PATH
     ARCHIVE "${ARCHIVE}"
     NO_REMOVE_ONE_LEVEL
 )
@@ -52,6 +52,9 @@ file(INSTALL "${SOURCE_PATH}/emdawnwebgpu_pkg/VERSION.txt"
 )
 
 # Install the license files
+# The package includes two licenses:
+# - webgpu/src/LICENSE: MIT/NCSA (from Emscripten project)
+# - webgpu_cpp/LICENSE: Apache-2.0 (from Dawn project)
 vcpkg_install_copyright(
     FILE_LIST 
         "${SOURCE_PATH}/emdawnwebgpu_pkg/webgpu/src/LICENSE"
