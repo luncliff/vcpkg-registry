@@ -1,0 +1,18 @@
+emdawnwebgpu provides Dawn's implementation of webgpu.h for Emscripten.
+
+To use emdawnwebgpu with Emscripten, add the following flag to emcc during both compilation and linking:
+
+    --use-port=${CURRENT_INSTALLED_DIR}/share/emdawnwebgpu/emdawnwebgpu.port.py
+
+For optimal code size in release builds, also use:
+
+    --closure=1
+
+The package provides both C and C++ headers:
+- C API: #include <webgpu/webgpu.h>
+- C++ API: #include <webgpu/webgpu_cpp.h>
+
+For full usage instructions, see the README.md file:
+    ${CURRENT_INSTALLED_DIR}/share/emdawnwebgpu/README.md
+
+For more details, visit: https://github.com/google/dawn
