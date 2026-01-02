@@ -154,7 +154,7 @@ jobs:
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
 
-      - uses: actions/upload-artifact@v5.0.0
+      - uses: actions/upload-artifact@v6.0.0
         if: failure()
         with:
           name: log-${{ runner.os }}
@@ -207,7 +207,7 @@ jobs:
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
           VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
 
-      - uses: actions/upload-artifact@v5.0.0
+      - uses: actions/upload-artifact@v6.0.0
         if: failure()
         with:
           name: log-${{ matrix.triplet }}
