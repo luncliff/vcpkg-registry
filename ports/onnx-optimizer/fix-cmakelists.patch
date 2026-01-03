@@ -1,6 +1,6 @@
-diff -Naur optimizer-0.4.0-orig/CMakeLists.txt optimizer-0.4.0/CMakeLists.txt
---- optimizer-0.4.0-orig/CMakeLists.txt	2026-01-03 13:47:14.271236880 +0000
-+++ optimizer-0.4.0/CMakeLists.txt	2026-01-03 13:47:58.141412656 +0000
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
 @@ -12,6 +12,10 @@
  
  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -39,9 +39,9 @@ diff -Naur optimizer-0.4.0-orig/CMakeLists.txt optimizer-0.4.0/CMakeLists.txt
  target_include_directories(onnx_optimizer PUBLIC
      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
      $<INSTALL_INTERFACE:include>
-diff -Naur optimizer-0.4.0-orig/cmake/ONNXOptimizerConfig.cmake.in optimizer-0.4.0/cmake/ONNXOptimizerConfig.cmake.in
---- optimizer-0.4.0-orig/cmake/ONNXOptimizerConfig.cmake.in	2026-01-03 13:47:14.271236880 +0000
-+++ optimizer-0.4.0/cmake/ONNXOptimizerConfig.cmake.in	2026-01-03 13:48:19.264495804 +0000
+diff --git a/cmake/ONNXOptimizerConfig.cmake.in b/cmake/ONNXOptimizerConfig.cmake.in
+--- a/cmake/ONNXOptimizerConfig.cmake.in
++++ b/cmake/ONNXOptimizerConfig.cmake.in
 @@ -3,6 +3,10 @@
  #   ONNX_OPTIMIZER_INCLUDE_DIRS     - include directories for onnx optimizer
  # as well as ONNX Optimizer targets for other cmake libraries to use.
@@ -53,9 +53,9 @@ diff -Naur optimizer-0.4.0-orig/cmake/ONNXOptimizerConfig.cmake.in optimizer-0.4
  # library version information
  set(ONNX_OPTIMIZER_VERSION "@ONNX_OPTIMIZER_VERSION@")
  
-diff -Naur optimizer-0.4.0-orig/cmake/utils.cmake optimizer-0.4.0/cmake/utils.cmake
---- optimizer-0.4.0-orig/cmake/utils.cmake	2026-01-03 13:47:14.271236880 +0000
-+++ optimizer-0.4.0/cmake/utils.cmake	2026-01-03 13:48:07.815451402 +0000
+diff --git a/cmake/utils.cmake b/cmake/utils.cmake
+--- a/cmake/utils.cmake	2026-01-03 13:47:14.271236880 +0000
++++ b/cmake/utils.cmake	2026-01-03 13:48:07.815451402 +0000
 @@ -2,7 +2,6 @@
  #
  # SPDX-License-Identifier: Apache-2.0
