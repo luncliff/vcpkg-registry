@@ -1,147 +1,139 @@
-if(VCPKG_CROSSCOMPILING)
-    message(WARNING "Cross compiling is NOT tested")
-endif()
-vcpkg_find_acquire_program(PKGCONFIG)
-message(STATUS "Using pkgconfig: ${PKGCONFIG}")
+# Filament is distributed as pre-compiled binary packages per platform
+# Release v1.68.2 - asset mapping (grouped by platform)
+#
+# Web (wasm32-emscripten):
+#  - filament-v1.68.2-web.tgz
+#
+# Android (arm64-android, x64-android):
+#  - filament-v1.68.2-android.aar
+#  - filament-v1.68.2-android-native.tgz
+#  - filament-android-release-linux.tgz        # host-side android release for Linux
+#  - filamat-v1.68.2-android.aar               # material tools for Android
+#  - filament-utils-v1.68.2-android.aar
+#  - gltfio-v1.68.2-android.aar
+#  - filament-gltf-viewer-v1.68.2-android.apk  # sample APK
+#
+# macOS / iOS (x64-osx, arm64-osx, arm64-ios):
+#  - filament-v1.68.2-mac.tgz
+#  - filament-v1.68.2-ios.tgz
+#
+# Linux (x64-linux, arm64-linux):
+#  - filament-v1.68.2-linux.tgz
+#
+# Notes:
+#  - Android assets include multiple AARs and native tgz packages. For Android
+#    targets this port should extract AAR contents and relocate headers/libs to
+#    the vcpkg package layout. Focus on `arm64-android` (device) and
+#    `x64-android` (AVD) triplets. Host-side tools (e.g., `filamat`) are in
+#    the release and may be installed under `${CURRENT_PACKAGES_DIR}/tools`.
+#  - Web builds use the web tgz which contains wasm/js artifacts.
+#  - If a platform has no corresponding release asset, the platform is not supported.
 
-vcpkg_from_github(
-    OUT_SOURCE_PATH SOURCE_PATH
-    REPO google/filament
-    REF v1.40.0
-    SHA512 479e90710f140f05e07b29fde361ce25841d46da80c123ef99594a2dc253588c6bb561a1ad93580c26280793b1a47c1f89b32e31ac52b00a2fb744c15ee515ba
-    PATCHES
-        fix-cmake.patch
-        fix-sources.patch
-)
+set(VCPKG_POLICY_MISMATCHED_NUMBER_OF_BINARIES enabled)
 
-file(REMOVE_RECURSE
-    "${SOURCE_PATH}/android"
-    "${SOURCE_PATH}/ios"
-    "${SOURCE_PATH}/web"
-    "${SOURCE_PATH}/docs"
-    "${SOURCE_PATH}/site"
-    "${SOURCE_PATH}/third_party/clang"
-    "${SOURCE_PATH}/third_party/markdeep"
-    "${SOURCE_PATH}/third_party/vkmemalloc"
-)
-
-message(STATUS "Editing third_party folder ...")
-function(edit_third_party SRC_PORT DST_NAME)
-    get_filename_component(DST_DIR "${SOURCE_PATH}/third_party/${DST_NAME}" ABSOLUTE)
-    get_filename_component(DST_PATH "${DST_DIR}/LICENSE" ABSOLUTE)
-    file(REMOVE_RECURSE "${DST_DIR}")
-    file(MAKE_DIRECTORY "${DST_DIR}")
-    file(COPY_FILE "${CURRENT_INSTALLED_DIR}/share/${SRC_PORT}/copyright" "${DST_PATH}")
-endfunction()
-edit_third_party(glslang glslang)
-edit_third_party(assimp libassimp)
-edit_third_party(libpng libpng)
-edit_third_party(spirv-cross spirv-cross)
-edit_third_party(spirv-tools spirv-tools)
-edit_third_party(stb stb)
-edit_third_party(mikktspace mikktspace)
-edit_third_party(meshoptimizer meshoptimizer)
-edit_third_party(tinyexr tinyexr)
-edit_third_party(zlib libz)
-edit_third_party(sdl2 libsdl2)
-edit_third_party(draco draco)
-edit_third_party(gtest libgtest)
-edit_third_party(benchmark benchmark)
-edit_third_party(civetweb civetweb)
-edit_third_party(basis-universal basisu)
-edit_third_party(cgltf cgltf)
-edit_third_party(imgui imgui)
-edit_third_party(jsmn jsmn)
-edit_third_party(robin-map robin-map)
-
-if(VCPKG_TARGET_IS_WINDOWS)
-    edit_third_party(getopt-win32 getopt)
-endif()
-if("vulkan" IN_LIST FEATURES)
-    edit_third_party(vulkan-memory-allocator vkmemalloc)
-endif()
-
-vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
-    FEATURES
-        gles3   FILAMENT_USE_EXTERNAL_GLES3
-        gles3   FILAMENT_SUPPORTS_OPENGL
-        vulkan  FILAMENT_SUPPORTS_VULKAN
-        metal   FILAMENT_SUPPORTS_METAL
-    INVERTED_FEATURES
-        samples FILAMENT_SKIP_SDL2
-        samples FILAMENT_SKIP_SAMPLES
-)
-
-if(VCPKG_TARGET_IS_WINDOWS)
-    list(APPEND GENERATOR_OPTIONS WINDOWS_USE_MSBUILD)
+# Determine which release asset to download based on the target platform
+if(VCPKG_TARGET_IS_LINUX)
+    if(NOT (VCPKG_TARGET_ARCHITECTURE STREQUAL "x86_64" OR VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64"))
+        message(FATAL_ERROR "google-filament: Unsupported Linux architecture '${VCPKG_TARGET_ARCHITECTURE}'")
+    endif()
+    
+    set(ASSET_NAME "filament-v${VERSION}-linux.tgz")
+    set(ASSET_SHA512 "b74992b2535e0fa3528eeee6cca0d90e6d20db6834f972791dd2a7bd7685e25fddae25ae917c09911d31e1cef7f369003a7ec8033923c41813a9f82c36b2101bf")
+    
+elseif(VCPKG_TARGET_IS_OSX)
+    if(NOT (VCPKG_TARGET_ARCHITECTURE STREQUAL "x86_64" OR VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64"))
+        message(FATAL_ERROR "google-filament: Unsupported macOS architecture '${VCPKG_TARGET_ARCHITECTURE}'")
+    endif()
+    
+    set(ASSET_NAME "filament-v${VERSION}-mac.tgz")
+    set(ASSET_SHA512 "38860a2744e37807f98f7397c030ea31cf3a82ec282e82b162ce49eccc403b69be0e062d567ab5ed3511c04e57f535382b6ddccf198998d5756856f3593fb2e8")
+    
 else()
-    list(APPEND GENERATOR_OPTIONS GENERATOR Ninja)
+    message(FATAL_ERROR "google-filament: Unsupported platform")
 endif()
 
-# todo: more precise control for gles3/vulkan features
-vcpkg_cmake_configure(
-    SOURCE_PATH "${SOURCE_PATH}"
-    ${GENERATOR_OPTIONS}
-    OPTIONS
-        ${FEATURE_OPTIONS}
-        -DPKG_CONFIG_EXECUTABLE:FILEPATH=${PKGCONFIG}
-        -DCMAKE_CROSSCOMPILING=${VCPKG_CROSSCOMPILING}
-        -DFILAMENT_SUPPORTS_XCB=${VCPKG_TARGET_IS_LINUX}
-        -DFILAMENT_SUPPORTS_XLIB=${VCPKG_TARGET_IS_LINUX}
-        -DFILAMENT_SUPPORTS_WAYLAND=${VCPKG_TARGET_IS_LINUX}
-        -DFILAMENT_SUPPORTS_EGL_ON_LINUX=${VCPKG_TARGET_IS_LINUX}
-        -DFILAMENT_ENABLE_ASAN_UBSAN=OFF
-        -DFILAMENT_ENABLE_LTO=ON
-        -DFILAMENT_ENABLE_MATDBG=OFF # matdbg, matdbg_resources
-        -DFILAMENT_BUILD_FILAMAT=ON
-    OPTIONS_DEBUG
-        -DFILAMENT_DISABLE_MATOPT=ON
-    OPTIONS_RELEASE
-        -DFILAMENT_DISABLE_MATOPT=OFF
+# Download the release asset
+vcpkg_download_distfile(ARCHIVE
+    URLS "https://github.com/google/filament/releases/download/v${VERSION}/${ASSET_NAME}"
+    FILENAME "${ASSET_NAME}"
+    SHA512 "${ASSET_SHA512}"
 )
 
-# some targets requires tools for resource generation
-if(VCPKG_CROSSCOMPILING)
-    vcpkg_add_to_path(PREPEND "${CURRENT_HOST_INSTALLED_DIR}/bin")
-    vcpkg_add_to_path(PREPEND "${CURRENT_HOST_INSTALLED_DIR}/tools/${PORT}")
-else()
-    message(STATUS "Building tools ...")
-    list(APPEND TOOL_TARGET_NAMES
-        resgen glslminifier matc cmgen mipgen uberz filamesh # matinfo
-        normal-blending roughness-prefilter specular-color
-    )
-    foreach(NAME ${TOOL_TARGET_NAMES})
-        vcpkg_cmake_build(TARGET ${NAME} LOGFILE_BASE build-${NAME} ADD_BIN_TO_PATH)
-    endforeach()
-    message(STATUS "Building shaders ...")
-    vcpkg_cmake_build(TARGET shaders LOGFILE_BASE build-shaders ADD_BIN_TO_PATH)
-endif()
+# Extract the archive
+vcpkg_extract_source_archive(SOURCE_PATH "${ARCHIVE}")
 
-message(STATUS "Building libraries ...")
-vcpkg_cmake_build(TARGET filament LOGFILE_BASE build-filament ADD_BIN_TO_PATH)
-vcpkg_cmake_install(ADD_BIN_TO_PATH)
-vcpkg_copy_pdbs()
-
-if(NOT VCPKG_CROSSCOMPILING)
-    vcpkg_copy_tools(TOOL_NAMES ${TOOL_TARGET_NAMES} AUTO_CLEAN)
-    if("samples" IN_LIST FEATURES)
-        vcpkg_copy_tools(TOOL_NAMES gltf_viewer material_sandbox AUTO_CLEAN)
+# The Filament release archives have a top-level directory named 'filament'
+if(NOT EXISTS "${SOURCE_PATH}/filament")
+    # Try alternate structure
+    if(EXISTS "${SOURCE_PATH}/lib" OR EXISTS "${SOURCE_PATH}/include")
+        # Files are directly in SOURCE_PATH
+    else()
+        # Look for nested filament directory
+        file(GLOB TOP_DIRS LIST_DIRECTORIES true "${SOURCE_PATH}/*")
+        list(LENGTH TOP_DIRS NUM_TOP_DIRS)
+        if(NUM_TOP_DIRS EQUAL 1)
+            list(GET TOP_DIRS 0 NESTED_DIR)
+            if(IS_DIRECTORY "${NESTED_DIR}")
+                set(SOURCE_PATH "${NESTED_DIR}")
+            endif()
+        endif()
     endif()
 endif()
 
-file(COPY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/shaders/minified"
-     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
-)
-file(COPY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/filament/generated/material"
-     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
-)
+# Install headers
+if(EXISTS "${SOURCE_PATH}/include")
+    file(INSTALL "${SOURCE_PATH}/include/"
+         DESTINATION "${CURRENT_PACKAGES_DIR}/include")
+endif()
 
-file(INSTALL "${SOURCE_PATH}/README.md" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+# Install libraries (lib directory contains all variants)
+if(EXISTS "${SOURCE_PATH}/lib")
+    # Copy release libs to lib directory
+    file(GLOB RELEASE_LIBS "${SOURCE_PATH}/lib/*")
+    foreach(LIB_FILE ${RELEASE_LIBS})
+        if(NOT IS_DIRECTORY "${LIB_FILE}")
+            file(INSTALL "${LIB_FILE}"
+                 DESTINATION "${CURRENT_PACKAGES_DIR}/lib")
+        endif()
+    endforeach()
+    
+    # No separate debug directory in Filament binaries
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
+endif()
+
+# Install binaries (if any)
+if(EXISTS "${SOURCE_PATH}/bin")
+    file(INSTALL "${SOURCE_PATH}/bin/"
+         DESTINATION "${CURRENT_PACKAGES_DIR}/bin")
+endif()
+
+# Install CMake config files (if they exist)
+if(EXISTS "${SOURCE_PATH}/lib/cmake")
+    file(INSTALL "${SOURCE_PATH}/lib/cmake"
+         DESTINATION "${CURRENT_PACKAGES_DIR}/lib")
+endif()
+
+# Install pkg-config files (if they exist)
+if(EXISTS "${SOURCE_PATH}/lib/pkgconfig")
+    file(INSTALL "${SOURCE_PATH}/lib/pkgconfig"
+         DESTINATION "${CURRENT_PACKAGES_DIR}/lib")
+endif()
+
+# Install tools (if any)
+if(EXISTS "${SOURCE_PATH}/bin")
+    file(GLOB TOOLS "${SOURCE_PATH}/bin/*")
+    foreach(TOOL ${TOOLS})
+        get_filename_component(TOOL_NAME "${TOOL}" NAME)
+        # Copy tools for potential use
+    endforeach()
+endif()
+
+# Remove unnecessary directories
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
-    "${CURRENT_PACKAGES_DIR}/debug/docs"
-    "${CURRENT_PACKAGES_DIR}/share/LICENSE"
-    "${CURRENT_PACKAGES_DIR}/share/README.md"
+    "${CURRENT_PACKAGES_DIR}/share/man"
 )
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME "copyright")
+
+# Install license
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
