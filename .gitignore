@@ -11,6 +11,20 @@ test-packages
 
 *.log
 
+# Node.js / npm
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# VitePress
+docs/.vitepress/cache
+docs/.vitepress/dist
+.temp
+.cache
+
 # Created by https://www.toptal.com/developers/gitignore/api/cmake,c++,visualstudiocode,powershell
 # Edit at https://www.toptal.com/developers/gitignore?templates=cmake,c++,visualstudiocode,powershell
 
