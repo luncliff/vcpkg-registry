@@ -5,6 +5,8 @@
 * [vcpkg](https://github.com/microsoft/vcpkg): recommend [2025.12.12](https://github.com/microsoft/vcpkg/releases/tag/2025.12.12) or later
 * [vcpkg-tool](https://github.com/microsoft/vcpkg-tool): recommend [2025-12-16](https://github.com/microsoft/vcpkg-tool/releases/tag/2025-12-16) or later
 
+> **Note:** 🌱 **Hugo Experiment Available** - See [HUGO_EXPERIMENT.md](HUGO_EXPERIMENT.md) for a complete Hugo static site generator implementation on branch `copilot/experiment-hugo-implementation`. This provides a ~10x faster alternative to the current MkDocs setup.
+
 ## Documentation
 
 ### Guides

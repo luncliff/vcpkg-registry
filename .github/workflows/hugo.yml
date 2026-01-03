@@ -1,0 +1,47 @@
+name: Hugo Build
+
+on:
+  push:
+    branches:
+      - main
+      - copilot/experiment-hugo-implementation
+    paths:
+      - 'hugo-site/**'
+      - '.github/workflows/hugo.yml'
+  pull_request:
+    paths:
+      - 'hugo-site/**'
+      - '.github/workflows/hugo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      HUGO_VERSION: 0.153.2
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: "Install Hugo CLI" # https://gohugo.io/installation/linux/
+        run: |
+          sudo snap install hugo
+
+      - name: "Change document links"
+        run: |
+          scripts/fix-hugo-links.ps1 -Root docs/en
+          scripts/fix-hugo-links.ps1 -Root docs/ko
+        shell: pwsh
+
+      - name: "Build with Hugo"
+        working-directory: hugo-site
+        run: |
+          hugo --gc --minify --cleanDestinationDir
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: hugo-site
+          path: hugo-site/public
+          retention-days: 7
