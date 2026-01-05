@@ -75,7 +75,7 @@
         "glslang",
         {
           "name": "google-filament",
-          "platform": "linux | osx | ios | android | emscripten"
+          "platform": "linux | osx | ios | android"
         },
         {
           "name": "imgui",
