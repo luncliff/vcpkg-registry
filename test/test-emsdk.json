@@ -14,6 +14,13 @@
     "emdawnwebgpu",
     "onnx",
     "tensorflow-lite",
+    {
+      "name": "webgpu-binding",
+      "default-features": false,
+      "features": [
+        "webgpu-binding"
+      ]
+    },
     "xnnpack"
   ]
 }

@@ -102,7 +102,7 @@
     },
     "imgui": {
       "baseline": "1.92.5",
-      "port-version": 0
+      "port-version": 1
     },
     "libdispatch": {
       "baseline": "6.1",
