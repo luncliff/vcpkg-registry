@@ -12,15 +12,15 @@
       "default-features": false
     },
     "emdawnwebgpu",
-    "onnx",
-    "tensorflow-lite",
     {
-      "name": "webgpu-binding",
+      "name": "imgui",
       "default-features": false,
       "features": [
         "webgpu-binding"
       ]
     },
+    "onnx",
+    "tensorflow-lite",
     "xnnpack"
   ]
 }
