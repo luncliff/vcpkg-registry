@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "test",
-  "version-date": "2025-08-25",
+  "version-string": "emscripten 4.0.22+",
   "description": "vcpkg registry maintained by @luncliff",
   "homepage": "https://github.com/luncliff/vcpkg-registry",
   "supports": "emscripten",
@@ -10,6 +10,14 @@
     {
       "name": "curl",
       "default-features": false
+    },
+    "emdawnwebgpu",
+    {
+      "name": "imgui",
+      "default-features": false,
+      "features": [
+        "webgpu-binding"
+      ]
     },
     "onnx",
     "tensorflow-lite",

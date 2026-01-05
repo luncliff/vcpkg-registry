@@ -52,6 +52,10 @@
       "baseline": "5.0.1",
       "port-version": 0
     },
+    "emdawnwebgpu": {
+      "baseline": "20251218.170355",
+      "port-version": 0
+    },
     "etcpak": {
       "baseline": "2.0",
       "port-version": 0
@@ -98,7 +102,7 @@
     },
     "imgui": {
       "baseline": "1.92.5",
-      "port-version": 0
+      "port-version": 1
     },
     "libdispatch": {
       "baseline": "6.1",
