@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      DOCS_ZIP_NAME: "docs-${{ github.ref_name }}.zip"
     steps:
       - uses: actions/checkout@v6
 
@@ -31,7 +32,7 @@ jobs:
 
       - name: "Create documentation ZIP"
         run: |
-          zip -r ../../../docs-${{ github.ref_name }}.zip .
+          zip -r ${{ github.workspace }}/${{ env.DOCS_ZIP_NAME }} .
         working-directory: docs/.vitepress/dist
 
       - name: "Run make-configuration.ps1"
@@ -50,5 +51,5 @@ jobs:
             --discussion-category "General" \
             --generate-notes --prerelease
           gh release upload ${{ github.ref_name }} \
-            vcpkg-configuration.json \
-            docs-${{ github.ref_name }}.zip
+            ${{ env.DOCS_ZIP_NAME }} \
+            vcpkg-configuration.json
