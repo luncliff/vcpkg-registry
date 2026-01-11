@@ -43,7 +43,14 @@ export default defineConfig({
     siteTitle: 'Vcpkg Registry',
     
     nav: [
-      { text: 'Home', link: '/vcpkg-for-kor' },
+      { text: 'Home', link: '/' },
+      { 
+        text: '튜토리얼', 
+        items: [
+          { text: '입문 (Beginner)', link: '/kr/01-beginner-00-intro' },
+          { text: '중급 (Intermediate)', link: '/kr/11-intermediate-00-overview' },
+        ]
+      },
       { text: 'References', link: '/references' },
       { 
         text: 'Guides', 
@@ -60,8 +67,33 @@ export default defineConfig({
       {
         text: 'Introduction',
         items: [
-          { text: 'Getting Started', link: '/vcpkg-for-kor' },
+          { text: 'Getting Started', link: '/kr/01-beginner-00-intro' },
           { text: 'References', link: '/references' },
+          { text: 'Legacy Guide', link: '/vcpkg-for-kor' },
+        ]
+      },
+      {
+        text: 'Korean Tutorials - Beginner',
+        collapsed: false,
+        items: [
+          { text: '1. Vcpkg 소개', link: '/kr/01-beginner-00-intro' },
+          { text: '2. 설치 및 설정', link: '/kr/02-beginner-10-setup' },
+          { text: '3. 첫 패키지 설치', link: '/kr/03-beginner-20-first-package' },
+          { text: '4. Triplet 기초', link: '/kr/04-beginner-30-triplets-basics' },
+          { text: '5. CMake 연동', link: '/kr/05-beginner-40-cmake' },
+          { text: '6. Manifest 입문', link: '/kr/06-beginner-50-manifest' },
+        ]
+      },
+      {
+        text: 'Korean Tutorials - Intermediate',
+        collapsed: false,
+        items: [
+          { text: '1. 개요', link: '/kr/11-intermediate-00-overview' },
+          { text: '2. 버전과 Registry', link: '/kr/12-intermediate-10-versions-registry' },
+          { text: '3. Triplet 심화', link: '/kr/13-intermediate-20-triplets-advanced' },
+          { text: '4. Per-Port 설정', link: '/kr/14-intermediate-30-per-port-customization' },
+          { text: '5. Manifest 실전', link: '/kr/15-intermediate-40-manifest-practice' },
+          { text: '6. 문제 해결', link: '/kr/16-intermediate-50-troubleshooting' },
         ]
       },
       {
@@ -84,9 +116,10 @@ export default defineConfig({
         ]
       },
       {
-        text: 'VitePress Experiment',
+        text: 'VitePress Maintenance',
         collapsed: true,
         items: [
+          { text: 'Maintenance Guide', link: '/maintenance-vitepress' },
           { text: 'Quick Start', link: '/vitepress-quickstart' },
           { text: 'Overview', link: '/vitepress-experiment' },
           { text: 'Enhancements Guide', link: '/vitepress-enhancements' },

@@ -10,11 +10,11 @@ hero:
     alt: vcpkg-registry
   actions:
     - theme: brand
-      text: 시작하기
-      link: /vcpkg-for-kor
+      text: 입문 튜토리얼 시작하기
+      link: /kr/01-beginner-00-intro
     - theme: alt
-      text: 가이드 보기
-      link: /guide-create-port
+      text: 중급 튜토리얼
+      link: /kr/11-intermediate-00-overview
     - theme: alt
       text: GitHub
       link: https://github.com/luncliff/vcpkg-registry
@@ -42,8 +42,12 @@ features:
 
 ## Quick Start
 
-새롭게 정리하고 있습니다.
-당분간은 이전처럼 [vcpkg-for-kor.md](./vcpkg-for-kor.md)를 참고해주세요.
+Vcpkg를 처음 사용하신다면 단계별 튜토리얼을 추천합니다:
+
+- 👉 **[Beginner 트랙](./kr/01-beginner-00-intro)** - Vcpkg 기초부터 CMake 연동까지
+- 👉 **[Intermediate 트랙](./kr/11-intermediate-00-overview)** - 버전 관리, Triplet 심화, 문제 해결
+
+기존 단일 페이지 가이드를 원하신다면: [레거시 가이드](./vcpkg-for-kor)
 
 ### Installation
 
