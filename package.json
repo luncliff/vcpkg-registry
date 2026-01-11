@@ -6,8 +6,7 @@
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "deploy": "gh-pages -d docs/.vitepress/dist -b gh-pages"
+    "docs:preview": "vitepress preview docs"
   },
   "keywords": [
     "vcpkg",
