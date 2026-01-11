@@ -6,14 +6,15 @@ labels: bug
 assignees: ''
 
 ---
+## Bug: Something is NOT working as expected
 
 Please check the followings to reproduce the failures.
 
 If possible, please attach the logs under `buildtrees/`.
 
-## Vcpkg
+### 1. Vcpkg
 
-### Version of https://github.com/microsoft/vcpkg-tool
+#### Version of https://github.com/microsoft/vcpkg-tool
 
 Run the CLI tool and check the output messages.
 
@@ -22,7 +23,7 @@ $ ./vcpkg --version
 vcpkg package management program version 2025-01-11-0f310537c75015100d200eb71b137f6376aad510                
 ```
 
-### Commit of https://github.com/microsoft/vcpkg
+#### Commit of https://github.com/microsoft/vcpkg
 
 Where did the error produce?
 
@@ -31,15 +32,15 @@ PS C:\vcpkg> git log -1
 commit 0000....
 ```
 
-### Triplets
+### 2. In Use Triplets
 
 If several triplets are related, please list here.
 
-* `arm64-windows`
-* `x64-osx`
-* ...
+- `arm64-windows`
+- `x64-osx`
+- ...
 
-## Toolchain
+### 3. In Use Toolchain
 
 The versions of Build system(IDE), compiler, CMake, etc ...
 
@@ -49,8 +50,9 @@ If there are some related issues, pull requests, documentation?
 They will be really helpful to get the detail!
 
 ### Helpful Links
-* [Troubleshooting Guide](../../docs/troubleshooting.md)
-* [Update Port Guide](../../docs/guide-update-port.md)
-* [/check-environment prompt](../../.github/prompts/check-environment.prompt.md)
-* [/install-port prompt](../../.github/prompts/install-port.prompt.md)
-* [/review-port prompt](../../.github/prompts/review-port.prompt.md)
+
+- Check [References](../../docs/references.md)
+- [Update Port Guide](../../docs/guide-update-port.md)
+- [/check-environment prompt](../../.github/prompts/check-environment.prompt.md)
+- [/install-port prompt](../../.github/prompts/install-port.prompt.md)
+- [/review-port prompt](../../.github/prompts/review-port.prompt.md)
