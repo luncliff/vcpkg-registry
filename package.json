@@ -1,7 +1,7 @@
 {
   "name": "vcpkg-registry",
-  "version": "1.0.0",
-  "description": "Custom vcpkg registry with overlay ports for the vcpkg package manager",
+  "version": "1.2601.0",
+  "description": "vcpkg registry maintained by @luncliff",
   "type": "module",
   "scripts": {
     "docs:dev": "vitepress dev docs",
