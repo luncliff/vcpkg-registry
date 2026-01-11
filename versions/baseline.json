@@ -236,6 +236,10 @@
       "baseline": "2025-11-24",
       "port-version": 0
     },
+    "sfml": {
+      "baseline": "3.0.2",
+      "port-version": 0
+    },
     "smol-v": {
       "baseline": "2024-09-26",
       "port-version": 0
