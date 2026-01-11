@@ -7,7 +7,7 @@ export default defineConfig({
   lang: 'ko',
   
   // Base URL for GitHub Pages deployment
-  // base: '/vcpkg-registry/',
+  base: '/vcpkg-registry/',
   
   // Clean URLs (remove .html extension)
   cleanUrls: true,
@@ -35,10 +35,7 @@ export default defineConfig({
 
   // Theme configuration
   themeConfig: {
-    // https://vitepress.dev/reference/default-theme-config
-    
-    logo: '/logo.svg',
-    
+    // https://vitepress.dev/reference/default-theme-config    
     siteTitle: 'Vcpkg Registry',
     
     nav: [
