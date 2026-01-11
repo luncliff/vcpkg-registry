@@ -6,6 +6,16 @@
   "license": "Zlib",
   "dependencies": [
     {
+      "name": "freetype",
+      "default-features": false
+    },
+    "libflac",
+    "libogg",
+    "libvorbis",
+    "miniaudio",
+    "opengl",
+    "stb",
+    {
       "name": "vcpkg-cmake",
       "host": true
     },
