@@ -5,28 +5,7 @@
 * [vcpkg](https://github.com/microsoft/vcpkg): recommend [2025.12.12](https://github.com/microsoft/vcpkg/releases/tag/2025.12.12) or later
 * [vcpkg-tool](https://github.com/microsoft/vcpkg-tool): recommend [2025-12-16](https://github.com/microsoft/vcpkg-tool/releases/tag/2025-12-16) or later
 
-## Documentation
-
-### VitePress (Experimental) 🚀
-
-This repository is experimenting with [VitePress](https://vitepress.dev/) as a modern documentation alternative. 
-
-**Try it out:**
-
-```bash
-# Install dependencies
-npm install
-
-# Start dev server
-npm run docs:dev
-
-# Build for production
-npm run docs:build
-```
-
-See [VitePress Experiment Documentation](docs/vitepress-experiment.md) for details.
-
-### Guides
+## Guides
 
 - [Create Port Guide](docs/guide-create-port.md)
 - [Update Port Guide](docs/guide-update-port.md)

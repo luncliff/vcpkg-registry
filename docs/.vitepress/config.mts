@@ -5,16 +5,16 @@ export default defineConfig({
   title: "한글로 쓴 Vcpkg 설명서",
   description: "Learn Vcpkg package manager with 한글(Korean)",
   lang: 'ko',
-  
+
   // Base URL for GitHub Pages deployment
-  // base: '/vcpkg-registry/',
-  
+  base: '/vcpkg-registry/',
+
   // Clean URLs (remove .html extension)
   cleanUrls: true,
-  
+
   // Ignore dead links to files outside docs directory
   ignoreDeadLinks: true,
-  
+
   // Head tags
   head: [
     ['meta', { name: 'theme-color', content: '#5f67ee' }],
@@ -35,24 +35,21 @@ export default defineConfig({
 
   // Theme configuration
   themeConfig: {
-    // https://vitepress.dev/reference/default-theme-config
-    
-    logo: '/logo.svg',
-    
+    // https://vitepress.dev/reference/default-theme-config    
     siteTitle: 'Vcpkg Registry',
-    
+
     nav: [
       { text: 'Home', link: '/' },
-      { 
-        text: '튜토리얼', 
+      {
+        text: '튜토리얼',
         items: [
           { text: '입문 (Beginner)', link: '/kr/01-beginner-00-intro' },
           { text: '중급 (Intermediate)', link: '/kr/11-intermediate-00-overview' },
         ]
       },
       { text: 'References', link: '/references' },
-      { 
-        text: 'Guides', 
+      {
+        text: 'Guides',
         items: [
           { text: 'Create Port', link: '/guide-create-port' },
           { text: 'Update Port', link: '/guide-update-port' },
