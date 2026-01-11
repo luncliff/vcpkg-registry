@@ -10,7 +10,7 @@ vcpkg_from_github(
 )
 
 if(VCPKG_TARGET_IS_LINUX)
-    message(STATUS "SFML currently requires the following libraries from the system package manager:\n    libudev\n    libx11\n    libxi\n    libxrandr\n    libxcursor\n    opengl\n\nThese can be installed on Ubuntu systems via apt-get install libx11-dev libxi-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libgl1-mesa-dev")
+    message(STATUS "SFML currently requires the following libraries from the system package manager:\n    libudev\n    libx11\n    libxi\n    libxrandr\n    libxcursor\n    opengl\n\nThese can be installed on Ubuntu systems via apt-get install libx11-dev libxi-dev libxrandr-dev libxcursor-dev libudev-dev libgl1-mesa-dev")
 endif()
 
 vcpkg_cmake_configure(
@@ -35,6 +35,7 @@ vcpkg_copy_pdbs()
 
 # move sfml-main to manual link dir
 if(EXISTS "${CURRENT_PACKAGES_DIR}/lib/sfml-main.lib")
+    file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/lib/manual-link")
     file(COPY "${CURRENT_PACKAGES_DIR}/lib/sfml-main.lib" DESTINATION "${CURRENT_PACKAGES_DIR}/lib/manual-link")
     file(REMOVE "${CURRENT_PACKAGES_DIR}/lib/sfml-main.lib")
     file(GLOB FILES "${CURRENT_PACKAGES_DIR}/share/sfml/SFMLMain*Targets-*.cmake")
@@ -43,6 +44,7 @@ if(EXISTS "${CURRENT_PACKAGES_DIR}/lib/sfml-main.lib")
     endforeach()
 endif()
 if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/lib/sfml-main-d.lib")
+    file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/lib/manual-link")
     file(COPY "${CURRENT_PACKAGES_DIR}/debug/lib/sfml-main-d.lib" DESTINATION "${CURRENT_PACKAGES_DIR}/debug/lib/manual-link")
     file(REMOVE "${CURRENT_PACKAGES_DIR}/debug/lib/sfml-main-d.lib")
 endif()
