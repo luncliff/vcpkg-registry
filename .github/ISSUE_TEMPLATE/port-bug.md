@@ -47,3 +47,10 @@ The versions of Build system(IDE), compiler, CMake, etc ...
 
 If there are some related issues, pull requests, documentation?
 They will be really helpful to get the detail!
+
+### Helpful Links
+* [Troubleshooting Guide](../../docs/troubleshooting.md)
+* [Update Port Guide](../../docs/guide-update-port.md)
+* [/check-environment prompt](../../.github/prompts/check-environment.prompt.md)
+* [/install-port prompt](../../.github/prompts/install-port.prompt.md)
+* [/review-port prompt](../../.github/prompts/review-port.prompt.md)
