@@ -19,6 +19,21 @@ jobs:
           gh auth setup-git
           gh auth status
 
+      - uses: actions/setup-node@v6.1.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: "Build VitePress documentation"
+        run: |
+          npm ci
+          npm run docs:build
+
+      - name: "Create documentation ZIP"
+        run: |
+          zip -r ../../../docs-${{ github.ref_name }}.zip .
+        working-directory: docs/.vitepress/dist
+
       - name: "Run make-configuration.ps1"
         run: |
           $text = scripts/make-configuration.ps1 -Dump
@@ -35,4 +50,5 @@ jobs:
             --discussion-category "General" \
             --generate-notes --prerelease
           gh release upload ${{ github.ref_name }} \
-            vcpkg-configuration.json
+            vcpkg-configuration.json \
+            docs-${{ github.ref_name }}.zip

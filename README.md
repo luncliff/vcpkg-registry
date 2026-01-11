@@ -7,6 +7,25 @@
 
 ## Documentation
 
+### VitePress (Experimental) 🚀
+
+This repository is experimenting with [VitePress](https://vitepress.dev/) as a modern documentation alternative. 
+
+**Try it out:**
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server
+npm run docs:dev
+
+# Build for production
+npm run docs:build
+```
+
+See [VitePress Experiment Documentation](docs/vitepress-experiment.md) for details.
+
 ### Guides
 
 - [Create Port Guide](docs/guide-create-port.md)
