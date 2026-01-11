@@ -3,7 +3,7 @@
 ::: info 튜토리얼 진행 상황
 **Intermediate 트랙 · 1 / 6 단계**
 
-1. **개요** ← 현재
+1. **개요** ⬅️
 2. 버전 관리와 Registry
 3. Triplet 심화
 4. Per-Port Customization

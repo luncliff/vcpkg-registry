@@ -4,7 +4,7 @@
 **Beginner 트랙 · 2 / 6 단계**
 
 1. [Vcpkg 소개](./01-beginner-00-intro)
-2. **Vcpkg 설치 및 설정** ← 현재
+2. **Vcpkg 설치 및 설정** ⬅️
 3. 첫 패키지 설치
 4. Triplet 기초
 5. CMake 프로젝트 연동

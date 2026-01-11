@@ -7,7 +7,7 @@
 2. [버전 관리와 Registry](./12-intermediate-10-versions-registry)
 3. [Triplet 심화](./13-intermediate-20-triplets-advanced)
 4. [Per-Port Customization](./14-intermediate-30-per-port-customization)
-5. **Manifest 실전** ← 현재
+5. **Manifest 실전** ⬅️
 6. 문제 해결
 :::
 

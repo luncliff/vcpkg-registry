@@ -5,7 +5,7 @@
 
 1. [Vcpkg 소개](./01-beginner-00-intro)
 2. [Vcpkg 설치 및 설정](./02-beginner-10-setup)
-3. **첫 패키지 설치** ← 현재
+3. **첫 패키지 설치** ⬅️
 4. Triplet 기초
 5. CMake 프로젝트 연동
 6. Manifest 모드 입문

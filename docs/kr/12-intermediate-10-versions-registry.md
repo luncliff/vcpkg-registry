@@ -4,7 +4,7 @@
 **Intermediate 트랙 · 2 / 6 단계**
 
 1. [개요](./11-intermediate-00-overview)
-2. **버전 관리와 Registry** ← 현재
+2. **버전 관리와 Registry** ⬅️
 3. Triplet 심화
 4. Per-Port Customization
 5. Manifest 실전

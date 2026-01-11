@@ -8,7 +8,7 @@
 3. [첫 패키지 설치](./03-beginner-20-first-package)
 4. [Triplet 기초](./04-beginner-30-triplets-basics)
 5. [CMake 프로젝트 연동](./05-beginner-40-cmake)
-6. **Manifest 모드 입문** ← 현재
+6. **Manifest 모드 입문** ⬅️
 :::
 
 ## Classic 모드 vs Manifest 모드

@@ -8,7 +8,7 @@
 3. [Triplet 심화](./13-intermediate-20-triplets-advanced)
 4. [Per-Port Customization](./14-intermediate-30-per-port-customization)
 5. [Manifest 실전](./15-intermediate-40-manifest-practice)
-6. **문제 해결** ← 현재
+6. **문제 해결** ⬅️
 :::
 
 ## 빌드 실패 로그 확인
