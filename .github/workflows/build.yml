@@ -55,7 +55,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
+          vcpkgGitCommitId: "84bab45d415d22042bd0b9081aea57f362da3f35" # 2025.12.12
           runVcpkgInstall: false
 
       - name: "Run apt"
@@ -148,13 +148,13 @@ jobs:
         uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
+          vcpkgGitCommitId: "84bab45d415d22042bd0b9081aea57f362da3f35" # 2025.12.12
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--x-feature`, `host-tools`, `--clean-after-build`]'
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
 
-      - uses: actions/upload-artifact@v5.0.0
+      - uses: actions/upload-artifact@v6.0.0
         if: failure()
         with:
           name: log-${{ runner.os }}
@@ -184,7 +184,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "74e6536215718009aae747d86d84b78376bf9e09" # 2025.10.17
+          vcpkgGitCommitId: "84bab45d415d22042bd0b9081aea57f362da3f35" # 2025.12.12
           runVcpkgInstall: false
 
       # - uses: nttld/setup-ndk@v1.5.0
@@ -207,10 +207,10 @@ jobs:
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
           VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
 
-      - uses: actions/upload-artifact@v5.0.0
+      - uses: actions/upload-artifact@v6.0.0
         if: failure()
         with:
-          name: log-Android
+          name: log-${{ matrix.triplet }}
           path: |
             buildtrees/*/*.txt
             buildtrees/*/*.log

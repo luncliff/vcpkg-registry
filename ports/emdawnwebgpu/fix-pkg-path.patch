@@ -1,0 +1,19 @@
+diff --git a/emdawnwebgpu.port.py b/emdawnwebgpu.port.py
+index 651ea19..2c386a3 100644
+--- a/emdawnwebgpu.port.py
++++ b/emdawnwebgpu.port.py
+@@ -78,10 +78,10 @@ def _walk(path):
+             yield os.path.join(dirpath, filename)
+ 
+ 
+-_pkg_dir = os.path.dirname(os.path.realpath(__file__))
+-_c_include_dir = os.path.join(_pkg_dir, 'webgpu', 'include')
+-_cpp_include_dir = os.path.join(_pkg_dir, 'webgpu_cpp', 'include')
+-_src_dir = os.path.join(_pkg_dir, 'webgpu', 'src')
++_pkg_dir = os.path.dirname(os.path.realpath(os.path.join(__file__, '..', '..'))) # Use vcpkg path patterns
++_c_include_dir = os.path.join(_pkg_dir, 'include') # $PKG/include/
++_cpp_include_dir = os.path.join(_pkg_dir, 'include')
++_src_dir = os.path.join(_pkg_dir, 'share', 'Dawn', 'src') # $PKG/share/Dawn/src/
+ _srcs = [
+     os.path.join(_src_dir, 'webgpu.cpp'),
+ ]

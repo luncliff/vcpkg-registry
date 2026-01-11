@@ -3,9 +3,6 @@ name: Maintenance
 on:
   schedule:
     - cron: "0 22 * * 5" # Every friday 10 PM
-  push:
-    tags:
-      - "*.*.*"
   pull_request:
     types: [closed, opened, synchronize, reopened]
   workflow_dispatch:
@@ -108,32 +105,3 @@ jobs:
               pull_number: context.payload.pull_request.number,
               reviewers: [owner]
             });
-
-  prerelease:
-    name: "Prerelease"
-    if: github.event_name == 'tag' 
-    runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: "Run gh(auth)"
-        run: |
-          gh auth setup-git
-          gh auth status
-      - name: "Run make-configuration.ps1"
-        run: |
-          $text = scripts/make-configuration.ps1 -Dump
-          Write-Output "## Configuration" >> ${env:GITHUB_STEP_SUMMARY}
-          Write-Output '```json' >> ${env:GITHUB_STEP_SUMMARY}
-          Write-Output $text >> ${env:GITHUB_STEP_SUMMARY}
-          Write-Output '```' >> ${env:GITHUB_STEP_SUMMARY}
-        shell: pwsh
-      - name: "Run gh(release)"
-        run: |
-          gh release create ${{ github.ref_name }} \
-            -t ${{ github.ref_name }} \
-            --discussion-category "General" \
-            --generate-notes --prerelease
-          gh release upload ${{ github.ref_name }} \
-            vcpkg-configuration.json
