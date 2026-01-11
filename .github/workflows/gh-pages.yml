@@ -22,9 +22,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  vitepress_test:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/docs' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6.1.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: "Build VitePress site"
+        run: |
+          npm ci
+          npm run docs:build
+
   vitepress:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/copilot/experiment-vitepress'
+    if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
