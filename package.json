@@ -6,7 +6,8 @@
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "deploy": "gh-pages -d docs/.vitepress/dist -b gh-pages"
   },
   "keywords": [
     "vcpkg",
@@ -21,5 +22,8 @@
     "vitepress": "1.6.4",
     "vite": "7.3.1",
     "vue": "3.5.26"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
   }
 }
