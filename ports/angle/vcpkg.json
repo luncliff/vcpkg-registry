@@ -1,0 +1,14 @@
+{
+  "name": "angle",
+  "version-date": "2026-01-10",
+  "description": "ANGLE - Almost Native Graphics Layer Engine. Translates OpenGL ES API calls to Vulkan, Desktop GL, Direct3D, and Metal.",
+  "homepage": "https://chromium.googlesource.com/angle/angle",
+  "license": "BSD-3-Clause",
+  "dependencies": [
+    {
+      "name": "vcpkg-gn",
+      "host": true
+    },
+    "zlib"
+  ]
+}
