@@ -6,7 +6,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         01-fix-dependency-resolve.patch
-        03-fix-android-install-path.patch
+        03-fix-install.patch
 )
 
 if(VCPKG_TARGET_IS_LINUX)
@@ -23,38 +23,19 @@ vcpkg_cmake_configure(
         -DSFML_BUILD_FRAMEWORKS=OFF
         -DSFML_USE_SYSTEM_DEPS=ON
         -DSFML_INSTALL_PKGCONFIG_FILES=ON
-        -DSFML_MISC_INSTALL_PREFIX=share/sfml
+        -DSFML_MISC_INSTALL_PREFIX=share/SFML
         -DSFML_GENERATE_PDB=OFF
     MAYBE_UNUSED_VARIABLES
         SFML_MISC_INSTALL_PREFIX
 )
-
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/SFML)
-vcpkg_copy_pdbs()
-
-# move sfml-main to manual link dir
-if(EXISTS "${CURRENT_PACKAGES_DIR}/lib/sfml-main.lib")
-    file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/lib/manual-link")
-    file(COPY "${CURRENT_PACKAGES_DIR}/lib/sfml-main.lib" DESTINATION "${CURRENT_PACKAGES_DIR}/lib/manual-link")
-    file(REMOVE "${CURRENT_PACKAGES_DIR}/lib/sfml-main.lib")
-    file(GLOB FILES "${CURRENT_PACKAGES_DIR}/share/sfml/SFMLMain*Targets-*.cmake")
-    foreach(FILE ${FILES})
-        vcpkg_replace_string("${FILE}" "/lib/sfml-main" "/lib/manual-link/sfml-main")
-    endforeach()
-endif()
-if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/lib/sfml-main-d.lib")
-    file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/lib/manual-link")
-    file(COPY "${CURRENT_PACKAGES_DIR}/debug/lib/sfml-main-d.lib" DESTINATION "${CURRENT_PACKAGES_DIR}/debug/lib/manual-link")
-    file(REMOVE "${CURRENT_PACKAGES_DIR}/debug/lib/sfml-main-d.lib")
-endif()
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/SFML PACKAGE_NAME SFML)
+vcpkg_fixup_pkgconfig()
 
 file(REMOVE_RECURSE 
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
 )
 
-vcpkg_fixup_pkgconfig()
-
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+# file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/license.md")
