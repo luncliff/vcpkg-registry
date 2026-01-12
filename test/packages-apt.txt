@@ -16,3 +16,6 @@ autoconf
 autoconf-archive
 automake
 libtool
+libxrandr-dev
+libudev-dev
+libgl1-mesa-dev
