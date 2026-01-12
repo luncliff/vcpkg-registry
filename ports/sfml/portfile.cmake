@@ -29,12 +29,40 @@ vcpkg_cmake_configure(
         SFML_MISC_INSTALL_PREFIX
 )
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/SFML PACKAGE_NAME SFML)
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/SFML)
 vcpkg_fixup_pkgconfig()
+
+# move sfml-main to manual link dir
+if(EXISTS "${CURRENT_PACKAGES_DIR}/lib/sfml-main.lib")
+    file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/lib/manual-link")
+    file(COPY "${CURRENT_PACKAGES_DIR}/lib/sfml-main.lib" DESTINATION "${CURRENT_PACKAGES_DIR}/lib/manual-link")
+    file(REMOVE "${CURRENT_PACKAGES_DIR}/lib/sfml-main.lib")
+    file(GLOB FILES "${CURRENT_PACKAGES_DIR}/share/SFML/SFMLMain*Targets-*.cmake")
+    foreach(FILE ${FILES})
+        vcpkg_replace_string("${FILE}" "/lib/sfml-main" "/lib/manual-link/sfml-main")
+    endforeach()
+endif()
+if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/lib/sfml-main-d.lib")
+    file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/lib/manual-link")
+    file(COPY "${CURRENT_PACKAGES_DIR}/debug/lib/sfml-main-d.lib" DESTINATION "${CURRENT_PACKAGES_DIR}/debug/lib/manual-link")
+    file(REMOVE "${CURRENT_PACKAGES_DIR}/debug/lib/sfml-main-d.lib")
+endif()
 
 file(REMOVE_RECURSE 
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
+)
+
+# Remove legacy Find modules - SFML uses modern config mode
+file(REMOVE
+    "${CURRENT_PACKAGES_DIR}/share/SFML/FindDRM.cmake"
+    "${CURRENT_PACKAGES_DIR}/share/SFML/FindEGL.cmake"
+    "${CURRENT_PACKAGES_DIR}/share/SFML/FindFLAC.cmake"
+    "${CURRENT_PACKAGES_DIR}/share/SFML/FindFreetype.cmake"
+    "${CURRENT_PACKAGES_DIR}/share/SFML/FindGBM.cmake"
+    "${CURRENT_PACKAGES_DIR}/share/SFML/FindGLES.cmake"
+    "${CURRENT_PACKAGES_DIR}/share/SFML/FindUDev.cmake"
+    "${CURRENT_PACKAGES_DIR}/share/SFML/FindVorbis.cmake"
 )
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/license.md")

@@ -4,6 +4,7 @@
   "description": "Simple and Fast Multimedia Library",
   "homepage": "https://www.sfml-dev.org",
   "license": "Zlib",
+  "supports": "windows | linux | osx | ios | android",
   "dependencies": [
     {
       "name": "freetype",
