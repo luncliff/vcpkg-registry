@@ -1,0 +1,26 @@
+diff --git a/.gn b/.gn
+index 1..2 100644
+--- a/.gn
++++ b/.gn
+@@ -7,10 +7,17 @@
+ # As a result this file will only affect stand-alone ANGLE builds,
+ # not chromium builds.
+ 
+-import("//build/dotfile_settings.gni")
+-import("//dotfile_settings.gni")
++# Simplified standalone build configuration for vcpkg
++# Original imports require full Chromium build system
++# import("//build/dotfile_settings.gni")
++# import("//dotfile_settings.gni")
+ 
+ # Location of the build configuration file.
+-buildconfig = "//build/config/BUILDCONFIG.gn"
++# Use minimal buildconfig for standalone vcpkg build
++# buildconfig = "//build/config/BUILDCONFIG.gn"
++buildconfig = "//build_overrides/BUILDCONFIG.gn"
++
++# Minimal dotfile settings
++exec_script_allowlist = []
+ 
+ # The python interpreter to use by default. On Windows, this will look
+ # for python3.exe and python3.bat.

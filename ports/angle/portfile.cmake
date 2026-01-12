@@ -1,3 +1,22 @@
+# ANGLE Port - GN Build System Attempt
+#
+# This port demonstrates an attempt to use ANGLE's native GN build system.
+# Expected to fail during GN configuration due to missing Chromium infrastructure.
+#
+# TECHNICAL BLOCKERS:
+# - ANGLE's .gn file imports //build/dotfile_settings.gni and //build/config/BUILDCONFIG.gn
+# - These files are part of Chromium's build system (not in GitHub tarballs)
+# - Creating minimal stubs would require replicating ~1000+ lines of build configuration
+# - ANGLE's DEPS file expects gclient to fetch dependencies (incompatible with vcpkg)
+#
+# See GN_BUILD_NOTES.md for detailed analysis.
+#
+# To actually install ANGLE via vcpkg:
+# - Use microsoft/vcpkg's angle port (custom CMake build)
+# - Or wait for upstream ANGLE to provide standalone GN build support
+
+message(STATUS "Attempting ANGLE GN build (expected to fail - see GN_BUILD_NOTES.md)")
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/angle
@@ -44,6 +63,7 @@ endif()
 set(ANGLE_GN_ARGS_DEBUG "is_debug=true")
 set(ANGLE_GN_ARGS_RELEASE "is_debug=false is_official_build=true")
 
+# This will fail - GN will report missing //build/dotfile_settings.gni
 vcpkg_gn_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS "${ANGLE_GN_ARGS}"
@@ -51,7 +71,7 @@ vcpkg_gn_configure(
     OPTIONS_RELEASE "${ANGLE_GN_ARGS_RELEASE}"
 )
 
-# Build ANGLE libraries
+# Build ANGLE libraries (won't reach here if configure fails)
 vcpkg_gn_install(
     SOURCE_PATH "${SOURCE_PATH}"
     TARGETS angle
