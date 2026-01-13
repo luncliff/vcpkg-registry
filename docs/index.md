@@ -47,7 +47,7 @@ Vcpkg를 처음 사용하신다면 단계별 튜토리얼을 추천합니다:
 - 👉 **[Beginner 트랙](./kr/01-beginner-00-intro)** - Vcpkg 기초부터 CMake 연동까지
 - 👉 **[Intermediate 트랙](./kr/11-intermediate-00-overview)** - 버전 관리, Triplet 심화, 문제 해결
 
-기존 단일 페이지 가이드를 원하신다면: [레거시 가이드](./vcpkg-for-kor)
+기존 단일 페이지 가이드를 원하신다면: [레거시 가이드](./blog/vcpkg-for-kor)
 
 ### Installation
 

@@ -47,6 +47,12 @@ export default defineConfig({
           { text: '중급 (Intermediate)', link: '/kr/11-intermediate-00-overview' },
         ]
       },
+      {
+        text: 'Blog',
+        items: [
+          { text: 'Vcpkg 한글 가이드 (Legacy)', link: '/blog/vcpkg-for-kor' },
+        ]
+      },
       { text: 'References', link: '/references' },
       {
         text: 'Guides',
@@ -65,7 +71,13 @@ export default defineConfig({
         items: [
           { text: 'Getting Started', link: '/kr/01-beginner-00-intro' },
           { text: 'References', link: '/references' },
-          { text: 'Legacy Guide', link: '/vcpkg-for-kor' },
+        ]
+      },
+      {
+        text: 'Blog Articles',
+        collapsed: true,
+        items: [
+          { text: 'Vcpkg 한글 가이드 (Legacy)', link: '/blog/vcpkg-for-kor' },
         ]
       },
       {
