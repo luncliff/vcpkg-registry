@@ -53,17 +53,16 @@ index d462525..315a9ee 100644
  
  target_link_libraries(milstoragepython
    mlmodel
-@@ -70,7 +84,8 @@ add_library(modelpackage
-   modelpackage/src/utils/JsonMap.cpp
+@@ -71,6 +85,8 @@ add_library(modelpackage
    modelpackage/src/ModelPackagePython.cpp
    )
--  
+ 
 +install(TARGETS modelpackage DESTINATION ${CMAKE_INSTALL_LIBDIR})
 +
  target_compile_definitions(modelpackage
    PRIVATE
    CPU_ONLY=1
-@@ -78,7 +93,6 @@ target_compile_definitions(modelpackage
+@@ -78,7 +94,6 @@ target_compile_definitions(modelpackage
  
  target_link_libraries(modelpackage
    mlmodel
@@ -71,7 +70,7 @@ index d462525..315a9ee 100644
    )
  
  if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1)
-@@ -157,6 +171,7 @@ if (APPLE AND CORE_VIDEO AND CORE_ML AND FOUNDATION)
+@@ -157,6 +172,7 @@ if (APPLE AND CORE_VIDEO AND CORE_ML AND FOUNDATION)
      coremlpython/CoreMLPythonUtils.mm
      coremlpython/CoreMLPythonUtils.h
    )
@@ -140,7 +139,7 @@ index ab4679c..e988cda 100644
          WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
      )
      # For the CoreML framework we read the source file locations for these, and
-@@ -67,36 +64,28 @@ function(coreml_add_build_proto proto_fn target_suffix)
+@@ -67,36 +65,28 @@ function(coreml_add_build_proto proto_fn target_suffix)
      if(OVERWRITE_PB_SOURCE)
          add_custom_target(tgt_${proto_fn}_source ALL
              COMMENT "Generating c++ sources from ${proto_fn}.proto into ${CMAKE_CURRENT_SOURCE_DIR}/build/format/"
