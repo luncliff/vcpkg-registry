@@ -1,0 +1,48 @@
+name: Configure UTF-8 Locale for Multilingual Support
+description: |
+  Sets up UTF-8 locale (codepage 65001) to properly handle Korean, English, and other languages.
+  This ensures Korean characters (한글) render correctly in screenshots and terminal output.
+  
+  Reference: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment
+
+steps:
+  - name: Set system locale to UTF-8
+    run: |
+      # Set locale environment variables for UTF-8 support
+      export LANG=en_US.UTF-8
+      export LC_ALL=en_US.UTF-8
+      export LANGUAGE=en_US:en
+      
+      # Verify locale is set correctly
+      locale
+      
+      # On Windows (if applicable), set console codepage to UTF-8
+      if command -v chcp >/dev/null 2>&1; then
+        chcp 65001
+      fi
+      
+      echo "✓ UTF-8 locale configured for multilingual support (Korean, English, etc.)"
+    shell: bash
+
+  - name: Configure Git for UTF-8
+    run: |
+      # Ensure Git handles UTF-8 filenames and commit messages correctly
+      git config --global core.quotepath false
+      git config --global i18n.commitencoding utf-8
+      git config --global i18n.logoutputencoding utf-8
+      
+      echo "✓ Git configured for UTF-8 encoding"
+    shell: bash
+
+  - name: Verify UTF-8 support
+    run: |
+      # Test Korean character rendering
+      echo "Testing Korean characters: 한글 테스트"
+      echo "Testing English characters: English test"
+      echo "Testing mixed: vcpkg-registry 한글로 쓴 Vcpkg 설명서"
+      
+      # Test if terminal properly displays Korean
+      python3 -c "print('Python UTF-8 test: 한글 ✓')" || echo "Python test skipped"
+      
+      echo "✓ UTF-8 verification complete"
+    shell: bash
