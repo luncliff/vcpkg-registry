@@ -99,7 +99,6 @@ target_link_libraries(angle_common
 
 # Set library properties
 set_target_properties(angle_common PROPERTIES
-    PUBLIC_HEADER "include/EGL/egl.h;include/EGL/eglext.h;include/EGL/eglplatform.h;include/GLES2/gl2.h;include/GLES2/gl2ext.h;include/GLES2/gl2platform.h;include/GLES3/gl3.h;include/GLES3/gl31.h;include/GLES3/gl32.h;include/GLES3/gl3platform.h;include/KHR/khrplatform.h"
     OUTPUT_NAME "angle_common"
 )
 
@@ -108,7 +107,6 @@ install(TARGETS angle_common
     EXPORT angle-config
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ANGLE
 )
 
 install(EXPORT angle-config
