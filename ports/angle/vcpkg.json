@@ -5,6 +5,8 @@
   "homepage": "https://github.com/google/angle",
   "license": "BSD-3-Clause",
   "dependencies": [
+    "egl-registry",
+    "opengl-registry",
     {
       "name": "vcpkg-cmake",
       "host": true

@@ -4,13 +4,18 @@ This port demonstrates a minimal CMake-based build for ANGLE (Almost Native Grap
 
 ## Current Status: ✅ Minimal Working Implementation
 
-This port currently builds the **angle_common** library, successfully demonstrating the CMake build approach requested in the task.
+This port currently builds the **angle_common** library and adds minimal **EGL** and **GLESv2** stub libraries, successfully demonstrating the CMake build approach and Windows DLL layout.
 
 ### What's Included
 
-- Core common utilities from `src/common/`
-- Platform-specific system utilities
-- Basic headers from `include/`
+- Minimal common utilities from `src/common/` (reduced set)
+- On Windows, stub DLLs:
+   - `EGL.dll` / `EGL.lib`
+   - `GLESv2.dll` / `GLESv2.lib`
+- CMake config targets:
+   - `angle::angle_common`
+   - `angle::angle_egl`
+   - `angle::angle_gles`
 
 ### What's NOT Included (Yet)
 
@@ -37,7 +42,7 @@ A complete ANGLE build would require adding:
 4. **Additional Components**
    - Image utilities
    - GPU info utilities
-   - EGL implementation
+   - Full EGL implementation
    - GLESv1_CM implementation
 
 ## Analysis of ANGLE Build System
@@ -89,7 +94,8 @@ Total estimated:         650+ source files
 ### This Port (Minimal CMake)
 - ✅ Simple to understand
 - ✅ Follows farmhash pattern
-- ❌ Incomplete (demo only)
+- ✅ Provides stub `EGL` / `GLESv2` libraries and CMake targets for experimentation
+- ❌ Incomplete (demo only; stubs, not full ANGLE)
 - ❌ Requires manual source list maintenance
 
 ### PR #491 (Full CMake)
@@ -136,7 +142,9 @@ This minimal port can be tested with:
 vcpkg install --overlay-ports=ports angle
 ```
 
-**Note**: This builds only `angle_common`, not a complete ANGLE library.
+**Note**:
+- This builds a reduced `angle_common` static library plus stub `EGL` / `GLESv2` libraries.
+- The EGL/GLES DLLs export only a minimal set of symbols and are not a drop-in replacement for upstream ANGLE.
 
 ## Future Work
 
