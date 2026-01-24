@@ -45,6 +45,7 @@
     "test": {
       "description": "Default ports to test",
       "dependencies": [
+        "angle",
         {
           "name": "d3d12-transition-layer",
           "features": [
