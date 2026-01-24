@@ -15,6 +15,12 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
-    "zlib"
+    {
+      "name": "zlib-ng",
+      "default-features": false,
+      "features": [
+        "zlib-compat"
+      ]
+    }
   ]
 }

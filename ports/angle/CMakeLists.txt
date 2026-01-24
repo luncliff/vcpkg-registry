@@ -17,10 +17,8 @@ elseif(UNIX)
 endif()
 
 # Find dependencies
-find_package(ZLIB REQUIRED)
-if(NOT WIN32)
-    find_package(PkgConfig REQUIRED)
-endif()
+# Use CONFIG mode for vcpkg compatibility (especially on Emscripten)
+find_package(ZLIB CONFIG REQUIRED)
 
 # Common definitions
 add_compile_definitions(
@@ -65,8 +63,8 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/egl_stub.cpp"
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/gles_stub.cpp" 
 "// Minimal GLES stub implementation\n#ifdef _WIN32\n#define GL_APICALL __declspec(dllexport)\n#else\n#define GL_APICALL\n#endif\ntypedef unsigned int GLbitfield;\ntypedef float GLfloat;\nextern \"C\" {\n  GL_APICALL void glClear(GLbitfield mask) { }\n  GL_APICALL void glClearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a) { }\n}")
 
-# libEGL and libGLESv2 - Build as DLLs on Windows, static elsewhere
-if(WIN32)
+# libEGL and libGLESv2 - Build as DLLs on native Windows, static elsewhere (including Emscripten)
+if(WIN32 AND NOT EMSCRIPTEN)
     set(ANGLE_API_LIBRARY_TYPE SHARED)
 else()
     set(ANGLE_API_LIBRARY_TYPE STATIC)

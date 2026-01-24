@@ -1,4 +1,5 @@
-if(VCPKG_TARGET_IS_WINDOWS)
+# Force dynamic library on native Windows; allow static on other platforms (including Emscripten)
+if(VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_CROSSCOMPILING)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
 vcpkg_find_acquire_program(PKGCONFIG)
