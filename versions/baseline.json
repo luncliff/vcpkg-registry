@@ -189,7 +189,7 @@
       "port-version": 0
     },
     "onnx-optimizer": {
-      "baseline": "0.4.0",
+      "baseline": "0.4.2",
       "port-version": 0
     },
     "onnxruntime": {
