@@ -4,7 +4,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO onnx/optimizer
     REF "v${VERSION}"
-    SHA512 07a19a4d752bbc9ad12111b65f0ce47681fb8da57888c99ce3939b26590a27db702ef8ef295dee4c34d188cf283bafb5b84a35f180ae34e9281808fccfdd887d
+    SHA512 ed9844c3ff30406e28dd06fe8a2ed202f301aacdc2c489b5a77dfa7ce6f33647939a00a059a47a5d474797aca6396ceb28c403d4054ff3714c2f6388a34279bf
     HEAD_REF master
     PATCHES
         fix-cmakelists.patch
