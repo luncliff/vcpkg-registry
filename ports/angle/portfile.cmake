@@ -2,6 +2,7 @@
 if(VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_CROSSCOMPILING)
     vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 endif()
+set(VCPKG_POLICY_EMPTY_INCLUDE_FOLDER enabled)
 vcpkg_find_acquire_program(PKGCONFIG)
 message(STATUS "Using pkgconfig: ${PKGCONFIG}")
 
@@ -20,6 +21,11 @@ file(COPY
     "${CMAKE_CURRENT_LIST_DIR}/compression_utils_portable.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/compression_utils_portable.h"
     DESTINATION "${SOURCE_PATH}"
+)
+file(COPY
+    "${CMAKE_CURRENT_LIST_DIR}/ANGLEShaderProgramVersion.h"
+    "${CMAKE_CURRENT_LIST_DIR}/angle_commit.h"
+    DESTINATION "${SOURCE_PATH}/src/common"
 )
 
 vcpkg_cmake_configure(

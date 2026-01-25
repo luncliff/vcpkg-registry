@@ -58,10 +58,12 @@ add_library(angle_common STATIC
     src/common/aligned_memory.cpp
     src/common/android_util.cpp
     src/common/angleutils.cpp
+    src/common/angle_version_info.cpp
     src/common/base/anglebase/sha1.cc
     src/common/debug.cpp
     src/common/entry_points_enum_autogen.cpp
     src/common/event_tracer.cpp
+    src/common/CompiledShaderState.cpp
     src/common/mathutil.cpp
     src/common/matrix_utils.cpp
     src/common/platform_helpers.cpp
@@ -171,6 +173,10 @@ add_library(angle_translator STATIC)
 file(GLOB_RECURSE TRANSLATOR_SOURCES
     "src/compiler/translator/*.cpp"
 )
+
+file(GLOB PREPROCESSOR_SOURCES
+    "src/compiler/preprocessor/*.cpp"
+)
 list(FILTER TRANSLATOR_SOURCES EXCLUDE REGEX ".*/msl/.*")
 list(FILTER TRANSLATOR_SOURCES EXCLUDE REGEX ".*/wgsl/.*")
 list(FILTER TRANSLATOR_SOURCES EXCLUDE REGEX ".*/spirv/.*")
@@ -181,7 +187,7 @@ list(FILTER TRANSLATOR_SOURCES EXCLUDE REGEX ".*TranslatorWGSL.*")
 list(FILTER TRANSLATOR_SOURCES EXCLUDE REGEX ".*TranslatorSPIRV.*")
 list(FILTER TRANSLATOR_SOURCES EXCLUDE REGEX ".*TranslatorNULL.*")
 
-target_sources(angle_translator PRIVATE ${TRANSLATOR_SOURCES})
+target_sources(angle_translator PRIVATE ${TRANSLATOR_SOURCES} ${PREPROCESSOR_SOURCES})
 
 target_include_directories(angle_translator
     PUBLIC
@@ -189,6 +195,7 @@ target_include_directories(angle_translator
         $<INSTALL_INTERFACE:include>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/preprocessor
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/translator
 )
 target_link_libraries(angle_translator PRIVATE angle_common)
@@ -266,6 +273,8 @@ set(LIBANGLE_SOURCES
     src/libANGLE/gles_extensions_autogen.cpp
     src/libANGLE/queryconversions.cpp
     src/libANGLE/queryutils.cpp
+    src/libANGLE/capture/FrameCapture_mock.cpp
+    src/libANGLE/capture/serialize_mock.cpp
     src/libANGLE/renderer/BufferImpl.cpp
     src/libANGLE/renderer/ContextImpl.cpp
     src/libANGLE/renderer/DeviceImpl.cpp
@@ -327,13 +336,7 @@ target_compile_definitions(angle_libangle
         ANGLE_ENABLE_CONTEXT_MUTEX=1
         ANGLE_ENABLE_SHARE_CONTEXT_LOCK=1
         ANGLE_CAPTURE_ENABLED=0
-        ANGLE_ENABLE_D3D9=0
-        ANGLE_ENABLE_D3D11=0
-        ANGLE_ENABLE_VULKAN=0
-        ANGLE_ENABLE_METAL=0
-        ANGLE_ENABLE_OPENGL=0
         ANGLE_ENABLE_NULL=1
-        ANGLE_ENABLE_CL=0
 )
 
 target_link_libraries(angle_libangle
@@ -400,6 +403,7 @@ endif()
 
 add_library(angle_egl ${ANGLE_API_LIBRARY_TYPE}
     ${LIBEGL_ENTRY_SOURCES}
+    ${LIBGLESV2_ENTRY_SOURCES}
 )
 
 add_library(angle_gles ${ANGLE_API_LIBRARY_TYPE}
@@ -455,6 +459,7 @@ target_link_libraries(angle_egl
 target_compile_definitions(angle_egl PRIVATE
     LIBANGLE_IMPLEMENTATION
     LIBEGL_IMPLEMENTATION
+    LIBGLESV2_IMPLEMENTATION
 )
 
 # Configure angle_gles library
