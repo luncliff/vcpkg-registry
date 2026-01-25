@@ -142,6 +142,10 @@
           "platform": "windows"
         },
         {
+          "name": "sfml",
+          "platform": "!emscripten"
+        },
+        {
           "name": "spine-runtimes",
           "features": [
             "sdl2"

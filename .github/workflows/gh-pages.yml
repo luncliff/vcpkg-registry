@@ -3,11 +3,11 @@ name: "GitHub Pages"
 on:
   workflow_dispatch:
   push:
-    branches:
-      - "main"
-      - "docs"
+    branches-ignore:
+      - "gh-pages"
     paths:
       - 'docs/**'
+      - 'package.json'
       - '.github/workflows/gh-pages.yml'
 
 permissions:
@@ -20,7 +20,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  mkdocs:
+  vitepress_test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6.1.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: "Build VitePress site"
+        run: |
+          npm ci
+          npm run docs:build
+
+  vitepress:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     environment:
@@ -28,38 +44,20 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6.1.0
+
+      - uses: actions/setup-node@v6.1.0
         with:
-          python-version: 3.11
-          architecture: x64
-          cache: 'pip'
+          node-version: 20
+          cache: npm
 
-      - name: "Run pip install"
-        run: >
-          python3 -m pip install -r requirements.txt
-      - name: "Run MkDocs(build)"
-        run: >
-          python3 -m mkdocs build --site-dir _site
+      - name: "Build VitePress site"
+        run: |
+          npm ci
+          npm run docs:build
 
-      - uses: actions/configure-pages@v5.0.0
-      - uses: actions/upload-pages-artifact@v4.0.0
+      - uses: actions/upload-pages-artifact@v4
         with:
-          path: '_site'
-      - uses: actions/deploy-pages@v4.0.5
+          path: docs/.vitepress/dist
 
-  mkdocs_test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6.1.0
-        with:
-          python-version: 3.11
-          architecture: x64
-          cache: 'pip'
-
-      - name: "Run pip install"
-        run: >
-          python3 -m pip install -r requirements.txt
-      - name: "Run MkDocs(build)"
-        run: >
-          python3 -m mkdocs build --site-dir _site
+      - uses: actions/deploy-pages@v4
+        id: deployment
