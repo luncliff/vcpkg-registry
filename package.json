@@ -1,6 +1,6 @@
 {
   "name": "vcpkg-registry",
-  "version": "1.2601.0",
+  "version": "2.2605.0",
   "description": "vcpkg registry maintained by @luncliff",
   "type": "module",
   "scripts": {
