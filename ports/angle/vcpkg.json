@@ -16,6 +16,7 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
+    "xxhash",
     {
       "name": "zlib-ng",
       "default-features": false,
