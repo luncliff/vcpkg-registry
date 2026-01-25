@@ -306,16 +306,364 @@ set(LIBANGLE_SOURCES
     src/libANGLE/validationESEXT.cpp
 )
 
+set(LIBANGLE_D3D_SHARED_SOURCES
+    src/libANGLE/renderer/d3d/BufferD3D.cpp
+    src/libANGLE/renderer/d3d/BufferD3D.h
+    src/libANGLE/renderer/d3d/CompilerD3D.cpp
+    src/libANGLE/renderer/d3d/CompilerD3D.h
+    src/libANGLE/renderer/d3d/ContextD3D.h
+    src/libANGLE/renderer/d3d/DisplayD3D.cpp
+    src/libANGLE/renderer/d3d/DisplayD3D.h
+    src/libANGLE/renderer/d3d/DynamicHLSL.cpp
+    src/libANGLE/renderer/d3d/DynamicHLSL.h
+    src/libANGLE/renderer/d3d/DynamicImage2DHLSL.cpp
+    src/libANGLE/renderer/d3d/DynamicImage2DHLSL.h
+    src/libANGLE/renderer/d3d/EGLImageD3D.cpp
+    src/libANGLE/renderer/d3d/EGLImageD3D.h
+    src/libANGLE/renderer/d3d/FramebufferD3D.cpp
+    src/libANGLE/renderer/d3d/FramebufferD3D.h
+    src/libANGLE/renderer/d3d/HLSLCompiler.cpp
+    src/libANGLE/renderer/d3d/HLSLCompiler.h
+    src/libANGLE/renderer/d3d/ImageD3D.cpp
+    src/libANGLE/renderer/d3d/ImageD3D.h
+    src/libANGLE/renderer/d3d/IndexBuffer.cpp
+    src/libANGLE/renderer/d3d/IndexBuffer.h
+    src/libANGLE/renderer/d3d/IndexDataManager.cpp
+    src/libANGLE/renderer/d3d/IndexDataManager.h
+    src/libANGLE/renderer/d3d/NativeWindowD3D.cpp
+    src/libANGLE/renderer/d3d/NativeWindowD3D.h
+    src/libANGLE/renderer/d3d/ProgramD3D.cpp
+    src/libANGLE/renderer/d3d/ProgramD3D.h
+    src/libANGLE/renderer/d3d/ProgramExecutableD3D.cpp
+    src/libANGLE/renderer/d3d/ProgramExecutableD3D.h
+    src/libANGLE/renderer/d3d/RenderTargetD3D.cpp
+    src/libANGLE/renderer/d3d/RenderTargetD3D.h
+    src/libANGLE/renderer/d3d/RenderbufferD3D.cpp
+    src/libANGLE/renderer/d3d/RenderbufferD3D.h
+    src/libANGLE/renderer/d3d/RendererD3D.cpp
+    src/libANGLE/renderer/d3d/RendererD3D.h
+    src/libANGLE/renderer/d3d/SamplerD3D.h
+    src/libANGLE/renderer/d3d/ShaderD3D.cpp
+    src/libANGLE/renderer/d3d/ShaderD3D.h
+    src/libANGLE/renderer/d3d/ShaderExecutableD3D.cpp
+    src/libANGLE/renderer/d3d/ShaderExecutableD3D.h
+    src/libANGLE/renderer/d3d/SurfaceD3D.cpp
+    src/libANGLE/renderer/d3d/SurfaceD3D.h
+    src/libANGLE/renderer/d3d/SwapChainD3D.cpp
+    src/libANGLE/renderer/d3d/SwapChainD3D.h
+    src/libANGLE/renderer/d3d/TextureD3D.cpp
+    src/libANGLE/renderer/d3d/TextureD3D.h
+    src/libANGLE/renderer/d3d/TextureStorage.h
+    src/libANGLE/renderer/d3d/VertexBuffer.cpp
+    src/libANGLE/renderer/d3d/VertexBuffer.h
+    src/libANGLE/renderer/d3d/VertexDataManager.cpp
+    src/libANGLE/renderer/d3d/VertexDataManager.h
+    src/libANGLE/renderer/d3d/driver_utils_d3d.cpp
+    src/libANGLE/renderer/d3d/driver_utils_d3d.h
+    src/libANGLE/renderer/d3d/formatutilsD3D.h
+)
+
+set(LIBANGLE_D3D11_SOURCES
+    src/libANGLE/renderer/d3d/d3d11/Blit11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Blit11.h
+    src/libANGLE/renderer/d3d/d3d11/Blit11Helper_autogen.inc
+    src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Buffer11.h
+    src/libANGLE/renderer/d3d/d3d11/Clear11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Clear11.h
+    src/libANGLE/renderer/d3d/d3d11/Context11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Context11.h
+    src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
+    src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.h
+    src/libANGLE/renderer/d3d/d3d11/Device11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Device11.h
+    src/libANGLE/renderer/d3d/d3d11/ExternalImageSiblingImpl11.cpp
+    src/libANGLE/renderer/d3d/d3d11/ExternalImageSiblingImpl11.h
+    src/libANGLE/renderer/d3d/d3d11/Fence11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Fence11.h
+    src/libANGLE/renderer/d3d/d3d11/Framebuffer11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Framebuffer11.h
+    src/libANGLE/renderer/d3d/d3d11/Image11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Image11.h
+    src/libANGLE/renderer/d3d/d3d11/IndexBuffer11.cpp
+    src/libANGLE/renderer/d3d/d3d11/IndexBuffer11.h
+    src/libANGLE/renderer/d3d/d3d11/InputLayoutCache.cpp
+    src/libANGLE/renderer/d3d/d3d11/InputLayoutCache.h
+    src/libANGLE/renderer/d3d/d3d11/MappedSubresourceVerifier11.cpp
+    src/libANGLE/renderer/d3d/d3d11/MappedSubresourceVerifier11.h
+    src/libANGLE/renderer/d3d/d3d11/NativeWindow11.h
+    src/libANGLE/renderer/d3d/d3d11/PixelTransfer11.cpp
+    src/libANGLE/renderer/d3d/d3d11/PixelTransfer11.h
+    src/libANGLE/renderer/d3d/d3d11/Program11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Program11.h
+    src/libANGLE/renderer/d3d/d3d11/ProgramPipeline11.cpp
+    src/libANGLE/renderer/d3d/d3d11/ProgramPipeline11.h
+    src/libANGLE/renderer/d3d/d3d11/Query11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Query11.h
+    src/libANGLE/renderer/d3d/d3d11/RenderStateCache.cpp
+    src/libANGLE/renderer/d3d/d3d11/RenderStateCache.h
+    src/libANGLE/renderer/d3d/d3d11/RenderTarget11.cpp
+    src/libANGLE/renderer/d3d/d3d11/RenderTarget11.h
+    src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Renderer11.h
+    src/libANGLE/renderer/d3d/d3d11/ResourceManager11.cpp
+    src/libANGLE/renderer/d3d/d3d11/ResourceManager11.h
+    src/libANGLE/renderer/d3d/d3d11/ShaderExecutable11.cpp
+    src/libANGLE/renderer/d3d/d3d11/ShaderExecutable11.h
+    src/libANGLE/renderer/d3d/d3d11/StateManager11.cpp
+    src/libANGLE/renderer/d3d/d3d11/StateManager11.h
+    src/libANGLE/renderer/d3d/d3d11/StreamProducerD3DTexture.cpp
+    src/libANGLE/renderer/d3d/d3d11/StreamProducerD3DTexture.h
+    src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+    src/libANGLE/renderer/d3d/d3d11/SwapChain11.h
+    src/libANGLE/renderer/d3d/d3d11/TextureStorage11.cpp
+    src/libANGLE/renderer/d3d/d3d11/TextureStorage11.h
+    src/libANGLE/renderer/d3d/d3d11/TransformFeedback11.cpp
+    src/libANGLE/renderer/d3d/d3d11/TransformFeedback11.h
+    src/libANGLE/renderer/d3d/d3d11/Trim11.cpp
+    src/libANGLE/renderer/d3d/d3d11/Trim11.h
+    src/libANGLE/renderer/d3d/d3d11/VertexArray11.cpp
+    src/libANGLE/renderer/d3d/d3d11/VertexArray11.h
+    src/libANGLE/renderer/d3d/d3d11/VertexBuffer11.cpp
+    src/libANGLE/renderer/d3d/d3d11/VertexBuffer11.h
+    src/libANGLE/renderer/d3d/d3d11/formatutils11.cpp
+    src/libANGLE/renderer/d3d/d3d11/formatutils11.h
+    src/libANGLE/renderer/d3d/d3d11/renderer11_utils.cpp
+    src/libANGLE/renderer/d3d/d3d11/renderer11_utils.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/buffertotexture11_gs.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/buffertotexture11_ps_4f.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/buffertotexture11_ps_4i.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/buffertotexture11_ps_4ui.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/buffertotexture11_vs.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clear11multiviewgs.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clear11multiviewvs.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clear11vs.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/cleardepth11ps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearfloat11ps1.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearfloat11ps2.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearfloat11ps3.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearfloat11ps4.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearfloat11ps5.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearfloat11ps6.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearfloat11ps7.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearfloat11ps8.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearsint11ps1.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearsint11ps2.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearsint11ps3.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearsint11ps4.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearsint11ps5.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearsint11ps6.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearsint11ps7.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearsint11ps8.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearuint11ps1.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearuint11ps2.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearuint11ps3.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearuint11ps4.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearuint11ps5.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearuint11ps6.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearuint11ps7.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/clearuint11ps8.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/passthrough2d11vs.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/passthrough3d11gs.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/passthrough3d11vs.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/passthroughdepth2d11ps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/passthroughrgba2dms11ps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/resolvecolor2dps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/resolvedepth11_ps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/resolvedepthstencil11_ps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/resolvedepthstencil11_vs.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/resolvestencil11_ps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/swizzlef2darrayps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/swizzlef2dps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/swizzlef3dps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/swizzlei2darrayps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/swizzlei2dps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/swizzlei3dps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/swizzleui2darrayps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/swizzleui2dps.h
+    src/libANGLE/renderer/d3d/d3d11/shaders/compiled/swizzleui3dps.h
+    src/libANGLE/renderer/d3d/d3d11/texture_format_table_autogen.cpp
+    src/libANGLE/renderer/d3d/d3d11/texture_format_table.cpp
+    src/libANGLE/renderer/d3d/d3d11/texture_format_table.h
+    src/libANGLE/renderer/d3d/d3d11/texture_format_table_utils.h
+    src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow11Win32.cpp
+    src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow11Win32.h
+)
+
+file(GLOB LIBANGLE_D3D11_BLIT_SHADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/libANGLE/renderer/d3d/d3d11/shaders/compiled/passthrough*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/libANGLE/renderer/d3d/d3d11/shaders/compiled/multiplyalpha_*.h
+)
+
+# D3D9 backend sources (Windows desktop fallback)
+set(LIBANGLE_D3D9_SOURCES
+    src/libANGLE/renderer/d3d/d3d9/Blit9.cpp
+    src/libANGLE/renderer/d3d/d3d9/Blit9.h
+    src/libANGLE/renderer/d3d/d3d9/Buffer9.cpp
+    src/libANGLE/renderer/d3d/d3d9/Buffer9.h
+    src/libANGLE/renderer/d3d/d3d9/Context9.cpp
+    src/libANGLE/renderer/d3d/d3d9/Context9.h
+    src/libANGLE/renderer/d3d/d3d9/DebugAnnotator9.cpp
+    src/libANGLE/renderer/d3d/d3d9/DebugAnnotator9.h
+    src/libANGLE/renderer/d3d/d3d9/Device9.cpp
+    src/libANGLE/renderer/d3d/d3d9/Device9.h
+    src/libANGLE/renderer/d3d/d3d9/Fence9.cpp
+    src/libANGLE/renderer/d3d/d3d9/Fence9.h
+    src/libANGLE/renderer/d3d/d3d9/Framebuffer9.cpp
+    src/libANGLE/renderer/d3d/d3d9/Framebuffer9.h
+    src/libANGLE/renderer/d3d/d3d9/Image9.cpp
+    src/libANGLE/renderer/d3d/d3d9/Image9.h
+    src/libANGLE/renderer/d3d/d3d9/IndexBuffer9.cpp
+    src/libANGLE/renderer/d3d/d3d9/IndexBuffer9.h
+    src/libANGLE/renderer/d3d/d3d9/NativeWindow9.cpp
+    src/libANGLE/renderer/d3d/d3d9/NativeWindow9.h
+    src/libANGLE/renderer/d3d/d3d9/Query9.cpp
+    src/libANGLE/renderer/d3d/d3d9/Query9.h
+    src/libANGLE/renderer/d3d/d3d9/RenderTarget9.cpp
+    src/libANGLE/renderer/d3d/d3d9/RenderTarget9.h
+    src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp
+    src/libANGLE/renderer/d3d/d3d9/Renderer9.h
+    src/libANGLE/renderer/d3d/d3d9/ShaderCache.h
+    src/libANGLE/renderer/d3d/d3d9/ShaderExecutable9.cpp
+    src/libANGLE/renderer/d3d/d3d9/ShaderExecutable9.h
+    src/libANGLE/renderer/d3d/d3d9/StateManager9.cpp
+    src/libANGLE/renderer/d3d/d3d9/StateManager9.h
+    src/libANGLE/renderer/d3d/d3d9/SwapChain9.cpp
+    src/libANGLE/renderer/d3d/d3d9/SwapChain9.h
+    src/libANGLE/renderer/d3d/d3d9/TextureStorage9.cpp
+    src/libANGLE/renderer/d3d/d3d9/TextureStorage9.h
+    src/libANGLE/renderer/d3d/d3d9/VertexArray9.h
+    src/libANGLE/renderer/d3d/d3d9/VertexBuffer9.cpp
+    src/libANGLE/renderer/d3d/d3d9/VertexBuffer9.h
+    src/libANGLE/renderer/d3d/d3d9/VertexDeclarationCache.cpp
+    src/libANGLE/renderer/d3d/d3d9/VertexDeclarationCache.h
+    src/libANGLE/renderer/d3d/d3d9/formatutils9.cpp
+    src/libANGLE/renderer/d3d/d3d9/formatutils9.h
+    src/libANGLE/renderer/d3d/d3d9/renderer9_utils.cpp
+    src/libANGLE/renderer/d3d/d3d9/renderer9_utils.h
+    src/libANGLE/renderer/d3d/d3d9/vertexconversion.h
+    src/libANGLE/renderer/d3d/d3d9/shaders/compiled/componentmaskpremultps.h
+    src/libANGLE/renderer/d3d/d3d9/shaders/compiled/componentmaskps.h
+    src/libANGLE/renderer/d3d/d3d9/shaders/compiled/componentmaskunmultps.h
+    src/libANGLE/renderer/d3d/d3d9/shaders/compiled/luminancepremultps.h
+    src/libANGLE/renderer/d3d/d3d9/shaders/compiled/luminanceps.h
+    src/libANGLE/renderer/d3d/d3d9/shaders/compiled/luminanceunmultps.h
+    src/libANGLE/renderer/d3d/d3d9/shaders/compiled/passthroughps.h
+    src/libANGLE/renderer/d3d/d3d9/shaders/compiled/standardvs.h
+)
+
+set(LIBANGLE_PLATFORM_SOURCES "")
+if(WIN32)
+    list(APPEND LIBANGLE_PLATFORM_SOURCES
+        src/libANGLE/renderer/d3d_format.cpp
+        ${LIBANGLE_D3D_SHARED_SOURCES}
+        ${LIBANGLE_D3D9_SOURCES}
+        ${LIBANGLE_D3D11_SOURCES}
+        ${LIBANGLE_D3D11_BLIT_SHADERS}
+    )
+endif()
+
 file(GLOB LIBANGLE_NULL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/libANGLE/renderer/null/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/libANGLE/renderer/null/*.h
 )
 
+# ============================================================================
+# D3D autogen: Generate DXGI and D3D11 tables/helpers in PROJECT_BINARY_DIR
+# ============================================================================
+if(WIN32)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    set(ANGLE_RENDERER_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/libANGLE/renderer")
+    set(ANGLE_D3D11_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/libANGLE/renderer/d3d/d3d11")
+    
+    # DXGI format/support tables (required by D3D11)
+    set(DXGI_AUTOGEN_DIR "${PROJECT_BINARY_DIR}/src/libANGLE/renderer")
+    file(MAKE_DIRECTORY "${DXGI_AUTOGEN_DIR}")
+    
+    add_custom_command(
+        OUTPUT "${DXGI_AUTOGEN_DIR}/dxgi_format_map_autogen.cpp"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ANGLE_RENDERER_SRC_DIR}/angle_format.py" "${DXGI_AUTOGEN_DIR}/angle_format.py"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ANGLE_RENDERER_SRC_DIR}/angle_format_map.json" "${DXGI_AUTOGEN_DIR}/angle_format_map.json"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ANGLE_RENDERER_SRC_DIR}/dxgi_format_data.json" "${DXGI_AUTOGEN_DIR}/dxgi_format_data.json"
+        COMMAND ${Python3_EXECUTABLE} "${ANGLE_RENDERER_SRC_DIR}/gen_dxgi_format_table.py"
+        WORKING_DIRECTORY "${DXGI_AUTOGEN_DIR}"
+        DEPENDS
+            "${ANGLE_RENDERER_SRC_DIR}/gen_dxgi_format_table.py"
+            "${ANGLE_RENDERER_SRC_DIR}/angle_format.py"
+            "${ANGLE_RENDERER_SRC_DIR}/angle_format_map.json"
+            "${ANGLE_RENDERER_SRC_DIR}/dxgi_format_data.json"
+        COMMENT "Generating dxgi_format_map_autogen.cpp"
+    )
+    
+    add_custom_command(
+        OUTPUT "${DXGI_AUTOGEN_DIR}/dxgi_support_table_autogen.cpp"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ANGLE_RENDERER_SRC_DIR}/angle_format.py" "${DXGI_AUTOGEN_DIR}/angle_format.py"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ANGLE_RENDERER_SRC_DIR}/angle_format_map.json" "${DXGI_AUTOGEN_DIR}/angle_format_map.json"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ANGLE_RENDERER_SRC_DIR}/dxgi_support_data.json" "${DXGI_AUTOGEN_DIR}/dxgi_support_data.json"
+        COMMAND ${Python3_EXECUTABLE} "${ANGLE_RENDERER_SRC_DIR}/gen_dxgi_support_tables.py"
+        WORKING_DIRECTORY "${DXGI_AUTOGEN_DIR}"
+        DEPENDS
+            "${ANGLE_RENDERER_SRC_DIR}/gen_dxgi_support_tables.py"
+            "${ANGLE_RENDERER_SRC_DIR}/angle_format.py"
+            "${ANGLE_RENDERER_SRC_DIR}/angle_format_map.json"
+            "${ANGLE_RENDERER_SRC_DIR}/dxgi_support_data.json"
+        COMMENT "Generating dxgi_support_table_autogen.cpp"
+    )
+    
+    # D3D11 autogen helpers
+    set(D3D11_AUTOGEN_DIR "${PROJECT_BINARY_DIR}/src/libANGLE/renderer/d3d/d3d11")
+    file(MAKE_DIRECTORY "${D3D11_AUTOGEN_DIR}")
+    
+    add_custom_command(
+        OUTPUT "${D3D11_AUTOGEN_DIR}/Blit11Helper_autogen.inc"
+        COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/src/libANGLE/renderer/d3d/d3d11/gen_blit11helper.py"
+        WORKING_DIRECTORY "${D3D11_AUTOGEN_DIR}"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/libANGLE/renderer/d3d/d3d11/gen_blit11helper.py"
+        COMMENT "Generating Blit11Helper_autogen.inc"
+    )
+    
+    add_custom_command(
+        OUTPUT "${D3D11_AUTOGEN_DIR}/texture_format_table_autogen.cpp"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ANGLE_RENDERER_SRC_DIR}/angle_format.py" "${DXGI_AUTOGEN_DIR}/angle_format.py"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ANGLE_RENDERER_SRC_DIR}/angle_format_map.json" "${DXGI_AUTOGEN_DIR}/angle_format_map.json"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ANGLE_D3D11_SRC_DIR}/texture_format_data.json" "${D3D11_AUTOGEN_DIR}/texture_format_data.json"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ANGLE_D3D11_SRC_DIR}/texture_format_map.json" "${D3D11_AUTOGEN_DIR}/texture_format_map.json"
+        COMMAND ${Python3_EXECUTABLE} "${ANGLE_D3D11_SRC_DIR}/gen_texture_format_table.py"
+        WORKING_DIRECTORY "${D3D11_AUTOGEN_DIR}"
+        DEPENDS
+            "${ANGLE_D3D11_SRC_DIR}/gen_texture_format_table.py"
+            "${ANGLE_D3D11_SRC_DIR}/texture_format_data.json"
+            "${ANGLE_D3D11_SRC_DIR}/texture_format_map.json"
+            "${ANGLE_RENDERER_SRC_DIR}/angle_format.py"
+            "${ANGLE_RENDERER_SRC_DIR}/angle_format_map.json"
+        COMMENT "Generating texture_format_table_autogen.cpp"
+    )
+    
+    # Add generated files to D3D source lists
+    list(APPEND LIBANGLE_D3D11_SOURCES
+        "${D3D11_AUTOGEN_DIR}/Blit11Helper_autogen.inc"
+        "${D3D11_AUTOGEN_DIR}/texture_format_table_autogen.cpp"
+    )
+    
+    # Remove source-tree autogen references if present (use binary tree instead)
+    list(FILTER LIBANGLE_D3D11_SOURCES EXCLUDE REGEX ".*Blit11Helper_autogen\\.inc$")
+    list(FILTER LIBANGLE_D3D11_SOURCES EXCLUDE REGEX ".*texture_format_table_autogen\\.cpp$")
+endif()
+
 add_library(angle_libangle STATIC
     ${LIBANGLE_SOURCES}
     ${LIBANGLE_NULL_SOURCES}
+    ${LIBANGLE_PLATFORM_SOURCES}
     ${CMAKE_CURRENT_LIST_DIR}/compression_utils_portable.cpp
 )
+
+# Add DXGI autogen sources on Windows
+if(WIN32)
+    target_sources(angle_libangle PRIVATE
+        "${DXGI_AUTOGEN_DIR}/dxgi_format_map_autogen.cpp"
+        "${DXGI_AUTOGEN_DIR}/dxgi_support_table_autogen.cpp"
+    )
+endif()
 
 target_include_directories(angle_libangle
     PUBLIC
@@ -328,6 +676,9 @@ target_include_directories(angle_libangle
         ${CMAKE_CURRENT_SOURCE_DIR}/src/libANGLE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/libANGLE/renderer
         ${CMAKE_CURRENT_SOURCE_DIR}/src/libANGLE/renderer/null
+        $<$<BOOL:${WIN32}>:${PROJECT_BINARY_DIR}/src>
+        $<$<BOOL:${WIN32}>:${PROJECT_BINARY_DIR}/src/libANGLE/renderer>
+        $<$<BOOL:${WIN32}>:${PROJECT_BINARY_DIR}/src/libANGLE/renderer/d3d/d3d11>
 )
 
 target_compile_definitions(angle_libangle
@@ -338,6 +689,14 @@ target_compile_definitions(angle_libangle
         ANGLE_CAPTURE_ENABLED=0
         ANGLE_ENABLE_NULL=1
 )
+if(WIN32)
+    target_compile_definitions(angle_libangle
+        PUBLIC
+            ANGLE_ENABLE_D3D9=1
+            ANGLE_ENABLE_D3D11=1
+            ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES={"d3dcompiler_47.dll","d3dcompiler_46.dll","d3dcompiler_43.dll"}
+    )
+endif()
 
 target_link_libraries(angle_libangle
     PUBLIC
@@ -350,7 +709,12 @@ target_link_libraries(angle_libangle
 
 # Windows needs synchronization.lib for WaitOnAddress and WakeByAddressSingle
 if(WIN32)
-    target_link_libraries(angle_libangle PRIVATE synchronization)
+    target_link_libraries(angle_libangle PRIVATE synchronization d3d9 d3d11 dxgi d3dcompiler dxguid)
+    # Delay-load D3D9 for runtime flexibility (D3D11 is preferred)
+    if(MSVC)
+        target_link_libraries(angle_libangle PRIVATE delayimp)
+        target_link_options(angle_libangle PRIVATE /DELAYLOAD:d3d9.dll)
+    endif()
 endif()
 
 # ============================================================================
