@@ -7,7 +7,6 @@
   "supports": "emscripten",
   "dependencies": [
     "abseil",
-    "angle",
     {
       "name": "curl",
       "default-features": false

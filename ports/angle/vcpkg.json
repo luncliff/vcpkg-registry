@@ -4,6 +4,7 @@
   "description": "ANGLE (Almost Native Graphics Layer Engine) - OpenGL ES to platform graphics API translation",
   "homepage": "https://github.com/google/angle",
   "license": "BSD-3-Clause",
+  "supports": "!emscripten",
   "dependencies": [
     "egl-registry",
     "opengl-registry",
