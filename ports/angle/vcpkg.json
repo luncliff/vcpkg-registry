@@ -1,0 +1,28 @@
+{
+  "name": "angle",
+  "version-date": "2026-01-02",
+  "description": "ANGLE (Almost Native Graphics Layer Engine) - OpenGL ES to platform graphics API translation",
+  "homepage": "https://github.com/google/angle",
+  "license": "BSD-3-Clause",
+  "supports": "!emscripten",
+  "dependencies": [
+    "egl-registry",
+    "opengl-registry",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    "xxhash",
+    {
+      "name": "zlib-ng",
+      "default-features": false,
+      "features": [
+        "zlib-compat"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+diff --git a/src/libANGLE/Shader.cpp b/src/libANGLE/Shader.cpp
+index 601f6de..89b97ce 100644
+--- a/src/libANGLE/Shader.cpp
++++ b/src/libANGLE/Shader.cpp
+@@ -14,6 +14,7 @@
+ 
+ #include "libANGLE/Shader.h"
+ 
++#include <algorithm>
+ #include <functional>
+ #include <sstream>
+ 
+@@ -307,7 +308,7 @@ angle::Result CompileTask::postTranslate()
+         while (std::getline(inputSourceStream, line))
+         {
+             // Remove null characters from the source line
+-            std::erase(line, '\0');
++            line.erase(std::remove(line.begin(), line.end(), '\0'), line.end());
+ 
+             shaderStream << "// " << line;
+ 
