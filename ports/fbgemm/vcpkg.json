@@ -1,6 +1,6 @@
 {
   "name": "fbgemm",
-  "version-semver": "1.3.0",
+  "version-semver": "1.4.0",
   "description": "FB (Facebook) + GEMM (General Matrix-Matrix Multiplication)",
   "homepage": "https://github.com/pytorch/FBGEMM",
   "license": "BSD-3-Clause",
