@@ -45,7 +45,7 @@
       "port-version": 0
     },
     "dlpack": {
-      "baseline": "1.2",
+      "baseline": "1.3",
       "port-version": 0
     },
     "eigen3": {
