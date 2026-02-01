@@ -2,7 +2,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO abseil/abseil-cpp
     REF "${VERSION}"
-    SHA512 7083b73c3cf763f6f7a7edb70a5171f44d27045a0f5e52ca043e0a86379af2c50cf85dbfea30ebaa22a7bb2929452581d26b1ba18945023b057267d4c3bad2f7
+    SHA512 55bae4cbdf987ad94b4006d9928ef2aafc6e9ac635f02a49aa9b70124c62978a89a3db9f249d1371329df7ab2e25732bee848df4e8530e1ce113833bcbdcbb9a
     HEAD_REF master
 )
 
@@ -21,6 +21,19 @@ vcpkg_cmake_configure(
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/absl PACKAGE_NAME absl)
+
+# Remove test-related pkgconfig files that reference non-installed test components
+file(REMOVE
+    "${CURRENT_PACKAGES_DIR}/lib/pkgconfig/absl_heterogeneous_lookup_testing.pc"
+    "${CURRENT_PACKAGES_DIR}/lib/pkgconfig/absl_constexpr_testing_internal.pc"
+    "${CURRENT_PACKAGES_DIR}/lib/pkgconfig/absl_random_internal_distribution_test_util.pc"
+    "${CURRENT_PACKAGES_DIR}/lib/pkgconfig/absl_iterator_traits_test_helper_internal.pc"
+    "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/absl_heterogeneous_lookup_testing.pc"
+    "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/absl_constexpr_testing_internal.pc"
+    "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/absl_random_internal_distribution_test_util.pc"
+    "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/absl_iterator_traits_test_helper_internal.pc"
+)
+
 vcpkg_fixup_pkgconfig()
 
 file(REMOVE_RECURSE
