@@ -1,103 +1,92 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3d175fb..957d663 100644
+index abc123..def456 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -183,6 +183,7 @@ add_dependencies(fbgemm_autovec defs.bzl)
- # Need to change it to /MT in static case
- if(MSVC)
-   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4267 /wd4305 /wd4309")
-+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
-   if(FBGEMM_LIBRARY_TYPE STREQUAL "static")
-     target_compile_definitions(fbgemm_generic PRIVATE ASMJIT_STATIC)
-     target_compile_definitions(fbgemm_avx2 PRIVATE ASMJIT_STATIC)
-@@ -203,7 +204,6 @@ if(MSVC)
- else(MSVC)
-   string(APPEND CMAKE_CXX_FLAGS " -Wall")
-   string(APPEND CMAKE_CXX_FLAGS " -Wextra")
--  string(APPEND CMAKE_CXX_FLAGS " -Werror")
-   string(APPEND CMAKE_CXX_FLAGS " -Wno-deprecated-declarations")
-   string(APPEND CMAKE_CXX_FLAGS " -Wunknown-pragmas")
-   string(APPEND CMAKE_CXX_FLAGS " -Wimplicit-fallthrough")
-@@ -254,7 +254,8 @@ message(STATUS "CMAKE_CXX_FLAGS_DEBUG is ${CMAKE_CXX_FLAGS_DEBUG}")
- message(STATUS "CMAKE_CXX_FLAGS_RELEASE is ${CMAKE_CXX_FLAGS_RELEASE}")
- message(STATUS "==========")
+@@ -208,8 +208,8 @@ cpp_library(
+   DEFINITIONS
+     ${fbgemm_generic_defs}
+   DEPS
+-    $<BUILD_INTERFACE:cpuinfo>
+-    $<BUILD_INTERFACE:asmjit>
++    cpuinfo::cpuinfo
++    asmjit::asmjit
+ )
+ 
+ set(fbgemm_targets)
+@@ -238,8 +238,8 @@ cpp_library(
+     MSVC_FLAGS
+       ${CXX_AVX2_FLAGS}
+     DEPS
+-      $<BUILD_INTERFACE:cpuinfo>
+-      $<BUILD_INTERFACE:asmjit>
++      cpuinfo::cpuinfo
++      asmjit::asmjit
+       fbgemm_generic
+   )
+ 
+@@ -272,8 +272,8 @@ cpp_library(
+     MSVC_FLAGS
+       ${CXX_AVX512_FLAGS} ${CXX_AVX2_FLAGS}
+     DEPS
+-      $<BUILD_INTERFACE:cpuinfo>
+-      $<BUILD_INTERFACE:asmjit>
++      cpuinfo::cpuinfo
++      asmjit::asmjit
+       fbgemm_generic
+   )
+ 
+@@ -321,8 +321,8 @@ cpp_library(
+     DEFINITIONS
+       ${fbgemm_arm_defs}
+     DEPS
+-      $<BUILD_INTERFACE:cpuinfo>
+-      $<BUILD_INTERFACE:asmjit>
++      cpuinfo::cpuinfo
++      asmjit::asmjit
+       fbgemm_generic
+   )
+ 
+@@ -378,8 +378,8 @@ cpp_library(
+     DEFINITIONS
+       ${fbgemm_arm_defs}
+     DEPS
+-      $<BUILD_INTERFACE:cpuinfo>
+-      $<BUILD_INTERFACE:asmjit>
++      cpuinfo::cpuinfo
++      asmjit::asmjit
+       fbgemm_generic
+   )
+ 
+@@ -410,8 +410,8 @@ cpp_library(
+     ENABLE_IPO
+       ${FBGEMM_USE_IPO}
+     DEPS
+-      $<BUILD_INTERFACE:cpuinfo>
+-      $<BUILD_INTERFACE:asmjit>
++      cpuinfo::cpuinfo
++      asmjit::asmjit
+       fbgemm_generic
+   )
+ 
+@@ -447,8 +447,8 @@ install(
+ # Asmjit Target
+ ################################################################################
  
 -if(NOT TARGET asmjit)
-+find_package(asmjit CONFIG REQUIRED) # asmjit::asmjit
+-  # Download asmjit from github if ASMJIT_SRC_DIR is not specified.
++find_package(asmjit CONFIG REQUIRED)
 +if(FALSE)
-   # Download asmjit from github if ASMJIT_SRC_DIR is not specified.
    if(NOT DEFINED ASMJIT_SRC_DIR)
      set(ASMJIT_SRC_DIR "${FBGEMM_SOURCE_DIR}/external/asmjit"
-@@ -287,7 +288,8 @@ if(NOT TARGET asmjit)
-   endif()
- endif()
+       CACHE STRING "asmjit source directory from submodules")
+@@ -469,8 +469,8 @@ endif()
+ # Cpuinfo Target
+ ################################################################################
  
 -if(NOT TARGET cpuinfo)
-+find_package(cpuinfo CONFIG REQUIRED) # cpuinfo::cpuinfo
+-  #Download cpuinfo from github if CPUINFO_SOURCE_DIR is not specified.
++find_package(cpuinfo CONFIG REQUIRED)
 +if(FALSE)
-   #Download cpuinfo from github if CPUINFO_SOURCE_DIR is not specified.
    if(NOT DEFINED CPUINFO_SOURCE_DIR)
      set(CPUINFO_SOURCE_DIR "${FBGEMM_SOURCE_DIR}/external/cpuinfo"
-@@ -308,26 +310,26 @@ endif()
- target_include_directories(fbgemm_generic BEFORE
-       PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}>
-       PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}/include>
--      PRIVATE "${ASMJIT_SRC_DIR}/src"
--      PRIVATE "${CPUINFO_SOURCE_DIR}/include")
-+)
-+target_link_libraries(fbgemm_generic PUBLIC asmjit::asmjit cpuinfo::cpuinfo)
- 
- target_include_directories(fbgemm_avx2 BEFORE
-       PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}>
-       PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}/include>
--      PRIVATE "${ASMJIT_SRC_DIR}/src"
--      PRIVATE "${CPUINFO_SOURCE_DIR}/include")
-+)
-+target_link_libraries(fbgemm_avx2 PUBLIC asmjit::asmjit cpuinfo::cpuinfo)
- 
- target_include_directories(fbgemm_avx512 BEFORE
-       PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}>
-       PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}/include>
--      PRIVATE "${ASMJIT_SRC_DIR}/src"
--      PRIVATE "${CPUINFO_SOURCE_DIR}/include")
-+)
-+target_link_libraries(fbgemm_avx512 PUBLIC asmjit::asmjit cpuinfo::cpuinfo)
- 
- target_include_directories(fbgemm_autovec BEFORE
-       PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}>
-       PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}/include>
--      PRIVATE "${ASMJIT_SRC_DIR}/src"
--      PRIVATE "${CPUINFO_SOURCE_DIR}/include")
-+)
-+target_link_libraries(fbgemm_autovec PUBLIC asmjit::asmjit cpuinfo::cpuinfo)
- 
- if((FBGEMM_LIBRARY_TYPE STREQUAL "default" AND BUILD_SHARED_LIB) OR FBGEMM_LIBRARY_TYPE STREQUAL "shared")
-   add_library(fbgemm SHARED
-@@ -367,8 +369,8 @@ target_include_directories(fbgemm BEFORE
-     PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}/include>)
- 
- target_link_libraries(fbgemm PUBLIC
--  $<BUILD_INTERFACE:asmjit>
--  $<BUILD_INTERFACE:cpuinfo>)
-+  asmjit::asmjit
-+  cpuinfo::cpuinfo)
- 
- if(OpenMP_FOUND)
-   target_link_libraries(fbgemm PUBLIC OpenMP::OpenMP_CXX)
-@@ -391,16 +393,6 @@ install(
-   DESTINATION share/cmake/fbgemm
-   FILE fbgemmLibraryConfig.cmake)
- 
--if(MSVC)
--  if(FBGEMM_LIBRARY_TYPE STREQUAL "shared")
--    install(
--      FILES $<TARGET_PDB_FILE:fbgemm> $<TARGET_PDB_FILE:asmjit>
--      DESTINATION ${CMAKE_INSTALL_LIBDIR} OPTIONAL)
--  endif()
--  install(TARGETS fbgemm DESTINATION ${CMAKE_INSTALL_LIBDIR})
--  install(TARGETS asmjit DESTINATION ${CMAKE_INSTALL_LIBDIR})
--endif()
--
- #Make project importable from the build directory
- #export(TARGETS fbgemm asmjit FILE fbgemmLibraryConfig.cmake)
- 
+       CACHE STRING "cpuinfo source directory from submodules")
