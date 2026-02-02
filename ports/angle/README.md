@@ -136,6 +136,85 @@ After CMake changes:
 - No D3D11 multiview or advanced compositor features
 - Frame capture still disabled (`ANGLE_CAPTURE_ENABLED=0`)
 
+## Phase 3: Vulkan Backend (Windows + Linux) - 2026-02-02
+
+### Objectives
+
+Enable ANGLE's Vulkan backend on Windows and Linux, leveraging the optional `vulkan` feature (enabled by default on these platforms). The Vulkan backend is feature-gated via vcpkg's manifest system and implemented with cross-platform CMake support.
+
+### Implementation Status (2026-02-02)
+
+✅ **vcpkg feature defined**: `vulkan` feature added with platform filter `windows | linux`, default-enabled  
+✅ **Dependencies added**: `spirv-headers`, `vulkan-headers`, `vulkan-loader` (>= 1.4.328.0) declared in vcpkg.json  
+✅ **Portfile updated**: `vcpkg_check_features` maps `vulkan` feature → `ANGLE_ENABLE_VULKAN` CMake option  
+✅ **CMake backend wired**: Vulkan sources extracted from `vulkan_backend.gni` and conditionally added for Windows/Linux  
+🧪 **Build testing**: In progress—running editable vcpkg install on Windows to validate
+
+### Scope
+
+- **Platforms**: Windows (Win32 surface) + Linux (headless, simple, and DMA-buf offscreen surfaces)
+- **Backend**: Vulkan renderer with platform-specific display/surface implementations
+- **Feature control**: Optional via vcpkg feature; default ON for Windows/Linux, OFF otherwise
+- **Autogen**: Uses upstream pre-generated files (`vk_format_table_autogen.cpp`, `vk_internal_shaders_autogen.cpp`, `vk_mandatory_format_support_table_autogen.cpp`)
+- **Cross-platform**: Both Windows and Linux paths implemented with appropriate conditional compilation
+
+### Implementation Steps
+
+#### 1. vcpkg Feature and Dependencies
+
+Added `vulkan` feature in [vcpkg.json](vcpkg.json):
+- Default-enabled on `windows | linux` platforms
+- Brings in `spirv-headers`, `vulkan-headers`, `vulkan-loader` (>= 1.4.328.0)
+
+#### 2. Portfile Feature Mapping
+
+Updated [portfile.cmake](portfile.cmake) to use `vcpkg_check_features`:
+- Maps `vulkan` → `ANGLE_ENABLE_VULKAN` CMake option
+- Follows pattern from other ports (imgui, filament) for consistent feature handling
+
+#### 3. CMake Backend Integration
+
+Updated [CMakeLists.txt](CMakeLists.txt):
+- Added `option(ANGLE_ENABLE_VULKAN)` with vcpkg-controlled default
+- `find_package(Vulkan REQUIRED)` when feature enabled
+- Extracted full Vulkan backend sources from `vulkan_backend.gni` (~110+ files):
+  - Core backend: `BufferVk`, `ContextVk`, `RendererVk`, `CommandQueue`, etc.
+  - Autogen files: `vk_format_table_autogen.cpp`, `vk_internal_shaders_autogen.cpp`, `vk_mandatory_format_support_table_autogen.cpp`
+  - Platform-specific surfaces:
+    - **Windows**: `win32/DisplayVkWin32`, `win32/WindowSurfaceVkWin32`
+    - **Linux**: `linux/DisplayVkLinux`, `linux/DmaBufImageSiblingVkLinux`, `linux/display/DisplayVkSimple`, `linux/headless/DisplayVkHeadless`
+- Conditional source inclusion: `LIBANGLE_VULKAN_SOURCES` + `LIBANGLE_VULKAN_WIN32_SOURCES` / `LIBANGLE_VULKAN_LINUX_SOURCES`
+- Added `ANGLE_ENABLE_VULKAN=1` define when enabled (both Windows and Linux)
+- Linked `Vulkan::Vulkan` target from vcpkg's vulkan-loader
+
+#### 4. Validation (In Progress)
+
+Running test install on Windows:
+```powershell
+vcpkg install --overlay-ports=ports --x-buildtrees-root=buildtrees --x-packages-root=packages --x-install-root=installed --editable angle
+```
+
+Expecting:
+- Clean build with Vulkan backend alongside D3D9/D3D11 on Windows
+- `EGL.dll` / `GLESv2.dll` link successfully with Vulkan symbols resolved
+- No unresolved Vulkan dependencies or missing sources
+
+### Known Limitations (Phase 3 - Initial)
+
+- **Autogen regeneration**: Currently uses upstream pre-generated files; no CMake hooks for regenerating Vulkan format tables or internal shaders
+- **OpenCL support**: OpenCL-on-Vulkan (`CL*Vk` classes) excluded from this phase
+- **X11/Wayland/GBM**: Linux X11 (xcb), Wayland, and GBM display backends not yet wired (headless and simple only)
+- **Android/Fuchsia/macOS**: Platform-specific Vulkan surfaces for these OSes not included (Windows + Linux only)
+- **Vulkan validation layers**: Not explicitly enabled or configured; users must set up VK_LAYER_PATH manually if needed
+
+### Next Steps
+
+- ✅ Complete Windows build testing
+- Validate Linux build (via CI or local Linux environment)
+- Update [GN_ANALYSIS.md](GN_ANALYSIS.md) with detailed Vulkan source mapping if build failures reveal gaps
+- Consider enabling X11/Wayland backends for broader Linux display support
+- Document Vulkan SDK assumptions (vcpkg-provided vs system SDK) in troubleshooting guide
+
 ## Analysis of ANGLE Build System
 
 ### GN Build Structure

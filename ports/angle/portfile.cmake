@@ -28,10 +28,17 @@ file(COPY
     DESTINATION "${SOURCE_PATH}/src/common"
 )
 
+# Map vcpkg features to CMake options
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+        vulkan  ANGLE_ENABLE_VULKAN
+)
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         "-DPKG_CONFIG_EXECUTABLE=${PKGCONFIG}"
+        ${FEATURE_OPTIONS}
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH share/angle PACKAGE_NAME angle)

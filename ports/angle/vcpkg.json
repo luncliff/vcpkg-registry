@@ -24,5 +24,30 @@
         "zlib-compat"
       ]
     }
-  ]
+  ],
+  "default-features": [
+    {
+      "name": "vulkan",
+      "platform": "windows | linux"
+    }
+  ],
+  "features": {
+    "vulkan": {
+      "description": "Build with Vulkan backend",
+      "dependencies": [
+        {
+          "name": "spirv-headers",
+          "version>=": "1.4.328.0"
+        },
+        {
+          "name": "vulkan-headers",
+          "version>=": "1.4.328.0"
+        },
+        {
+          "name": "vulkan-loader",
+          "version>=": "1.4.328.0"
+        }
+      ]
+    }
+  }
 }

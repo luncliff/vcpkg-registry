@@ -176,6 +176,24 @@ src/libANGLE/renderer/d3d/d3d11/*.cpp
 **Vulkan Backend** (~200+ files):
 ```
 src/libANGLE/renderer/vulkan/*.cpp
+src/libANGLE/renderer/vulkan/win32/*.cpp (Windows)
+src/libANGLE/renderer/vulkan/linux/*.cpp (Linux)
+src/libANGLE/renderer/vulkan/android/*.cpp (Android)
+src/libANGLE/renderer/vulkan/mac/*.mm (macOS)
+```
+
+**Vulkan Autogen Files** (pre-generated in upstream):
+```
+src/libANGLE/renderer/vulkan/vk_format_table_autogen.cpp
+src/libANGLE/renderer/vulkan/vk_internal_shaders_autogen.cpp
+src/libANGLE/renderer/vulkan/vk_mandatory_format_support_table_autogen.cpp
+```
+
+**Vulkan Generator Scripts** (available but not yet wired in CMake):
+```
+src/libANGLE/renderer/vulkan/gen_vk_format_table.py
+src/libANGLE/renderer/vulkan/gen_vk_internal_shaders.py
+src/libANGLE/renderer/vulkan/gen_vk_mandatory_format_support_table.py
 ```
 
 **Metal Backend** (~100+ files):
@@ -256,10 +274,169 @@ CMake equivalent would need:
 
 ```cmake
 option(ANGLE_ENABLE_D3D11 "Enable Direct3D 11 backend" ON)
-option(ANGLE_ENABLE_VULKAN "Enable Vulkan backend" ON)
+option(ANGLE_ENABLE_VULKAN "Enable Vulkan backend" OFF)  # Controlled by vcpkg feature
 option(ANGLE_ENABLE_METAL "Enable Metal backend" ${APPLE})
 option(ANGLE_ENABLE_OPENGL "Enable OpenGL backend" ON)
 ```
+
+**Note**: As of Phase 3 (2026-02-02), `ANGLE_ENABLE_VULKAN` is wired and controlled by the vcpkg `vulkan` feature (default-enabled on Windows/Linux). The CMake option is set automatically via `vcpkg_check_features` in portfile.cmake.
+
+## Vulkan Backend Source Mapping (Phase 3 - 2026-02-02)
+
+### Vulkan Backend Core Sources
+
+From `src/libANGLE/renderer/vulkan/vulkan_backend.gni`, the following sources are platform-independent:
+
+```
+AllocatorHelperPool.cpp/h
+BufferVk.cpp/h
+CommandQueue.cpp/h
+CompilerVk.cpp/h
+ContextVk.cpp/h
+DebugAnnotatorVk.cpp/h
+DeviceVk.cpp/h
+DisplayVk.cpp/h
+DisplayVk_api.h
+FenceNVVk.cpp/h
+FramebufferVk.cpp/h
+ImageVk.cpp/h
+MemoryObjectVk.cpp/h
+MemoryTracking.cpp/h
+OverlayVk.cpp/h
+PersistentCommandPool.cpp/h
+ProgramExecutableVk.cpp/h
+ProgramPipelineVk.cpp/h
+ProgramVk.cpp/h
+QueryVk.cpp/h
+RenderTargetVk.cpp/h
+RenderbufferVk.cpp/h
+SamplerVk.cpp/h
+SecondaryCommandBuffer.cpp/h
+SecondaryCommandPool.cpp/h
+SemaphoreVk.cpp/h
+ShaderInterfaceVariableInfoMap.cpp/h
+ShaderVk.cpp/h
+ShareGroupVk.cpp/h
+Suballocation.cpp/h
+SurfaceVk.cpp/h
+SyncVk.cpp/h
+TextureVk.cpp/h
+TransformFeedbackVk.cpp/h
+UtilsVk.cpp/h
+VertexArrayVk.cpp/h
+VkImageImageSiblingVk.cpp/h
+VulkanSecondaryCommandBuffer.cpp/h
+spv_utils.cpp/h
+vk_barrier_data.cpp/h
+vk_cache_utils.cpp/h
+vk_caps_utils.cpp/h
+vk_command_buffer_utils.h
+vk_format_table_autogen.cpp
+vk_format_utils.cpp/h
+vk_helpers.cpp/h
+vk_internal_shaders_autogen.cpp/h
+vk_mandatory_format_support_table_autogen.cpp
+vk_mem_alloc_wrapper.cpp/h
+vk_ref_counted_event.cpp/h
+vk_renderer.cpp/h
+vk_resource.cpp/h
+vk_utils.cpp/h
+vk_wrapper.h
+```
+
+### Platform-Specific Vulkan Sources
+
+**Windows (is_win):**
+```
+win32/DisplayVkWin32.cpp/h
+win32/WindowSurfaceVkWin32.cpp/h
+```
+
+**Linux (is_linux || is_chromeos):**
+```
+linux/DeviceVkLinux.cpp/h
+linux/DisplayVkLinux.cpp/h
+linux/DisplayVkOffscreen.cpp/h
+linux/DmaBufImageSiblingVkLinux.cpp/h
+linux/display/DisplayVkSimple.cpp/h
+linux/display/WindowSurfaceVkSimple.cpp/h
+linux/headless/DisplayVkHeadless.cpp/h
+linux/headless/WindowSurfaceVkHeadless.cpp/h
+```
+
+**Linux X11 (angle_use_x11):**
+```
+linux/xcb/DisplayVkXcb.cpp/h
+linux/xcb/WindowSurfaceVkXcb.cpp/h
+```
+*Status: Not yet implemented in this port*
+
+**Linux Wayland (angle_use_wayland):**
+```
+linux/wayland/DisplayVkWayland.cpp/h
+linux/wayland/WindowSurfaceVkWayland.cpp/h
+```
+*Status: Not yet implemented in this port*
+
+**Linux GBM (angle_use_gbm):**
+```
+linux/gbm/DisplayVkGbm.cpp/h
+```
+*Status: Not yet implemented in this port*
+
+**Android (is_android):**
+```
+android/AHBFunctions.cpp/h
+android/DisplayVkAndroid.cpp/h
+android/HardwareBufferImageSiblingVkAndroid.cpp/h
+android/WindowSurfaceVkAndroid.cpp/h
+android/vk_android_utils.cpp/h
+```
+*Status: Not yet implemented in this port*
+
+**Fuchsia (is_fuchsia):**
+```
+fuchsia/DisplayVkFuchsia.cpp/h
+fuchsia/WindowSurfaceVkFuchsia.cpp/h
+```
+*Status: Not yet implemented in this port*
+
+**macOS (is_mac):**
+```
+mac/DisplayVkMac.h/mm
+mac/IOSurfaceSurfaceVkMac.h/mm
+mac/WindowSurfaceVkMac.h/mm
+```
+*Status: Not yet implemented in this port*
+
+### OpenCL-on-Vulkan Sources (angle_enable_cl)
+
+```
+CLCommandQueueVk.cpp/h
+CLContextVk.cpp/h
+CLDeviceVk.cpp/h
+CLEventVk.cpp/h
+CLKernelVk.cpp/h
+CLMemoryVk.cpp/h
+CLPlatformVk.cpp/h
+CLProgramVk.cpp/h
+CLSamplerVk.cpp/h
+cl_types.h
+clspv_utils.cpp/h
+vk_cl_utils.cpp/h
+```
+*Status: Excluded from Phase 3 (OpenCL support not enabled)*
+
+### Vulkan Autogen
+
+ANGLE's Vulkan backend uses pre-generated files for format tables and internal shaders. These are checked into the upstream repository:
+
+- **vk_format_table_autogen.cpp**: Generated by `gen_vk_format_table.py` from `vk_format_map.json`
+- **vk_internal_shaders_autogen.cpp/.h**: Generated by `gen_vk_internal_shaders.py` from GLSL shaders in `shaders/` directory
+- **vk_mandatory_format_support_table_autogen.cpp**: Generated by `gen_vk_mandatory_format_support_table.py` from `vk_mandatory_format_support_data.json`
+
+**Current approach**: Use upstream pre-generated files (no CMake regeneration hooks).  
+**Future improvement**: Add custom commands in CMake to run Python generators when JSON/shader inputs change.
 
 ## Recommendations for Complete Implementation
 
