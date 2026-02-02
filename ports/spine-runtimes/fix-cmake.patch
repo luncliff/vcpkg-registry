@@ -47,13 +47,17 @@ index 9829b42..0669684 100644
  # Export target
  export(
 diff --git a/spine-glfw/CMakeLists.txt b/spine-glfw/CMakeLists.txt
-index 9f1a99c..0555ea4 100644
+index 8dea590..b7d54ee 100644
 --- a/spine-glfw/CMakeLists.txt
 +++ b/spine-glfw/CMakeLists.txt
-@@ -3,48 +3,34 @@ project(spine-glfw)
+@@ -7,115 +7,37 @@ include(FetchContent)
+ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
  
- include(FetchContent)
- # Fetch GLFW
+ # Fetch GLFW with minimal targets
+-set(GLFW_BUILD_EXAMPLES OFF)
+-set(GLFW_BUILD_TESTS OFF)
+-set(GLFW_BUILD_DOCS OFF)
+-set(GLFW_INSTALL OFF)
 -FetchContent_Declare(
 -        glfw
 -        GIT_REPOSITORY https://github.com/glfw/glfw.git
@@ -61,24 +65,69 @@ index 9f1a99c..0555ea4 100644
 -        GIT_SHALLOW 1
 -)
 -FetchContent_MakeAvailable(glfw)
--set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
--set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
--set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
--set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
 +find_package(glfw3 CONFIG REQUIRED) # glfw
  
- # Fetch glbinding
+ # Fetch glbinding with minimal targets
+-set(OPTION_BUILD_DOCS OFF)
+-set(OPTION_BUILD_EXAMPLES OFF)
+-set(OPTION_BUILD_TEST OFF)
+-set(OPTION_BUILD_TOOLS OFF)
 -FetchContent_Declare(
 -        glbinding
 -        GIT_REPOSITORY https://github.com/cginternals/glbinding.git
--        GIT_TAG v3.3.0
+-        GIT_TAG v3.4.0
 -        GIT_SHALLOW 1
 -)
 -FetchContent_MakeAvailable(glbinding)
--set(OPTION_BUILD_DOCS OFF CACHE BOOL " " FORCE)
--set(OPTION_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
--set(OPTION_BUILD_TEST OFF CACHE BOOL " " FORCE)
--set(OPTION_BUILD_TOOLS OFF CACHE BOOL " " FORCE)
+-
+-# Organize dependency targets into folders for cleaner IDE view
+-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+-set_target_properties(glfw PROPERTIES FOLDER "Dependencies")
+-set_target_properties(glbinding PROPERTIES FOLDER "Dependencies")
+-set_target_properties(glbinding-aux PROPERTIES FOLDER "Dependencies")
+-if(TARGET glbinding-glmeta)
+-    set_target_properties(glbinding-glmeta PROPERTIES FOLDER "Dependencies")
+-endif()
+-if(TARGET KHRplatform-sources)
+-    set_target_properties(KHRplatform-sources PROPERTIES FOLDER "Dependencies")
+-endif()
+-if(TARGET cubescape-sdl-gl)
+-    set_target_properties(cubescape-sdl-gl PROPERTIES FOLDER "Dependencies/glbinding-examples")
+-endif()
+-if(TARGET cubescape-sdl-gles)
+-    set_target_properties(cubescape-sdl-gles PROPERTIES FOLDER "Dependencies/glbinding-examples")
+-endif()
+-if(TARGET cubescape-shared-gl)
+-    set_target_properties(cubescape-shared-gl PROPERTIES FOLDER "Dependencies/glbinding-examples")
+-endif()
+-if(TARGET cubescape-shared-gles)
+-    set_target_properties(cubescape-shared-gles PROPERTIES FOLDER "Dependencies/glbinding-examples")
+-endif()
+-# Organize cmake utility targets
+-if(TARGET uninstall)
+-    set_target_properties(uninstall PROPERTIES FOLDER "CMake")
+-endif()
+-if(TARGET update_mappings)
+-    set_target_properties(update_mappings PROPERTIES FOLDER "CMake")
+-endif()
+-if(TARGET pack)
+-    set_target_properties(pack PROPERTIES FOLDER "CMake")
+-endif()
+-if(TARGET pack-glbinding)
+-    set_target_properties(pack-glbinding PROPERTIES FOLDER "CMake")
+-endif()
+-if(TARGET install)
+-    set_target_properties(install PROPERTIES FOLDER "CMake")
+-endif()
+-if(TARGET component_install)
+-    set_target_properties(component_install PROPERTIES FOLDER "CMake")
+-endif()
+-if(TARGET ALL_BUILD)
+-    set_target_properties(ALL_BUILD PROPERTIES FOLDER "CMake")
+-endif()
+-if(TARGET ZERO_CHECK)
+-    set_target_properties(ZERO_CHECK PROPERTIES FOLDER "CMake")
+-endif()
 +find_package(glbinding CONFIG REQUIRED) # glbinding::glbinding glbinding::glbinding-aux
  
  include_directories(${glbinding_SOURCE_DIR}/include)
@@ -110,11 +159,31 @@ index 9f1a99c..0555ea4 100644
  # Example
  add_executable(spine-glfw-example example/main.cpp)
  target_link_libraries(spine-glfw-example PRIVATE glfw)
+-target_link_libraries(spine-glfw-example PRIVATE OpenGL::GL)
+-target_link_libraries(spine-glfw-example LINK_PUBLIC spine-glfw)
+ target_link_libraries(spine-glfw-example PRIVATE glbinding::glbinding)
+-set_property(TARGET spine-glfw-example PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/spine-glfw")
+-
+-# spine-cpp-lite Example
+-add_executable(spine-glfw-example-cpp-lite example/main-cpp-lite.cpp)
+-target_link_libraries(spine-glfw-example-cpp-lite PRIVATE glfw)
+-target_link_libraries(spine-glfw-example-cpp-lite PRIVATE OpenGL::GL)
+-target_link_libraries(spine-glfw-example-cpp-lite LINK_PUBLIC spine-glfw)
+-target_link_libraries(spine-glfw-example-cpp-lite PRIVATE glbinding::glbinding)
+-set_property(TARGET spine-glfw-example-cpp-lite PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/spine-glfw")
+-
+-
+-# copy data to build directory
+-add_custom_command(TARGET spine-glfw-example PRE_BUILD
+-        COMMAND ${CMAKE_COMMAND} -E copy_directory
+-        ${CMAKE_CURRENT_LIST_DIR}/data $<TARGET_FILE_DIR:spine-glfw-example>/data)
++target_link_libraries(spine-glfw-example PRIVATE OpenGL::GL)
++target_link_libraries(spine-glfw-example PRIVATE spine-glfw)
 diff --git a/spine-sdl/CMakeLists.txt b/spine-sdl/CMakeLists.txt
-index ad1cba9..d18ae73 100644
+index f87f854..896bb38 100644
 --- a/spine-sdl/CMakeLists.txt
 +++ b/spine-sdl/CMakeLists.txt
-@@ -2,43 +2,35 @@ cmake_minimum_required(VERSION 3.10)
+@@ -2,82 +2,39 @@ cmake_minimum_required(VERSION 3.10)
  project(spine-sdl)
  
  # Default flags
@@ -145,7 +214,7 @@ index ad1cba9..d18ae73 100644
 -FetchContent_MakeAvailable(SDL)
 +find_package(SDL2 CONFIG REQUIRED)
 +if((NOT TARGET SDL2::SDL2) AND (TARGET SDL2::SDL2-static))
-+	add_library(SDL2::SDL2 ALIAS SDL2::SDL2-static)
++add_library(SDL2::SDL2 ALIAS SDL2::SDL2-static)
 +endif()
  
  include_directories(src)
@@ -176,3 +245,43 @@ index ad1cba9..d18ae73 100644
  # Example (spine-sdl-c)
  add_executable(spine-sdl-c-example example/main.c)
  target_link_libraries(spine-sdl-c-example SDL2-static spine-sdl-c)
+-set_property(TARGET spine-sdl-c-example PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/spine-sdl")
+ 
+ # Example (spine-sdl-cpp)
+ add_executable(spine-sdl-cpp-example example/main.cpp)
+ target_link_libraries(spine-sdl-cpp-example SDL2-static spine-sdl-cpp)
+-set_property(TARGET spine-sdl-cpp-example PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/spine-sdl")
+-
+-# copy data to build directory
+-add_custom_command(TARGET spine-sdl-c-example PRE_BUILD
+-		COMMAND ${CMAKE_COMMAND} -E copy_directory
+-		${CMAKE_CURRENT_LIST_DIR}/data $<TARGET_FILE_DIR:spine-sdl-c-example>/data)
+-
+-add_custom_command(TARGET spine-sdl-cpp-example PRE_BUILD
+-		COMMAND ${CMAKE_COMMAND} -E copy_directory
+-		${CMAKE_CURRENT_LIST_DIR}/data $<TARGET_FILE_DIR:spine-sdl-cpp-example>/data)
+-
+-if(APPLE)
+-	# Create the entitlements file in build directory
+-	file(WRITE ${CMAKE_BINARY_DIR}/debug.entitlements
+-	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+-	<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+-	<plist version=\"1.0\">
+-	<dict>
+-		<key>com.apple.security.get-task-allow</key>
+-		<true/>
+-	</dict>
+-	</plist>")
+-
+-	# Sign the executables
+-	add_custom_command(TARGET spine-sdl-cpp-example POST_BUILD
+-		COMMAND codesign --force --sign - --entitlements ${CMAKE_BINARY_DIR}/debug.entitlements $<TARGET_FILE:spine-sdl-cpp-example>
+-		COMMENT "Signing target with entitlements for Instruments"
+-	)
+-
+-	add_custom_command(TARGET spine-sdl-c-example POST_BUILD
+-		COMMAND codesign --force --sign - --entitlements ${CMAKE_BINARY_DIR}/debug.entitlements $<TARGET_FILE:spine-sdl-c-example>
+-		COMMENT "Signing target with entitlements for Instruments"
+-	)
+-endif()
+\ No newline at end of file

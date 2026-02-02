@@ -1,62 +1,40 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txtindex 57a37d3..898c21b 100644
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ca03e57..d83260f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -13,7 +13,7 @@ project(dispatch
-   VERSION 1.3
-   LANGUAGES C CXX)
- 
--if("${CMAKE_C_SIMULATE_ID}" STREQUAL "MSVC")
-+if(WIN32)
+@@ -17,7 +17,7 @@ if("${CMAKE_C_SIMULATE_ID}" STREQUAL "MSVC")
    include(ClangClCompileRules)
  endif()
  
+-if(CMAKE_SYSTEM_NAME STREQUAL Windows)
++if(CMAKE_SYSTEM_NAME MATCHES Windows)
+   if(NOT MINGW)
+     include(DispatchWindowsSupport)
+     dispatch_windows_arch_spelling(${CMAKE_SYSTEM_PROCESSOR} DISPATCH_MSVC_ARCH)
+@@ -244,7 +244,7 @@ if(HAVE_MACH)
+ else()
+   set(USE_MACH_SEM 0)
+ endif()
+-if(CMAKE_SYSTEM_NAME STREQUAL Windows)
++if(CMAKE_SYSTEM_NAME MATCHES Windows)
+   add_compile_definitions($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:USE_WIN32_SEM>)
+ endif()
+ check_library_exists(pthread sem_init "" USE_POSIX_SEM)
 diff --git a/cmake/modules/DispatchCompilerWarnings.cmake b/cmake/modules/DispatchCompilerWarnings.cmake
-index 35b80f3..29e1f17 100644
+index cd71f36..acc7b60 100644
 --- a/cmake/modules/DispatchCompilerWarnings.cmake
 +++ b/cmake/modules/DispatchCompilerWarnings.cmake
-@@ -1,8 +1,8 @@
+@@ -1,6 +1,7 @@
  
 -if("${CMAKE_C_SIMULATE_ID}" STREQUAL "MSVC")
-+if(WIN32)
++if(WIN32 AND MSVC)
    # TODO: someone needs to provide the msvc equivalent warning flags
 +  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
- else()
--  add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Werror>)
-   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wall>)
-   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wextra>)
- 
-diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 811e131..9b2e7e0 100644
---- a/src/CMakeLists.txt
-+++ b/src/CMakeLists.txt
-@@ -116,8 +116,8 @@ if(DISPATCH_ENABLE_ASSERTS)
-     DISPATCH_DEBUG=1)
- endif()
- 
--if("${CMAKE_C_SIMULATE_ID}" STREQUAL "MSVC")
--  target_compile_options(dispatch PRIVATE /EHs-c-)
-+if(WIN32)
-+  target_compile_options(dispatch PRIVATE /EHs-c-) # some sources can't use C++ Exception
-   target_compile_options(dispatch PRIVATE /W3)
- else()
-   target_compile_options(dispatch PRIVATE -fno-exceptions)
-@@ -125,7 +124,9 @@ else()
- endif()
- 
- # FIXME(compnerd) add check for -fblocks?
--target_compile_options(dispatch PRIVATE -fblocks)
-+if(CMAKE_C_COMPILER_ID MATCHES Clang)
-+  target_compile_options(dispatch PRIVATE -fblocks)
-+endif()
- 
- check_c_compiler_flag("-momit-leaf-frame-pointer -Werror -Wall -O3" C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
- if (C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
-modulemap")
- 
- configure_file("${PROJECT_SOURCE_DIR}/cmake/config.h.in"
-                "${PROJECT_BINARY_DIR}/config/config_ac.h")
+ elseif(WIN32)
+   # Tareting Windows but using a non-MSVC compiler.  Set -fms-extensions
+   # so that we can use __popcnt64
 diff --git a/cmake/modules/DispatchWindowsSupport.cmake b/cmake/modules/DispatchWindowsSupport.cmake
-index 87675a7..ee9949a 100644
+index 750b3be..ee9949a 100644
 --- a/cmake/modules/DispatchWindowsSupport.cmake
 +++ b/cmake/modules/DispatchWindowsSupport.cmake
 @@ -1,12 +1,12 @@
@@ -71,48 +49,13 @@ index 87675a7..ee9949a 100644
 -  elseif(${arch} STREQUAL armv7)
 +  elseif((${arch} STREQUAL armv7) OR (${arch} STREQUAL ARM))
      set(${var} arm PARENT_SCOPE)
--  elseif(${arch} STREQUAL aarch64)
+-  elseif(${arch} STREQUAL aarch64 OR ${arch} STREQUAL ARM64)
 +  elseif((${arch} STREQUAL aarch64) OR (${arch} STREQUAL ARM64))
      set(${var} arm64 PARENT_SCOPE)
    else()
      message(FATAL_ERROR "do not know MSVC spelling for ARCH: `${arch}`")
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 898c21b..fdbc1a2 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -17,7 +17,7 @@ if(WIN32)
-   include(ClangClCompileRules)
- endif()
- 
--if(CMAKE_SYSTEM_NAME STREQUAL Windows)
-+if(CMAKE_SYSTEM_NAME MATCHES Windows)
-   include(DispatchWindowsSupport)
-   dispatch_windows_arch_spelling(${CMAKE_SYSTEM_PROCESSOR} DISPATCH_MSVC_ARCH)
-   dispatch_windows_include_for_arch(${DISPATCH_MSVC_ARCH} DISPATCH_INCLUDES)
-@@ -198,7 +198,7 @@ if(HAVE_MACH)
- else()
-   set(USE_MACH_SEM 0)
- endif()
--if(CMAKE_SYSTEM_NAME STREQUAL Windows)
-+if(CMAKE_SYSTEM_NAME MATCHES Windows)
-   add_compile_definitions($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:USE_WIN32_SEM>)
- endif()
- check_library_exists(pthread sem_init "" USE_POSIX_SEM)
-diff --git a/src/BlocksRuntime/CMakeLists.txt b/src/BlocksRuntime/CMakeLists.txt
-index 50123d4..eb3a285 100644
---- a/src/BlocksRuntime/CMakeLists.txt
-+++ b/src/BlocksRuntime/CMakeLists.txt
-@@ -2,7 +2,7 @@
- add_library(BlocksRuntime
-   data.c
-   runtime.c)
--if(CMAKE_SYSTEM_NAME STREQUAL Windows)
-+if(CMAKE_SYSTEM_NAME MATCHES Windows)
-   target_sources(BlocksRuntime PRIVATE
-     BlocksRuntime.def)
- 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 8483298..1168bf4 100644
+index 320b6fc..8a368ca 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -57,7 +57,7 @@ add_library(dispatch
@@ -133,7 +76,29 @@ index 8483298..1168bf4 100644
    target_compile_definitions(dispatch PRIVATE
      _CRT_NONSTDC_NO_WARNINGS
      _CRT_SECURE_NO_WARNINGS)
-@@ -141,7 +141,7 @@ target_link_libraries(dispatch PRIVATE
+@@ -116,8 +116,8 @@ if(DISPATCH_ENABLE_ASSERTS)
+     DISPATCH_DEBUG=1)
+ endif()
+ 
+-if("${CMAKE_C_SIMULATE_ID}" STREQUAL "MSVC")
+-  target_compile_options(dispatch PRIVATE /EHs-c-)
++if(MSVC)
++  target_compile_options(dispatch PRIVATE /EHs-c-) # some sources can't use C++ Exception
+   target_compile_options(dispatch PRIVATE /W3)
+ else()
+   target_compile_options(dispatch PRIVATE -fno-exceptions)
+@@ -143,7 +143,9 @@ if(("${CMAKE_C_SIMULATE_ID}" STREQUAL "MSVC") AND
+ endif()
+ 
+ # FIXME(compnerd) add check for -fblocks?
+-target_compile_options(dispatch PRIVATE -fblocks)
++if(CMAKE_C_COMPILER_ID MATCHES Clang)
++  target_compile_options(dispatch PRIVATE -fblocks)
++endif()
+ 
+ check_c_compiler_flag("-momit-leaf-frame-pointer -Werror -Wall -O3" C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
+ if (C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
+@@ -157,7 +159,7 @@ target_link_libraries(dispatch PRIVATE
    Threads::Threads)
  target_link_libraries(dispatch PUBLIC
    BlocksRuntime::BlocksRuntime)
@@ -153,3 +118,29 @@ index 0176a06..94df578 100644
      execute_process(COMMAND
                        "${CMAKE_COMMAND}" -E copy_directory "${PROJECT_SOURCE_DIR}/private"
                        "${CMAKE_CURRENT_BINARY_DIR}/dispatch")
+diff --git a/cmake/modules/DispatchCompilerWarnings.cmake b/cmake/modules/DispatchCompilerWarnings.cmake
+index acc7b60..dc6a11f 100644
+--- a/cmake/modules/DispatchCompilerWarnings.cmake
++++ b/cmake/modules/DispatchCompilerWarnings.cmake
+@@ -7,7 +7,7 @@ elseif(WIN32)
+   # so that we can use __popcnt64
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-fms-extensions>)
+ else()
+-  add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Werror>)
++  # add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Werror>)
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wall>)
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wextra>)
+ 
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 8a368ca..da95ca1 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -147,7 +147,7 @@ if(CMAKE_C_COMPILER_ID MATCHES Clang)
+   target_compile_options(dispatch PRIVATE -fblocks)
+ endif()
+ 
+-check_c_compiler_flag("-momit-leaf-frame-pointer -Werror -Wall -O3" C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
++check_c_compiler_flag("-momit-leaf-frame-pointer -Wall -O3" C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
+ if (C_SUPPORTS_OMIT_LEAF_FRAME_POINTER)
+   target_compile_options(dispatch PRIVATE -momit-leaf-frame-pointer)
+ endif()

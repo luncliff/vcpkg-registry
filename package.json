@@ -1,0 +1,25 @@
+{
+  "name": "vcpkg-registry",
+  "version": "2.2605.0",
+  "description": "vcpkg registry maintained by @luncliff",
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "keywords": [
+    "vcpkg",
+    "vcpkg-registry",
+    "package-manager",
+    "cpp"
+  ],
+  "author": "luncliff@gmail.com",
+  "license": "CC0-1.0",
+  "dependencies": {
+    "esbuild": "~0.27.2",
+    "vitepress": "1.6.4",
+    "vite": "7.3.1",
+    "vue": "3.5.27"
+  }
+}

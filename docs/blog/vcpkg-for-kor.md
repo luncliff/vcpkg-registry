@@ -1,4 +1,16 @@
-# 한국어로 쓴 Vcpkg 설명서
+# 한국어로 쓴 Vcpkg 설명서 (Legacy)
+
+::: warning 안내
+이 페이지는 레거시 버전입니다. 새로운 단계별 튜토리얼이 준비되어 있습니다:
+
+**입문자용:**
+- 👉 [Beginner 트랙 시작하기](../kr/01-beginner-00-intro) - Vcpkg 기초부터 CMake 연동까지
+
+**중급자용:**
+- 👉 [Intermediate 트랙 시작하기](../kr/11-intermediate-00-overview) - 버전 관리, Triplet 심화, 문제 해결
+
+이 페이지는 참고용으로 유지되며, 더 이상 업데이트되지 않습니다.
+:::
 
 > [JetBrains 2021 Developer Ecosystem Survey](https://www.jetbrains.com/lp/devecosystem-2021/cpp/)를 보면 상당히 많은 개발자분들이 여전히 패키지 매니저의 도움을 받지 않고 계신 것 같습니다.
 > 이번 글로 보다 많은 분들께서 외부 라이브러리를 사용할 때 도움을 받으실 수 있기를 바랍니다.

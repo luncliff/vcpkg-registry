@@ -1,8 +1,8 @@
 {
   "name": "libdispatch",
-  "version": "5.10.1",
+  "version": "6.1",
   "description": "The libdispatch Project, (a.k.a. Grand Central Dispatch), for concurrency on multicore hardware",
-  "homepage": "https://github.com/apple/swift-corelibs-libdispatch",
+  "homepage": "https://github.com/swiftlang/swift-corelibs-libdispatch",
   "license": "Apache-2.0",
   "supports": "(windows & !uwp) | android",
   "dependencies": [

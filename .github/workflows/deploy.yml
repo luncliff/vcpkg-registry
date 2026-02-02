@@ -1,0 +1,55 @@
+name: "Deploy"
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  prerelease:
+    name: "Prerelease"
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      DOCS_ZIP_NAME: "docs-${{ github.ref_name }}.zip"
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: "Run gh(auth)"
+        run: |
+          gh auth setup-git
+          gh auth status
+
+      - uses: actions/setup-node@v6.2.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: "Build VitePress documentation"
+        run: |
+          npm ci
+          npm run docs:build
+
+      - name: "Create documentation ZIP"
+        run: |
+          zip -r ${{ github.workspace }}/${{ env.DOCS_ZIP_NAME }} .
+        working-directory: docs/.vitepress/dist
+
+      - name: "Run make-configuration.ps1"
+        run: |
+          $text = scripts/make-configuration.ps1 -Dump
+          Write-Output "## Configuration" >> ${env:GITHUB_STEP_SUMMARY}
+          Write-Output '```json' >> ${env:GITHUB_STEP_SUMMARY}
+          Write-Output $text >> ${env:GITHUB_STEP_SUMMARY}
+          Write-Output '```' >> ${env:GITHUB_STEP_SUMMARY}
+        shell: pwsh
+
+      - name: "Run gh(release)"
+        run: |
+          gh release create ${{ github.ref_name }} \
+            -t ${{ github.ref_name }} \
+            --discussion-category "General" \
+            --generate-notes --prerelease
+          gh release upload ${{ github.ref_name }} \
+            ${{ env.DOCS_ZIP_NAME }} \
+            vcpkg-configuration.json

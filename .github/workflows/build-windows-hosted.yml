@@ -4,7 +4,8 @@ on:
   push:
     branches-ignore:
       - docs
-      - support/*
+      - gh-pages
+      - experiment/*
   workflow_dispatch:
 
 concurrency:
@@ -184,8 +185,8 @@ jobs:
           vcpkgJsonGlob: "test/self-hosted.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
-          runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `vulkan`]'
+          runVcpkgFormatString: '[`install`, `--keep-going`, `--x-feature`, `vulkan`]'
         env:
-          VCPKG_DEFAULT_TRIPLET: "x64-windows"
+          VCPKG_TARGET_TRIPLET: "x64-windows"
           VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"

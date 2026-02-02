@@ -12,17 +12,12 @@ updates:
     commit-message:
       prefix: "[skip ci] "
 
-  - package-ecosystem: "pip"
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "monthly"
     labels:
       - "documentation"
-    allow:
-      - dependency-name: "mkdocs*"
-        dependency-type: "direct"
-      - dependency-name: "Pygments"
-        dependency-type: "direct"
     assignees:
       - "luncliff"
     commit-message:

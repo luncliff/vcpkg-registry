@@ -1,9 +1,0 @@
-
-pymdown-extensions
-
-mkdocs
-mkdocs-material>=9.0
-mkdocs-material-extensions
-
-markdown
-Pygments # https://pygments.org/
