@@ -56,7 +56,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "84bab45d415d22042bd0b9081aea57f362da3f35" # 2025.12.12
+          vcpkgGitCommitId: "66c0373dc7fca549e5803087b9487edfe3aca0a1" # 2026.01.16
           runVcpkgInstall: false
 
       - name: "Run apt"
@@ -149,7 +149,7 @@ jobs:
         uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "84bab45d415d22042bd0b9081aea57f362da3f35" # 2025.12.12
+          vcpkgGitCommitId: "66c0373dc7fca549e5803087b9487edfe3aca0a1" # 2026.01.16
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--x-feature`, `host-tools`, `--clean-after-build`]'
           vcpkgJsonGlob: "test/vcpkg.json"
@@ -185,7 +185,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "84bab45d415d22042bd0b9081aea57f362da3f35" # 2025.12.12
+          vcpkgGitCommitId: "66c0373dc7fca549e5803087b9487edfe3aca0a1" # 2026.01.16
           runVcpkgInstall: false
 
       # - uses: nttld/setup-ndk@v1.5.0
