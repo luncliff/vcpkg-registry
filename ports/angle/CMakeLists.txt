@@ -4,17 +4,13 @@ project(angle LANGUAGES CXX C)
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(APPLE)
+    enable_language(OBJCXX)
+    set(CMAKE_OBJCXX_STANDARD 17)
+endif()
 
 include(GNUInstallDirs)
 
-# Platform detection
-if(WIN32)
-    set(ANGLE_PLATFORM_WINDOWS TRUE)
-elseif(APPLE)
-    set(ANGLE_PLATFORM_APPLE TRUE)
-elseif(UNIX)
-    set(ANGLE_PLATFORM_LINUX TRUE)
-endif()
 
 # Backend options
 option(ANGLE_ENABLE_VULKAN "Enable Vulkan backend" OFF)
@@ -22,31 +18,30 @@ option(ANGLE_ENABLE_VULKAN "Enable Vulkan backend" OFF)
 # Find dependencies
 # Use CONFIG mode for vcpkg compatibility (especially on Emscripten)
 find_package(ZLIB CONFIG REQUIRED)
-
+find_package(SPIRV-Headers CONFIG REQUIRED)
+find_package(SPIRV-Tools CONFIG REQUIRED) # SPIRV-Tools-static
 if(ANGLE_ENABLE_VULKAN)
-    find_package(Vulkan REQUIRED)
+    find_package(Vulkan REQUIRED) # Vulkan::Headers
+    find_package(VulkanMemoryAllocator CONFIG REQUIRED) # GPUOpen::VulkanMemoryAllocator
 endif()
 
 # Common definitions
 add_compile_definitions(
-    ANGLE_STANDALONE_BUILD
-    GL_GLES_PROTOTYPES=1
-    EGL_EGL_PROTOTYPES=1
+    KHRONOS_STATIC # turn off KHRONOS_APICALL declspec, attributes, imports, etc.
+    # GL_GLES_PROTOTYPES=1
+    # EGL_EGL_PROTOTYPES=1
     # TODO: testing ANGLE internal declarations
     # GL_GLEXT_PROTOTYPES
     # EGL_EGLEXT_PROTOTYPES
 )
 
+# Automatic ANGLE_PLATFORM_* defined in src/common/platform.h
 if(WIN32)
-    add_compile_definitions(ANGLE_IS_WIN)
+    # todo: support ANGLE_ENABLE_WINDOWS_UWP?
     add_compile_definitions(
         WIN32_LEAN_AND_MEAN
         NOMINMAX
     )
-elseif(APPLE)
-    add_compile_definitions(ANGLE_PLATFORM_APPLE)
-elseif(UNIX)
-    add_compile_definitions(ANGLE_IS_LINUX)
 endif()
 
 # ============================================================================
@@ -84,6 +79,17 @@ add_library(angle_common STATIC
     # xxhash (third-party utility)
     src/common/third_party/xxhash/xxhash.c
 )
+if(ANGLE_ENABLE_VULKAN)
+    target_sources(angle_common PRIVATE
+        src/common/vulkan/vulkan_icd.h
+        src/common/vulkan/vulkan_icd.cpp
+        src/common/vulkan/libvulkan_loader.cpp
+        src/common/vulkan/libvulkan_loader.h
+    )
+    target_compile_definitions(angle_common PRIVATE
+        ANGLE_VK_MOCK_ICD_JSON="VkICD_mock_icd.json"
+    )
+endif()
 
 # Platform-specific sources for angle_common
 if(WIN32)
@@ -151,6 +157,20 @@ if(WIN32)
     )
     target_link_libraries(angle_gpu_info_util PRIVATE dxgi.lib setupapi.lib)
 endif()
+if(APPLE)
+    target_sources(angle_gpu_info_util PRIVATE
+        # src/gpu_info_util/SystemInfo_ios.cpp
+        # src/gpu_info_util/SystemInfo_macos.mm
+        src/gpu_info_util/SystemInfo_apple.mm
+    )
+endif()
+if(ANGLE_ENABLE_VULKAN)
+    target_sources(angle_gpu_info_util PRIVATE
+        src/gpu_info_util/SystemInfo_vulkan.cpp
+        src/gpu_info_util/SystemInfo_vulkan.h
+    )
+endif()
+
 target_include_directories(angle_gpu_info_util
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -160,6 +180,86 @@ target_include_directories(angle_gpu_info_util
 )
 target_link_libraries(angle_gpu_info_util PRIVATE angle_common)
 target_compile_definitions(angle_gpu_info_util PRIVATE
+    LIBANGLE_IMPLEMENTATION
+)
+
+# ==============================================================================
+# SPIRV utilities - SPIRV instruction building and parsing
+# ==============================================================================
+add_library(angle_spirv_headers INTERFACE)
+target_include_directories(angle_spirv_headers
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common/spirv>
+        $<INSTALL_INTERFACE:include>
+)
+
+add_library(angle_spirv_base STATIC)
+target_sources(angle_spirv_base PRIVATE
+    src/common/spirv/angle_spirv_utils.cpp
+)
+target_include_directories(angle_spirv_base
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common/base>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/common/spirv
+)
+target_link_libraries(angle_spirv_base
+    PUBLIC
+        angle_common
+        angle_spirv_headers
+        SPIRV-Headers::SPIRV-Headers
+        SPIRV-Tools-static
+)
+target_compile_definitions(angle_spirv_base PRIVATE
+    LIBANGLE_IMPLEMENTATION
+)
+
+add_library(angle_spirv_builder STATIC)
+target_sources(angle_spirv_builder PRIVATE
+    src/common/spirv/spirv_instruction_builder_autogen.cpp
+)
+target_include_directories(angle_spirv_builder
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common/base>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/common/spirv
+)
+target_link_libraries(angle_spirv_builder
+    PUBLIC
+        angle_spirv_base
+    PRIVATE
+        SPIRV-Headers::SPIRV-Headers
+)
+target_compile_definitions(angle_spirv_builder PRIVATE
+    LIBANGLE_IMPLEMENTATION
+)
+
+add_library(angle_spirv_parser STATIC)
+target_sources(angle_spirv_parser PRIVATE
+    src/common/spirv/spirv_instruction_parser_autogen.cpp
+)
+target_include_directories(angle_spirv_parser
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common/base>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/common/spirv
+)
+target_link_libraries(angle_spirv_parser
+    PUBLIC
+        angle_spirv_base
+    PRIVATE
+        SPIRV-Headers::SPIRV-Headers
+)
+target_compile_definitions(angle_spirv_parser PRIVATE
     LIBANGLE_IMPLEMENTATION
 )
 
@@ -205,7 +305,11 @@ target_include_directories(angle_translator
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/preprocessor
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/translator
 )
-target_link_libraries(angle_translator PRIVATE angle_common)
+target_link_libraries(angle_translator PRIVATE
+    angle_common
+    angle_spirv_builder
+    angle_spirv_parser
+)
 target_compile_definitions(angle_translator PRIVATE
     LIBANGLE_IMPLEMENTATION
     ANGLE_ENABLE_ESSL=1
@@ -650,6 +754,8 @@ set(LIBANGLE_VULKAN_SOURCES
     src/libANGLE/renderer/vulkan/vk_format_table_autogen.cpp
     src/libANGLE/renderer/vulkan/vk_format_utils.cpp
     src/libANGLE/renderer/vulkan/vk_format_utils.h
+    src/libANGLE/renderer/vulkan/android/vk_android_utils.cpp # noop on non-Android platforms
+    src/libANGLE/renderer/vulkan/android/vk_android_utils.h
     src/libANGLE/renderer/vulkan/vk_helpers.cpp
     src/libANGLE/renderer/vulkan/vk_helpers.h
     src/libANGLE/renderer/vulkan/vk_internal_shaders_autogen.cpp
@@ -705,6 +811,7 @@ if(WIN32)
         ${LIBANGLE_D3D11_BLIT_SHADERS}
     )
     if(ANGLE_ENABLE_VULKAN)
+        add_compile_definitions(VK_USE_PLATFORM_WIN32_KHR)
         list(APPEND LIBANGLE_PLATFORM_SOURCES
             ${LIBANGLE_VULKAN_SOURCES}
             ${LIBANGLE_VULKAN_WIN32_SOURCES}
@@ -712,6 +819,7 @@ if(WIN32)
     endif()
 elseif(UNIX AND NOT APPLE)
     if(ANGLE_ENABLE_VULKAN)
+        add_compile_definitions(VK_USE_PLATFORM_XLIB_KHR)
         list(APPEND LIBANGLE_PLATFORM_SOURCES
             ${LIBANGLE_VULKAN_SOURCES}
             ${LIBANGLE_VULKAN_LINUX_SOURCES}
@@ -852,13 +960,6 @@ if(WIN32)
             ANGLE_ENABLE_D3D11=1
             ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES={"d3dcompiler_47.dll","d3dcompiler_46.dll","d3dcompiler_43.dll"}
     )
-    if(ANGLE_ENABLE_VULKAN)
-        target_compile_definitions(angle_libangle PUBLIC ANGLE_ENABLE_VULKAN=1)
-    endif()
-elseif(UNIX AND NOT APPLE)
-    if(ANGLE_ENABLE_VULKAN)
-        target_compile_definitions(angle_libangle PUBLIC ANGLE_ENABLE_VULKAN=1)
-    endif()
 endif()
 
 target_link_libraries(angle_libangle
@@ -867,11 +968,24 @@ target_link_libraries(angle_libangle
         angle_image_util
         angle_gpu_info_util
         angle_translator
+        angle_spirv_base
+        angle_spirv_builder
+        angle_spirv_parser
         ZLIB::ZLIB
+        SPIRV-Headers::SPIRV-Headers
 )
 
 if(ANGLE_ENABLE_VULKAN)
-    target_link_libraries(angle_libangle PUBLIC Vulkan::Vulkan)
+    target_compile_definitions(angle_libangle
+        PUBLIC
+            ANGLE_ENABLE_VULKAN=1
+        PRIVATE
+            VMA_IMPLEMENTATION # make the VMA functions part of libangle
+    )
+    target_link_libraries(angle_libangle PUBLIC
+        Vulkan::Vulkan
+        GPUOpen::VulkanMemoryAllocator
+    )
 endif()
 
 # Windows needs synchronization.lib for WaitOnAddress and WakeByAddressSingle
@@ -982,7 +1096,7 @@ target_include_directories(angle_egl
 )
 
 target_link_libraries(angle_egl
-    PUBLIC
+    PRIVATE
         angle_libangle
         angle_common
         ZLIB::ZLIB
@@ -1006,7 +1120,7 @@ target_include_directories(angle_gles
 )
 
 target_link_libraries(angle_gles
-    PUBLIC
+    PRIVATE
         angle_libangle
         angle_common
         ZLIB::ZLIB
@@ -1034,7 +1148,7 @@ set_target_properties(angle_gles PROPERTIES
 )
 
 # Installation
-install(TARGETS angle_common angle_image_util angle_gpu_info_util angle_translator angle_libangle angle_egl angle_gles
+install(TARGETS angle_egl angle_gles
     EXPORT angle-config
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
