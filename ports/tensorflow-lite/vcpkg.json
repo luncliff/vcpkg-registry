@@ -1,6 +1,6 @@
 {
   "name": "tensorflow-lite",
-  "version-semver": "2.20.0",
+  "version-semver": "2.21.0-rc0",
   "description": "An Open Source Machine Learning Framework for Everyone",
   "homepage": "https://github.com/tensorflow/tensorflow",
   "license": "Apache-2.0",
