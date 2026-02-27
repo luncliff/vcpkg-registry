@@ -169,15 +169,15 @@
       "port-version": 0
     },
     "nvidia-triton-client": {
-      "baseline": "2025-01-17",
+      "baseline": "2026-02-24",
       "port-version": 0
     },
     "nvidia-triton-common": {
-      "baseline": "2024-11-27",
+      "baseline": "2025-11-04",
       "port-version": 0
     },
     "nvidia-triton-core": {
-      "baseline": "2025-02-08",
+      "baseline": "2026-02-11",
       "port-version": 0
     },
     "nvtx3": {

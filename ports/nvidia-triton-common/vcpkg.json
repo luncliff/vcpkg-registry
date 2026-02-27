@@ -1,6 +1,6 @@
 {
   "name": "nvidia-triton-common",
-  "version-date": "2024-11-27",
+  "version-date": "2025-11-04",
   "description": "Common source, scripts and utilities shared across all Triton repositories.",
   "homepage": "https://github.com/triton-inference-server/common",
   "license": "BSD-3-Clause",
