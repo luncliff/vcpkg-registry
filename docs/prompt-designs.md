@@ -40,7 +40,11 @@ List the *.prompt.md files in [.github/prompts](../.github/prompts/) folder.
 - Reports include command snippets (PowerShell), key artifacts, and next-step recommendations.
 - Emojis: ✅ success, ⚠️ warning/experimental, ❌ failure.
 
-## Workflow Navigation
+## Future Direction: Agent Skills
+
+This repository has a plan to complement the current prompt set with **GitHub Copilot Agent Skills** (`.github/skills/`), enabling the Copilot Coding Agent to apply these workflows autonomously when processing GitHub Issues and Pull Requests.
+
+See [plan-prompt-to-skills.md](./plan-prompt-to-skills.md) for the full analysis, milestone schedule, and use cases.
 
 ### Mermaid
 ```mermaid

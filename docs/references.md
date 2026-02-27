@@ -58,7 +58,7 @@ Resources for managing registry versions:
   - [CMake Scripts](https://github.com/microsoft/vcpkg/tree/master/scripts/cmake)
 - [Topic: vcpkg-registry](https://github.com/topics/vcpkg-registry)
 
-### GitHub Copilot Custom Agents
+### GitHub Copilot Custom Agents and Skills
 
 - [GitHub Copilot Documentation](https://docs.github.com/en/copilot/)
   - [Using Custom Agents](https://docs.github.com/en/copilot/using-github-copilot/using-custom-agents)
@@ -68,6 +68,14 @@ Resources for managing registry versions:
   - [Supported Models](https://docs.github.com/en/copilot/using-github-copilot/using-copilot-with-different-models/about-using-copilot-with-different-models)
   - [Model Comparison](https://docs.github.com/en/copilot/using-github-copilot/using-copilot-with-different-models/comparing-models-for-github-copilot)
   - [Prompt Engineering Guide](https://docs.github.com/en/copilot/building-custom-agents/prompt-engineering-for-custom-agents)
+  - [Copilot customization cheat sheet](https://docs.github.com/en/copilot/reference/customization-cheat-sheet)
+- Agent Skills (Coding Agent)
+  - [About agent skills](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills)
+  - [Creating agent skills for GitHub Copilot](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-skills)
+  - [About GitHub Copilot coding agent](https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-coding-agent)
+  - [VS Code: Use Agent Skills](https://code.visualstudio.com/docs/copilot/customization/agent-skills)
+  - [GitHub Changelog: Copilot now supports Agent Skills](https://github.blog/changelog/2025-12-18-github-copilot-now-supports-agent-skills/)
+  - [Open Agent Skills Standard](https://agentskills.io)
 
 ### Community and Blogs
 
