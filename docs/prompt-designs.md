@@ -18,6 +18,7 @@ Canonical design spec for GitHub Copilot prompts and their relationship to guide
    - [guide-create-port-download.md](./guide-create-port-download.md)
    - [guide-create-port-build.md](./guide-create-port-build.md)
 - 📝 [guide-update-port.md](./guide-update-port.md) → 🛠️ [update-port.prompt.md](../.github/prompts/update-port.prompt.md)
+- 📝 [guide-update-port-patches.md](./guide-update-port-patches.md) → 🛠️ [update-port-patches.prompt.md](../.github/prompts/update-port-patches.prompt.md)
 - 📝 [guide-update-version-baseline.md](./guide-update-version-baseline.md) → 🛠️ [update-version-baseline.prompt.md](../.github/prompts/update-version-baseline.prompt.md)
 - 📝 [troubleshooting.md](./troubleshooting.md) → 🛠️ install-port (for logs), review-port (for validation)
 - 📝 [README](../README.md) + [References](./references.md) → 🛠️ [check-environment.prompt.md](../.github/prompts/check-environment.prompt.md)
@@ -33,6 +34,7 @@ List the *.prompt.md files in [.github/prompts](../.github/prompts/) folder.
 - /review-port: validate manifest/portfile/patches against guidelines; emit pass/fail.
 - /check-port-upstream: compare local vs upstream project vs microsoft/vcpkg; flag updates.
 - /update-port: bump version/ref/sha512, test with --editable, report upgrade status.
+- /update-port-patches: refresh patch files when upstream breaks patch application.
 - /update-version-baseline: run registry-add-version.ps1 to sync versions/ baseline.
 
 ## Reporting Conventions
@@ -52,6 +54,8 @@ flowchart TD
   CreateGuide --> BuildGuide
   CreateGuide --> DownloadGuide
   UpdateGuide --> UpdatePrompt[/update-port/]
+  UpdateGuide --> PatchGuide[guide-update-port-patches]
+  PatchGuide --> PatchPrompt[/update-port-patches/]
   UpdateGuide --> BaselineGuide
   BaselineGuide --> BaselinePrompt[/update-version-baseline/]
   Troubleshoot --> InstallPrompt[/install-port/]
@@ -59,6 +63,7 @@ flowchart TD
   InstallPrompt --> ReviewPrompt
   CreatePrompt --> InstallPrompt
   UpdatePrompt --> InstallPrompt
+  PatchPrompt --> InstallPrompt
 ```
 
 ### Graphviz
@@ -72,6 +77,8 @@ digraph G {
   CreateGuide -> BuildGuide;
   CreateGuide -> DownloadGuide;
   UpdateGuide -> UpdatePrompt [label="/update-port"];
+  UpdateGuide -> PatchGuide;
+  PatchGuide -> PatchPrompt [label="/update-port-patches"];
   UpdateGuide -> BaselineGuide;
   BaselineGuide -> BaselinePrompt [label="/update-version-baseline"];
   Troubleshoot -> InstallPrompt [label="/install-port"];
@@ -79,5 +86,6 @@ digraph G {
   InstallPrompt -> ReviewPrompt;
   CreatePrompt -> InstallPrompt;
   UpdatePrompt -> InstallPrompt;
+  PatchPrompt -> InstallPrompt;
 }
 ```
