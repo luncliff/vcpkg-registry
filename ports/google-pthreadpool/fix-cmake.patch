@@ -1,4 +1,5 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txtindex efff8cc..1ccf0b4 100644
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1234567..abcdefg 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -71,7 +71,7 @@ IF(PTHREADPOOL_BUILD_TESTS)
@@ -10,16 +11,7 @@ diff --git a/CMakeLists.txt b/CMakeLists.txtindex efff8cc..1ccf0b4 100644
    MESSAGE(STATUS "Downloading FXdiv to ${CMAKE_BINARY_DIR}/FXdiv-source (define FXDIV_SOURCE_DIR to avoid it)")
    CONFIGURE_FILE(cmake/DownloadFXdiv.cmake "${CMAKE_BINARY_DIR}/FXdiv-download/CMakeLists.txt")
    EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
-@@ -111,7 +111,7 @@ ELSE()
-   LIST(APPEND PTHREADPOOL_SRCS src/portable-api.c src/memory.c)
-   IF(APPLE AND (PTHREADPOOL_SYNC_PRIMITIVE STREQUAL "default" OR PTHREADPOOL_SYNC_PRIMITIVE STREQUAL "gcd"))
-     LIST(APPEND PTHREADPOOL_SRCS src/gcd.c)
--  ELSEIF(CMAKE_SYSTEM_NAME MATCHES "^(Windows|CYGWIN|MSYS)$" AND (PTHREADPOOL_SYNC_PRIMITIVE STREQUAL "default" OR PTHREADPOOL_SYNC_PRIMITIVE STREQUAL "event"))
-+  ELSEIF(CMAKE_SYSTEM_NAME MATCHES "^(Windows|WindowsStore|CYGWIN|MSYS)$" AND (PTHREADPOOL_SYNC_PRIMITIVE STREQUAL "default" OR PTHREADPOOL_SYNC_PRIMITIVE STREQUAL "event"))
-     LIST(APPEND PTHREADPOOL_SRCS src/windows.c)
-   ELSE()
-     LIST(APPEND PTHREADPOOL_SRCS src/pthreads.c)
-@@ -182,14 +182,15 @@ IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+@@ -164,14 +164,15 @@ IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
  ENDIF()
  
  # ---[ Configure FXdiv
@@ -37,4 +29,3 @@ diff --git a/CMakeLists.txt b/CMakeLists.txtindex efff8cc..1ccf0b4 100644
  
  INSTALL(TARGETS pthreadpool
    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-PPEND PTHREADPOOL_SRCS src/pthreads.c)
