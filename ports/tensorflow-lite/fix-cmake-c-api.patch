@@ -2,7 +2,7 @@ diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
 index 3214e451..be6818d7 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
-@@ -778,6 +778,37 @@ target_compile_options(tensorflow-lite
+@@ -778,6 +778,39 @@ target_compile_options(tensorflow-lite
  )
  add_library(${PROJECT_NAME}::tensorflowlite ALIAS tensorflow-lite)
  
@@ -28,8 +28,10 @@ index 3214e451..be6818d7 100644
 +if (BUILD_SHARED_LIBS)
 +  if (WIN32)
 +    target_compile_definitions(tensorflow-lite PRIVATE TFL_COMPILE_LIBRARY)
-+    target_compile_definitions(xnnpack-delegate PRIVATE TFL_COMPILE_LIBRARY ${TFLITE_TARGET_PRIVATE_DEFINITIONS})
-+    target_compile_options(xnnpack-delegate PRIVATE ${TFLITE_TARGET_PRIVATE_OPTIONS})
++    if(TARGET xnnpack-delegate)
++      target_compile_definitions(xnnpack-delegate PRIVATE TFL_COMPILE_LIBRARY ${TFLITE_TARGET_PRIVATE_DEFINITIONS})
++      target_compile_options(xnnpack-delegate PRIVATE ${TFLITE_TARGET_PRIVATE_OPTIONS})
++    endif()
 +  elseif (APPLE)
 +    target_link_options(tensorflow-lite PRIVATE "-Wl,-exported_symbols_list,${TFLITE_SOURCE_DIR}/c/exported_symbols.lds")
 +  else ()
