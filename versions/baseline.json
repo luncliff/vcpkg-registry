@@ -164,6 +164,10 @@
       "baseline": "2024-06-01",
       "port-version": 0
     },
+    "nvidia-stdexec": {
+      "baseline": "gtc-2026",
+      "port-version": 0
+    },
     "nvidia-tools-extension-sdk": {
       "baseline": "3.2.0",
       "port-version": 0
