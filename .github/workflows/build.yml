@@ -69,7 +69,7 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install autoconf automake libtool
 
-      - uses: microsoft/setup-msbuild@v2
+      - uses: microsoft/setup-msbuild@v3
         if: runner.os == 'Windows'
         with:
           msbuild-architecture: x64
