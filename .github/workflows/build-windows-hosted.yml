@@ -52,7 +52,7 @@ jobs:
           Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
         shell: pwsh
 
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(x64-windows, ${{ matrix.vcpkg_tag }})"
         with:
           vcpkgDirectory: "C:/vcpkg"
@@ -67,7 +67,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(arm64-windows, ${{ matrix.vcpkg_tag }})"
         with:
           vcpkgDirectory: "C:/vcpkg"
@@ -139,7 +139,7 @@ jobs:
           Write-Output "CUDNN: ${env:CUDNN}"
           Write-Output "TENSORRT_HOME: ${env:TENSORRT_HOME}"
 
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(x64-windows)"
         with:
           vcpkgDirectory: "C:/vcpkg"
@@ -178,7 +178,7 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "C:/vcpkg"
           vcpkgGitCommitId: "66c0373dc7fca549e5803087b9487edfe3aca0a1" # 2026.01.16
