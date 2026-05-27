@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/include
+
+Name: absl_random_internal_randen
+Description: Abseil random_internal_randen library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_random_internal_platform = 20260107, absl_random_internal_randen_hwaes = 20260107, absl_random_internal_randen_slow = 20260107
+Libs: -L${libdir}  -labsl_random_internal_randen 
+Cflags: -I${includedir} -DNOMINMAX

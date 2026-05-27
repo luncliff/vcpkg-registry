@@ -1,0 +1,13 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: absl_hash
+Description: Abseil hash library
+URL: https://abseil.io/
+Version: 20260107
+
+Libs: "-L${libdir}" -labsl_hash
+Requires: absl_bits = 20260107, absl_city = 20260107, absl_config = 20260107, absl_core_headers = 20260107, absl_endian = 20260107, absl_fixed_array = 20260107, absl_function_ref = 20260107, absl_meta = 20260107, absl_int128 = 20260107, absl_strings = 20260107, absl_optional = 20260107, absl_variant = 20260107, absl_utility = 20260107, absl_weakly_mixed_integer = 20260107
+Cflags: "-I${includedir}" -DNOMINMAX

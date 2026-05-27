@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/include
+
+Name: absl_cleanup_internal
+Description: Abseil cleanup_internal library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_core_headers = 20260107, absl_utility = 20260107
+Libs: -L${libdir}  
+Cflags: -I${includedir} -DNOMINMAX

@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/include
+
+Name: absl_cordz_sample_token
+Description: Abseil cordz_sample_token library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_config = 20260107, absl_cordz_handle = 20260107, absl_cordz_info = 20260107
+Libs: -L${libdir}  -labsl_cordz_sample_token 
+Cflags: -I${includedir} -DNOMINMAX

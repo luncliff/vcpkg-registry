@@ -1,0 +1,13 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: absl_crc_internal
+Description: Abseil crc_internal library
+URL: https://abseil.io/
+Version: 20260107
+
+Libs: "-L${libdir}" -labsl_crc_internal
+Requires: absl_crc_cpu_detect = 20260107, absl_config = 20260107, absl_core_headers = 20260107, absl_endian = 20260107, absl_prefetch = 20260107, absl_raw_logging_internal = 20260107, absl_memory = 20260107, absl_bits = 20260107
+Cflags: "-I${includedir}" -DNOMINMAX

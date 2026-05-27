@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/include
+
+Name: absl_hashtable_profiler
+Description: Abseil hashtable_profiler library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_profile_builder = 20260107, absl_config = 20260107, absl_core_headers = 20260107, absl_strings = 20260107, absl_span = 20260107, absl_hashtablez_sampler = 20260107
+Libs: -L${libdir}  -labsl_hashtable_profiler 
+Cflags: -I${includedir} -DNOMINMAX

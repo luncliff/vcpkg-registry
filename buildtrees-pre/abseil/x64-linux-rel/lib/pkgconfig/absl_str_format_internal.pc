@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/include
+
+Name: absl_str_format_internal
+Description: Abseil str_format_internal library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_bits = 20260107, absl_strings = 20260107, absl_config = 20260107, absl_core_headers = 20260107, absl_fixed_array = 20260107, absl_inlined_vector = 20260107, absl_numeric_representation = 20260107, absl_type_traits = 20260107, absl_utility = 20260107, absl_int128 = 20260107, absl_span = 20260107, absl_strings_internal = 20260107
+Libs: -L${libdir}  -labsl_str_format_internal 
+Cflags: -I${includedir} -DNOMINMAX

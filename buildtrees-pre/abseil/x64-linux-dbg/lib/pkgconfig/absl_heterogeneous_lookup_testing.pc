@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/include
+
+Name: absl_heterogeneous_lookup_testing
+Description: Abseil heterogeneous_lookup_testing library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_config = 20260107, absl_test_instance_tracker = 20260107
+Libs: -L${libdir}  
+Cflags: -I${includedir} -DNOMINMAX -Wno-deprecated-declarations -Wno-missing-declarations -Wno-self-move -Wno-sign-compare -Wno-unused-function -Wno-unused-parameter -Wno-unused-private-field

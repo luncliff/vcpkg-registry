@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/include
+
+Name: absl_flags_commandlineflag
+Description: Abseil flags_commandlineflag library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_config = 20260107, absl_fast_type_id = 20260107, absl_flags_commandlineflag_internal = 20260107, absl_optional = 20260107, absl_strings = 20260107
+Libs: -L${libdir}  -labsl_flags_commandlineflag 
+Cflags: -I${includedir} -DNOMINMAX

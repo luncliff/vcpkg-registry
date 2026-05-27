@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/include
+
+Name: absl_strerror
+Description: Abseil strerror library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_config = 20260107, absl_core_headers = 20260107, absl_errno_saver = 20260107
+Libs: -L${libdir}  -labsl_strerror 
+Cflags: -I${includedir} -DNOMINMAX

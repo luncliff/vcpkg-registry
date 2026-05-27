@@ -1,0 +1,13 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: absl_bad_variant_access
+Description: Abseil bad_variant_access library
+URL: https://abseil.io/
+Version: 20260107
+
+Libs: "-L${libdir}"
+Requires: 
+Cflags: "-I${includedir}"

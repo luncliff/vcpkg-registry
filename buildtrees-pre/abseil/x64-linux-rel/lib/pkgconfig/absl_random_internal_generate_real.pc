@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/include
+
+Name: absl_random_internal_generate_real
+Description: Abseil random_internal_generate_real library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_bits = 20260107, absl_random_internal_fastmath = 20260107, absl_random_internal_traits = 20260107, absl_type_traits = 20260107
+Libs: -L${libdir}  
+Cflags: -I${includedir} -DNOMINMAX

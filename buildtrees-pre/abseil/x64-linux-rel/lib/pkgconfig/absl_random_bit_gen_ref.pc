@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/include
+
+Name: absl_random_bit_gen_ref
+Description: Abseil random_bit_gen_ref library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_config = 20260107, absl_core_headers = 20260107, absl_random_internal_distribution_caller = 20260107, absl_random_internal_fast_uniform_bits = 20260107, absl_type_traits = 20260107
+Libs: -L${libdir}  
+Cflags: -I${includedir} -DNOMINMAX

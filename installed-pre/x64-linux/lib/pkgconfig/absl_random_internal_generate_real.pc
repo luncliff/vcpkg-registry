@@ -1,0 +1,13 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: absl_random_internal_generate_real
+Description: Abseil random_internal_generate_real library
+URL: https://abseil.io/
+Version: 20260107
+
+Libs: "-L${libdir}"
+Requires: absl_bits = 20260107, absl_random_internal_fastmath = 20260107, absl_random_internal_traits = 20260107, absl_type_traits = 20260107
+Cflags: "-I${includedir}" -DNOMINMAX

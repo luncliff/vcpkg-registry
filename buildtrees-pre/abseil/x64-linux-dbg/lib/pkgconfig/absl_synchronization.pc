@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/include
+
+Name: absl_synchronization
+Description: Abseil synchronization library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_graphcycles_internal = 20260107, absl_kernel_timeout_internal = 20260107, absl_atomic_hook = 20260107, absl_base = 20260107, absl_base_internal = 20260107, absl_config = 20260107, absl_core_headers = 20260107, absl_dynamic_annotations = 20260107, absl_malloc_internal = 20260107, absl_meta = 20260107, absl_nullability = 20260107, absl_raw_logging_internal = 20260107, absl_stacktrace = 20260107, absl_symbolize = 20260107, absl_time = 20260107, absl_tracing_internal = 20260107
+Libs: -L${libdir}  -labsl_synchronization 
+Cflags: -I${includedir} -DNOMINMAX

@@ -1,0 +1,13 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: absl_linked_hash_map
+Description: Abseil linked_hash_map library
+URL: https://abseil.io/
+Version: 20260107
+
+Libs: "-L${libdir}"
+Requires: absl_container_common = 20260107, absl_config = 20260107, absl_core_headers = 20260107, absl_flat_hash_set = 20260107, absl_throw_delegate = 20260107
+Cflags: "-I${includedir}" -DNOMINMAX

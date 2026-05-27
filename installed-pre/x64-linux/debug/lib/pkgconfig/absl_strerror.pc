@@ -1,0 +1,13 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/../include
+
+Name: absl_strerror
+Description: Abseil strerror library
+URL: https://abseil.io/
+Version: 20260107
+
+Libs: "-L${libdir}" -labsl_strerror
+Requires: absl_config = 20260107, absl_core_headers = 20260107, absl_errno_saver = 20260107
+Cflags: "-I${includedir}" -DNOMINMAX

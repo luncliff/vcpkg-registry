@@ -1,0 +1,13 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: absl_cord
+Description: Abseil cord library
+URL: https://abseil.io/
+Version: 20260107
+
+Libs: "-L${libdir}" -labsl_cord
+Requires: absl_base = 20260107, absl_config = 20260107, absl_cord_internal = 20260107, absl_cordz_functions = 20260107, absl_cordz_info = 20260107, absl_cordz_update_scope = 20260107, absl_cordz_update_tracker = 20260107, absl_core_headers = 20260107, absl_crc32c = 20260107, absl_crc_cord_state = 20260107, absl_endian = 20260107, absl_function_ref = 20260107, absl_inlined_vector = 20260107, absl_nullability = 20260107, absl_optional = 20260107, absl_raw_logging_internal = 20260107, absl_span = 20260107, absl_strings = 20260107, absl_strings_append_and_overwrite = 20260107, absl_strings_resize_and_overwrite = 20260107, absl_type_traits = 20260107, absl_weakly_mixed_integer = 20260107
+Cflags: "-I${includedir}" -DNOMINMAX

@@ -1,0 +1,13 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: absl_random_internal_seed_material
+Description: Abseil random_internal_seed_material library
+URL: https://abseil.io/
+Version: 20260107
+
+Libs: "-L${libdir}" -labsl_random_internal_seed_material
+Requires: absl_config = 20260107, absl_optional = 20260107, absl_random_internal_fast_uniform_bits = 20260107, absl_raw_logging_internal = 20260107, absl_span = 20260107, absl_strings = 20260107
+Cflags: "-I${includedir}" -DNOMINMAX

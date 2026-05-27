@@ -1,0 +1,7 @@
+Package: cpuinfo
+Version: 2025-09-05
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-linux
+Multi-Arch: same
+Abi: d9bb40e9d2f967f1488435fdcf248478e5898256faf1aefcc10804a5b302f4f3
+Description: CPU INFOrmation library (x86/x86-64/ARM/ARM64, Linux/Windows/Android/macOS/iOS)

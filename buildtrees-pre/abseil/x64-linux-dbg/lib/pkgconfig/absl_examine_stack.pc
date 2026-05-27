@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/include
+
+Name: absl_examine_stack
+Description: Abseil examine_stack library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_stacktrace = 20260107, absl_symbolize = 20260107, absl_config = 20260107, absl_core_headers = 20260107, absl_raw_logging_internal = 20260107
+Libs: -L${libdir}  -labsl_examine_stack 
+Cflags: -I${includedir} -DNOMINMAX

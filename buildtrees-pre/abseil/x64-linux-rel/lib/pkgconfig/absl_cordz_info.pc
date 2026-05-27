@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/include
+
+Name: absl_cordz_info
+Description: Abseil cordz_info library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_base = 20260107, absl_config = 20260107, absl_cord_internal = 20260107, absl_cordz_functions = 20260107, absl_cordz_handle = 20260107, absl_cordz_statistics = 20260107, absl_cordz_update_tracker = 20260107, absl_core_headers = 20260107, absl_no_destructor = 20260107, absl_inlined_vector = 20260107, absl_span = 20260107, absl_raw_logging_internal = 20260107, absl_stacktrace = 20260107, absl_synchronization = 20260107, absl_time = 20260107
+Libs: -L${libdir}  -labsl_cordz_info 
+Cflags: -I${includedir} -DNOMINMAX

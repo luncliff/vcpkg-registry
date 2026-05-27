@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/debug/include
+
+Name: absl_demangle_internal
+Description: Abseil demangle_internal library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_config = 20260107, absl_demangle_rust = 20260107
+Libs: -L${libdir}  -labsl_demangle_internal 
+Cflags: -I${includedir} -DNOMINMAX

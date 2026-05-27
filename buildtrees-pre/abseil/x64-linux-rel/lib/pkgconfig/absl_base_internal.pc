@@ -1,0 +1,12 @@
+prefix=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux
+exec_prefix=${prefix}
+libdir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/lib
+includedir=/tmp/workspace/luncliff/vcpkg-registry/packages-pre/abseil_x64-linux/include
+
+Name: absl_base_internal
+Description: Abseil base_internal library
+URL: https://abseil.io/
+Version: 20260107
+Requires: absl_config = 20260107, absl_type_traits = 20260107
+Libs: -L${libdir}  
+Cflags: -I${includedir} -DNOMINMAX
