@@ -48,12 +48,12 @@ jobs:
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
       - uses: actions/checkout@v6
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "66c0373dc7fca549e5803087b9487edfe3aca0a1" # 2026.01.16
@@ -69,7 +69,7 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install autoconf automake libtool
 
-      - uses: microsoft/setup-msbuild@v2
+      - uses: microsoft/setup-msbuild@v3
         if: runner.os == 'Windows'
         with:
           msbuild-architecture: x64
@@ -146,7 +146,7 @@ jobs:
 
       - name: "Run vcpkg(host-tools)" # skip temporary
         if: false
-        uses: lukka/run-vcpkg@v11.5
+        uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "66c0373dc7fca549e5803087b9487edfe3aca0a1" # 2026.01.16
@@ -155,7 +155,7 @@ jobs:
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
 
-      - uses: actions/upload-artifact@v6.0.0
+      - uses: actions/upload-artifact@v7.0.1
         if: failure()
         with:
           name: log-${{ runner.os }}
@@ -177,12 +177,12 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v6
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "66c0373dc7fca549e5803087b9487edfe3aca0a1" # 2026.01.16
@@ -208,7 +208,7 @@ jobs:
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
           VCPKG_DEFAULT_TRIPLET: "${{ matrix.triplet }}"
 
-      - uses: actions/upload-artifact@v6.0.0
+      - uses: actions/upload-artifact@v7.0.1
         if: failure()
         with:
           name: log-${{ matrix.triplet }}
@@ -240,7 +240,7 @@ jobs:
           sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
           aws --version
 
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -253,7 +253,7 @@ jobs:
       - name: "Change vcpkg.json"
         run: mv test/test-emsdk.json test/vcpkg.json
 
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgJsonGlob: "test/vcpkg.json"

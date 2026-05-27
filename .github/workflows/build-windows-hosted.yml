@@ -35,7 +35,7 @@ jobs:
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
       - uses: actions/checkout@v6
-      - uses: microsoft/setup-msbuild@v2
+      - uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
 
@@ -52,7 +52,7 @@ jobs:
           Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
         shell: pwsh
 
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(x64-windows, ${{ matrix.vcpkg_tag }})"
         with:
           vcpkgDirectory: "C:/vcpkg"
@@ -67,7 +67,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(arm64-windows, ${{ matrix.vcpkg_tag }})"
         with:
           vcpkgDirectory: "C:/vcpkg"
@@ -82,7 +82,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - uses: yumis-coconudge/clean-workspace-action@v1.0.6
+      - uses: yumis-coconudge/clean-workspace-action@v1.0.7
         with:
           additional-path: "C:/vcpkg/buildtrees,C:/vcpkg/packages"
         if: always()
@@ -107,7 +107,7 @@ jobs:
       VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
     steps:
       - uses: actions/checkout@v6
-      - uses: microsoft/setup-msbuild@v2
+      - uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
 
@@ -139,7 +139,7 @@ jobs:
           Write-Output "CUDNN: ${env:CUDNN}"
           Write-Output "TENSORRT_HOME: ${env:TENSORRT_HOME}"
 
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(x64-windows)"
         with:
           vcpkgDirectory: "C:/vcpkg"
@@ -152,7 +152,7 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
           VCPKG_KEEP_ENV_VARS: "CUDA_PATH;CUDNN_ROOT_DIR;TENSORRT_HOME"
 
-      - uses: yumis-coconudge/clean-workspace-action@v1.0.6
+      - uses: yumis-coconudge/clean-workspace-action@v1.0.7
         with:
           additional-path: "C:/vcpkg/buildtrees,C:/vcpkg/packages"
         if: always()
@@ -163,7 +163,7 @@ jobs:
     needs: overlay
     steps:
       - uses: actions/checkout@v6
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -174,11 +174,11 @@ jobs:
       #     version: "1.4.304.0"
       #     cache: true
 
-      - uses: microsoft/setup-msbuild@v2
+      - uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
 
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "C:/vcpkg"
           vcpkgGitCommitId: "66c0373dc7fca549e5803087b9487edfe3aca0a1" # 2026.01.16
