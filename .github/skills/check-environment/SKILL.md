@@ -92,8 +92,3 @@ Output a single markdown report with these headings (in order). Emit all heading
 - READY: suggest `search-port` or `create-port` skill
 - WARN: perform upgrades then re-run check
 - ERROR: install/fix missing items first
-
-## References
-
-- [docs/troubleshooting.md](../../docs/troubleshooting.md)
-- [docs/references.md](../../docs/references.md)

@@ -115,8 +115,3 @@ Output a markdown report with these headings (in order). Emit all headings even 
 - Trim lists >5 items with `... (+N more)`
 - Do not dump entire build logs; reference path only
 - All paths relative to workspace root
-
-## References
-
-- [docs/guide-create-port-build.md](../../docs/guide-create-port-build.md)
-- [docs/troubleshooting.md](../../docs/troubleshooting.md)

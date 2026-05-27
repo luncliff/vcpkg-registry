@@ -103,8 +103,3 @@ Output a markdown report with these headings (in order). Emit all headings even 
 
 ### Multi-Port Review
 If multiple ports requested, produce one consolidated document with `## Port: <name>` blocks.
-
-## References
-
-- [docs/guide-update-port.md](../../docs/guide-update-port.md)
-- [docs/review-checklist.md](../../docs/review-checklist.md)

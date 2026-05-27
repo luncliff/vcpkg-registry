@@ -92,8 +92,3 @@ Output a single markdown report with these required headings (in order). Emit al
 - If port doesn't exist: suggest `create-port` skill
 - If deprecated: suggest installing alternative
 - If upstream-only: suggest `vcpkg install <port>`
-
-## References
-
-- [docs/guide-create-port.md](../../docs/guide-create-port.md)
-- [docs/troubleshooting.md](../../docs/troubleshooting.md)

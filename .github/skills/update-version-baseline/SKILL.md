@@ -85,8 +85,3 @@ Output a markdown report with these headings (in order). Emit all headings even 
 5. `## Errors` — List of failures with brief context
 6. `## Recommendations` — Actionable suggestions
 7. `## Next Steps` — Open PR, link to upstream release notes
-
-## References
-
-- [docs/guide-update-port.md](../../docs/guide-update-port.md) — Step 5 "Format and Register"
-- [docs/guide-update-version-baseline.md](../../docs/guide-update-version-baseline.md) — Step 4 and later

@@ -116,9 +116,3 @@ Output a markdown report with these headings (in order). Emit all headings even 
 - SUCCESS: commit changes → run `./scripts/registry-add-version.ps1` → commit versions → open PR
 - SHA512 CORRECTED: retest then commit
 - FAILURE: analyze logs, consider patches, optional rollback
-
-## References
-
-- [docs/guide-update-port.md](../../docs/guide-update-port.md)
-- [docs/guide-update-version-baseline.md](../../docs/guide-update-version-baseline.md)
-- [docs/review-checklist.md](../../docs/review-checklist.md)
