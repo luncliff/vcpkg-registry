@@ -36,6 +36,18 @@ index 1a56c25..d28413a 100644
  
  if (LLAMA_LLGUIDANCE)
      include(ExternalProject)
+diff --git a/common/http.h b/common/http.h
+index d3daccd..be18264 100644
+--- a/common/http.h
++++ b/common/http.h
+@@ -1,6 +1,6 @@
+ #pragma once
+ 
+-#include <cpp-httplib/httplib.h>
++#include <httplib.h>
+ 
+ struct common_http_url {
+     std::string scheme;
 diff --git a/tools/mtmd/CMakeLists.txt b/tools/mtmd/CMakeLists.txt
 index ffd30c7..72641cb 100644
 --- a/tools/mtmd/CMakeLists.txt
