@@ -82,7 +82,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - uses: yumis-coconudge/clean-workspace-action@v1.0.6
+      - uses: yumis-coconudge/clean-workspace-action@v1.0.7
         with:
           additional-path: "C:/vcpkg/buildtrees,C:/vcpkg/packages"
         if: always()
@@ -152,7 +152,7 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
           VCPKG_KEEP_ENV_VARS: "CUDA_PATH;CUDNN_ROOT_DIR;TENSORRT_HOME"
 
-      - uses: yumis-coconudge/clean-workspace-action@v1.0.6
+      - uses: yumis-coconudge/clean-workspace-action@v1.0.7
         with:
           additional-path: "C:/vcpkg/buildtrees,C:/vcpkg/packages"
         if: always()
