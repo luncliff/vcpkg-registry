@@ -1,21 +1,21 @@
 ---
-name: Prompt Suggestion
-about: Suggest improvements or changes to this repository's GitHub Copilot prompts.
-title: 'Prompt Suggestion - [Suggested Goal or Purpose]'
+name: Skill Suggestion
+about: Suggest improvements or changes to this repository's GitHub Copilot skills.
+title: 'Skill Suggestion - [Suggested Goal or Purpose]'
 labels: ''
 assignees: ''
 
 ---
 ## Suggestion
 
-### 1. Prompt Idea
+### 1. Skill Idea
 A clear and concise description of your idea.
 
-- **Prompt(s):** [e.g., `create-port`, `update-port`, `review-port`]
-- **Description:** [e.g., "Make `/create-port` detect Meson projects better."]
+- **Skill(s):** [e.g., `create-port`, `update-port`, `review-port`]
+- **Description:** [e.g., "Make `create-port` detect Meson projects better."]
 
 ### 2. Requirements
-What must this prompt change achieve? What should it ideally do?
+What must this skill change achieve? What should it ideally do?
 
 - **Must-have behavior:**
 - **Nice-to-have behavior:**
@@ -29,5 +29,5 @@ Describe the desired behavior using BDD-style scenarios.
 
 ## References
 
-* [Prompt Design Note](../../docs/prompt-designs.md)
-* [GitHub Copilot prompts](../../.github/prompts/)
+* [Agent Skills Design](../../docs/prompt-designs.md)
+* [GitHub Copilot Skills](../../.github/skills/)

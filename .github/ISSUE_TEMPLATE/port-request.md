@@ -37,11 +37,11 @@ A short description of your use case.
 
 ### References
 
-* [GitHub Copilot prompts](../../.github/prompts/)
+* [GitHub Copilot Skills](../../.github/skills/)
 * [Create Port Guide](../../docs/guide-create-port.md)
 * [Update Port Guide](../../docs/guide-update-port.md)
-* [/search-port prompt](../../.github/prompts/search-port.prompt.md)
-* [/create-port prompt](../../.github/prompts/create-port.prompt.md)
-* [/update-port prompt](../../.github/prompts/update-port.prompt.md)
-* [/install-port prompt](../../.github/prompts/install-port.prompt.md)
-* [/review-port prompt](../../.github/prompts/review-port.prompt.md)
+* [search-port skill](../../.github/skills/search-port/SKILL.md)
+* [create-port skill](../../.github/skills/create-port/SKILL.md)
+* [update-port skill](../../.github/skills/update-port/SKILL.md)
+* [install-port skill](../../.github/skills/install-port/SKILL.md)
+* [review-port skill](../../.github/skills/review-port/SKILL.md)
