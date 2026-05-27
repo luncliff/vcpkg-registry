@@ -5,7 +5,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/fbgemm
     REF v${VERSION}
-    SHA512 371ebf73895370197c95fe19d423ce90c129b56e7108a26baf2a070c95e1cdbd44a00b804dc1014fbc79da80f4d64d105dcfa215abff8a0b0ff32e7bc3eaf913
+    SHA512 1b5a165e910352ea39ba09cafa7f010a98cadc9b0f97f0884235d561dacdac772c2e502f0c84405fb24b77fd5b88172c43ef93f1f2aa533a9e5a9281728487cb
     PATCHES
         fix-cmakelists.patch
 )
