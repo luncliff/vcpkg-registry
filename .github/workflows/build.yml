@@ -53,7 +53,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "66c0373dc7fca549e5803087b9487edfe3aca0a1" # 2026.01.16
@@ -146,7 +146,7 @@ jobs:
 
       - name: "Run vcpkg(host-tools)" # skip temporary
         if: false
-        uses: lukka/run-vcpkg@v11.5
+        uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "66c0373dc7fca549e5803087b9487edfe3aca0a1" # 2026.01.16
@@ -182,7 +182,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "66c0373dc7fca549e5803087b9487edfe3aca0a1" # 2026.01.16
@@ -253,7 +253,7 @@ jobs:
       - name: "Change vcpkg.json"
         run: mv test/test-emsdk.json test/vcpkg.json
 
-      - uses: lukka/run-vcpkg@v11.5
+      - uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgJsonGlob: "test/vcpkg.json"
