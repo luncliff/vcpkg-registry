@@ -8,12 +8,12 @@ if(VCPKG_TARGET_IS_WINDOWS)
 endif()
 set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
-# https://github.com/ggml-org/llama.cpp/releases/tag/b7599
+# https://github.com/ggml-org/llama.cpp/releases/tag/b9353
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggml-org/llama.cpp
     REF "b${VERSION}"
-    SHA512 82e6109994aaea55a640e43840505653eb34cc4a770addef6856a2379350660cf53ad125c3bee827251e6552935f4f524e0b7d1182ee01247ce0bb24e97dc3ca
+    SHA512 5c80710ca93c7ba19a9e22445e5b53943cd5d2679da4ef14239c1a40dba35b31c61b4b0eca25056f61b8666e3e3f5fb0da6afc25212383eaacc429da07ad58ad
     HEAD_REF master
     PATCHES
         fix-3rdparty.patch
@@ -161,6 +161,7 @@ vcpkg_cmake_configure(
         -DGGML_BUILD_TESTS=OFF
         -DLLAMA_BUILD_EXAMPLES=OFF
         -DGGML_BUILD_EXAMPLES=OFF
+        -DLLAMA_BUILD_APP=OFF
     OPTIONS_DEBUG
         -DGGML_VULKAN_DEBUG=ON
         -DGGML_VULKAN_VALIDATE=ON
@@ -202,8 +203,9 @@ if("tools" IN_LIST FEATURES)
         llama-mtmd-cli
         llama-perplexity
         llama-quantize
-        llama-run
+        llama-results
         llama-server
+        llama-template-analysis
         llama-tokenize
         llama-tts
         llama-fit-params
