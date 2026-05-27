@@ -1,4 +1,4 @@
-# https://github.com/microsoft/onnxruntime/blob/v1.22.1/tools/python/util/vcpkg_helpers.py
+# https://github.com/microsoft/onnxruntime/blob/v1.25.1/tools/python/util/vcpkg_helpers.py
 message(WARNING "The port requires 'onnx' port build with CMake option ONNX_DISABLE_STATIC_REGISTRATION=ON")
 if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     if("framework" IN_LIST FEATURES)
@@ -11,7 +11,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
     REF "v${VERSION}"
-    SHA512 373c51575ada457b8aead5d195a5f3eba62fb747b6370a2a9889fff875c40ea30af8fd49104d58cc86f79247410e829086b0979f37ca8635c6dd34960e9cc424
+    SHA512 df760e30f1027b024d5a67aa3f36a6508609a58acc37e5e1066f919eaa42f9568c1c8218fbc80eeee0b9ec10307ea4778575b9ed3a1b312690f394b35d036e61
     PATCHES
         fix-cmake.patch # .framework install, external library workarounds(abseil-cpp, eigen3)
         fix-cmake-cuda.patch
