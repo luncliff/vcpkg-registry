@@ -1,7 +1,0 @@
-Package: abseil
-Version: 20260107.0
-Depends: vcpkg-cmake, vcpkg-cmake-config
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 6c906ba39c81a367f2cc07dbea95536a9e091ba10f5a2d6123c09622e7671270
-Description: Abseil is an open-source collection of C++ code (compliant to C++17) designed to augment the C++ standard library
