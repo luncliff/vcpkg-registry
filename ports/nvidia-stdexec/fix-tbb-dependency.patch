@@ -1,0 +1,34 @@
+diff --git a/cmake/Modules/ConfigureTBB.cmake b/cmake/Modules/ConfigureTBB.cmake
+index d553739..88316c8 100644
+--- a/cmake/Modules/ConfigureTBB.cmake
++++ b/cmake/Modules/ConfigureTBB.cmake
+@@ -1,26 +1,14 @@
+ option(STDEXEC_ENABLE_TBB "Enable TBB targets" OFF)
+ 
+ include(CheckIncludeFileCXX)
++if (STDEXEC_ENABLE_TBB)
+ rapids_find_package(
+-  TBB QUIET
++  TBB REQUIRED
++  GLOBAL_TARGETS TBB::tbb
+   COMPONENTS tbb
+   BUILD_EXPORT_SET stdexec-exports
+   INSTALL_EXPORT_SET stdexec-exports
+ )
+-
+-# If TBB is available and the stdlib is libstdc++, then a #include of <execution> will
+-# pull in TBB headers, creating a link-time dependency on TBB.
+-if (TBB_FOUND)
+-  if (NOT STDEXEC_ENABLE_TBB)
+-    include(CheckCXXSymbolExists)
+-    check_cxx_symbol_exists(__GLIBCXX__ "ciso646" _glibcxx_version_defined)
+-    if (_glibcxx_version_defined)
+-      set(STDEXEC_ENABLE_TBB ON)
+-      message(STATUS "Enabling TBB support in stdexec because <tbb/tbb.h> is available and libstdc++ is used.")
+-    endif()
+-  endif()
+-else()
+-  set(STDEXEC_ENABLE_TBB OFF)
+ endif()
+ 
+ # TBB does not sanitize cleanly. Disable TBB support if any sanitizer is enabled.

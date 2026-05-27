@@ -30,7 +30,7 @@
     },
     "cudnn": {
       "baseline": "9.11.1",
-      "port-version": 0
+      "port-version": 1
     },
     "cudnn-frontend": {
       "baseline": "1.18.0",
@@ -65,7 +65,7 @@
       "port-version": 2
     },
     "fbgemm": {
-      "baseline": "1.5.0",
+      "baseline": "1.7.0",
       "port-version": 0
     },
     "fft2d": {
@@ -117,7 +117,7 @@
       "port-version": 0
     },
     "llama-cpp": {
-      "baseline": "7599",
+      "baseline": "9353",
       "port-version": 0
     },
     "magma": {
@@ -162,6 +162,10 @@
     },
     "nvidia-nvbench": {
       "baseline": "2024-06-01",
+      "port-version": 0
+    },
+    "nvidia-stdexec": {
+      "baseline": "gtc-2026",
       "port-version": 0
     },
     "nvidia-tools-extension-sdk": {
