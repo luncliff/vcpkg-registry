@@ -15,7 +15,7 @@ concurrency:
 env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
   VCPKG_ENABLE_METRICS: 0
-  VCPKG_BINARY_SOURCES: "files,C:/vcpkg-caches,readwrite"
+  VCPKG_BINARY_SOURCES: "files,D:/vcpkg-caches,readwrite"
 
 jobs:
   overlay:
@@ -46,14 +46,14 @@ jobs:
 
       - name: "Change vcpkg.json"
         run: |
-          New-Item -Type Directory -Force C:/vcpkg-caches
+          New-Item -Type Directory -Force D:/vcpkg-caches
           Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(x64-windows, ${{ matrix.vcpkg_tag }})"
         with:
-          vcpkgDirectory: "C:/vcpkg"
+          vcpkgDirectory: "D:/vcpkg"
           vcpkgGitCommitId: ${{ matrix.vcpkg_commit }}
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
@@ -61,14 +61,14 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          # VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches,readwrite"
+          # VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,D:/vcpkg-caches,readwrite"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(arm64-windows, ${{ matrix.vcpkg_tag }})"
         with:
-          vcpkgDirectory: "C:/vcpkg"
+          vcpkgDirectory: "D:/vcpkg"
           vcpkgGitCommitId: ${{ matrix.vcpkg_commit }}
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
@@ -76,13 +76,13 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
-          # VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,C:/vcpkg-caches,readwrite"
+          # VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,D:/vcpkg-caches,readwrite"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - uses: yumis-coconudge/clean-workspace-action@v1.0.7
         with:
-          additional-path: "C:/vcpkg/buildtrees,C:/vcpkg/packages"
+          additional-path: "D:/vcpkg/buildtrees,D:/vcpkg/packages"
         if: always()
 
   overlay_cuda:
@@ -117,7 +117,7 @@ jobs:
 
       - name: "Change vcpkg.json"
         run: |
-          New-Item -Type Directory -Force C:/vcpkg-caches
+          New-Item -Type Directory -Force D:/vcpkg-caches
           Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
 
       - name: "Setup CUDA"
@@ -140,7 +140,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(x64-windows)"
         with:
-          vcpkgDirectory: "C:/vcpkg"
+          vcpkgDirectory: "D:/vcpkg"
           vcpkgGitCommitId: "56bb2411609227288b70117ead2c47585ba07713" # 2026.04.27
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
@@ -152,7 +152,7 @@ jobs:
 
       - uses: yumis-coconudge/clean-workspace-action@v1.0.7
         with:
-          additional-path: "C:/vcpkg/buildtrees,C:/vcpkg/packages"
+          additional-path: "D:/vcpkg/buildtrees,D:/vcpkg/packages"
         if: always()
 
   overlay_vulkan:
@@ -178,7 +178,7 @@ jobs:
 
       - uses: lukka/run-vcpkg@v11.6
         with:
-          vcpkgDirectory: "C:/vcpkg"
+          vcpkgDirectory: "D:/vcpkg"
           vcpkgGitCommitId: "56bb2411609227288b70117ead2c47585ba07713" # 2026.04.27
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
