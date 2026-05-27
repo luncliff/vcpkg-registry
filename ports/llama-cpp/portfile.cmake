@@ -203,8 +203,9 @@ if("tools" IN_LIST FEATURES)
         llama-mtmd-cli
         llama-perplexity
         llama-quantize
-        llama-run
+        llama-results
         llama-server
+        llama-template-analysis
         llama-tokenize
         llama-tts
         llama-fit-params
