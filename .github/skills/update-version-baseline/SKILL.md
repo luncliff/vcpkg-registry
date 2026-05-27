@@ -18,7 +18,7 @@ Register one or more ports into the registry `versions/` tracking (modifies `ver
 - Validate ports exist in `ports/` folder
 - Run `registry-add-version.ps1` for each port
 - Capture and summarize script output
-- Create commits for baseline/version changes
+- Suggest commit commands for baseline/version changes (only commit when explicitly requested)
 
 ## User Input
 
@@ -44,8 +44,9 @@ Register one or more ports into the registry `versions/` tracking (modifies `ver
 
 ### Phase 2: Execute Registry Add-Version
 
-1. Commit if files in ports folder changed:
+1. If files in ports folder changed, recommend committing:
    ```powershell
+   # Suggest to user:
    git add ./ports/port-name/
    git commit -m "[port-name] commit formatting changes"
    ```
@@ -62,8 +63,9 @@ Register one or more ports into the registry `versions/` tracking (modifies `ver
 ### Phase 3: Results & Recommendations
 
 1. Summarize changes — list updated files under `versions/`
-2. Create commit for versions folder changes:
+2. Recommend commit for versions folder changes (only if user requests):
    ```powershell
+   # Suggest to user:
    git add ./versions
    git commit -m "[<port-name>] update baseline"
    ```

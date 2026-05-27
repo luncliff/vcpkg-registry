@@ -113,6 +113,6 @@ Output a markdown report with these headings (in order). Emit all headings even 
 
 ## Next Steps Guidance
 
-- SUCCESS: commit changes → run `./scripts/registry-add-version.ps1` → commit versions → open PR
+- SUCCESS: recommend commit changes → run `./scripts/registry-add-version.ps1` → recommend commit versions → open PR
 - SHA512 CORRECTED: retest then commit
 - FAILURE: analyze logs, consider patches, optional rollback
