@@ -88,10 +88,6 @@
       "baseline": "4.3",
       "port-version": 1
     },
-    "google-filament": {
-      "baseline": "1.40.0",
-      "port-version": 0
-    },
     "google-jni-bind": {
       "baseline": "1.2.1-beta",
       "port-version": 0
