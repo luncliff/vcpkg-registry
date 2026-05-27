@@ -53,6 +53,6 @@ They will be really helpful to get the detail!
 
 - Check [References](../../docs/references.md)
 - [Update Port Guide](../../docs/guide-update-port.md)
-- [/check-environment prompt](../../.github/prompts/check-environment.prompt.md)
-- [/install-port prompt](../../.github/prompts/install-port.prompt.md)
-- [/review-port prompt](../../.github/prompts/review-port.prompt.md)
+- [check-environment skill](../../.github/skills/check-environment/SKILL.md)
+- [install-port skill](../../.github/skills/install-port/SKILL.md)
+- [review-port skill](../../.github/skills/review-port/SKILL.md)

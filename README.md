@@ -196,10 +196,9 @@ The `ports/` folder contains `openssl3` and `tensorflow-lite`. Put them in the "
 }
 ```
 
-## Prompts and Agents
+## Skills and Agents
 
-- 🌱 [.github/prompts](./.github/prompts/): [GitHub Copilot Prompt Designs](./docs/prompt-designs.md)
-- :construction: .github/agents experiment in progress. Currently no files.
+- 🌱 [.github/skills](./.github/skills/): [Agent Skills Design](./docs/prompt-designs.md) for vcpkg registry maintenance
 
 ## License
 

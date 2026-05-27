@@ -29,5 +29,5 @@ Describe the desired behavior using BDD-style scenarios.
 
 ## References
 
-* [Prompt Design Note](../../docs/prompt-designs.md)
-* [GitHub Copilot prompts](../../.github/prompts/)
+* [Agent Skills Design](../../docs/prompt-designs.md)
+* [GitHub Copilot Skills](../../.github/skills/)
