@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Install cuDNN 9.x for CUDA 12.x from a ZIP into a chosen root.
+Install cuDNN 9.x for CUDA 13.x from a ZIP into a chosen root.
 
 .DESCRIPTION
 If $env:CUDNN exists and the path is valid, exits.
@@ -8,21 +8,21 @@ Otherwise downloads the specified cuDNN redistributable ZIP, extracts the expect
 bin/include/lib content into ExtractRoot, sets CUDNN, and adds bin to system PATH.
 
 .PARAMETER DownloadURL
-cuDNN redistributable ZIP URL for Windows x86_64 and CUDA 12.x.
-Defaults to 9.15.0.57.
+cuDNN redistributable ZIP URL for Windows x86_64 and CUDA 13.x.
+Defaults to 9.22.0.52.
 
 .PARAMETER ExtractRoot
 Target root for cuDNN. Defaults to $env:CUDNN if set, otherwise
-"C:\Program Files\NVIDIA\CUDNN\v9.15".
+"C:\Program Files\NVIDIA\CUDNN\v9.22".
 
 .EXAMPLE
-.\install-cudnn.ps1 -DownloadURL "https://.../cudnn-windows-x86_64-9.15.0.57_cuda12-archive.zip"
+.\install-cudnn.ps1 -DownloadURL "https://.../cudnn-windows-x86_64-9.22.0.52_cuda13-archive.zip"
 #>
 
 [CmdletBinding()]
 param(
-  [Parameter()][ValidateNotNullOrEmpty()][string]$DownloadURL = "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.15.0.57_cuda12-archive.zip",
-  [Parameter()][string]$ExtractRoot = $(if ($env:CUDNN) { $env:CUDNN } else { "C:\Program Files\NVIDIA\CUDNN\v9.15" })
+  [Parameter()][ValidateNotNullOrEmpty()][string]$DownloadURL = "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.22.0.52_cuda13-archive.zip",
+  [Parameter()][string]$ExtractRoot = $(if ($env:CUDNN) { $env:CUDNN } else { "C:\Program Files\NVIDIA\CUDNN\v9.22" })
 )
 
 $ErrorActionPreference = 'Stop'
