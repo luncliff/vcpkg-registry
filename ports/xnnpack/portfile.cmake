@@ -47,12 +47,19 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         kleidiai XNNPACK_ENABLE_KLEIDIAI
 )
 
+if(NOT VCPKG_TARGET_IS_WINDOWS)
+    # CMAKE_POSITION_INDEPENDENT_CODE=ON adds -fPIC on GCC/Clang for shared library builds.
+    # On MSVC/Windows this flag is a no-op for static libs (already enforced above via
+    # vcpkg_check_linkage(ONLY_STATIC_LIBRARY)) but it triggers MSVC C2143 syntax errors
+    # in subgraph.c when CMake propagates the property to OBJECT libraries, so skip it.
+    list(APPEND PLATFORM_OPTIONS -DCMAKE_POSITION_INDEPENDENT_CODE=ON)
+endif()
+
 vcpkg_cmake_configure(
     SOURCE_PATH ${SOURCE_PATH}
     OPTIONS
         ${FEATURE_OPTIONS}
         ${PLATFORM_OPTIONS}
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
         -DXNNPACK_USE_SYSTEM_LIBS=ON
         "-DCPUINFO_SOURCE_DIR:PATH=${CURRENT_INSTALLED_DIR}"
         "-DPTHREADPOOL_SOURCE_DIR:PATH=${CURRENT_INSTALLED_DIR}"
@@ -68,6 +75,19 @@ file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/bin"
     "${CURRENT_PACKAGES_DIR}/debug/share"
 )
-# file(INSTALL "${SOURCE_PATH}/include/" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
+
+# Install all public headers from include/.
+# xnnpack's CMake only marks include/xnnpack.h as PUBLIC_HEADER; experimental.h
+# and its transitive dependency src/operators/fingerprint_id.h are not installed
+# by default. tensorflow-lite >= 2.21.0 directly includes experimental.h, so
+# we install those headers here.
+file(INSTALL "${SOURCE_PATH}/include/" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
+# experimental.h references "src/operators/fingerprint_id.h" with a path relative
+# to the include root, so install those internal headers under include/src/operators/.
+file(INSTALL
+    "${SOURCE_PATH}/src/operators/fingerprint_id.h"
+    "${SOURCE_PATH}/src/operators/fingerprint_id.h.inc"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/include/src/operators"
+)
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
