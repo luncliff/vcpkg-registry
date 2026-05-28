@@ -221,7 +221,7 @@
       "port-version": 1
     },
     "openssl3": {
-      "baseline": "3.6.2",
+      "baseline": "4.0.0",
       "port-version": 0
     },
     "psimd": {
