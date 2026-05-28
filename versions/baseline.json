@@ -281,8 +281,8 @@
       "port-version": 0
     },
     "xnnpack": {
-      "baseline": "2025-06-06",
-      "port-version": 1
+      "baseline": "2025-12-26",
+      "port-version": 0
     },
     "xnvctrl": {
       "baseline": "515.43.04",
