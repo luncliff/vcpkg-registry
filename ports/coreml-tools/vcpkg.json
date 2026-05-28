@@ -1,6 +1,6 @@
 {
   "name": "coreml-tools",
-  "version": "8.3",
+  "version": "9.0",
   "description": "Core ML tools contain supporting tools for Core ML model conversion, editing, and validation.",
   "homepage": "https://apple.github.io/coremltools/docs-guides/",
   "license": "BSD-3-Clause",
