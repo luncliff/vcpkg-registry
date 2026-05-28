@@ -31,6 +31,8 @@ message(STATUS "Using git: ${GIT}")
 
 vcpkg_find_acquire_program(PYTHON3)
 message(STATUS "Using python3: ${PYTHON3}")
+get_filename_component(PYTHON3_PATH "${PYTHON3}" PATH)
+vcpkg_add_to_path(PREPEND "${PYTHON3_PATH}")
 
 # for BLAS, see https://cmake.org/cmake/help/latest/module/FindBLAS.html#blas-lapack-vendors
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -129,6 +131,7 @@ if(VCPKG_CROSSCOMPILING)
     set(BUILD_NATIVE OFF)
 else()
     set(BUILD_NATIVE ON)
+    list(APPEND PYTHON3_OPTIONS "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}")
 endif()
 
 vcpkg_cmake_configure(
@@ -137,9 +140,9 @@ vcpkg_cmake_configure(
     OPTIONS
         ${FEATURE_OPTIONS}
         ${ARCH_OPTIONS}
+        ${PYTHON3_OPTIONS}
         # see cmake/build-info.cmake
         "-DGIT_EXECUTABLE:FILEPATH=${GIT}"
-        "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}"
         "-DBUILD_NUMBER:STRING=${VERSION}"
         "-DBUILD_COMMIT:STRING=b${VERSION}"
         # ${SOURCE_PATH}/CMakeLists.txt
