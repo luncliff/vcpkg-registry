@@ -5,12 +5,11 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/XNNPACK
-    REF b1f45735aa86a0a84053d331fee702b8038492ee
-    SHA512 3c4415cb9097f60bb1149140bc5b609f7c4aea5c03e8bfc8168645d480fcea52b4beee4ae030923910ad072158bf3de355077cd6f75c3905c659c4507eaab4ca
+    REF 25b42dfddb0ee22170d73ff0d4b333ea1e6edfeb
+    SHA512 f3eb44dff4e6235116a2d8ec32e6ddf24417763fc7cfac9dbf3e4f58f90f6cf5c2b50fb9ec42df707cb22f63cf99ee7c9b53d8a8c68ecadca1fef8681bfd79e0
     HEAD_REF master
     PATCHES
         fix-cmake.patch
-        fix-emscripten.patch
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)

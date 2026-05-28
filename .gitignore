@@ -3,8 +3,11 @@ work-note.md
 vcpkg-configuration.json
 
 buildtrees
+buildtrees-*
 installed
+installed-*
 packages
+packages-*
 test-buildtrees
 test-install
 test-packages
