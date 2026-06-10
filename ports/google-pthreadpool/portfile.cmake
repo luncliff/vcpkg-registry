@@ -5,8 +5,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/pthreadpool
-    REF c2ba5c50bb58d1397b693740cf75fad836a0d1bf
-    SHA512 3c1fc5b7ed716c7b581f06449b2ca9513331c3b279cb6b289c735c3d64f1ac0ac8f19d3362b28a35ce57ab066b60c4bb3147727cf4f23c2c906aab03d0b35729
+    REF b8279c3e0c38b8be5377129e5aa449feaad47742
+    SHA512 00e071a149a6a0d0dba1f1a05165c1eda9f876f2f8afd1e1b39dfa7104c360a3966fd31f1c718ca56b7e7a71ce4e59d7250da01b4ec4e62734a11725ed6a6ba9
     PATCHES
         fix-cmake.patch
 )

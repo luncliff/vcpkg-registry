@@ -1,0 +1,22 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1234567..abcdef8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -498,14 +498,7 @@ ENDIF()
+ ENDIF()
+ 
+ # Generate and load the micorkernels.cmake files.
+-MESSAGE(STATUS "Generating microkernels.cmake")
+-EXECUTE_PROCESS(
+-  COMMAND "${Python_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/update-microkernels.py" --output "${PROJECT_BINARY_DIR}"
+-  RESULT_VARIABLE UPDATE_MICROKERNELS_RESULT
+-)
+-IF(NOT UPDATE_MICROKERNELS_RESULT EQUAL 0)
+-  MESSAGE(FATAL_ERROR "Failed to generate \"microkernels.cmake\".")
+-ENDIF()
+-INCLUDE("${PROJECT_BINARY_DIR}/cmake/gen/microkernels.cmake")
++MESSAGE(STATUS "Using pre-generated microkernels.cmake")
++INCLUDE("${PROJECT_SOURCE_DIR}/cmake/gen/microkernels.cmake")
+ 
+ SET(OPERATOR_SRCS
+

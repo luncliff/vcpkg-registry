@@ -1,0 +1,16 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1234567..abcdef9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -897,9 +897,9 @@
+ LIST(SORT PROD_MICROKERNEL_SRCS)
+ STRING(REPLACE ";" "\n" PROD_MICROKERNEL_SRCS_WITH_NEWLINES "${PROD_MICROKERNEL_SRCS}")
+ FILE(GENERATE OUTPUT "${PROJECT_BINARY_DIR}/prod_microkernel_srcs.txt" CONTENT "${PROD_MICROKERNEL_SRCS_WITH_NEWLINES}")
+ ADD_CUSTOM_COMMAND(
+   OUTPUT "${PROJECT_BINARY_DIR}/build_identifier.c"
+-  COMMAND "${Python_EXECUTABLE}" "scripts/generate-build-identifier.py" --output "${PROJECT_BINARY_DIR}/build_identifier.c" --input_file_list "${PROJECT_BINARY_DIR}/prod_microkernel_srcs.txt"
+-  DEPENDS "${PROJECT_BINARY_DIR}/prod_microkernel_srcs.txt"
++  COMMAND "${CMAKE_COMMAND}" -E copy "${PROJECT_SOURCE_DIR}/src/build_identifier.c" "${PROJECT_BINARY_DIR}/build_identifier.c"
++  DEPENDS "${PROJECT_SOURCE_DIR}/src/build_identifier.c"
+   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+ )
