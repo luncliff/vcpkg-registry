@@ -10,6 +10,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-cmake.patch
+        skip-microkernels-generation.patch
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)
@@ -33,6 +34,65 @@ endif()
 
 vcpkg_find_acquire_program(PYTHON3)
 message(STATUS "Using python3: ${PYTHON3}")
+
+file(READ "${SOURCE_PATH}/tools/update-microkernels.py" UPDATE_MICROKERNELS_CONTENT)
+string(REPLACE "with codecs.open(filepath, 'r', encoding='utf-8') as output_file:" "with open(filepath, 'r', encoding='utf-8') as output_file:" UPDATE_MICROKERNELS_CONTENT "${UPDATE_MICROKERNELS_CONTENT}")
+string(REPLACE "with codecs.open(filepath, 'w', encoding='utf-8') as output_file:" "with open(filepath, 'w', encoding='utf-8') as output_file:" UPDATE_MICROKERNELS_CONTENT "${UPDATE_MICROKERNELS_CONTENT}")
+file(WRITE "${SOURCE_PATH}/tools/update-microkernels.py" "${UPDATE_MICROKERNELS_CONTENT}")
+
+file(WRITE "${SOURCE_PATH}/src/build_identifier.c" [=[
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+static const uint8_t xnn_build_identifier[] = { 0 };
+
+size_t xnn_experimental_get_build_identifier_size(void) {
+    return sizeof(xnn_build_identifier);
+}
+
+const void* xnn_experimental_get_build_identifier_data(void) {
+    return xnn_build_identifier;
+}
+
+bool xnn_experimental_check_build_identifier(const void* data, const size_t size) {
+    if (size != xnn_experimental_get_build_identifier_size()) {
+        return false;
+    }
+    return !memcmp(data, xnn_build_identifier, size);
+}
+]=])
+
+file(READ "${SOURCE_PATH}/CMakeLists.txt" XNNPACK_CMAKELISTS)
+string(REPLACE "\r\n" "\n" XNNPACK_CMAKELISTS "${XNNPACK_CMAKELISTS}")
+string(REPLACE [[ADD_CUSTOM_COMMAND(
+  OUTPUT "${PROJECT_BINARY_DIR}/build_identifier.c"
+  COMMAND "${Python_EXECUTABLE}" "scripts/generate-build-identifier.py" --output "${PROJECT_BINARY_DIR}/build_identifier.c" --input_file_list "${PROJECT_BINARY_DIR}/prod_microkernel_srcs.txt"
+  DEPENDS "${PROJECT_BINARY_DIR}/prod_microkernel_srcs.txt"
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)]] [[ADD_CUSTOM_COMMAND(
+  OUTPUT "${PROJECT_BINARY_DIR}/build_identifier.c"
+  COMMAND "${CMAKE_COMMAND}" -E copy "${PROJECT_SOURCE_DIR}/src/build_identifier.c" "${PROJECT_BINARY_DIR}/build_identifier.c"
+  DEPENDS "${PROJECT_SOURCE_DIR}/src/build_identifier.c"
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)]] XNNPACK_CMAKELISTS "${XNNPACK_CMAKELISTS}")
+string(REPLACE "TARGET_COMPILE_DEFINITIONS(xnnpack-logging PUBLIC \"XNN_LOG_LEVEL=$<$<CONFIG:Debug>:5>$<$<NOT:$<CONFIG:Debug>>:0>\")" "TARGET_COMPILE_DEFINITIONS(xnnpack-logging PUBLIC \"XNN_LOG_LEVEL=$<$<CONFIG:Debug>:1>$<$<NOT:$<CONFIG:Debug>>:0>\")" XNNPACK_CMAKELISTS "${XNNPACK_CMAKELISTS}")
+string(REPLACE [[# Generate and load the micorkernels.cmake files.
+MESSAGE(STATUS "Generating microkernels.cmake")
+EXECUTE_PROCESS(
+    COMMAND "${Python_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/update-microkernels.py" --output "${PROJECT_BINARY_DIR}"
+    RESULT_VARIABLE UPDATE_MICROKERNELS_RESULT
+)
+IF(NOT UPDATE_MICROKERNELS_RESULT EQUAL 0)
+    MESSAGE(FATAL_ERROR "Failed to generate \"microkernels.cmake\".")
+ENDIF()
+INCLUDE("${PROJECT_SOURCE_DIR}/cmake/gen/microkernels.cmake")
+]] [[# Generate and load the micorkernels.cmake files.
+MESSAGE(STATUS "Using pre-generated microkernels.cmake")
+INCLUDE("${PROJECT_SOURCE_DIR}/cmake/gen/microkernels.cmake")
+]] XNNPACK_CMAKELISTS "${XNNPACK_CMAKELISTS}")
+file(WRITE "${SOURCE_PATH}/CMakeLists.txt" "${XNNPACK_CMAKELISTS}")
 
 # Add _POSIX_C_SOURCE for struct timespec on Linux
 if(NOT VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_OSX AND NOT VCPKG_TARGET_IS_EMSCRIPTEN)

@@ -33,3 +33,17 @@ index 1234567..abcdefg 100644
      SET(FXDIV_BUILD_TESTS OFF CACHE BOOL "")
      SET(FXDIV_BUILD_BENCHMARKS OFF CACHE BOOL "")
      ADD_SUBDIRECTORY(
+  diff --git a/tools/update-microkernels.py b/tools/update-microkernels.py
+  index 1111111..2222222 100644
+  --- a/tools/update-microkernels.py
+  +++ b/tools/update-microkernels.py
+  @@ -117,10 +117,10 @@ def overwrite_if_changed(filepath, content):
+    txt_changed = True
+    if os.path.exists(filepath):
+  -    with codecs.open(filepath, 'r', encoding='utf-8') as output_file:
+  +    with open(filepath, 'r', encoding='utf-8') as output_file:
+       txt_changed = output_file.read() != content
+    if txt_changed:
+  -    with codecs.open(filepath, 'w', encoding='utf-8') as output_file:
+  +    with open(filepath, 'w', encoding='utf-8') as output_file:
+       output_file.write(content)
