@@ -13,7 +13,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       DOCS_ZIP_NAME: "docs-${{ github.ref_name }}.zip"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: "Run gh(auth)"
         run: |
