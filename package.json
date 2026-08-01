@@ -19,7 +19,7 @@
   "dependencies": {
     "esbuild": "~0.28.0",
     "vitepress": "1.6.4",
-    "vite": "8.0.14",
+    "vite": "8.1.5",
     "vue": "3.5.33"
   }
 }
