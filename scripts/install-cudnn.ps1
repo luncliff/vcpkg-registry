@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Install cuDNN 9.x for CUDA 12.x from a ZIP into a chosen root.
+Install cuDNN 9.x for CUDA 13.x from a ZIP into a chosen root.
 
 .DESCRIPTION
 If $env:CUDNN exists and the path is valid, exits.
@@ -8,21 +8,21 @@ Otherwise downloads the specified cuDNN redistributable ZIP, extracts the expect
 bin/include/lib content into ExtractRoot, sets CUDNN, and adds bin to system PATH.
 
 .PARAMETER DownloadURL
-cuDNN redistributable ZIP URL for Windows x86_64 and CUDA 12.x.
-Defaults to 9.15.0.57.
+cuDNN redistributable ZIP URL for Windows x86_64 and CUDA 13.x.
+Defaults to 9.25.0.15.
 
 .PARAMETER ExtractRoot
 Target root for cuDNN. Defaults to $env:CUDNN if set, otherwise
-"C:\Program Files\NVIDIA\CUDNN\v9.15".
+"C:\Program Files\NVIDIA\CUDNN\v9.25".
 
 .EXAMPLE
-.\install-cudnn.ps1 -DownloadURL "https://.../cudnn-windows-x86_64-9.15.0.57_cuda12-archive.zip"
+.\install-cudnn.ps1 -DownloadURL "https://.../cudnn-windows-x86_64-9.25.0.15_cuda13-archive.zip"
 #>
 
 [CmdletBinding()]
 param(
-  [Parameter()][ValidateNotNullOrEmpty()][string]$DownloadURL = "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.15.0.57_cuda12-archive.zip",
-  [Parameter()][string]$ExtractRoot = $(if ($env:CUDNN) { $env:CUDNN } else { "C:\Program Files\NVIDIA\CUDNN\v9.15" })
+  [Parameter()][ValidateNotNullOrEmpty()][string]$DownloadURL = "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.25.0.15_cuda13-archive.zip",
+  [Parameter()][string]$ExtractRoot = $(if ($env:CUDNN) { $env:CUDNN } else { "C:\Program Files\NVIDIA\CUDNN\v9.25" })
 )
 
 $ErrorActionPreference = 'Stop'
@@ -75,31 +75,27 @@ Expand-Archive -Path $tempZip -DestinationPath $extractTemp -Force
 $pkg = Get-ChildItem -Directory $extractTemp | Select-Object -First 1
 if (-not $pkg) { throw "[cudnn] Unexpected archive layout." }
 
-$bin = Join-Path $pkg.FullName "bin"
-$inc = Join-Path $pkg.FullName "include"
-$lib = Join-Path $pkg.FullName "lib\x64"
-
 New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "bin")     | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "include") | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "lib")     | Out-Null
 
-$dllFiles = Get-ChildItem -Path (Join-Path $bin "cudnn*.dll") -ErrorAction SilentlyContinue
+$dllFiles = Get-ChildItem -Path $pkg.FullName -Recurse -File -Filter "cudnn*.dll" -ErrorAction SilentlyContinue
 if (-not $dllFiles) {
-  Write-Error "[cudnn] No cuDNN DLLs found in $bin"
+  Write-Error "[cudnn] No cuDNN DLLs found in $($pkg.FullName)"
   exit 1
 }
 Copy-Item -Path $dllFiles.FullName -Destination (Join-Path $ExtractRoot "bin") -Force
 
-$headerFiles = Get-ChildItem -Path (Join-Path $inc "cudnn*.h") -ErrorAction SilentlyContinue
+$headerFiles = Get-ChildItem -Path $pkg.FullName -Recurse -File -Filter "cudnn*.h" -ErrorAction SilentlyContinue
 if (-not $headerFiles) {
-  Write-Error "[cudnn] No cuDNN headers found in $inc"
+  Write-Error "[cudnn] No cuDNN headers found in $($pkg.FullName)"
   exit 1
 }
 Copy-Item -Path $headerFiles.FullName -Destination (Join-Path $ExtractRoot "include") -Force
 
-$libFiles = Get-ChildItem -Path (Join-Path $lib "cudnn*.lib") -ErrorAction SilentlyContinue
+$libFiles = Get-ChildItem -Path $pkg.FullName -Recurse -File -Filter "cudnn*.lib" -ErrorAction SilentlyContinue
 if (-not $libFiles) {
-  Write-Error "[cudnn] No cuDNN libraries found in $lib"
+  Write-Error "[cudnn] No cuDNN libraries found in $($pkg.FullName)"
   exit 1
 }
 Copy-Item -Path $libFiles.FullName -Destination (Join-Path $ExtractRoot "lib") -Force

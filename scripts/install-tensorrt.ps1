@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Install TensorRT 10.14.x from a ZIP into a chosen root.
+Install TensorRT 11.2.1 from a ZIP into a chosen root.
 
 .DESCRIPTION
 If $env:TENSORRT_HOME exists and the path is valid, exits.
@@ -11,11 +11,11 @@ sets TENSORRT_HOME and adds <root>\bin to system PATH. Also sets TENSORRT_INCLUD
 If provided, verifies elevation.
 
 .PARAMETER DownloadURL
-TensorRT Windows zip URL for CUDA 12.9 by default.
+TensorRT Windows zip URL for CUDA 13.3 by default.
 
 .PARAMETER ExtractRoot
 Target root for TensorRT. Defaults to $env:TENSORRT_HOME if set; otherwise
-"C:\Program Files\NVIDIA\TensorRT\10.14.1".
+"C:\Program Files\NVIDIA\TensorRT\11.2.1".
 
 .EXAMPLE
 .\install-tensorrt.ps1 -Admin
@@ -24,8 +24,8 @@ Target root for TensorRT. Defaults to $env:TENSORRT_HOME if set; otherwise
 [CmdletBinding()]
 param(
   [switch]$Admin,
-  [Parameter()][ValidateNotNullOrEmpty()][string]$DownloadURL = "https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.14.1/zip/TensorRT-10.14.1.48.Windows.win10.cuda-12.9.zip",
-  [Parameter()][string]$ExtractRoot = $(if ($env:TENSORRT_HOME) { $env:TENSORRT_HOME } else { "C:\Program Files\NVIDIA\TensorRT\10.14.1" })
+  [Parameter()][ValidateNotNullOrEmpty()][string]$DownloadURL = "https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/11.2.1/zip/TensorRT-11.2.1.0.Windows.win10.cuda-13.3.zip",
+  [Parameter()][string]$ExtractRoot = $(if ($env:TENSORRT_HOME) { $env:TENSORRT_HOME } else { "C:\Program Files\NVIDIA\TensorRT\11.2.1" })
 )
 
 $ErrorActionPreference = 'Stop'
@@ -47,9 +47,10 @@ if ($env:TENSORRT_HOME -and (Test-Path -LiteralPath $env:TENSORRT_HOME)) {
 }
 
 function Add-PathOnce([string]$PathToAdd) {
-  $cur = [Environment]::GetEnvironmentVariable('Path', 'Machine') -split ';' | Where-Object { $_ }
+  $scope = if ($Admin) { 'Machine' } else { 'User' }
+  $cur = [Environment]::GetEnvironmentVariable('Path', $scope) -split ';' | Where-Object { $_ }
   if ($cur -notcontains $PathToAdd) {
-    [Environment]::SetEnvironmentVariable('Path', (($cur + $PathToAdd) -join ';'), 'Machine')
+    [Environment]::SetEnvironmentVariable('Path', (($cur + $PathToAdd) -join ';'), $scope)
   }
 }
 
@@ -57,9 +58,10 @@ function ChangeEnvironmentVariable {
   param (
     [string]$InstallRoot
   )
-  [Environment]::SetEnvironmentVariable('TENSORRT_HOME', $InstallRoot, 'Machine')
-  [Environment]::SetEnvironmentVariable('TENSORRT_INCLUDE', (Join-Path $InstallRoot 'include'), 'Machine')
-  [Environment]::SetEnvironmentVariable('TENSORRT_LIB', (Join-Path $InstallRoot 'lib'), 'Machine')
+  $scope = if ($Admin) { 'Machine' } else { 'User' }
+  [Environment]::SetEnvironmentVariable('TENSORRT_HOME', $InstallRoot, $scope)
+  [Environment]::SetEnvironmentVariable('TENSORRT_INCLUDE', (Join-Path $InstallRoot 'include'), $scope)
+  [Environment]::SetEnvironmentVariable('TENSORRT_LIB', (Join-Path $InstallRoot 'lib'), $scope)
   Add-PathOnce (Join-Path $InstallRoot 'bin')
   Write-Host "[tensorrt] Using $InstallRoot"
   Write-Output "$InstallRoot"
@@ -87,7 +89,7 @@ DownloadToFile -Uri $DownloadURL -OutFile $tempZip
 New-Item -ItemType Directory -Force -Path $ExtractRoot | Out-Null
 Expand-Archive -Path $tempZip -DestinationPath $ExtractRoot -Force
 
-# After extraction, the archive is expected to contain a single top-level directory (e.g., "TensorRT-10.14.1.48") inside $ExtractRoot.
+# After extraction, the archive is expected to contain a single top-level directory (e.g., "TensorRT-11.2.1") inside $ExtractRoot.
 # That directory should contain the actual TensorRT files, including a 'bin' subdirectory.
 $inner = Get-ChildItem -Directory $ExtractRoot | Select-Object -First 1
 if ($inner -and (Test-Path (Join-Path $inner.FullName 'bin'))) {

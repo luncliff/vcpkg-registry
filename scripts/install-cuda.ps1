@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Install CUDA 12.9.x silently with selected components.
+Install CUDA 13.3.x silently with selected components.
 
 .DESCRIPTION
 Checks $env:CUDA_PATH. If valid, exits. Otherwise downloads the CUDA installer,
@@ -11,38 +11,32 @@ Defaults now include profiler/debug components for CI.
 If provided, verify elevation.
 
 .PARAMETER DownloadURL
-CUDA 12.9.x local installer URL. Defaults to NVIDIA 12.9.1 full installer.
+CUDA 13.3.x local installer URL. Defaults to NVIDIA 13.3.0 full installer.
 
 .PARAMETER InstallRoot
-Target CUDA root. Defaults to $env:CUDA_PATH or the standard v12.9 path.
+Target CUDA root. Defaults to $env:CUDA_PATH or the standard v13.3 path.
 
 .PARAMETER Components
-CUDA subpackages to install. Defaults to a CI set:
-nvcc_12.9, cudart_12.9, nvrtc_12.9, nvrtc_dev_12.9, nvjitlink_12.9,
-cublas_12.9, cublas_dev_12.9, cufft_12.9, cufft_dev_12.9,
-curand_12.9, curand_dev_12.9, cusolver_12.9, cusolver_dev_12.9,
-cusparse_12.9, cusparse_dev_12.9, thrust_12.9, nvtx_12.9,
-nvdisasm_12.9, nvprune_12.9, nvfatbin_12.9, cuobjdump_12.9,
-cupti_12.9, cuda_profiler_api_12.9, opencl_12.9, sanitizer_12.9, nvprof_12.9
+CUDA subpackages to install. Defaults to a CI set for CUDA 13.3.
 
 .EXAMPLE
 .\install-cuda.ps1 -Admin
 .EXAMPLE
-.\install-cuda.ps1 -Components nvcc_12.9,cudart_12.9,cublas_12.9
+.\install-cuda.ps1 -Components nvcc_13.3,cudart_13.3,cublas_13.3
 #>
 
 [CmdletBinding()]
 param(
   [switch]$Admin,
-  [Parameter()][ValidateNotNullOrEmpty()][string]$DownloadURL = "https://developer.download.nvidia.com/compute/cuda/12.9.1/local_installers/cuda_12.9.1_576.57_windows.exe",
-  [Parameter()][string]$InstallRoot = $(if ($env:CUDA_PATH) { $env:CUDA_PATH } else { "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.9" }),
+  [Parameter()][ValidateNotNullOrEmpty()][string]$DownloadURL = "https://developer.download.nvidia.com/compute/cuda/13.3.0/local_installers/cuda_13.3.0_windows.exe",
+  [Parameter()][string]$InstallRoot = $(if ($env:CUDA_PATH) { $env:CUDA_PATH } else { "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.3" }),
   [Parameter()][string[]]$Components = @(
-    'nvcc_12.9', 'cudart_12.9', 'nvrtc_12.9', 'nvrtc_dev_12.9', 'nvjitlink_12.9',
-    'cublas_12.9', 'cublas_dev_12.9', 'cufft_12.9', 'cufft_dev_12.9',
-    'curand_12.9', 'curand_dev_12.9', 'cusolver_12.9', 'cusolver_dev_12.9',
-    'cusparse_12.9', 'cusparse_dev_12.9', 'thrust_12.9', 'nvtx_12.9',
-    'nvdisasm_12.9', 'nvprune_12.9', 'nvfatbin_12.9', 'cuobjdump_12.9',
-    'cupti_12.9', 'cuda_profiler_api_12.9', 'opencl_12.9', 'sanitizer_12.9', 'nvprof_12.9'
+    'nvcc_13.3', 'cudart_13.3', 'nvrtc_13.3', 'nvrtc_dev_13.3', 'nvjitlink_13.3',
+    'cublas_13.3', 'cublas_dev_13.3', 'cufft_13.3', 'cufft_dev_13.3',
+    'curand_13.3', 'curand_dev_13.3', 'cusolver_13.3', 'cusolver_dev_13.3',
+    'cusparse_13.3', 'cusparse_dev_13.3', 'thrust_13.3', 'nvtx_13.3',
+    'nvdisasm_13.3', 'nvprune_13.3', 'nvfatbin_13.3', 'cuobjdump_13.3',
+    'cupti_13.3', 'cuda_profiler_api_13.3', 'opencl_13.3', 'sanitizer_13.3'
   )
 )
 
@@ -113,7 +107,7 @@ $Components | ForEach-Object { Write-Host "  - $_" }
 Start-Process -FilePath $temp -ArgumentList $arguments -Wait -NoNewWindow
 
 # Detect root and persist env
-$defaultRoot = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.9"
+$defaultRoot = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.3"
 $detect = @( $InstallRoot, $defaultRoot, $env:CUDA_PATH ) |
 Where-Object { $_ } | Select-Object -Unique |
 Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
