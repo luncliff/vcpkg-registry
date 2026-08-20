@@ -61,6 +61,10 @@ docs/            — guides and references
 |--------|--------|
 | [docs/troubleshooting.md](docs/troubleshooting.md) | `check-environment` |
 | | `install-port`, `review-port` |
+| | `diagnose-failed-configure` |
+| | `diagnose-failed-install` |
+| | `diagnose-failed-dependency` |
+| | `diagnose-failed-host-dependency` |
 
 ## Skill Workflow
 
@@ -70,6 +74,10 @@ docs/            — guides and references
 | Update port | `check-port-upstream` → `update-port` → `install-port` → `review-port` | guide-update-port.md |
 | Update baseline | `update-version-baseline` | guide-update-version-baseline.md |
 | Troubleshoot | `check-environment` → `install-port` | troubleshooting.md |
+| Diagnose configure failure | `diagnose-failed-configure` → (see Coordinator Handoff) | troubleshooting.md |
+| Diagnose build/install failure | `diagnose-failed-install` → (see Coordinator Handoff) | troubleshooting.md |
+| Diagnose missing dependency | `diagnose-failed-dependency` → (see Coordinator Handoff) | troubleshooting.md |
+| Diagnose missing host tool | `diagnose-failed-host-dependency` → (see Coordinator Handoff) | troubleshooting.md |
 
 ### Skill Guidelines
 
