@@ -1,9 +1,10 @@
 {
   "name": "dynolog",
-  "version-date": "2026-08-26",
+  "version": "0.6.0",
   "description": "Dynolog is a telemetry daemon for performance monitoring and tracing. It exports metrics from different components in the system like the linux kernel, CPU, disks, Intel PT, GPUs etc. Dynolog also integrates with pytorch and can trigger traces for distributed training applications.",
   "homepage": "https://github.com/facebookincubator/dynolog",
   "license": "MIT",
+  "supports": "linux",
   "dependencies": [
     "curl",
     "fmt",
@@ -11,6 +12,17 @@
     "glog",
     "grpc",
     "nlohmann-json",
+    {
+      "name": "opentelemetry-cpp",
+      "features": [
+        "otlp-grpc",
+        "prometheus"
+      ]
+    },
+    {
+      "name": "pfs",
+      "platform": "linux"
+    },
     "prometheus-cpp",
     "protobuf",
     {

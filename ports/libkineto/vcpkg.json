@@ -5,6 +5,7 @@
   "homepage": "https://github.com/pytorch/kineto",
   "license": "BSD-3-Clause",
   "dependencies": [
+    "dynolog",
     "fmt",
     "glog",
     {

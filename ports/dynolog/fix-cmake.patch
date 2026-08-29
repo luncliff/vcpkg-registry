@@ -1,0 +1,132 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5cff98b..8116a72 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -22,6 +22,11 @@ libprotobuf-dev and libcurl4-openssl-dev on the system"
+ OFF)
+ option(USE_TPU "Enable TPU metrics scraping, requires libcurl" OFF)
+ 
++find_package(glog CONFIG REQUIRED)
++find_package(gflags CONFIG REQUIRED)
++find_package(nlohmann_json CONFIG REQUIRED)
++find_package(fmt CONFIG REQUIRED)
++
+ if(USE_PROMETHEUS)
+   find_package(prometheus-cpp CONFIG REQUIRED)
+ endif()
+@@ -68,52 +73,29 @@ add_subdirectory(hbt)
+ set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
+ set(BUILD_SAMPLES OFF CACHE BOOL "")
+ set(BUILD_TEST OFF CACHE BOOL "")
+-set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
+-
+ set(BUILD_TESTING OFF CACHE BOOL "")
+-set(WITH_GFLAGS OFF CACHE BOOL "")
++
+ find_package(Threads REQUIRED)
+ target_link_libraries(dynolog_lib PRIVATE Threads::Threads)
+-add_subdirectory(third_party/glog)
+-target_link_libraries(dynolog_lib PUBLIC glog::glog)
+-
+-set(GFLAGS_BUILD_TESTING OFF CACHE BOOL "")
+-add_subdirectory(third_party/gflags)
+-target_link_libraries(dynolog_lib PUBLIC gflags::gflags)
+-
+-# https://github.com/nlohmann/json#cmake
+-set(JSON_BuildTests OFF CACHE INTERNAL "")
+-if(NOT TARGET nlohmann_json)
+-  add_subdirectory(third_party/json)
+-endif()
+-target_link_libraries(dynolog_lib PUBLIC nlohmann_json::nlohmann_json)
++target_link_libraries(dynolog_lib PUBLIC glog::glog gflags::gflags nlohmann_json::nlohmann_json)
+ 
+ # OTel add_subdirectory placed after third_party/json so that
+ # opentelemetry-cpp detects the existing nlohmann_json target
+ # and after CMAKE_CXX_STANDARD is set.
+ if(USE_OTEL)
+-  set(WITH_OTLP_HTTP ON CACHE BOOL "")
+-  set(WITH_OTLP_GRPC OFF CACHE BOOL "")
+-  set(WITH_OTLP_FILE OFF CACHE BOOL "")
+-  set(WITH_EXAMPLES OFF CACHE BOOL "")
+-  set(BUILD_TESTING OFF CACHE BOOL "")
+-  set(WITH_BENCHMARK OFF CACHE BOOL "")
+-  set(WITH_PROMETHEUS OFF CACHE BOOL "")
+-  set(OTELCPP_MAINTAINER_MODE OFF CACHE BOOL "")
+-  add_subdirectory(third_party/opentelemetry-cpp)
++  find_package(opentelemetry-cpp CONFIG REQUIRED)
+ endif()
+ 
+-add_subdirectory(third_party/pfs)
+-target_compile_options(
+-  pfs PRIVATE
+-  $<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wno-error=deprecated-enum-enum-conversion>)
+-target_include_directories(dynolog_lib PUBLIC third_party/pfs/include)
+-target_link_libraries(dynolog_lib PUBLIC pfs)
++# For Linux
++if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
++  add_subdirectory(third_party/pfs)
++  target_include_directories(dynolog_lib PUBLIC third_party/pfs/include)
++  target_link_libraries(dynolog_lib PUBLIC pfs)
++endif()
+ 
+-add_subdirectory(third_party/fmt)
+ target_link_libraries(dynolog_lib PUBLIC fmt::fmt)
+ 
+ if(USE_ODS_GRAPH_API)
+-  add_subdirectory(third_party/cpr)
++  find_package(cpr CONFIG REQUIRED)
+   target_link_libraries(dynolog_lib PUBLIC cpr::cpr)
+ endif()
+diff --git a/dynolog/src/CMakeLists.txt b/dynolog/src/CMakeLists.txt
+index 1cebea2..81a8a11 100644
+--- a/dynolog/src/CMakeLists.txt
++++ b/dynolog/src/CMakeLists.txt
+@@ -16,10 +16,10 @@ message("Use TPU = ${USE_TPU}")
+ file(GLOB dynolog_src "*.h" "*.cpp")
+ 
+ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+-add_compile_options("-Wall")
+ # Remove main from library, only needed for exec.
+ list(REMOVE_ITEM dynolog_src "${CMAKE_CURRENT_SOURCE_DIR}/Main.cpp")
+ add_library(dynolog_lib ${dynolog_src})
++install(TARGETS dynolog_lib DESTINATION lib)
+ 
+ if(USE_ODS_GRAPH_API)
+   target_compile_options(dynolog_lib PUBLIC "-DUSE_GRAPH_ENDPOINT")
+@@ -54,6 +54,7 @@ add_subdirectory(rpc)
+ 
+ add_subdirectory(ipcfabric)
+ target_link_libraries(dynolog_lib PUBLIC dynolog_ipcfabric_lib)
++install(TARGETS dynolog_ipcfabric_lib DESTINATION lib)
+ 
+ # depends on ipcfabric
+ add_subdirectory(tracing)
+@@ -62,20 +63,25 @@ target_link_libraries(dynolog_lib PUBLIC dynolog_ipcmonitor_lib)
+ # K8s platform-discovery libs (no-op unless USE_K8S_PODRESOURCES=ON).
+ # Must be added BEFORE gpumon so dynolog_dcgm_lib can link dynolog_k8s_lib.
+ add_subdirectory(k8s)
++install(TARGETS dynolog_k8s_lib DESTINATION lib)
+ 
+ add_subdirectory(gpumon)
+-target_link_libraries(dynolog_lib PUBLIC dynolog_dcgm_lib "-ldl")
++install(TARGETS dynolog_dcgm_lib DESTINATION lib)
+ 
+ if(USE_TPU)
+   add_subdirectory(tpumon)
+   target_compile_definitions(dynolog_lib PUBLIC USE_TPU)
+   target_link_libraries(dynolog_lib PRIVATE dynolog_tpu_lib)
++  install(TARGETS dynolog_tpu_lib DESTINATION lib)
+ endif()
+ 
+ add_subdirectory(rdmamon)
+ target_link_libraries(dynolog_lib PUBLIC dynolog_rdmamon_lib)
++install(TARGETS dynolog_rdmamon_lib DESTINATION lib)
+ 
+ add_subdirectory(metric_frame)
+ 
+-add_executable(dynolog Main.cpp)
+-target_link_libraries(dynolog PRIVATE dynolog_lib dynolog_rpc_lib)
++if(NOT CMAKE_CROSSCOMPILING)
++  add_executable(dynolog Main.cpp)
++  target_link_libraries(dynolog PRIVATE dynolog_lib dynolog_rpc_lib)
++endif()
