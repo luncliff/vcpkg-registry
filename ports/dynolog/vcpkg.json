@@ -1,0 +1,25 @@
+{
+  "name": "dynolog",
+  "version-date": "2026-08-26",
+  "description": "Dynolog is a telemetry daemon for performance monitoring and tracing. It exports metrics from different components in the system like the linux kernel, CPU, disks, Intel PT, GPUs etc. Dynolog also integrates with pytorch and can trigger traces for distributed training applications.",
+  "homepage": "https://github.com/facebookincubator/dynolog",
+  "license": "MIT",
+  "dependencies": [
+    "curl",
+    "fmt",
+    "gflags",
+    "glog",
+    "grpc",
+    "nlohmann-json",
+    "prometheus-cpp",
+    "protobuf",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

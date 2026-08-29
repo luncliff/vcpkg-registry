@@ -1,0 +1,22 @@
+{
+  "name": "vllm",
+  "version": "0.28.0",
+  "description": "A high-throughput and memory-efficient inference and serving engine for LLMs",
+  "homepage": "https://github.com/vllm-project/vllm",
+  "license": "Apache-2.0",
+  "dependencies": [
+    "libkineto",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    {
+      "name": "vcpkg-get-python-packages",
+      "host": true
+    }
+  ]
+}

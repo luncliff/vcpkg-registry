@@ -3,12 +3,12 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/kineto
-    REF 596126cba98181ce4a88e06aa1d602b6afd966dd
-    SHA512 5f7916a914e78afba56d47c6589eccf7303a7bdf9a55fcbbeef8733f49e554bce00a4829fb50813736913433a35cdedcccd942c79b1ebb9cae6c76693aae6648
+    REF ef23e02dac2563a197f962e01d4bb296523e7015
+    SHA512 0
     HEAD_REF main
-    PATCHES
-        fix-cmake.patch
-        fix-sources.patch
+    # PATCHES
+    #     fix-cmake.patch
+    #     fix-sources.patch
 )
 
 vcpkg_from_github(
