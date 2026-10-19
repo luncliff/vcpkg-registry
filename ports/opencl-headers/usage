@@ -1,0 +1,19 @@
+opencl-headers provides the OpenCL C and C++ headers without a loader library.
+
+For the C headers:
+
+    find_package(OpenCLHeaders CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE OpenCL::Headers)
+
+For the C++ bindings:
+
+    find_package(OpenCLHeadersCpp CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE OpenCL::HeadersCpp)
+
+The headers default to OpenCL 3.1. To target the OpenCL 3.0 API explicitly:
+
+    target_compile_definitions(main PRIVATE
+        CL_TARGET_OPENCL_VERSION=300
+        CL_HPP_TARGET_OPENCL_VERSION=300)
+
+Install opencl and link OpenCL::OpenCL when calling the OpenCL API.
