@@ -1,0 +1,11 @@
+opencl provides the OpenCL ICD loader:
+
+    find_package(OpenCLICDLoader CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE OpenCL::OpenCL)
+
+For the C++ bindings, also use:
+
+    find_package(OpenCLHeadersCpp CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE OpenCL::HeadersCpp)
+
+An OpenCL implementation (ICD) must be installed separately to use a device.
