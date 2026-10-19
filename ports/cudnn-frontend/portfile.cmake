@@ -1,42 +1,50 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO NVIDIA/cudnn-frontend
-    REF v${VERSION}
-    SHA512 1455382bf6e3d5a54dc8b73741a401af8219862659c7ca40a83b81a14898c71fe2ae285fa42fa8f5bf76ee7484e1890627f0889feed18ee851415c87371becbd
+    REF "v${VERSION}"
+    SHA512 20c369bcf31c3aa11909d2509d31bc147c9752f630855394d76524cc8be9dc95865e722015784af404aa22534fbac1362cad427e94f28611730817dfe211936e
     HEAD_REF main
     PATCHES
-        fix-thirdparty.patch
+        fix-dependencies.patch
 )
 file(REMOVE_RECURSE "${SOURCE_PATH}/include/cudnn_frontend/thirdparty")
 
-vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
-    FEATURES
-        python  CUDNN_FRONTEND_BUILD_PYTHON_BINDINGS
-)
+set(VCPKG_BUILD_TYPE release) # header only, INTERFACE library
 
 vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root)
-
-# header only, INTERFACE library
-set(VCPKG_BUILD_TYPE release)
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
-        ${FEATURE_OPTIONS}
         "-DCMAKE_CUDA_COMPILER:FILEPATH=${NVCC}"
         "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
         -DCUDNN_FRONTEND_FETCH_PYBINDS_IN_CMAKE=OFF
         -DCUDNN_FRONTEND_BUILD_TESTS=OFF
         -DCUDNN_FRONTEND_BUILD_SAMPLES=OFF
-        -DCUDNN_FRONTEND_SKIP_JSON_LIB=OFF
+        -DCUDNN_FRONTEND_SKIP_JSON_LIB=OFF # no macro definition
     MAYBE_UNUSED_VARIABLES
         CUDNN_FRONTEND_FETCH_PYBINDS_IN_CMAKE
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/cudnn_frontend PACKAGE_NAME cudnn_frontend)
 
+# Make the installed headers use nlohmann-json from vcpkg.
+vcpkg_replace_string(
+    "${CURRENT_PACKAGES_DIR}/include/cudnn_frontend_utils.h"
+    "\"cudnn_frontend/thirdparty/nlohmann/json.hpp\"" "<nlohmann/json.hpp>"
+)
+
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug"
     "${CURRENT_PACKAGES_DIR}/lib"
 )
-vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")
+file(REMOVE "${CURRENT_PACKAGES_DIR}/include/cudnn_frontend/AGENTS.md")
+
+vcpkg_install_copyright(
+    FILE_LIST
+        "${SOURCE_PATH}/LICENSE.txt"
+        "${SOURCE_PATH}/LICENSE-MIT.txt"
+        "${SOURCE_PATH}/LICENSING.md"
+        "${SOURCE_PATH}/NOTICE"
+        "${SOURCE_PATH}/THIRD_PARTY_LICENSES.txt"
+)
