@@ -22,7 +22,7 @@
     },
     "coreml-tools": {
       "baseline": "9.0",
-      "port-version": 0
+      "port-version": 1
     },
     "cpuinfo": {
       "baseline": "2025-09-05",
