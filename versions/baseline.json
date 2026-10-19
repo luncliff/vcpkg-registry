@@ -153,7 +153,7 @@
       "port-version": 0
     },
     "nvidia-cutlass": {
-      "baseline": "4.3.5",
+      "baseline": "4.8.0",
       "port-version": 0
     },
     "nvidia-nvbench": {
