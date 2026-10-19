@@ -111,15 +111,17 @@ diff --git a/cmake/coreml-utils.cmake b/cmake/coreml-utils.cmake
 index ab4679c..e988cda 100644
 --- a/cmake/coreml-utils.cmake
 +++ b/cmake/coreml-utils.cmake
-@@ -20,45 +20,43 @@
+@@ -20,45 +20,45 @@
  #    to the list proto_depends in PARENT_SCOPE.
  #
  function(coreml_add_build_proto proto_fn target_suffix)
 +    # some commands need mlmodel/enumgen host executable
 +    if(CMAKE_CROSSCOMPILING)
 +        find_program(ENUMGEN NAMES enumgen mlmodel/enumgen REQUIRED)
++        set(ENUMGEN_DEPENDS "${ENUMGEN}")
 +    else()
 +        set(ENUMGEN mlmodel/enumgen)
++        set(ENUMGEN_DEPENDS enumgen)
 +    endif()
      add_custom_command(
          OUTPUT
@@ -146,7 +148,7 @@ index ab4679c..e988cda 100644
              -I${CMAKE_CURRENT_SOURCE_DIR}/format/
              ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
 -        DEPENDS enumgen protoc
-+        DEPENDS enumgen
++        DEPENDS ${ENUMGEN_DEPENDS}
          WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
      )
      add_custom_command(
@@ -190,7 +192,7 @@ index ab4679c..e988cda 100644
                  -I${CMAKE_CURRENT_SOURCE_DIR}/format/
                  ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
 -            DEPENDS enumgen protoc
-+            DEPENDS enumgen
++            DEPENDS ${ENUMGEN_DEPENDS}
              WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
          )
          add_custom_target(tgt_${proto_fn}_python ALL
@@ -223,15 +225,28 @@ index 14a57c0..fafbab7 100644
    src
  )
  
-@@ -64,6 +62,7 @@ target_link_libraries(mlmodel_test
+@@ -17,6 +15,7 @@
+ endif()
+ 
+ add_library(mlmodel_test
++    EXCLUDE_FROM_ALL
+     STATIC
+ 
+     tests/BayesianProbitRegressionValidatorTests.cpp
+@@ -62,8 +61,12 @@
+ )
+ 
  add_executable(mlmodel_test_runner
++    EXCLUDE_FROM_ALL
      test_runner.cpp
  )
-+install(TARGETS mlmodel_test_runner DESTINATION ${CMAKE_INSTALL_BINDIR})
++if(NOT CMAKE_CROSSCOMPILING)
++    install(TARGETS mlmodel_test_runner DESTINATION ${CMAKE_INSTALL_BINDIR})
++endif()
  
  target_link_libraries(mlmodel_test_runner
      mlmodel_test
-@@ -72,8 +71,6 @@ target_link_libraries(mlmodel_test_runner
+@@ -72,8 +75,6 @@
  add_library(mlmodel
      STATIC
  
@@ -240,7 +255,7 @@ index 14a57c0..fafbab7 100644
      ${CMAKE_CURRENT_BINARY_DIR}/format/ArrayFeatureExtractor.pb.cc
      ${CMAKE_CURRENT_BINARY_DIR}/format/AudioFeaturePrint.pb.cc
      ${CMAKE_CURRENT_BINARY_DIR}/format/BayesianProbitRegressor.pb.cc
-@@ -170,20 +167,21 @@ add_library(mlmodel
+@@ -170,20 +171,23 @@
      src/Validation/WordEmbeddingValidator.cpp
      src/Validation/WordTaggerValidator.cpp
  )
@@ -255,21 +270,27 @@ index 14a57c0..fafbab7 100644
 +    protobuf::libprotobuf-lite
  )
  
++if(NOT CMAKE_CROSSCOMPILING)
  add_executable(enumgen
      EXCLUDE_FROM_ALL
      tools/enumgen.cpp
 -    ../deps/protobuf/src/google/protobuf/compiler/plugin.pb.cc
  )
 +install(TARGETS enumgen DESTINATION ${CMAKE_INSTALL_BINDIR})
++endif()
  
  set(proto_files
      ArrayFeatureExtractor
-@@ -222,7 +220,7 @@ set(proto_files
+@@ -221,9 +225,9 @@
+     WordTagger
  )
  
- target_link_libraries(enumgen
+-target_link_libraries(enumgen
 -    libprotobuf
-+    protobuf::libprotobuf protobuf::libprotoc
- )
+-)
++if(NOT CMAKE_CROSSCOMPILING)
++    target_link_libraries(enumgen protobuf::libprotobuf protobuf::libprotoc)
++endif()
  
  option(OVERWRITE_PB_SOURCE
+        "Regenerates protobuf sources in the source tree, too." OFF)

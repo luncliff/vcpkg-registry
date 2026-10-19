@@ -64,12 +64,12 @@ vcpkg_cmake_configure(
         -DOVERWRITE_PB_SOURCE=ON
 )
 vcpkg_cmake_build(TARGET protosrc LOGFILE_BASE build-protosrc)
-if(VCPKG_TARGET_IS_OSX)
+if(VCPKG_TARGET_IS_OSX AND NOT VCPKG_CROSSCOMPILING)
     vcpkg_cmake_build(TARGET enumgen LOGFILE_BASE build-enumgen)
 endif()
 vcpkg_cmake_install()
 
-if(VCPKG_TARGET_IS_OSX)
+if(VCPKG_TARGET_IS_OSX AND NOT VCPKG_CROSSCOMPILING)
     vcpkg_copy_tools(TOOL_NAMES enumgen mlmodel_test_runner AUTO_CLEAN)
 endif()
 
