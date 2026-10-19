@@ -8,6 +8,18 @@ index f6feb4b..5c07c55 100644
  
  #include <iostream>
  #include <sstream>
+@@ -99,3 +99,3 @@ static std::string makeContents(const FileDescriptor& in) {
+-  std::string guard = makeGuard(in.name());
++  std::string guard = makeGuard(std::string(in.name().data(), in.name().size()));
+   ret << "#ifndef " << guard << std::endl;
+   ret << "#define " << guard << std::endl;
+@@ -123,5 +123,5 @@ int main(int argc, char *argv[]) {
+     const auto* fileDescriptor = pool.BuildFile(fileDescriptorProto);
+     auto* outputFile = response.add_file();
+-    outputFile->set_name(makeExt(fileDescriptor->name()));
++    outputFile->set_name(makeExt(std::string(fileDescriptor->name().data(), fileDescriptor->name().size())));
+     outputFile->set_content(makeContents(*fileDescriptor));
+   }
 diff --git a/modelpackage/src/utils/JsonMap.cpp b/modelpackage/src/utils/JsonMap.cpp
 index 400dcf2..c28e61c 100644
 --- a/modelpackage/src/utils/JsonMap.cpp
@@ -21,3 +33,25 @@ index 400dcf2..c28e61c 100644
  
  using namespace nlohmann;
  
+diff --git a/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp b/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp
+--- a/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp
++++ b/mlmodel/src/Validation/NeuralNetwork/NeuralNetworkLayerValidator.cpp
+@@ -2951,3 +2951,3 @@
+ Result NeuralNetworkSpecValidator::validateFailUnknownType(const Specification::NeuralNetworkLayer& layer) {
+-    return Result(ResultType::INVALID_MODEL_PARAMETERS, "Unsupported layer type (" + layer.GetTypeName() + ") for layer '" + layer.name() + "'.");
++    return Result(ResultType::INVALID_MODEL_PARAMETERS, "Unsupported layer type (" + std::string(layer.GetTypeName()) + ") for layer '" + layer.name() + "'.");
+ }
+diff --git a/mlmodel/src/Validation/PipelineValidator.cpp b/mlmodel/src/Validation/PipelineValidator.cpp
+--- a/mlmodel/src/Validation/PipelineValidator.cpp
++++ b/mlmodel/src/Validation/PipelineValidator.cpp
+@@ -43,3 +43,3 @@
+                     return Result(ResultType::INVALID_MODEL_PARAMETERS,
+-                                  ("Pipeline: the input '" + arg.name() + "' of model '" + model.description().GetTypeName()
++                                  ("Pipeline: the input '" + arg.name() + "' of model '" + std::string(model.description().GetTypeName())
+                                    + "' does not present in pipeline input or previous model."));
+@@ -49,4 +49,4 @@
+                     return Result(ResultType::TYPE_MISMATCH,
+-                                  ("Pipeline: the input '" + arg.name() + "' of model '" + model.description().GetTypeName()
++                                  ("Pipeline: the input '" + arg.name() + "' of model '" + std::string(model.description().GetTypeName())
+                                    + "' does not match the type previously specified by the pipeline input or the output of a previous model."
+                                    + " For the second case, make sure the input and previous model's output has the matching name and shapes."));
