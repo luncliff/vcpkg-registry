@@ -15,6 +15,7 @@ vcpkg_from_github(
         fix-cmake.patch # .framework install, external re2 workaround
         fix-cmake-cuda.patch
         fix-cmake-training.patch
+        fix-onnx-compatibility.patch # Preserve runtime type limits with newer ONNX schemas
 )
 
 find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
@@ -75,6 +76,13 @@ if("training" IN_LIST FEATURES)
         SHA512 0dc57928d55ebd46386d0f0852b3b4e9078222bd4378655abb16f6bc0e5ed2969600071d5d2ae9a3f2aa6bb327fe567869a01a69fdda35c261dc44a1eadd18ce
     )
     list(APPEND FEATURE_OPTIONS "-DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}")
+endif()
+
+if("directml" IN_LIST FEATURES)
+    list(APPEND FEATURE_OPTIONS
+        "-Ddml_INCLUDE_DIR:PATH=${CURRENT_INSTALLED_DIR}/include"
+        "-Ddml_LIB_DIR:PATH=${CURRENT_INSTALLED_DIR}/lib"
+    )
 endif()
 
 if("cuda" IN_LIST FEATURES)
