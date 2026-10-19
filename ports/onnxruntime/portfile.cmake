@@ -1,5 +1,4 @@
-# https://github.com/microsoft/onnxruntime/blob/v1.22.1/tools/python/util/vcpkg_helpers.py
-message(WARNING "The port requires 'onnx' port build with CMake option ONNX_DISABLE_STATIC_REGISTRATION=ON")
+# https://github.com/microsoft/onnxruntime/blob/v1.31.0/tools/python/util/vcpkg_helpers.py
 if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     if("framework" IN_LIST FEATURES)
         # The Objective-C API requires onnxruntime_BUILD_SHARED_LIB
@@ -11,9 +10,9 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
     REF "v${VERSION}"
-    SHA512 373c51575ada457b8aead5d195a5f3eba62fb747b6370a2a9889fff875c40ea30af8fd49104d58cc86f79247410e829086b0979f37ca8635c6dd34960e9cc424
+    SHA512 27bd751f68ccf5ae8057f9d2e04a36963d1c6bac85be557cb62d330a8564fa92f74170c673dbab614b034a609a1ad99af53b329dbb378842bd2b7ceb917a07d6
     PATCHES
-        fix-cmake.patch # .framework install, external library workarounds(abseil-cpp, eigen3)
+        fix-cmake.patch # .framework install, external re2 workaround
         fix-cmake-cuda.patch
         fix-cmake-training.patch
 )
@@ -114,6 +113,7 @@ vcpkg_cmake_configure(
         "-DPython_EXECUTABLE:FILEPATH=${PYTHON3}"
         "-DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
         "-DONNX_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}"
+        -Donnxruntime_USE_FULL_PROTOBUF=ON
         -DBUILD_PKGCONFIG_FILES=ON
         -Donnxruntime_BUILD_SHARED_LIB=${BUILD_SHARED}
         -Donnxruntime_CROSS_COMPILING=${VCPKG_CROSSCOMPILING}
