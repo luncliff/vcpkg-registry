@@ -249,7 +249,7 @@
       "port-version": 0
     },
     "sse2neon": {
-      "baseline": "1.9.1",
+      "baseline": "2026-08-20",
       "port-version": 0
     },
     "system-qt5": {
