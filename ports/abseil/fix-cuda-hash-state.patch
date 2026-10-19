@@ -1,0 +1,24 @@
+diff --git a/absl/hash/internal/hash.h b/absl/hash/internal/hash.h
+--- a/absl/hash/internal/hash.h
++++ b/absl/hash/internal/hash.h
+@@ -1475,7 +1475,7 @@
+   }
+ 
+  private:
+-  friend class MixingHashState::HashStateBase;
++  friend class HashStateBase<MixingHashState>;
+   template <typename H>
+   friend H absl::hash_internal::hash_weakly_mixed_integer(H,
+                                                           WeaklyMixedInteger);
+diff --git a/absl/hash/hash.h b/absl/hash/hash.h
+--- a/absl/hash/hash.h
++++ b/absl/hash/hash.h
+@@ -367,7 +367,7 @@
+  private:
+   HashState() = default;
+ 
+-  friend class HashState::HashStateBase;
++  friend class hash_internal::HashStateBase<HashState>;
+   friend struct hash_internal::CombineRaw;
+ 
+   template <typename T>

@@ -4,6 +4,9 @@ vcpkg_from_github(
     REF "${VERSION}"
     SHA512 27e2db9269aff1c114c3fd26e501fcc186678102326f580a81c4c04392175523eb13967ffa36a43acfdf92498377d80d849558cf0c341fae1f83e677ab87a08e
     HEAD_REF master
+    PATCHES
+        fix-cuda-hash-state.patch
+        fix-cuda-hash-containers.patch
 )
 
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
