@@ -33,7 +33,7 @@
       "port-version": 1
     },
     "cudnn-frontend": {
-      "baseline": "1.18.0",
+      "baseline": "1.31.0",
       "port-version": 0
     },
     "d3d12-transition-layer": {
@@ -181,7 +181,7 @@
       "port-version": 0
     },
     "nvtx3": {
-      "baseline": "3.4.0",
+      "baseline": "3.5.0",
       "port-version": 0
     },
     "onnx": {
@@ -197,11 +197,11 @@
       "port-version": 0
     },
     "opencl": {
-      "baseline": "v2024.10.24",
+      "baseline": "v2025.07.22",
       "port-version": 0
     },
     "opencl-headers": {
-      "baseline": "v2024.10.24",
+      "baseline": "v2025.07.22",
       "port-version": 0
     },
     "opencl-on-dx12": {
@@ -249,7 +249,7 @@
       "port-version": 0
     },
     "sse2neon": {
-      "baseline": "1.9.1",
+      "baseline": "2026-08-20",
       "port-version": 0
     },
     "system-qt5": {
