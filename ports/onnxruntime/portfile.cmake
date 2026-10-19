@@ -13,6 +13,7 @@ vcpkg_from_github(
     SHA512 27bd751f68ccf5ae8057f9d2e04a36963d1c6bac85be557cb62d330a8564fa92f74170c673dbab614b034a609a1ad99af53b329dbb378842bd2b7ceb917a07d6
     PATCHES
         fix-cmake.patch # .framework install, external re2 workaround
+        fix-cmake-cpuinfo.patch # Use the declared vcpkg dependency on Apple
         fix-cmake-cuda.patch
         fix-cmake-training.patch
         fix-onnx-compatibility.patch # Preserve runtime type limits with newer ONNX schemas
@@ -74,6 +75,7 @@ if("training" IN_LIST FEATURES)
         REPO tensorflow/tensorboard
         REF 2.16.2
         SHA512 0dc57928d55ebd46386d0f0852b3b4e9078222bd4378655abb16f6bc0e5ed2969600071d5d2ae9a3f2aa6bb327fe567869a01a69fdda35c261dc44a1eadd18ce
+        PATCHES fix-tensorboard-imports.patch
     )
     list(APPEND FEATURE_OPTIONS "-DTENSORBOARD_ROOT:PATH=${TENSORBOARD_SOURCE_PATH}")
 endif()
