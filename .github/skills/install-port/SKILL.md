@@ -79,6 +79,9 @@ Execute vcpkg port installation with overlay-ports, monitor build process, and a
    - Compiler: `error C2XXX`, `error: ...`
    - Linker: `unresolved external symbol`, `undefined reference`
    - Dependency: `Package ... is not installed`
+5. Before developing a local fix, invoke [search-if-known-issue](../search-if-known-issue/SKILL.md)
+   to capture host/target details and check GitHub issues and PRs for applicable reports or fixes.
+   Reuse the command, logs, and environment evidence from this attempt.
 
 ### Phase 5: Post-Installation Verification (if success)
 
