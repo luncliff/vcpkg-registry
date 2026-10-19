@@ -46,6 +46,7 @@ function ChangeEnvironmentVariable {
     [string]$InstallRoot
   )
   [Environment]::SetEnvironmentVariable('CUDNN', $InstallRoot, 'Machine')
+  [Environment]::SetEnvironmentVariable('CUDNN_ROOT_DIR', $InstallRoot, 'Machine')
   Add-PathOnce (Join-Path $InstallRoot 'bin')
   Write-Host "[cudnn] Using $InstallRoot"
   Write-Output "$InstallRoot"
@@ -83,7 +84,7 @@ New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "bin")     | O
 New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "include") | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "lib")     | Out-Null
 
-$dllFiles = Get-ChildItem -Path (Join-Path $bin "cudnn*.dll") -ErrorAction SilentlyContinue
+$dllFiles = Get-ChildItem -Path $bin -Filter "cudnn*.dll" -File -Recurse -ErrorAction SilentlyContinue
 if (-not $dllFiles) {
   Write-Error "[cudnn] No cuDNN DLLs found in $bin"
   exit 1
