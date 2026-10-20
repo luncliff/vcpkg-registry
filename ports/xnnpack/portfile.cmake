@@ -10,6 +10,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-cmake.patch
+        fix-compiler-compat.patch
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)

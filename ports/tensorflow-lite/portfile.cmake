@@ -163,8 +163,6 @@ if(VCPKG_TARGET_IS_WINDOWS)
     # temporary disable ClangCL build to workaround intrinsic build error
     unset(VCPKG_PLATFORM_TOOLSET)
     unset(GENERATOR_OPTIONS)
-elseif(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
-    list(APPEND GENERATOR_OPTIONS GENERATOR Xcode)
 endif()
 
 vcpkg_cmake_configure(

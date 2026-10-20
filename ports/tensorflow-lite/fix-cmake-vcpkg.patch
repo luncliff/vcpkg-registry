@@ -205,8 +205,8 @@ index 7e877cd..2f929f1 100644
    )
  
    list(APPEND TFLITE_NNAPI_SRCS
-+    "${XLA_SOURCE_DIR}/xla/tsl/platform/default/logging.h"
-+    "${XLA_SOURCE_DIR}/xla/tsl/platform/default/logging.cc"
++    "${XLA_SOURCE_DIR}/xla/tsl/platform/logging.h"
++    "${XLA_SOURCE_DIR}/xla/tsl/platform/logging.cc"
 +    "${TFLITE_SOURCE_DIR}/core/acceleration/configuration/nnapi_plugin.h"
 +    "${TFLITE_SOURCE_DIR}/core/acceleration/configuration/nnapi_plugin.cc"
      "${TFLITE_SOURCE_DIR}/nnapi/sl/SupportLibrary.cc"
