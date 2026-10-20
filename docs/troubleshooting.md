@@ -75,7 +75,13 @@ CUDA, cuDNN, and TensorRT use system SDK installations. Set `CUDA_PATH`,
 directory), and `TENSORRT_HOME` to those installations. Include the variables in
 `VCPKG_KEEP_ENV_VARS` so vcpkg's build environment can access them. At runtime,
 include the installed package's `bin` directory and the SDK DLL directories in
-`PATH`; use `debug\bin` for a Debug consumer.
+`PATH`; use `debug\bin` for a Debug consumer. Keep
+`onnxruntime_providers_shared.dll`, `onnxruntime_providers_cuda.dll`, and
+`onnxruntime_providers_tensorrt.dll` beside the loaded `onnxruntime.dll`.
+When vcpkg's CMake app-local deployment copies `onnxruntime.dll` beside an
+executable, also deploy these dynamically loaded provider DLLs from the matching
+Release or Debug `bin` directory. Listing the original directory in `PATH` alone
+does not satisfy ONNX Runtime's provider lookup beside the loaded runtime.
 
 The registry's Abseil port includes two CUDA/MSVC compatibility patches:
 
@@ -91,6 +97,13 @@ For an existing installation, upgrade `abseil:x64-windows` with `vcpkg upgrade
 --no-dry-run` and the same overlay and root options before retrying ONNX Runtime.
 This also rebuilds installed consumers of Abseil; `vcpkg install` alone retains
 already-installed dependency versions.
+
+The ONNX Runtime CUDA patch also replaces `std::clamp` in the shared sparse
+attention indexer grid-size helper with an equivalent bounded expression.
+With CUDA 13.4.92 and MSVC 14.51, the original expression causes NVCC to emit
+`Terminator found in the middle of a basic block!` and
+`Invalid instruction with no BB` while compiling both sparse attention
+indexer implementations. The replacement preserves the grid range `[1, 65535]`.
 
 ### vcpkg-Specific Issues
 

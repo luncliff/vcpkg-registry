@@ -41,3 +41,12 @@ index b428ccb..9b73acb 100644
  add_library(CUDNN::cudnn_all INTERFACE IMPORTED)
  
  find_path(
+diff --git a/onnxruntime/contrib_ops/cuda/sparse/sparse_attention_indexer_device_math.cuh b/onnxruntime/contrib_ops/cuda/sparse/sparse_attention_indexer_device_math.cuh
+--- a/onnxruntime/contrib_ops/cuda/sparse/sparse_attention_indexer_device_math.cuh
++++ b/onnxruntime/contrib_ops/cuda/sparse/sparse_attention_indexer_device_math.cuh
+@@ -33,4 +33,4 @@
+ inline int SaiGridForElements(int64_t count, int threads) {
+   const int64_t blocks = (count + threads - 1) / threads;
+-  return static_cast<int>(std::clamp<int64_t>(blocks, 1, 65535));
++  return static_cast<int>(blocks < 1 ? 1 : (blocks > 65535 ? 65535 : blocks));
+ }
