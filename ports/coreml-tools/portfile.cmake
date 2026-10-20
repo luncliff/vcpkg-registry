@@ -66,6 +66,7 @@ vcpkg_cmake_configure(
 vcpkg_cmake_build(TARGET protosrc LOGFILE_BASE build-protosrc)
 if(VCPKG_TARGET_IS_OSX AND NOT VCPKG_CROSSCOMPILING)
     vcpkg_cmake_build(TARGET enumgen LOGFILE_BASE build-enumgen)
+    vcpkg_cmake_build(TARGET mlmodel_test_runner LOGFILE_BASE build-mlmodel-test-runner)
 endif()
 vcpkg_cmake_install()
 
