@@ -336,7 +336,7 @@ diff --git a/tensorflow/lite/tools/cmake/tensorflow-liteConfig.cmake.in b/tensor
 index e49f635..87882f8 100644
 --- a/tensorflow/lite/tools/cmake/tensorflow-liteConfig.cmake.in
 +++ b/tensorflow/lite/tools/cmake/tensorflow-liteConfig.cmake.in
-@@ -15,14 +15,6 @@
+@@ -15,14 +15,18 @@
  
  include(CMakeFindDependencyMacro)
  
@@ -348,6 +348,18 @@ index e49f635..87882f8 100644
 -find_dependency(ruy)
 -find_dependency(gemmlowp)
 -
++find_dependency(absl CONFIG)
++find_dependency(Eigen3 CONFIG)
++find_dependency(FlatBuffers CONFIG)
++find_dependency(ruy CONFIG)
++find_dependency(gemmlowp CONFIG)
++if(@NEON_2_SSE_FOUND@)
++  find_dependency(NEON_2_SSE CONFIG)
++endif()
++if(@KleidiAI_FOUND@)
++  find_dependency(KleidiAI CONFIG)
++endif()
++
  @PACKAGE_INIT@
  
  include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
