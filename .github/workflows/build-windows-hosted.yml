@@ -25,8 +25,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2026.04.27"
-            vcpkg_commit: "56bb2411609227288b70117ead2c47585ba07713" # 2026.04.27
+          - vcpkg_tag: "2026.07.29"
+            vcpkg_commit: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -141,7 +141,7 @@ jobs:
         name: "Run vcpkg(x64-windows)"
         with:
           vcpkgDirectory: "D:/vcpkg"
-          vcpkgGitCommitId: "56bb2411609227288b70117ead2c47585ba07713" # 2026.04.27
+          vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
@@ -179,7 +179,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "D:/vcpkg"
-          vcpkgGitCommitId: "56bb2411609227288b70117ead2c47585ba07713" # 2026.04.27
+          vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--keep-going`, `--x-feature`, `vulkan`]'
