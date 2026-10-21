@@ -95,13 +95,13 @@ if (-not $pkg) { throw "[cudnn] Unexpected archive layout." }
 
 $bin = Join-Path $pkg.FullName "bin"
 $inc = Join-Path $pkg.FullName "include"
-$lib = Join-Path $pkg.FullName "lib\x64"
+$lib = Join-Path $pkg.FullName "lib"
 
 New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "bin")     | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "include") | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $ExtractRoot "lib")     | Out-Null
 
-$dllFiles = Get-ChildItem -Path (Join-Path $bin "cudnn*.dll") -ErrorAction SilentlyContinue
+$dllFiles = Get-ChildItem -Path $bin -Filter "cudnn*.dll" -File -Recurse -ErrorAction SilentlyContinue
 if (-not $dllFiles) {
   Write-Error "[cudnn] No cuDNN DLLs found in $bin"
   exit 1
@@ -115,7 +115,7 @@ if (-not $headerFiles) {
 }
 Copy-Item -Path $headerFiles.FullName -Destination (Join-Path $ExtractRoot "include") -Force
 
-$libFiles = Get-ChildItem -Path (Join-Path $lib "cudnn*.lib") -ErrorAction SilentlyContinue
+$libFiles = Get-ChildItem -Path $lib -Filter "cudnn*.lib" -File -Recurse -ErrorAction SilentlyContinue
 if (-not $libFiles) {
   Write-Error "[cudnn] No cuDNN libraries found in $lib"
   exit 1

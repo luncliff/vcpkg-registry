@@ -92,10 +92,6 @@ jobs:
     defaults:
       run:
         shell: pwsh
-    # strategy:
-    #   matrix:
-    #     cuda_env: [CUDA_PATH] # todo: CUDA_PATH_V13_0
-    #   fail-fast: false
     runs-on:
       - self-hosted
       - Windows
@@ -120,22 +116,40 @@ jobs:
           New-Item -Type Directory -Force D:/vcpkg-caches
           Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
 
+      - name: "Verify CUDA artifacts"
+        run: |
+          foreach ($version in @('12.9', '13.1', '13.4')) {
+            ./scripts/install-cuda.ps1 -CudaVersion $version -VerifyDownload
+          }
+
       - name: "Setup CUDA"
         if: runner.os == 'Windows'
         id: setup-cuda-windows
         run: |
-          $InstallPath=$(./scripts/install-cuda.ps1)
+          $InstallPath=$(./scripts/install-cuda.ps1 -CudaVersion 13.4)
+          $env:CUDA_PATH=$InstallPath
           "CUDA_PATH=$InstallPath" >> $env:GITHUB_ENV
-          $InstallPath=$(./scripts/install-cudnn.ps1 -CudaVersion 12)
+          "$InstallPath/bin" >> $env:GITHUB_PATH
+          "$InstallPath/bin/x64" >> $env:GITHUB_PATH
+          Remove-Item Env:CUDNN -ErrorAction SilentlyContinue
+          $InstallPath=$(./scripts/install-cudnn.ps1 -CudaVersion 13.4 -ExtractRoot "C:\Program Files\NVIDIA\CUDNN\v9.27-cuda13")
+          $env:CUDNN=$InstallPath
           "CUDNN=$InstallPath" >> $env:GITHUB_ENV
-          $InstallPath=$(./scripts/install-tensorrt.ps1)
+          "CUDNN_ROOT_DIR=$InstallPath" >> $env:GITHUB_ENV
+          "$InstallPath/bin" >> $env:GITHUB_PATH
+          Remove-Item Env:TENSORRT_HOME -ErrorAction SilentlyContinue
+          $InstallPath=$(./scripts/install-tensorrt.ps1 -DownloadURL "https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.14.1/zip/TensorRT-10.14.1.48.Windows.win10.cuda-13.0.zip" -ExtractRoot "C:\Program Files\NVIDIA\TensorRT\10.14.1-cuda13")
           "TENSORRT_HOME=$InstallPath" >> $env:GITHUB_ENV
+          "$InstallPath/bin" >> $env:GITHUB_PATH
+          "$InstallPath/lib" >> $env:GITHUB_PATH
 
       - name: "Check CUDA Environment"
         run: |
           Write-Output "CUDA_PATH: ${env:CUDA_PATH}"
           Write-Output "CUDNN: ${env:CUDNN}"
           Write-Output "TENSORRT_HOME: ${env:TENSORRT_HOME}"
+          & "$env:CUDA_PATH/bin/nvcc.exe" --version
+          if ($LASTEXITCODE -ne 0) { throw "CUDA compiler check failed" }
 
       - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(x64-windows)"
