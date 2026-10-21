@@ -51,26 +51,29 @@ jobs:
       - uses: lukka/run-vcpkg@v11.6
         name: "Setup vcpkg(${{ matrix.vcpkg_tag }})"
         with:
-          vcpkgDirectory: "${{ runner.workspace }}/vcpkg"
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: ${{ matrix.vcpkg_commit }}
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: false
 
       - name: "Configure vcpkg binary cache"
+        env:
+          VCPKG_TOOL_CACHE: "${{ runner.tool_cache }}"
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:VCPKG_ROOT)) {
-            throw "lukka/run-vcpkg did not set VCPKG_ROOT"
+          if ([string]::IsNullOrWhiteSpace($env:VCPKG_TOOL_CACHE)) {
+            throw "runner.tool_cache did not provide a path"
           }
-          $cachePath = Join-Path (Split-Path -Parent $env:VCPKG_ROOT) "vcpkg-caches"
+          $cachePath = Join-Path $env:VCPKG_TOOL_CACHE "vcpkg-caches"
           New-Item -ItemType Directory -Path $cachePath -Force | Out-Null
+          $cachePath = $cachePath.Replace('\', '/')
           "VCPKG_BINARY_SOURCES=files,$cachePath,readwrite" >> $env:GITHUB_ENV
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(x64-windows, ${{ matrix.vcpkg_tag }})"
         with:
-          vcpkgDirectory: "${{ runner.workspace }}/vcpkg"
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: ${{ matrix.vcpkg_commit }}
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
@@ -84,7 +87,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(arm64-windows, ${{ matrix.vcpkg_tag }})"
         with:
-          vcpkgDirectory: "${{ runner.workspace }}/vcpkg"
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: ${{ matrix.vcpkg_commit }}
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
@@ -97,7 +100,7 @@ jobs:
 
       - uses: yumis-coconudge/clean-workspace-action@v1.0.7
         with:
-          additional-path: "${{ runner.workspace }}/vcpkg/buildtrees,${{ runner.workspace }}/vcpkg/packages"
+          additional-path: "${{ runner.temp }}/vcpkg/buildtrees,${{ runner.temp }}/vcpkg/packages"
         if: always()
 
   overlay_cuda:
@@ -133,19 +136,22 @@ jobs:
       - uses: lukka/run-vcpkg@v11.6
         name: "Setup vcpkg"
         with:
-          vcpkgDirectory: "${{ runner.workspace }}/vcpkg"
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: false
 
       - name: "Configure vcpkg binary cache"
+        env:
+          VCPKG_TOOL_CACHE: "${{ runner.tool_cache }}"
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:VCPKG_ROOT)) {
-            throw "lukka/run-vcpkg did not set VCPKG_ROOT"
+          if ([string]::IsNullOrWhiteSpace($env:VCPKG_TOOL_CACHE)) {
+            throw "runner.tool_cache did not provide a path"
           }
-          $cachePath = Join-Path (Split-Path -Parent $env:VCPKG_ROOT) "vcpkg-caches"
+          $cachePath = Join-Path $env:VCPKG_TOOL_CACHE "vcpkg-caches"
           New-Item -ItemType Directory -Path $cachePath -Force | Out-Null
+          $cachePath = $cachePath.Replace('\', '/')
           "VCPKG_BINARY_SOURCES=files,$cachePath,readwrite" >> $env:GITHUB_ENV
 
       - name: "Setup CUDA"
@@ -180,7 +186,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(x64-windows)"
         with:
-          vcpkgDirectory: "${{ runner.workspace }}/vcpkg"
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
@@ -192,7 +198,7 @@ jobs:
 
       - uses: yumis-coconudge/clean-workspace-action@v1.0.7
         with:
-          additional-path: "${{ runner.workspace }}/vcpkg/buildtrees,${{ runner.workspace }}/vcpkg/packages"
+          additional-path: "${{ runner.temp }}/vcpkg/buildtrees,${{ runner.temp }}/vcpkg/packages"
         if: always()
 
   overlay_vulkan:
@@ -219,24 +225,27 @@ jobs:
       - uses: lukka/run-vcpkg@v11.6
         name: "Setup vcpkg"
         with:
-          vcpkgDirectory: "${{ runner.workspace }}/vcpkg"
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: false
 
       - name: "Configure vcpkg binary cache"
+        env:
+          VCPKG_TOOL_CACHE: "${{ runner.tool_cache }}"
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:VCPKG_ROOT)) {
-            throw "lukka/run-vcpkg did not set VCPKG_ROOT"
+          if ([string]::IsNullOrWhiteSpace($env:VCPKG_TOOL_CACHE)) {
+            throw "runner.tool_cache did not provide a path"
           }
-          $cachePath = Join-Path (Split-Path -Parent $env:VCPKG_ROOT) "vcpkg-caches"
+          $cachePath = Join-Path $env:VCPKG_TOOL_CACHE "vcpkg-caches"
           New-Item -ItemType Directory -Path $cachePath -Force | Out-Null
+          $cachePath = $cachePath.Replace('\', '/')
           "VCPKG_BINARY_SOURCES=files,$cachePath,readwrite" >> $env:GITHUB_ENV
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.6
         with:
-          vcpkgDirectory: "${{ runner.workspace }}/vcpkg"
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
