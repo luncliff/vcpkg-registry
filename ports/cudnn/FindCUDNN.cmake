@@ -29,10 +29,10 @@ file(GLOB CUDNN_VERSION_DIRS
 )
 find_path(CUDNN_INCLUDE_DIR NAMES cudnn.h
   HINTS ${CUDA_TOOLKIT_ROOT} $ENV{CUDA_PATH} $ENV{CUDA_TOOLKIT_ROOT_DIR} $ENV{cudnn} $ENV{CUDNN} $ENV{CUDNN_ROOT_DIR} ${CUDNN_VERSION_DIRS} /usr/include /usr/include/x86_64-linux-gnu/ /usr/include/aarch64-linux-gnu/
-  PATH_SUFFIXES cuda/include include include/12.0 include/12.1 include/12.2 include/12.3 include/12.4 include/12.5 include/12.6 include/12.7 include/12.8 include/12.9 include/13.0 include/13.1 REQUIRED)
+  PATH_SUFFIXES cuda/include include include/12.0 include/12.1 include/12.2 include/12.3 include/12.4 include/12.5 include/12.6 include/12.7 include/12.8 include/12.9 include/13.0 include/13.1 include/13.2 include/13.3 include/13.4 REQUIRED)
 find_library(CUDNN_LIBRARY NAMES cudnn
   HINTS ${CUDA_TOOLKIT_ROOT} $ENV{CUDA_PATH} $ENV{CUDA_TOOLKIT_ROOT_DIR} $ENV{cudnn} $ENV{CUDNN} $ENV{CUDNN_ROOT_DIR} ${CUDNN_VERSION_DIRS} /usr/lib/x86_64-linux-gnu/ /usr/lib/aarch64-linux-gnu/ /usr/
-  PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64 cuda/lib/x64 lib/12.0/x64 lib/12.1/x64 lib/12.2/x64 lib/12.3/x64 lib/12.4/x64 lib/12.5/x64 lib/12.6/x64 lib/12.7/x64 lib/12.8/x64 lib/12.9/x64 lib/13.0/x64 lib/13.1/x64)
+  PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64 cuda/lib/x64 lib/12.0/x64 lib/12.1/x64 lib/12.2/x64 lib/12.3/x64 lib/12.4/x64 lib/12.5/x64 lib/12.6/x64 lib/12.7/x64 lib/12.8/x64 lib/12.9/x64 lib/13.0/x64 lib/13.1/x64 lib/13.2/x64 lib/13.3/x64 lib/13.4/x64)
 
 if(EXISTS "${CUDNN_INCLUDE_DIR}/cudnn.h")
   file(READ ${CUDNN_INCLUDE_DIR}/cudnn.h CUDNN_HEADER_CONTENTS)
@@ -64,6 +64,8 @@ endif()
 
 set(CUDNN_INCLUDE_DIRS ${CUDNN_INCLUDE_DIR})
 set(CUDNN_LIBRARIES ${CUDNN_LIBRARY})
+set(CUDNN_VERSION "${_CUDNN_VERSION}")
+set(CUDNN_VERSION_MAJOR "${_CUDNN_VERSION_MAJOR}")
 mark_as_advanced(CUDNN_LIBRARY CUDNN_INCLUDE_DIR)
 
 find_package_handle_standard_args(CUDNN
@@ -71,9 +73,16 @@ find_package_handle_standard_args(CUDNN
       VERSION_VAR    CUDNN_VERSION
 )
 
-set(CUDNN_DLL_DIR ${CUDNN_INCLUDE_DIR})
-list(TRANSFORM CUDNN_DLL_DIR APPEND "/../bin")
-find_file(CUDNN_LIBRARY_DLL NAMES cudnn64_${CUDNN_VERSION_MAJOR}.dll PATHS ${CUDNN_DLL_DIR})
+get_filename_component(CUDNN_LIBRARY_DIR "${CUDNN_LIBRARY}" DIRECTORY)
+get_filename_component(CUDNN_CUDA_VERSION "${CUDNN_INCLUDE_DIR}" NAME)
+if(NOT CUDNN_CUDA_VERSION MATCHES "^[0-9]+\\.[0-9]+$")
+  unset(CUDNN_CUDA_VERSION)
+endif()
+find_file(CUDNN_LIBRARY_DLL NAMES cudnn64_${CUDNN_VERSION_MAJOR}.dll
+  HINTS "${CUDNN_LIBRARY_DIR}/../../bin" "${CUDNN_LIBRARY_DIR}/../bin"
+        "${CUDNN_INCLUDE_DIR}/../../bin" "${CUDNN_INCLUDE_DIR}/../bin"
+  PATH_SUFFIXES ${CUDNN_CUDA_VERSION} ${CUDA_VERSION}
+)
 
 if(CUDNN_FOUND AND NOT TARGET CuDNN::CuDNN AND NOT CMAKE_SCRIPT_MODE_FILE)
   if(EXISTS "${CUDNN_LIBRARY_DLL}")

@@ -4,7 +4,8 @@
 # - redistrib_9.10.2.json: CUDA 11,12
 # - redistrib_9.11.1.json: CUDA 12
 # - redistrib_9.12.0.json: CUDA 12,13
-set(MINIMUM_CUDNN_VERSION "9.11.1")
+# - redistrib_9.27.0.json: CUDA 12,13
+set(MINIMUM_CUDNN_VERSION "${VERSION}")
 
 # vcpkg_find_cuda function is from 'cuda' port
 vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT CUDA_TOOLKIT_ROOT OUT_CUDA_VERSION CUDA_VERSION)

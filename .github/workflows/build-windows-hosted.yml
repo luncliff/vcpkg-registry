@@ -15,7 +15,6 @@ concurrency:
 env:
   VCPKG_FEATURE_FLAGS: "registries,binarycaching,manifests,versions"
   VCPKG_ENABLE_METRICS: 0
-  VCPKG_BINARY_SOURCES: "files,D:/vcpkg-caches,readwrite"
 
 jobs:
   overlay:
@@ -46,14 +45,36 @@ jobs:
 
       - name: "Change vcpkg.json"
         run: |
-          New-Item -Type Directory -Force D:/vcpkg-caches
           Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+        shell: pwsh
+
+      - uses: lukka/run-vcpkg@v11.6
+        name: "Setup vcpkg(${{ matrix.vcpkg_tag }})"
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgGitCommitId: ${{ matrix.vcpkg_commit }}
+          vcpkgJsonGlob: "test/vcpkg.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+          runVcpkgInstall: false
+
+      - name: "Configure vcpkg binary cache"
+        env:
+          VCPKG_TOOL_CACHE: "${{ runner.tool_cache }}"
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:VCPKG_TOOL_CACHE)) {
+            throw "runner.tool_cache did not provide a path"
+          }
+          $cachePath = Join-Path $env:VCPKG_TOOL_CACHE "vcpkg-caches"
+          New-Item -ItemType Directory -Path $cachePath -Force | Out-Null
+          $cachePath = $cachePath.Replace('\', '/')
+          "VCPKG_BINARY_SOURCES=files,$cachePath,readwrite" >> $env:GITHUB_ENV
+          "VCPKG_DOWNLOADS=$env:VCPKG_TOOL_CACHE" >> $env:GITHUB_ENV
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(x64-windows, ${{ matrix.vcpkg_tag }})"
         with:
-          vcpkgDirectory: "D:/vcpkg"
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: ${{ matrix.vcpkg_commit }}
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
@@ -61,14 +82,13 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "x64-windows"
-          # VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,D:/vcpkg-caches,readwrite"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(arm64-windows, ${{ matrix.vcpkg_tag }})"
         with:
-          vcpkgDirectory: "D:/vcpkg"
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: ${{ matrix.vcpkg_commit }}
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
@@ -76,13 +96,12 @@ jobs:
           runVcpkgFormatString: '[`install`, `--keep-going`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `--x-feature`, `test`]'
         env:
           VCPKG_DEFAULT_TRIPLET: "arm64-windows"
-          # VCPKG_BINARY_SOURCES: "${{ secrets.VCPKG_BINARY_SOURCES }};files,D:/vcpkg-caches,readwrite"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - uses: yumis-coconudge/clean-workspace-action@v1.0.7
         with:
-          additional-path: "D:/vcpkg/buildtrees,D:/vcpkg/packages"
+          additional-path: "${{ runner.temp }}/vcpkg/buildtrees,${{ runner.temp }}/vcpkg/packages"
         if: always()
 
   overlay_cuda:
@@ -92,10 +111,6 @@ jobs:
     defaults:
       run:
         shell: pwsh
-    # strategy:
-    #   matrix:
-    #     cuda_env: [CUDA_PATH] # todo: CUDA_PATH_V13_0
-    #   fail-fast: false
     runs-on:
       - self-hosted
       - Windows
@@ -117,30 +132,64 @@ jobs:
 
       - name: "Change vcpkg.json"
         run: |
-          New-Item -Type Directory -Force D:/vcpkg-caches
           Move-Item -Path "test/self-hosted.json" -Destination "test/vcpkg.json" -Force
+
+      - uses: lukka/run-vcpkg@v11.6
+        name: "Setup vcpkg"
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
+          vcpkgJsonGlob: "test/vcpkg.json"
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+          runVcpkgInstall: false
+
+      - name: "Configure vcpkg binary cache"
+        env:
+          VCPKG_TOOL_CACHE: "${{ runner.tool_cache }}"
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:VCPKG_TOOL_CACHE)) {
+            throw "runner.tool_cache did not provide a path"
+          }
+          $cachePath = Join-Path $env:VCPKG_TOOL_CACHE "vcpkg-caches"
+          New-Item -ItemType Directory -Path $cachePath -Force | Out-Null
+          $cachePath = $cachePath.Replace('\', '/')
+          "VCPKG_BINARY_SOURCES=files,$cachePath,readwrite" >> $env:GITHUB_ENV
+          "VCPKG_DOWNLOADS=$env:VCPKG_TOOL_CACHE" >> $env:GITHUB_ENV
+        shell: pwsh
 
       - name: "Setup CUDA"
         if: runner.os == 'Windows'
         id: setup-cuda-windows
         run: |
-          $InstallPath=$(./scripts/install-cuda.ps1)
+          $InstallPath=$(./scripts/install-cuda.ps1 -CudaVersion 13.4)
+          $env:CUDA_PATH=$InstallPath
           "CUDA_PATH=$InstallPath" >> $env:GITHUB_ENV
-          $InstallPath=$(./scripts/install-cudnn.ps1)
+          "$InstallPath/bin" >> $env:GITHUB_PATH
+          "$InstallPath/bin/x64" >> $env:GITHUB_PATH
+          Remove-Item Env:CUDNN -ErrorAction SilentlyContinue
+          $InstallPath=$(./scripts/install-cudnn.ps1 -CudaVersion 13.4 -ExtractRoot "C:\Program Files\NVIDIA\CUDNN\v9.27-cuda13")
+          $env:CUDNN=$InstallPath
           "CUDNN=$InstallPath" >> $env:GITHUB_ENV
-          $InstallPath=$(./scripts/install-tensorrt.ps1)
+          "CUDNN_ROOT_DIR=$InstallPath" >> $env:GITHUB_ENV
+          "$InstallPath/bin" >> $env:GITHUB_PATH
+          Remove-Item Env:TENSORRT_HOME -ErrorAction SilentlyContinue
+          $InstallPath=$(./scripts/install-tensorrt.ps1 -DownloadURL "https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.14.1/zip/TensorRT-10.14.1.48.Windows.win10.cuda-13.0.zip" -ExtractRoot "C:\Program Files\NVIDIA\TensorRT\10.14.1-cuda13")
           "TENSORRT_HOME=$InstallPath" >> $env:GITHUB_ENV
+          "$InstallPath/bin" >> $env:GITHUB_PATH
+          "$InstallPath/lib" >> $env:GITHUB_PATH
 
       - name: "Check CUDA Environment"
         run: |
           Write-Output "CUDA_PATH: ${env:CUDA_PATH}"
           Write-Output "CUDNN: ${env:CUDNN}"
           Write-Output "TENSORRT_HOME: ${env:TENSORRT_HOME}"
+          & "$env:CUDA_PATH/bin/nvcc.exe" --version
+          if ($LASTEXITCODE -ne 0) { throw "CUDA compiler check failed" }
 
       - uses: lukka/run-vcpkg@v11.6
         name: "Run vcpkg(x64-windows)"
         with:
-          vcpkgDirectory: "D:/vcpkg"
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
@@ -152,7 +201,7 @@ jobs:
 
       - uses: yumis-coconudge/clean-workspace-action@v1.0.7
         with:
-          additional-path: "D:/vcpkg/buildtrees,D:/vcpkg/packages"
+          additional-path: "${{ runner.temp }}/vcpkg/buildtrees,${{ runner.temp }}/vcpkg/packages"
         if: always()
 
   overlay_vulkan:
@@ -177,8 +226,30 @@ jobs:
           msbuild-architecture: x64
 
       - uses: lukka/run-vcpkg@v11.6
+        name: "Setup vcpkg"
         with:
-          vcpkgDirectory: "D:/vcpkg"
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
+          vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
+          vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
+          runVcpkgInstall: false
+
+      - name: "Configure vcpkg binary cache"
+        env:
+          VCPKG_TOOL_CACHE: "${{ runner.tool_cache }}"
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:VCPKG_TOOL_CACHE)) {
+            throw "runner.tool_cache did not provide a path"
+          }
+          $cachePath = Join-Path $env:VCPKG_TOOL_CACHE "vcpkg-caches"
+          New-Item -ItemType Directory -Path $cachePath -Force | Out-Null
+          $cachePath = $cachePath.Replace('\', '/')
+          "VCPKG_BINARY_SOURCES=files,$cachePath,readwrite" >> $env:GITHUB_ENV
+          "VCPKG_DOWNLOADS=$env:VCPKG_TOOL_CACHE" >> $env:GITHUB_ENV
+        shell: pwsh
+
+      - uses: lukka/run-vcpkg@v11.6
+        with:
+          vcpkgDirectory: "${{ runner.temp }}/vcpkg"
           vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
