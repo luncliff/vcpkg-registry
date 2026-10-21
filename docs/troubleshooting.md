@@ -30,6 +30,13 @@ When encountering compiler errors:
 - Review compiler flags in portfile and triplet
 - Consider adding patches for compatibility fixes
 
+#### XNNPACK with MSVC
+
+XNNPACK's nested variadic logging macros require MSVC's conforming preprocessor.
+The overlay enables `/Zc:preprocessor` for MSVC builds. Without it, calls to
+`XNN_IF_ERROR_GOTO` with no logging arguments can fail with `C2059` syntax errors
+in operator sources on Windows.
+
 Resources:
 - [MSVC Compiler Options](https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options)
 - [Clang User Manual](https://clang.llvm.org/docs/UsersManual.html)
@@ -53,3 +60,11 @@ Common vcpkg pitfalls:
 - **Overlay ports conflicts**: Check overlay port priority
 - **Feature flag issues**: Verify feature dependencies
 - **Version baseline**: Confirm version entries are up-to-date
+
+#### TensorFlow Lite on Windows
+
+The dynamic package installs `tensorflow-lite.dll` in `bin` and `debug/bin`,
+alongside import libraries in `lib` and `debug/lib`. Its CMake configuration
+discovers the dependencies required by the exported XNNPACK delegate target.
+Use `find_package(tensorflow-lite CONFIG REQUIRED)` and link
+`tensorflow-lite::tensorflow-lite` for the C API.
