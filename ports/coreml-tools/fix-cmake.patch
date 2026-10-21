@@ -53,14 +53,11 @@ index d462525..315a9ee 100644
  
  target_link_libraries(milstoragepython
    mlmodel
-@@ -70,7 +84,8 @@ add_library(modelpackage
-   modelpackage/src/utils/JsonMap.cpp
-   modelpackage/src/ModelPackagePython.cpp
-   )
--  
+@@ -74,3 +88,5 @@ add_library(modelpackage
+-target_compile_definitions(modelpackage
 +install(TARGETS modelpackage DESTINATION ${CMAKE_INSTALL_LIBDIR})
 +
- target_compile_definitions(modelpackage
++target_compile_definitions(modelpackage
    PRIVATE
    CPU_ONLY=1
 @@ -78,7 +93,6 @@ target_compile_definitions(modelpackage
@@ -79,19 +76,52 @@ index d462525..315a9ee 100644
    target_link_libraries(coremlpython
      mlmodel
      ${CORE_VIDEO}
+@@ -195,30 +211 @@ else()
+-# Build kmeans-1d
+-set(KMEANS_DIR "${PROJECT_SOURCE_DIR}/deps/kmeans1d")
+-execute_process(
+-  COMMAND python3 setup.py build_ext --inplace
+-  WORKING_DIRECTORY ${KMEANS_DIR}
+-  RESULT_VARIABLE KMEANS1D_BUILD_STATUS
+-)
+-
+-if(NOT KMEANS1D_BUILD_STATUS EQUAL 0)
+-  message(FATAL_ERROR "Could not build kmeans1d dependency")
+-endif()
+-
+-# Somehow Python's setuptools is building this shared object file so that it tries to load the C++
+-# standard library using an rpath that only exist on the build machine. Change that so it gets
+-# loaded from the standard location.
+-if(APPLE)
+-  file(GLOB SO_FILE "${PROJECT_SOURCE_DIR}/deps/kmeans1d/kmeans1d/_core.*.so")
+-  execute_process(
+-    COMMAND install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib ${SO_FILE}
+-  )
+-endif()
+-
+-# Copy kmeans-1d to Python deps folder
+-execute_process(
+-  COMMAND cp -r kmeans1d ../../coremltools/_deps
+-  WORKING_DIRECTORY ${KMEANS_DIR}
+-)
+-
+-
+ set(PYTHON_TAG "cp${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
 diff --git a/cmake/coreml-utils.cmake b/cmake/coreml-utils.cmake
 index ab4679c..e988cda 100644
 --- a/cmake/coreml-utils.cmake
 +++ b/cmake/coreml-utils.cmake
-@@ -20,45 +20,43 @@
+@@ -20,45 +20,45 @@
  #    to the list proto_depends in PARENT_SCOPE.
  #
  function(coreml_add_build_proto proto_fn target_suffix)
 +    # some commands need mlmodel/enumgen host executable
 +    if(CMAKE_CROSSCOMPILING)
 +        find_program(ENUMGEN NAMES enumgen mlmodel/enumgen REQUIRED)
++        set(ENUMGEN_DEPENDS "${ENUMGEN}")
 +    else()
 +        set(ENUMGEN mlmodel/enumgen)
++        set(ENUMGEN_DEPENDS enumgen)
 +    endif()
      add_custom_command(
          OUTPUT
@@ -118,7 +148,7 @@ index ab4679c..e988cda 100644
              -I${CMAKE_CURRENT_SOURCE_DIR}/format/
              ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
 -        DEPENDS enumgen protoc
-+        DEPENDS enumgen
++        DEPENDS ${ENUMGEN_DEPENDS}
          WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
      )
      add_custom_command(
@@ -162,7 +192,7 @@ index ab4679c..e988cda 100644
                  -I${CMAKE_CURRENT_SOURCE_DIR}/format/
                  ${CMAKE_CURRENT_SOURCE_DIR}/format/${proto_fn}.proto
 -            DEPENDS enumgen protoc
-+            DEPENDS enumgen
++            DEPENDS ${ENUMGEN_DEPENDS}
              WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
          )
          add_custom_target(tgt_${proto_fn}_python ALL
@@ -195,15 +225,28 @@ index 14a57c0..fafbab7 100644
    src
  )
  
-@@ -64,6 +62,7 @@ target_link_libraries(mlmodel_test
+@@ -17,6 +15,7 @@
+ endif()
+ 
+ add_library(mlmodel_test
++    EXCLUDE_FROM_ALL
+     STATIC
+ 
+     tests/BayesianProbitRegressionValidatorTests.cpp
+@@ -62,8 +61,12 @@
+ )
+ 
  add_executable(mlmodel_test_runner
++    EXCLUDE_FROM_ALL
      test_runner.cpp
  )
-+install(TARGETS mlmodel_test_runner DESTINATION ${CMAKE_INSTALL_BINDIR})
++if(NOT CMAKE_CROSSCOMPILING)
++    install(TARGETS mlmodel_test_runner DESTINATION ${CMAKE_INSTALL_BINDIR})
++endif()
  
  target_link_libraries(mlmodel_test_runner
      mlmodel_test
-@@ -72,8 +71,6 @@ target_link_libraries(mlmodel_test_runner
+@@ -72,8 +75,6 @@
  add_library(mlmodel
      STATIC
  
@@ -212,7 +255,7 @@ index 14a57c0..fafbab7 100644
      ${CMAKE_CURRENT_BINARY_DIR}/format/ArrayFeatureExtractor.pb.cc
      ${CMAKE_CURRENT_BINARY_DIR}/format/AudioFeaturePrint.pb.cc
      ${CMAKE_CURRENT_BINARY_DIR}/format/BayesianProbitRegressor.pb.cc
-@@ -170,20 +167,21 @@ add_library(mlmodel
+@@ -170,20 +171,23 @@
      src/Validation/WordEmbeddingValidator.cpp
      src/Validation/WordTaggerValidator.cpp
  )
@@ -227,21 +270,27 @@ index 14a57c0..fafbab7 100644
 +    protobuf::libprotobuf-lite
  )
  
++if(NOT CMAKE_CROSSCOMPILING)
  add_executable(enumgen
      EXCLUDE_FROM_ALL
      tools/enumgen.cpp
 -    ../deps/protobuf/src/google/protobuf/compiler/plugin.pb.cc
  )
 +install(TARGETS enumgen DESTINATION ${CMAKE_INSTALL_BINDIR})
++endif()
  
  set(proto_files
      ArrayFeatureExtractor
-@@ -222,7 +220,7 @@ set(proto_files
+@@ -221,9 +225,9 @@
+     WordTagger
  )
  
- target_link_libraries(enumgen
+-target_link_libraries(enumgen
 -    libprotobuf
-+    protobuf::libprotobuf protobuf::libprotoc
- )
+-)
++if(NOT CMAKE_CROSSCOMPILING)
++    target_link_libraries(enumgen protobuf::libprotobuf protobuf::libprotoc)
++endif()
  
  option(OVERWRITE_PB_SOURCE
+        "Regenerates protobuf sources in the source tree, too." OFF)

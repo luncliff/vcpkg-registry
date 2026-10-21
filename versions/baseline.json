@@ -21,7 +21,7 @@
       "port-version": 0
     },
     "coreml-tools": {
-      "baseline": "8.3",
+      "baseline": "9.0",
       "port-version": 0
     },
     "cpuinfo": {
@@ -93,7 +93,7 @@
       "port-version": 0
     },
     "google-pthreadpool": {
-      "baseline": "2025-06-17",
+      "baseline": "2025-10-20",
       "port-version": 0
     },
     "imgui": {
@@ -261,7 +261,7 @@
       "port-version": 0
     },
     "tensorflow-lite": {
-      "baseline": "2.20.0",
+      "baseline": "2.21.0",
       "port-version": 0
     },
     "tensorpipe": {
@@ -277,7 +277,7 @@
       "port-version": 0
     },
     "xnnpack": {
-      "baseline": "2025-06-06",
+      "baseline": "2025-12-26",
       "port-version": 1
     },
     "xnvctrl": {

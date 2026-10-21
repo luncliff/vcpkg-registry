@@ -3,7 +3,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO apple/coremltools
     REF ${VERSION}
-    SHA512 14552026d695fd624eeaf33327279493f1e88b80ad774d65bf5f11d26ce274f0aa0659883de382c95a4168bd4763255574b02a65acace13d1fddd312ca3808dd
+    SHA512 87f90835e214738fdb8d61143732be04f9a9bc68b9cb06ccbfe27c77828174d58da5118d0a1adf52326477ff8b8047c3ae4cede5ecd0b937809d20dc68917970
     HEAD_REF main
     PATCHES
         fix-cmake.patch
@@ -64,12 +64,13 @@ vcpkg_cmake_configure(
         -DOVERWRITE_PB_SOURCE=ON
 )
 vcpkg_cmake_build(TARGET protosrc LOGFILE_BASE build-protosrc)
-if(VCPKG_TARGET_IS_OSX)
+if(VCPKG_TARGET_IS_OSX AND NOT VCPKG_CROSSCOMPILING)
     vcpkg_cmake_build(TARGET enumgen LOGFILE_BASE build-enumgen)
+    vcpkg_cmake_build(TARGET mlmodel_test_runner LOGFILE_BASE build-mlmodel-test-runner)
 endif()
 vcpkg_cmake_install()
 
-if(VCPKG_TARGET_IS_OSX)
+if(VCPKG_TARGET_IS_OSX AND NOT VCPKG_CROSSCOMPILING)
     vcpkg_copy_tools(TOOL_NAMES enumgen mlmodel_test_runner AUTO_CLEAN)
 endif()
 
