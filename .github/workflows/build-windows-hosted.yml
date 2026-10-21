@@ -126,7 +126,7 @@ jobs:
         run: |
           $InstallPath=$(./scripts/install-cuda.ps1)
           "CUDA_PATH=$InstallPath" >> $env:GITHUB_ENV
-          $InstallPath=$(./scripts/install-cudnn.ps1)
+          $InstallPath=$(./scripts/install-cudnn.ps1 -CudaVersion 12)
           "CUDNN=$InstallPath" >> $env:GITHUB_ENV
           $InstallPath=$(./scripts/install-tensorrt.ps1)
           "TENSORRT_HOME=$InstallPath" >> $env:GITHUB_ENV

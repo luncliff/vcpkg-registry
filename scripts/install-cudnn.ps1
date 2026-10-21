@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Install cuDNN 9.x for CUDA 12.x from a ZIP into a chosen root.
+Install cuDNN 9.x for CUDA 12.x or 13.x from a ZIP into a chosen root.
 
 .DESCRIPTION
 If $env:CUDNN exists and the path is valid, exits.
@@ -8,24 +8,42 @@ Otherwise downloads the specified cuDNN redistributable ZIP, extracts the expect
 bin/include/lib content into ExtractRoot, sets CUDNN, and adds bin to system PATH.
 
 .PARAMETER DownloadURL
-cuDNN redistributable ZIP URL for Windows x86_64 and CUDA 12.x.
-Defaults to 9.27.0.42.
+cuDNN redistributable ZIP URL for Windows x86_64.
+Defaults to 9.27.0.42 for the selected CUDA major version.
+An explicit URL overrides CudaVersion.
 
 .PARAMETER ExtractRoot
 Target root for cuDNN. Defaults to $env:CUDNN if set, otherwise
 "C:\Program Files\NVIDIA\CUDNN\v9.27".
 
+.PARAMETER CudaVersion
+CUDA toolkit version, either 12 or 13, optionally with a minor version.
+Defaults to 13.4. NVIDIA provides one cuDNN archive per CUDA major version.
+Existing installations are reused regardless of this selection.
+
+.EXAMPLE
+.\install-cudnn.ps1
+.EXAMPLE
+.\install-cudnn.ps1 -CudaVersion 12
+.EXAMPLE
+.\install-cudnn.ps1 -CudaVersion 13.4
 .EXAMPLE
 .\install-cudnn.ps1 -DownloadURL "https://.../cudnn-windows-x86_64-9.27.0.42_cuda12-archive.zip"
 #>
 
 [CmdletBinding()]
 param(
-  [Parameter()][ValidateNotNullOrEmpty()][string]$DownloadURL = "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.27.0.42_cuda12-archive.zip",
-  [Parameter()][string]$ExtractRoot = $(if ($env:CUDNN) { $env:CUDNN } else { "C:\Program Files\NVIDIA\CUDNN\v9.27" })
+  [Parameter()][ValidateNotNullOrEmpty()][string]$DownloadURL,
+  [Parameter()][string]$ExtractRoot = $(if ($env:CUDNN) { $env:CUDNN } else { "C:\Program Files\NVIDIA\CUDNN\v9.27" }),
+  [Parameter()][ValidatePattern('^(12|13)(\.[0-9]+)?$')][string]$CudaVersion = "13.4"
 )
 
 $ErrorActionPreference = 'Stop'
+
+if (-not $PSBoundParameters.ContainsKey('DownloadURL')) {
+  $cudaMajor = $CudaVersion.Split('.')[0]
+  $DownloadURL = "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.27.0.42_cuda${cudaMajor}-archive.zip"
+}
 
 # Already installed?
 if ($env:CUDNN -and (Test-Path -LiteralPath $env:CUDNN)) {
