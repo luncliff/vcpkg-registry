@@ -1,3 +1,6 @@
+This port requires a system installation of cuDNN 9.27.0 or newer for CUDA 12.x or 13.x.
+Set CUDNN_ROOT_DIR to the cuDNN installation root if it is not found automatically.
+
 The package cudnn provides CMake variables:
 
     find_package(CUDNN REQUIRED)

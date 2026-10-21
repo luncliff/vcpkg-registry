@@ -1,7 +1,6 @@
 {
   "name": "cudnn",
-  "version": "9.11.1",
-  "port-version": 1,
+  "version": "9.27.0",
   "description": "NVIDIA's cuDNN deep neural network acceleration library.",
   "homepage": "https://docs.nvidia.com/deeplearning/cudnn/backend/latest/release-notes.html",
   "license": null,
