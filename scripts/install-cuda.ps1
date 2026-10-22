@@ -119,9 +119,14 @@ function DownloadToFile([string]$Uri, [string]$OutFile) {
 }
 
 function Add-PathOnce([string]$PathToAdd) {
-  $cur = [Environment]::GetEnvironmentVariable('Path', 'Machine') -split ';' | Where-Object { $_ }
-  if ($cur -notcontains $PathToAdd) {
-    [Environment]::SetEnvironmentVariable('Path', (($cur + $PathToAdd) -join ';'), 'Machine')
+  try {
+    $cur = [Environment]::GetEnvironmentVariable('Path', 'Machine') -split ';' | Where-Object { $_ }
+    if ($cur -notcontains $PathToAdd) {
+      [Environment]::SetEnvironmentVariable('Path', (($cur + $PathToAdd) -join ';'), 'Machine')
+    }
+  }
+  catch {
+    throw "[cuda] Failed to update machine PATH. Run this script in an Administrator PowerShell."
   }
 }
 
@@ -137,7 +142,12 @@ function ChangeEnvironmentVariable {
   param (
     [string]$InstallRoot
   )
-  [Environment]::SetEnvironmentVariable('CUDA_PATH', $InstallRoot, 'Machine')
+  try {
+    [Environment]::SetEnvironmentVariable('CUDA_PATH', $InstallRoot, 'Machine')
+  }
+  catch {
+    throw "[cuda] Failed to set CUDA_PATH at machine scope. Run this script in an Administrator PowerShell."
+  }
   Add-PathOnce (Join-Path $InstallRoot 'bin')
   Add-PathOnce (Join-Path $InstallRoot 'bin\x64')
   Write-Host "[cuda] Using $InstallRoot"

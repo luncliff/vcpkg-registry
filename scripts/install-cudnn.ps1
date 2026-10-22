@@ -23,6 +23,9 @@ CUDA toolkit major version: 12 or 13. Defaults to 13.
 NVIDIA provides one cuDNN archive per CUDA major version.
 Existing installations are reused regardless of this selection.
 
+.PARAMETER VerifyDownload
+Check the selected artifact with an HTTP HEAD request without installing cuDNN.
+
 .EXAMPLE
 .\install-cudnn.ps1
 .EXAMPLE
@@ -31,13 +34,16 @@ Existing installations are reused regardless of this selection.
 .\install-cudnn.ps1 -CudaVersion 13
 .EXAMPLE
 .\install-cudnn.ps1 -DownloadURL "https://.../cudnn-windows-x86_64-9.27.0.42_cuda12-archive.zip"
+.EXAMPLE
+.\install-cudnn.ps1 -CudaVersion 13 -VerifyDownload
 #>
 
 [CmdletBinding()]
 param(
   [Parameter()][ValidateNotNullOrEmpty()][string]$DownloadURL,
   [Parameter()][string]$ExtractRoot = $(if ($env:CUDNN) { $env:CUDNN } else { "C:\Program Files\NVIDIA\CUDNN\v9.27" }),
-  [Parameter()][ValidateSet('12', '13')][string]$CudaVersion = '13'
+  [Parameter()][ValidateSet('12', '13')][string]$CudaVersion = '13',
+  [switch]$VerifyDownload
 )
 
 $ErrorActionPreference = 'Stop'
@@ -46,16 +52,44 @@ if (-not $PSBoundParameters.ContainsKey('DownloadURL')) {
   $DownloadURL = "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.27.0.42_cuda$CudaVersion-archive.zip"
 }
 
-if ($env:CUDNN -and (Test-Path -LiteralPath $env:CUDNN)) {
+if ($VerifyDownload) {
+  $response = Invoke-WebRequest -Uri $DownloadURL -Method Head -TimeoutSec 60
+  if ($response.StatusCode -ne 200) {
+    throw "[cudnn] Artifact check failed: $DownloadURL (HTTP $($response.StatusCode))"
+  }
+  Write-Host "[cudnn] Verified cuDNN artifact: $DownloadURL"
+  return
+}
+
+function Test-CudnnInstallation([string]$Root) {
+  if (-not $Root) { return $false }
+  $bin = Join-Path $Root 'bin'
+  $inc = Join-Path $Root 'include'
+  $lib = Join-Path $Root 'lib'
+  if (-not (Test-Path -LiteralPath $bin)) { return $false }
+  if (-not (Test-Path -LiteralPath $inc)) { return $false }
+  if (-not (Test-Path -LiteralPath $lib)) { return $false }
+  $dllFound = Get-ChildItem -LiteralPath $bin -Filter 'cudnn*.dll' -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+  $headerFound = Get-ChildItem -LiteralPath $inc -Filter 'cudnn*.h' -File -ErrorAction SilentlyContinue | Select-Object -First 1
+  $libFound = Get-ChildItem -LiteralPath $lib -Filter 'cudnn*.lib' -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+  return [bool]($dllFound -and $headerFound -and $libFound)
+}
+
+if (Test-CudnnInstallation $env:CUDNN) {
   Write-Host "[cudnn] Found at $env:CUDNN";
   Write-Output "$env:CUDNN"
   exit 0
 }
 
 function Add-PathOnce([string]$PathToAdd) {
-  $cur = [Environment]::GetEnvironmentVariable('Path', 'Machine') -split ';' | Where-Object { $_ }
-  if ($cur -notcontains $PathToAdd) {
-    [Environment]::SetEnvironmentVariable('Path', (($cur + $PathToAdd) -join ';'), 'Machine')
+  try {
+    $cur = [Environment]::GetEnvironmentVariable('Path', 'Machine') -split ';' | Where-Object { $_ }
+    if ($cur -notcontains $PathToAdd) {
+      [Environment]::SetEnvironmentVariable('Path', (($cur + $PathToAdd) -join ';'), 'Machine')
+    }
+  }
+  catch {
+    throw "[cudnn] Failed to update machine PATH. Run this script in an Administrator PowerShell."
   }
 }
 
@@ -63,14 +97,19 @@ function ChangeEnvironmentVariable {
   param (
     [string]$InstallRoot
   )
-  [Environment]::SetEnvironmentVariable('CUDNN', $InstallRoot, 'Machine')
-  [Environment]::SetEnvironmentVariable('CUDNN_ROOT_DIR', $InstallRoot, 'Machine')
+  try {
+    [Environment]::SetEnvironmentVariable('CUDNN', $InstallRoot, 'Machine')
+    [Environment]::SetEnvironmentVariable('CUDNN_ROOT_DIR', $InstallRoot, 'Machine')
+  }
+  catch {
+    throw "[cudnn] Failed to set CUDNN environment variables at machine scope. Run this script in an Administrator PowerShell."
+  }
   Add-PathOnce (Join-Path $InstallRoot 'bin')
   Write-Host "[cudnn] Using $InstallRoot"
   Write-Output "$InstallRoot"
 }
 
-if (Test-Path -LiteralPath $ExtractRoot) {
+if (Test-CudnnInstallation $ExtractRoot) {
   ChangeEnvironmentVariable -InstallRoot $ExtractRoot
   exit 0
 }
