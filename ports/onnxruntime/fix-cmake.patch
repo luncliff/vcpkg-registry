@@ -9,27 +9,6 @@ index 15f3105..af6609b 100644
 -            FRAMEWORK DESTINATION ${CMAKE_INSTALL_BINDIR})
 +            FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
  endif()
-diff --git a/cmake/external/abseil-cpp.cmake b/cmake/external/abseil-cpp.cmake
-index eede60a..07f5f77 100644
---- a/cmake/external/abseil-cpp.cmake
-+++ b/cmake/external/abseil-cpp.cmake
-@@ -122,7 +122,7 @@ absl::absl_check
- absl::hash_function_defaults
- absl::function_ref
- absl::city
--absl::low_level_hash
-+# absl::low_level_hash # abseil 20250814.1+
- absl::fixed_array
- absl::variant
- absl::meta
-@@ -150,3 +149,7 @@ absl::memory
- absl::charset
- absl::endian
- absl::config)
-+# Support both old and new abseil-cpp versions
-+if(TARGET absl::low_level_hash)
-+  list(APPEND ABSEIL_LIBS absl::low_level_hash)
-+endif()
 diff --git a/cmake/onnxruntime_webassembly.cmake b/cmake/onnxruntime_webassembly.cmake
 index ffe8661..a3e9b4f 100644
 --- a/cmake/onnxruntime_webassembly.cmake

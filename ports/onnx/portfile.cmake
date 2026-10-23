@@ -4,7 +4,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO onnx/onnx
     REF "v${VERSION}"
-    SHA512 4bbc4c09e4bb3eb6049d653ce49200564e8c5dcf1154a30f894f24e15f1986d1f2fe2f4ca32fe383c559e2a0b20681f33d649376bf63e4345df6972a2c78eac8
+    SHA512 fc93f19acc87fa0f4b75897c4f7c7e3e14d29f078f6e2b1a2806c5e2454789abdb44067437bc073d612fb48a564d3e5616fbe5e254d021ccec3e301170b1781d
     PATCHES
         fix-cmakelists.patch
 )
@@ -19,7 +19,7 @@ message(STATUS "Using protoc: ${PROTOC}")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        python  BUILD_ONNX_PYTHON
+        python  ONNX_BUILD_PYTHON
         protobuf-lite   ONNX_USE_LITE_PROTO
         disable-exception   ONNX_DISABLE_EXCEPTIONS
         disable-static-registration ONNX_DISABLE_STATIC_REGISTRATION

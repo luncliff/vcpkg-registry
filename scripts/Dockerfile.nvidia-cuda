@@ -1,0 +1,48 @@
+# CUDA/cuDNN development image for testing Linux vcpkg ports.
+#
+# Build from the repository root so Docker can copy ports/ and test/. Pass one or
+# more space-separated vcpkg package specs with VCPKG_PORTS:
+#   docker build --progress=plain -f scripts/Dockerfile.nvidia-cuda -t vcpkg-nvidia-cuda-test --build-arg "VCPKG_PORTS=fmt zlib" .
+# Compilation does not need a GPU; pass the GPU at runtime to test an application
+# that uses the installed ports:
+#   docker run --rm -it --gpus all vcpkg-nvidia-cuda-test
+#   docker run --rm --gpus all vcpkg-nvidia-cuda-test nvidia-smi
+#
+# The host needs an NVIDIA driver and NVIDIA Container Toolkit (or Docker Desktop
+# GPU support through WSL 2). Do not install the host GPU driver in this image.
+# Override CUDA_IMAGE when checking a different CUDA/cuDNN container tag.
+ARG CUDA_IMAGE=nvidia/cuda:13.4.3-cudnn-devel-ubuntu24.04
+FROM ${CUDA_IMAGE}
+
+# Match the current VCPKG_ROOT checkout (tag 2026.07.29).
+ARG VCPKG_REF=2026.07.29
+ARG VCPKG_PORTS
+ARG VCPKG_TRIPLET=x64-linux
+ARG DEBIAN_FRONTEND=noninteractive
+
+ENV VCPKG_ROOT=/opt/vcpkg \
+    CUDA_PATH=/usr/local/cuda \
+    CUDA_HOME=/usr/local/cuda \
+    CUDNN_ROOT_DIR=/usr \
+    VCPKG_KEEP_ENV_VARS="CUDA_PATH;CUDA_HOME;CUDNN_ROOT_DIR" \
+    VCPKG_ENABLE_METRICS=0
+ENV PATH="${VCPKG_ROOT}:${PATH}"
+
+# Reuse the Linux test dependencies maintained by this registry.
+COPY test/packages-apt.txt /tmp/packages-apt.txt
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+        build-essential ca-certificates cmake curl git ninja-build pkg-config tar unzip zip \
+        $(cat /tmp/packages-apt.txt) \
+    && rm -rf /var/lib/apt/lists/* /tmp/packages-apt.txt
+
+RUN git clone --depth 1 --branch "${VCPKG_REF}" https://github.com/microsoft/vcpkg.git "${VCPKG_ROOT}" \
+    && "${VCPKG_ROOT}/bootstrap-vcpkg.sh" -disableMetrics
+
+WORKDIR /workspace/vcpkg-registry
+COPY ports/ /workspace/vcpkg-registry/ports/
+COPY scripts/install-vcpkg-ports.sh /workspace/vcpkg-registry/scripts/install-vcpkg-ports.sh
+
+RUN bash /workspace/vcpkg-registry/scripts/install-vcpkg-ports.sh
+
+CMD ["/bin/bash"]

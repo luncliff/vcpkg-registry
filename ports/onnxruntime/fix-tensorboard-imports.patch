@@ -1,0 +1,350 @@
+diff --git a/tensorboard/compat/proto/api_def.proto b/tensorboard/compat/proto/api_def.proto
+--- a/tensorboard/compat/proto/api_def.proto
++++ b/tensorboard/compat/proto/api_def.proto
+@@ -6,6 +6,6 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/attr_value.proto";
++import "attr_value.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "ApiDefProtos";
+diff --git a/tensorboard/compat/proto/attr_value.proto b/tensorboard/compat/proto/attr_value.proto
+--- a/tensorboard/compat/proto/attr_value.proto
++++ b/tensorboard/compat/proto/attr_value.proto
+@@ -3,8 +3,8 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/tensor.proto";
+-import "tensorboard/compat/proto/tensor_shape.proto";
+-import "tensorboard/compat/proto/types.proto";
++import "tensor.proto";
++import "tensor_shape.proto";
++import "types.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "AttrValueProtos";
+diff --git a/tensorboard/compat/proto/config.proto b/tensorboard/compat/proto/config.proto
+--- a/tensorboard/compat/proto/config.proto
++++ b/tensorboard/compat/proto/config.proto
+@@ -3,13 +3,13 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/cost_graph.proto";
+-import "tensorboard/compat/proto/graph.proto";
+-import "tensorboard/compat/proto/step_stats.proto";
+-import "tensorboard/compat/proto/cluster.proto";
+-import "tensorboard/compat/proto/debug.proto";
+-import "tensorboard/compat/proto/rewriter_config.proto";
+-import "tensorboard/compat/proto/rpc_options.proto";
+-import "tensorboard/compat/proto/coordination_config.proto";
++import "cost_graph.proto";
++import "graph.proto";
++import "step_stats.proto";
++import "cluster.proto";
++import "debug.proto";
++import "rewriter_config.proto";
++import "rpc_options.proto";
++import "coordination_config.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "ConfigProtos";
+diff --git a/tensorboard/compat/proto/cost_graph.proto b/tensorboard/compat/proto/cost_graph.proto
+--- a/tensorboard/compat/proto/cost_graph.proto
++++ b/tensorboard/compat/proto/cost_graph.proto
+@@ -3,7 +3,7 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/tensor_shape.proto";
+-import "tensorboard/compat/proto/types.proto";
++import "tensor_shape.proto";
++import "types.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "CostGraphProtos";
+diff --git a/tensorboard/compat/proto/cpp_shape_inference.proto b/tensorboard/compat/proto/cpp_shape_inference.proto
+--- a/tensorboard/compat/proto/cpp_shape_inference.proto
++++ b/tensorboard/compat/proto/cpp_shape_inference.proto
+@@ -3,8 +3,8 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/full_type.proto";
+-import "tensorboard/compat/proto/tensor_shape.proto";
+-import "tensorboard/compat/proto/types.proto";
++import "full_type.proto";
++import "tensor_shape.proto";
++import "types.proto";
+-
++
+ option cc_enable_arenas = true;
+ option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/python/framework/cpp_shape_inference_go_proto";
+diff --git a/tensorboard/compat/proto/event.proto b/tensorboard/compat/proto/event.proto
+--- a/tensorboard/compat/proto/event.proto
++++ b/tensorboard/compat/proto/event.proto
+@@ -3,6 +3,6 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/summary.proto";
++import "summary.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "EventProtos";
+diff --git a/tensorboard/compat/proto/function.proto b/tensorboard/compat/proto/function.proto
+--- a/tensorboard/compat/proto/function.proto
++++ b/tensorboard/compat/proto/function.proto
+@@ -3,8 +3,8 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/attr_value.proto";
+-import "tensorboard/compat/proto/node_def.proto";
+-import "tensorboard/compat/proto/op_def.proto";
++import "attr_value.proto";
++import "node_def.proto";
++import "op_def.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "FunctionProtos";
+diff --git a/tensorboard/compat/proto/graph.proto b/tensorboard/compat/proto/graph.proto
+--- a/tensorboard/compat/proto/graph.proto
++++ b/tensorboard/compat/proto/graph.proto
+@@ -3,9 +3,9 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/function.proto";
+-import "tensorboard/compat/proto/graph_debug_info.proto";
+-import "tensorboard/compat/proto/node_def.proto";
+-import "tensorboard/compat/proto/versions.proto";
++import "function.proto";
++import "graph_debug_info.proto";
++import "node_def.proto";
++import "versions.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "GraphProtos";
+diff --git a/tensorboard/compat/proto/meta_graph.proto b/tensorboard/compat/proto/meta_graph.proto
+--- a/tensorboard/compat/proto/meta_graph.proto
++++ b/tensorboard/compat/proto/meta_graph.proto
+@@ -3,14 +3,14 @@
+ package tensorboard;
+-
++
+ import "google/protobuf/any.proto";
+-import "tensorboard/compat/proto/graph.proto";
+-import "tensorboard/compat/proto/op_def.proto";
+-import "tensorboard/compat/proto/tensor.proto";
+-import "tensorboard/compat/proto/tensor_shape.proto";
+-import "tensorboard/compat/proto/types.proto";
+-import "tensorboard/compat/proto/saved_object_graph.proto";
+-import "tensorboard/compat/proto/saver.proto";
+-import "tensorboard/compat/proto/struct.proto";
++import "graph.proto";
++import "op_def.proto";
++import "tensor.proto";
++import "tensor_shape.proto";
++import "types.proto";
++import "saved_object_graph.proto";
++import "saver.proto";
++import "struct.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "MetaGraphProtos";
+diff --git a/tensorboard/compat/proto/node_def.proto b/tensorboard/compat/proto/node_def.proto
+--- a/tensorboard/compat/proto/node_def.proto
++++ b/tensorboard/compat/proto/node_def.proto
+@@ -3,7 +3,7 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/attr_value.proto";
+-import "tensorboard/compat/proto/full_type.proto";
++import "attr_value.proto";
++import "full_type.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "NodeProto";
+diff --git a/tensorboard/compat/proto/op_def.proto b/tensorboard/compat/proto/op_def.proto
+--- a/tensorboard/compat/proto/op_def.proto
++++ b/tensorboard/compat/proto/op_def.proto
+@@ -3,9 +3,9 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/attr_value.proto";
+-import "tensorboard/compat/proto/full_type.proto";
+-import "tensorboard/compat/proto/resource_handle.proto";
+-import "tensorboard/compat/proto/types.proto";
++import "attr_value.proto";
++import "full_type.proto";
++import "resource_handle.proto";
++import "types.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "OpDefProtos";
+diff --git a/tensorboard/compat/proto/resource_handle.proto b/tensorboard/compat/proto/resource_handle.proto
+--- a/tensorboard/compat/proto/resource_handle.proto
++++ b/tensorboard/compat/proto/resource_handle.proto
+@@ -3,7 +3,7 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/tensor_shape.proto";
+-import "tensorboard/compat/proto/types.proto";
++import "tensor_shape.proto";
++import "types.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "ResourceHandle";
+diff --git a/tensorboard/compat/proto/rewriter_config.proto b/tensorboard/compat/proto/rewriter_config.proto
+--- a/tensorboard/compat/proto/rewriter_config.proto
++++ b/tensorboard/compat/proto/rewriter_config.proto
+@@ -3,7 +3,7 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/attr_value.proto";
+-import "tensorboard/compat/proto/verifier_config.proto";
++import "attr_value.proto";
++import "verifier_config.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "RewriterConfigProtos";
+diff --git a/tensorboard/compat/proto/saved_object_graph.proto b/tensorboard/compat/proto/saved_object_graph.proto
+--- a/tensorboard/compat/proto/saved_object_graph.proto
++++ b/tensorboard/compat/proto/saved_object_graph.proto
+@@ -3,12 +3,12 @@
+ package tensorboard;
+-
++
+ import "google/protobuf/any.proto";
+-import "tensorboard/compat/proto/tensor_shape.proto";
+-import "tensorboard/compat/proto/types.proto";
+-import "tensorboard/compat/proto/variable.proto";
+-import "tensorboard/compat/proto/versions.proto";
+-import "tensorboard/compat/proto/struct.proto";
+-import "tensorboard/compat/proto/trackable_object_graph.proto";
++import "tensor_shape.proto";
++import "types.proto";
++import "variable.proto";
++import "versions.proto";
++import "struct.proto";
++import "trackable_object_graph.proto";
+-
++
+ option cc_enable_arenas = true;
+ option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/protobuf/for_core_protos_go_proto";
+diff --git a/tensorboard/compat/proto/step_stats.proto b/tensorboard/compat/proto/step_stats.proto
+--- a/tensorboard/compat/proto/step_stats.proto
++++ b/tensorboard/compat/proto/step_stats.proto
+@@ -3,7 +3,7 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/allocation_description.proto";
+-import "tensorboard/compat/proto/tensor_description.proto";
++import "allocation_description.proto";
++import "tensor_description.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "StepStatsProtos";
+diff --git a/tensorboard/compat/proto/struct.proto b/tensorboard/compat/proto/struct.proto
+--- a/tensorboard/compat/proto/struct.proto
++++ b/tensorboard/compat/proto/struct.proto
+@@ -3,7 +3,7 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/tensor.proto";
+-import "tensorboard/compat/proto/tensor_shape.proto";
+-import "tensorboard/compat/proto/types.proto";
++import "tensor.proto";
++import "tensor_shape.proto";
++import "types.proto";
+-
++
+ option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/protobuf/for_core_protos_go_proto";
+diff --git a/tensorboard/compat/proto/summary.proto b/tensorboard/compat/proto/summary.proto
+--- a/tensorboard/compat/proto/summary.proto
++++ b/tensorboard/compat/proto/summary.proto
+@@ -3,8 +3,8 @@
+ package tensorboard;
+-
++
+-import public "tensorboard/compat/proto/histogram.proto";
++import public "histogram.proto";
+-
++
+-import "tensorboard/compat/proto/tensor.proto";
++import "tensor.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "SummaryProtos";
+diff --git a/tensorboard/compat/proto/tensor.proto b/tensorboard/compat/proto/tensor.proto
+--- a/tensorboard/compat/proto/tensor.proto
++++ b/tensorboard/compat/proto/tensor.proto
+@@ -3,8 +3,8 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/resource_handle.proto";
+-import "tensorboard/compat/proto/tensor_shape.proto";
+-import "tensorboard/compat/proto/types.proto";
++import "resource_handle.proto";
++import "tensor_shape.proto";
++import "types.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "TensorProtos";
+diff --git a/tensorboard/compat/proto/tensor_description.proto b/tensorboard/compat/proto/tensor_description.proto
+--- a/tensorboard/compat/proto/tensor_description.proto
++++ b/tensorboard/compat/proto/tensor_description.proto
+@@ -3,8 +3,8 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/allocation_description.proto";
+-import "tensorboard/compat/proto/tensor_shape.proto";
+-import "tensorboard/compat/proto/types.proto";
++import "allocation_description.proto";
++import "tensor_shape.proto";
++import "types.proto";
+-
++
+ option cc_enable_arenas = true;
+ option java_outer_classname = "TensorDescriptionProtos";
+diff --git a/tensorboard/compat/proto/tfprof_log.proto b/tensorboard/compat/proto/tfprof_log.proto
+--- a/tensorboard/compat/proto/tfprof_log.proto
++++ b/tensorboard/compat/proto/tfprof_log.proto
+@@ -3,6 +3,6 @@
+ package tensorboard;
+-
++
+-import "tensorboard/compat/proto/attr_value.proto";
+-import "tensorboard/compat/proto/step_stats.proto";
++import "attr_value.proto";
++import "step_stats.proto";
+-
++
+ option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/profiler/protos_all_go_proto";

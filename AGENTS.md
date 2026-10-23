@@ -60,6 +60,7 @@ docs/            — guides and references
 | Guides | Skills |
 |--------|--------|
 | [docs/troubleshooting.md](docs/troubleshooting.md) | `check-environment` |
+| | `search-if-known-issue` |
 | | `install-port`, `review-port` |
 
 ## Skill Workflow
@@ -69,7 +70,7 @@ docs/            — guides and references
 | Create port | `search-port` → `create-port` → `install-port` → `review-port` | guide-create-port.md, guide-create-port-build.md, guide-create-port-download.md |
 | Update port | `check-port-upstream` → `update-port` → `install-port` → `review-port` | guide-update-port.md |
 | Update baseline | `update-version-baseline` | guide-update-version-baseline.md |
-| Troubleshoot | `check-environment` → `install-port` | troubleshooting.md |
+| Troubleshoot | `check-environment` → `search-if-known-issue` → fix/patch → `install-port` → `review-port` | troubleshooting.md |
 
 ### Skill Guidelines
 

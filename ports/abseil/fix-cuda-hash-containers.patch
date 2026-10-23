@@ -1,0 +1,109 @@
+diff --git a/absl/container/flat_hash_map.h b/absl/container/flat_hash_map.h
+--- a/absl/container/flat_hash_map.h
++++ b/absl/container/flat_hash_map.h
+@@ -139,15 +139,18 @@
+ template <
+     class K, class V,
+-    class Hash =
++    class AbslHashT =
+         typename container_internal::FlatHashMapPolicy<K, V>::DefaultHash,
+-    class Eq = typename container_internal::FlatHashMapPolicy<K, V>::DefaultEq,
++    class AbslEqT =
++        typename container_internal::FlatHashMapPolicy<K, V>::DefaultEq,
+     class Allocator =
+         typename container_internal::FlatHashMapPolicy<K, V>::DefaultAlloc>
+ class ABSL_ATTRIBUTE_OWNER flat_hash_map
+     : public absl::container_internal::InstantiateRawHashMap<
+-          absl::container_internal::FlatHashMapPolicy<K, V>, Hash, Eq,
++          absl::container_internal::FlatHashMapPolicy<K, V>, AbslHashT, AbslEqT,
+           Allocator>::type {
+-  using Base = typename flat_hash_map::raw_hash_map;
++  using Base = typename absl::container_internal::InstantiateRawHashMap<
++      absl::container_internal::FlatHashMapPolicy<K, V>, AbslHashT, AbslEqT,
++      Allocator>::type;
+ 
+  public:
+   // Constructors and Assignment Operators
+diff --git a/absl/container/flat_hash_set.h b/absl/container/flat_hash_set.h
+--- a/absl/container/flat_hash_set.h
++++ b/absl/container/flat_hash_set.h
+@@ -132,15 +132,18 @@
+ //   }
+ template <
+     class T,
+-    class Hash = typename container_internal::FlatHashSetPolicy<T>::DefaultHash,
+-    class Eq = typename container_internal::FlatHashSetPolicy<T>::DefaultEq,
++    class AbslHashT =
++        typename container_internal::FlatHashSetPolicy<T>::DefaultHash,
++    class AbslEqT = typename container_internal::FlatHashSetPolicy<T>::DefaultEq,
+     class Allocator =
+         typename container_internal::FlatHashSetPolicy<T>::DefaultAlloc>
+ class ABSL_ATTRIBUTE_OWNER flat_hash_set
+     : public absl::container_internal::InstantiateRawHashSet<
+-          absl::container_internal::FlatHashSetPolicy<T>, Hash, Eq,
++          absl::container_internal::FlatHashSetPolicy<T>, AbslHashT, AbslEqT,
+           Allocator>::type {
+-  using Base = typename flat_hash_set::raw_hash_set;
++  using Base = typename absl::container_internal::InstantiateRawHashSet<
++      absl::container_internal::FlatHashSetPolicy<T>, AbslHashT, AbslEqT,
++      Allocator>::type;
+ 
+  public:
+   // Constructors and Assignment Operators
+diff --git a/absl/container/node_hash_map.h b/absl/container/node_hash_map.h
+--- a/absl/container/node_hash_map.h
++++ b/absl/container/node_hash_map.h
+@@ -124,17 +124,19 @@
+ //   }
+ template <
+     class Key, class Value,
+-    class Hash =
++    class AbslHashT =
+         typename container_internal::NodeHashMapPolicy<Key, Value>::DefaultHash,
+-    class Eq =
++    class AbslEqT =
+         typename container_internal::NodeHashMapPolicy<Key, Value>::DefaultEq,
+-    class Alloc = typename container_internal::NodeHashMapPolicy<
++    class AbslAllocT = typename container_internal::NodeHashMapPolicy<
+         Key, Value>::DefaultAlloc>
+ class ABSL_ATTRIBUTE_OWNER node_hash_map
+     : public absl::container_internal::InstantiateRawHashMap<
+-          absl::container_internal::NodeHashMapPolicy<Key, Value>, Hash, Eq,
+-          Alloc>::type {
+-  using Base = typename node_hash_map::raw_hash_map;
++          absl::container_internal::NodeHashMapPolicy<Key, Value>, AbslHashT,
++          AbslEqT, AbslAllocT>::type {
++  using Base = typename absl::container_internal::InstantiateRawHashMap<
++      absl::container_internal::NodeHashMapPolicy<Key, Value>, AbslHashT,
++      AbslEqT, AbslAllocT>::type;
+ 
+  public:
+   // Constructors and Assignment Operators
+diff --git a/absl/container/node_hash_set.h b/absl/container/node_hash_set.h
+--- a/absl/container/node_hash_set.h
++++ b/absl/container/node_hash_set.h
+@@ -120,15 +120,18 @@
+ //   }
+ template <
+     class T,
+-    class Hash = typename container_internal::NodeHashSetPolicy<T>::DefaultHash,
+-    class Eq = typename container_internal::NodeHashSetPolicy<T>::DefaultEq,
+-    class Alloc =
++    class AbslHashT =
++        typename container_internal::NodeHashSetPolicy<T>::DefaultHash,
++    class AbslEqT = typename container_internal::NodeHashSetPolicy<T>::DefaultEq,
++    class AbslAllocT =
+         typename container_internal::NodeHashSetPolicy<T>::DefaultAlloc>
+ class ABSL_ATTRIBUTE_OWNER node_hash_set
+     : public absl::container_internal::InstantiateRawHashSet<
+-          absl::container_internal::NodeHashSetPolicy<T>, Hash, Eq,
+-          Alloc>::type {
+-  using Base = typename node_hash_set::raw_hash_set;
++          absl::container_internal::NodeHashSetPolicy<T>, AbslHashT, AbslEqT,
++          AbslAllocT>::type {
++  using Base = typename absl::container_internal::InstantiateRawHashSet<
++      absl::container_internal::NodeHashSetPolicy<T>, AbslHashT, AbslEqT,
++      AbslAllocT>::type;
+ 
+  public:
+   // Constructors and Assignment Operators

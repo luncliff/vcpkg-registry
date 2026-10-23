@@ -1,0 +1,118 @@
+diff --git a/onnxruntime/core/framework/tensorprotoutils.h b/onnxruntime/core/framework/tensorprotoutils.h
+--- a/onnxruntime/core/framework/tensorprotoutils.h
++++ b/onnxruntime/core/framework/tensorprotoutils.h
+@@ -29,7 +29,8 @@ namespace onnxruntime {
+ namespace utils {
+ namespace detail {
+ 
+-inline constexpr std::array<uint8_t, ONNX_NAMESPACE::TensorProto_DataType_DataType_ARRAYSIZE>
++// Newer ONNX schemas may append types that this runtime does not support.
++inline constexpr std::array<uint8_t, static_cast<size_t>(ONNX_NAMESPACE::TensorProto_DataType_INT2) + 1>
+     kTensorProtoDataTypeElementSizes{
+         0,                 // UNDEFINED
+         sizeof(float),     // FLOAT
+@@ -74,7 +75,7 @@ consteval bool IsTensorProtoDataTypeElementSizeMapComplete() {
+ }
+ 
+ static_assert(IsTensorProtoDataTypeElementSizeMapComplete(),
+-              "TensorProto data type element-size map must cover every numeric data type.");
++              "TensorProto data type element-size map must cover every supported numeric data type.");
+ 
+ }  // namespace detail
+ 
+diff --git a/onnxruntime/core/framework/onnxruntime_map_type_info.h b/onnxruntime/core/framework/onnxruntime_map_type_info.h
+--- a/onnxruntime/core/framework/onnxruntime_map_type_info.h
++++ b/onnxruntime/core/framework/onnxruntime_map_type_info.h
+@@ -33,6 +33,7 @@ consteval bool IsTensorProtoToOrtElementTypeMapBijective() {
+   constexpr size_t ort_element_type_count =
+       static_cast<size_t>(ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E8M0) + 1;
+-  constexpr size_t onnx_element_type_count = ONNX_NAMESPACE::TensorProto_DataType_DataType_ARRAYSIZE;
++  constexpr size_t onnx_element_type_count =
++      static_cast<size_t>(ONNX_NAMESPACE::TensorProto_DataType_INT2) + 1;
+   if constexpr (onnx_element_type_count != ort_element_type_count) {
+     return false;
+   }
+@@ -54,11 +55,19 @@ consteval bool IsTensorProtoToOrtElementTypeMapBijective() {
+     mapped_types[static_cast<size_t>(mapped_index)] = true;
+   }
+ 
++  for (size_t index = onnx_element_type_count;
++       index < ONNX_NAMESPACE::TensorProto_DataType_DataType_ARRAYSIZE; ++index) {
++    if (ToONNXTensorElementDataType(static_cast<ONNX_NAMESPACE::TensorProto_DataType>(index)) !=
++        ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED) {
++      return false;
++    }
++  }
++
+   return true;
+ }
+ 
+ static_assert(IsTensorProtoToOrtElementTypeMapBijective(),
+-              "ONNX and ORT tensor element type enums must have a complete one-to-one mapping.");
++              "Supported ONNX and ORT tensor element types must have a complete one-to-one mapping.");
+ 
+ }  // namespace type_info_internal
+ }  // namespace onnxruntime
+diff --git a/onnxruntime/test/framework/type_info_test.cc b/onnxruntime/test/framework/type_info_test.cc
+--- a/onnxruntime/test/framework/type_info_test.cc
++++ b/onnxruntime/test/framework/type_info_test.cc
+@@ -20,7 +20,7 @@ namespace test {
+ namespace mb = modelbuilder;
+ 
+ constexpr bool TensorElementTypeConversionIsConstexpr() {
+-  constexpr std::array<ONNXTensorElementDataType, ONNX_NAMESPACE::TensorProto_DataType_DataType_ARRAYSIZE>
++  constexpr std::array<ONNXTensorElementDataType, static_cast<size_t>(ONNX_NAMESPACE::TensorProto_DataType_INT2) + 1>
+       expected_types{
+           ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED,
+           ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+@@ -62,6 +62,17 @@ constexpr bool TensorElementTypeConversionIsConstexpr() {
+     }
+   }
+ 
++  for (size_t index = expected_types.size();
++       index < ONNX_NAMESPACE::TensorProto_DataType_DataType_ARRAYSIZE; ++index) {
++    if (type_info_internal::ToONNXTensorElementDataType(
++            static_cast<ONNX_NAMESPACE::TensorProto_DataType>(index)) !=
++            ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED ||
++        utils::ToOrtTensorElementDataType(static_cast<int>(index)) !=
++            ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED) {
++      return false;
++    }
++  }
++
+   return ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT2 == 24 &&
+          ONNX_TENSOR_ELEMENT_DATA_TYPE_INT2 == 25 &&
+          ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E8M0 == 26 &&
+@@ -106,7 +117,7 @@ TEST(TypeInfoTests, TensorElementTypeConversions) {
+       {ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT2, ONNX_NAMESPACE::TensorProto_DataType_UINT2},
+       {ONNX_TENSOR_ELEMENT_DATA_TYPE_INT2, ONNX_NAMESPACE::TensorProto_DataType_INT2},
+   };
+-  static_assert(std::size(types) == ONNX_NAMESPACE::TensorProto_DataType_DataType_ARRAYSIZE);
++  static_assert(std::size(types) == static_cast<size_t>(ONNX_NAMESPACE::TensorProto_DataType_INT2) + 1);
+   for (const auto& [api_type, proto_type] : types) {
+     SCOPED_TRACE(static_cast<int>(api_type));
+     EXPECT_EQ(utils::ToTensorProtoElementType(api_type), proto_type);
+diff --git a/onnxruntime/test/framework/tensorutils_test.cc b/onnxruntime/test/framework/tensorutils_test.cc
+--- a/onnxruntime/test/framework/tensorutils_test.cc
++++ b/onnxruntime/test/framework/tensorutils_test.cc
+@@ -75,6 +75,20 @@ constexpr bool TensorProtoElementSizesAreConstexpr() {
+ 
+ static_assert(TensorProtoElementSizesAreConstexpr());
+ 
++TEST(TensorProtoUtilsTest, NewerTensorElementTypesAreUnsupported) {
++  for (int type = static_cast<int>(TensorProto_DataType_INT2) + 1;
++       type < TensorProto_DataType_DataType_ARRAYSIZE; ++type) {
++    EXPECT_EQ(GetElementSizeOfTensor(static_cast<TensorProto_DataType>(type)), 0);
++    TensorProto tensor;
++    tensor.set_data_type(type);
++    tensor.add_dims(1);
++    size_t bytes = 0;
++    const auto status = GetSizeInBytesFromTensorProto<0>(tensor, &bytes);
++    EXPECT_FALSE(status.IsOK());
++    EXPECT_EQ(status.Code(), common::NOT_IMPLEMENTED);
++  }
++}
++
+ // if `expected_error_message_substring` is nullptr, parsing is expected to be successful
+ static void TestExternalDataInfoParsingOffsetAndLengthWithStrings(
+     std::string_view offset_str,
