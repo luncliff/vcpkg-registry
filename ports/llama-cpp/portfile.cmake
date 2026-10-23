@@ -8,12 +8,12 @@ if(VCPKG_TARGET_IS_WINDOWS)
 endif()
 set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
-# https://github.com/ggml-org/llama.cpp/releases/tag/b9353
+# https://github.com/ggml-org/llama.cpp/releases/tag/v${VERSION}
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggml-org/llama.cpp
-    REF "b${VERSION}"
-    SHA512 5c80710ca93c7ba19a9e22445e5b53943cd5d2679da4ef14239c1a40dba35b31c61b4b0eca25056f61b8666e3e3f5fb0da6afc25212383eaacc429da07ad58ad
+    REF "v${VERSION}"
+    SHA512 88cd464c20370ecca12b174e36fa4f21b271f42851f474dd83b03191dd444dcc96543849a56aaa16a35368d09e5be9c3481bebe66c2d614a0965d882f530ca91
     HEAD_REF master
     PATCHES
         fix-3rdparty.patch
