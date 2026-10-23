@@ -58,17 +58,12 @@ jobs:
           runVcpkgInstall: false
 
       - name: "Configure vcpkg binary cache"
-        env:
-          VCPKG_TOOL_CACHE: "${{ runner.tool_cache }}"
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:VCPKG_TOOL_CACHE)) {
-            throw "runner.tool_cache did not provide a path"
-          }
-          $cachePath = Join-Path $env:VCPKG_TOOL_CACHE "vcpkg-caches"
-          New-Item -ItemType Directory -Path $cachePath -Force | Out-Null
-          $cachePath = $cachePath.Replace('\', '/')
-          "VCPKG_BINARY_SOURCES=files,$cachePath,readwrite" >> $env:GITHUB_ENV
-          "VCPKG_DOWNLOADS=$env:VCPKG_TOOL_CACHE" >> $env:GITHUB_ENV
+          "VCPKG_DOWNLOADS=${{ runner.tool_cache }}" >> ${env:GITHUB_ENV}
+          $CachePath = Join-Path "${{ runner.tool_cache }}" "vcpkg-caches"
+          New-Item -ItemType Directory -Path $CachePath -Force
+          "VCPKG_BINARY_SOURCES=files,$CachePath,readwrite" >> ${env:GITHUB_ENV}
+          "VCPKG_DEFAULT_BINARY_CACHE=$CachePath" >> ${env:GITHUB_ENV}
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.6
@@ -144,17 +139,12 @@ jobs:
           runVcpkgInstall: false
 
       - name: "Configure vcpkg binary cache"
-        env:
-          VCPKG_TOOL_CACHE: "${{ runner.tool_cache }}"
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:VCPKG_TOOL_CACHE)) {
-            throw "runner.tool_cache did not provide a path"
-          }
-          $cachePath = Join-Path $env:VCPKG_TOOL_CACHE "vcpkg-caches"
-          New-Item -ItemType Directory -Path $cachePath -Force | Out-Null
-          $cachePath = $cachePath.Replace('\', '/')
-          "VCPKG_BINARY_SOURCES=files,$cachePath,readwrite" >> $env:GITHUB_ENV
-          "VCPKG_DOWNLOADS=$env:VCPKG_TOOL_CACHE" >> $env:GITHUB_ENV
+          "VCPKG_DOWNLOADS=${{ runner.tool_cache }}" >> ${env:GITHUB_ENV}
+          $CachePath = Join-Path "${{ runner.tool_cache }}" "vcpkg-caches"
+          New-Item -ItemType Directory -Path $CachePath -Force
+          "VCPKG_BINARY_SOURCES=files,$CachePath,readwrite" >> ${env:GITHUB_ENV}
+          "VCPKG_DEFAULT_BINARY_CACHE=$CachePath" >> ${env:GITHUB_ENV}
         shell: pwsh
 
       - name: "Setup CUDA"
@@ -205,6 +195,7 @@ jobs:
         if: always()
 
   overlay_vulkan:
+    if: ${{ false }}
     name: "Vulkan"
     runs-on: ["self-hosted", "x64", "Windows", "Vulkan"]
     needs: overlay
@@ -215,11 +206,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-
-      # - uses: humbletim/install-vulkan-sdk@v1.2
-      #   with:
-      #     version: "1.4.304.0"
-      #     cache: true
 
       - uses: microsoft/setup-msbuild@v3
         with:
@@ -234,17 +220,12 @@ jobs:
           runVcpkgInstall: false
 
       - name: "Configure vcpkg binary cache"
-        env:
-          VCPKG_TOOL_CACHE: "${{ runner.tool_cache }}"
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:VCPKG_TOOL_CACHE)) {
-            throw "runner.tool_cache did not provide a path"
-          }
-          $cachePath = Join-Path $env:VCPKG_TOOL_CACHE "vcpkg-caches"
-          New-Item -ItemType Directory -Path $cachePath -Force | Out-Null
-          $cachePath = $cachePath.Replace('\', '/')
-          "VCPKG_BINARY_SOURCES=files,$cachePath,readwrite" >> $env:GITHUB_ENV
-          "VCPKG_DOWNLOADS=$env:VCPKG_TOOL_CACHE" >> $env:GITHUB_ENV
+          "VCPKG_DOWNLOADS=${{ runner.tool_cache }}" >> ${env:GITHUB_ENV}
+          $CachePath = Join-Path "${{ runner.tool_cache }}" "vcpkg-caches"
+          New-Item -ItemType Directory -Path $CachePath -Force
+          "VCPKG_BINARY_SOURCES=files,$CachePath,readwrite" >> ${env:GITHUB_ENV}
+          "VCPKG_DEFAULT_BINARY_CACHE=$CachePath" >> ${env:GITHUB_ENV}
         shell: pwsh
 
       - uses: lukka/run-vcpkg@v11.6
