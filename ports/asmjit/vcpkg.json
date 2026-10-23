@@ -1,6 +1,6 @@
 {
   "name": "asmjit",
-  "version-date": "2025-03-10",
+  "version-date": "2026-10-16",
   "description": "Complete x86/x64 JIT and Remote Assembler for C++",
   "homepage": "https://github.com/asmjit/asmjit",
   "license": "Zlib",
