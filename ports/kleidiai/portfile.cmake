@@ -22,6 +22,15 @@ vcpkg_cmake_config_fixup(
 )
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
+file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/include/kai/ukernels/matmul/matmul_clamp_f32_f16p_qai4c32p"
+    "${CURRENT_PACKAGES_DIR}/include/kai/ukernels/matmul/matmul_clamp_f32_u8p_u8p"
+    "${CURRENT_PACKAGES_DIR}/include/kai/ukernels/matmul/matmul_clamp_qai8_qai8_qsi4cxp"
+    "${CURRENT_PACKAGES_DIR}/include/kai/ukernels/matmul/matmul_clamp_qai8_qai8_qsu2cxp"
+    "${CURRENT_PACKAGES_DIR}/include/kai/ukernels/matmul/matmul_clamp_qai8_qai8p_qsi4cxp"
+    "${CURRENT_PACKAGES_DIR}/include/kai/ukernels/matmul/matmul_clamp_qai8_qai8p_qsu2cxp"
+    "${CURRENT_PACKAGES_DIR}/include/kai/ukernels/matmul/matmul_i32_u8p_u8p"
+)
 
 file(GLOB LICENSE_FILES
     "${SOURCE_PATH}/LICENSES/*"
