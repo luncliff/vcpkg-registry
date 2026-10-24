@@ -25,7 +25,7 @@
       "port-version": 0
     },
     "cpuinfo": {
-      "baseline": "2025-09-05",
+      "baseline": "2026-07-30",
       "port-version": 0
     },
     "cudnn": {
@@ -277,8 +277,8 @@
       "port-version": 0
     },
     "xnnpack": {
-      "baseline": "2025-12-26",
-      "port-version": 1
+      "baseline": "2026-10-21",
+      "port-version": 0
     },
     "xnvctrl": {
       "baseline": "515.43.04",
