@@ -205,7 +205,6 @@ if("tools" IN_LIST FEATURES)
         llama-quantize
         llama-results
         llama-server
-        llama-template-analysis
         llama-tokenize
         llama-tts
         llama-fit-params

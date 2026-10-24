@@ -1,41 +1,5 @@
-diff --git a/vendor/CMakeLists.txt b/vendor/CMakeLists.txt
---- a/vendor/CMakeLists.txt
-+++ b/vendor/CMakeLists.txt
-@@ -1,10 +1,7 @@
- add_subdirectory(hash)
--add_subdirectory(miniaudio)
--add_subdirectory(nlohmann)
- add_subdirectory(sheredom)
--add_subdirectory(stb)
--
-+
- # only used by common
- if (LLAMA_BUILD_COMMON)
--    add_subdirectory(cpp-httplib)
-+    find_package(httplib CONFIG REQUIRED GLOBAL)
- endif()
-diff --git a/common/CMakeLists.txt b/common/CMakeLists.txt
---- a/common/CMakeLists.txt
-+++ b/common/CMakeLists.txt
-@@ -136,6 +136,7 @@
- 
- target_include_directories(${TARGET} PUBLIC .)
--target_link_libraries     (${TARGET} PUBLIC vendor::nlohmann vendor::sheredom)
-+find_package(nlohmann_json CONFIG REQUIRED)
-+target_link_libraries     (${TARGET} PUBLIC nlohmann_json::nlohmann_json vendor::sheredom)
- target_compile_features   (${TARGET} PUBLIC cxx_std_17)
- 
- if (LLAMA_SUBPROCESS)
-@@ -149,6 +150,6 @@
- endif()
- 
- target_link_libraries(${TARGET} PUBLIC  llama-common-base)
--target_link_libraries(${TARGET} PRIVATE cpp-httplib)
-+target_link_libraries(${TARGET} PRIVATE httplib::httplib)
- 
- if (LLAMA_LLGUIDANCE)
-     include(ExternalProject)
 diff --git a/common/http.h b/common/http.h
+index 878ad1c..87d5456 100644
 --- a/common/http.h
 +++ b/common/http.h
 @@ -1,6 +1,6 @@
@@ -44,69 +8,43 @@ diff --git a/common/http.h b/common/http.h
 -#include <cpp-httplib/httplib.h>
 +#include <httplib.h>
  
- struct common_http_url {
-     std::string scheme;
-diff --git a/tools/mtmd/CMakeLists.txt b/tools/mtmd/CMakeLists.txt
---- a/tools/mtmd/CMakeLists.txt
-+++ b/tools/mtmd/CMakeLists.txt
-@@ -83,8 +83,11 @@ set_target_properties(mtmd PROPERTIES
- )
--
-+
- target_link_libraries     (mtmd PUBLIC ggml llama)
--target_link_libraries     (mtmd PRIVATE Threads::Threads vendor::hash vendor::miniaudio vendor::stb vendor::sheredom)
-+target_link_libraries     (mtmd PRIVATE Threads::Threads vendor::hash vendor::sheredom)
- target_include_directories(mtmd PUBLIC  .)
-+find_path(MINIAUDIO_INCLUDE_DIR miniaudio.h REQUIRED)
-+find_path(STB_INCLUDE_DIR stb_image.h REQUIRED)
-+target_include_directories(mtmd PUBLIC ${MINIAUDIO_INCLUDE_DIR} ${STB_INCLUDE_DIR})
- target_compile_features   (mtmd PRIVATE cxx_std_17)
- 
- if (MTMD_VIDEO)
+ #ifdef _WIN32
+ #include <winsock2.h>
 diff --git a/tools/mtmd/mtmd-helper.cpp b/tools/mtmd/mtmd-helper.cpp
+index eba034f..c29a97f 100644
 --- a/tools/mtmd/mtmd-helper.cpp
 +++ b/tools/mtmd/mtmd-helper.cpp
-@@ -27,10 +27,10 @@
+@@ -30,10 +30,10 @@
  #define MA_NO_ENGINE
  #define MA_NO_GENERATION
  #define MA_API static
 -#include "miniaudio/miniaudio.h"
-+#include <miniaudio.h>
++#include "miniaudio.h"
  
  #define STB_IMAGE_IMPLEMENTATION
 -#include "stb/stb_image.h"
-+#include <stb_image.h>
++#include "stb_image.h"
  
  #ifdef MTMD_INTERNAL_HEADER
  #error "mtmd-helper is a public library outside of mtmd. it must not include internal headers"
-diff --git a/tools/server/CMakeLists.txt b/tools/server/CMakeLists.txt
---- a/tools/server/CMakeLists.txt
-+++ b/tools/server/CMakeLists.txt
-@@ -50,6 +50,8 @@
- 
- target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
- target_include_directories(${TARGET} PRIVATE ../mtmd ${PROJECT_SOURCE_DIR})
--target_link_libraries(${TARGET} PUBLIC server-context llama-ui cpp-httplib ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(${TARGET} PUBLIC server-context llama-ui ${CMAKE_THREAD_LIBS_INIT})
-+find_package(httplib CONFIG REQUIRED)
-+target_link_libraries(${TARGET} PRIVATE httplib::httplib)
- 
- add_dependencies(${TARGET} llama-ui-assets)
 diff --git a/tools/server/server-http.cpp b/tools/server/server-http.cpp
+index 33cbb15..b97f53e 100644
 --- a/tools/server/server-http.cpp
 +++ b/tools/server/server-http.cpp
-@@ -4,6 +4,6 @@
+@@ -4,7 +4,7 @@
+ #include "server-common.h"
  #include "ui.h"
  
 -#include <cpp-httplib/httplib.h>
 +#include <httplib.h>
  
- #include <cstdlib>
  #include <functional>
+ #include <future>
 diff --git a/tools/server/server-models.cpp b/tools/server/server-models.cpp
+index 6035324..0ea8746 100644
 --- a/tools/server/server-models.cpp
 +++ b/tools/server/server-models.cpp
-@@ -10,7 +10,7 @@
+@@ -11,7 +11,7 @@
  #include "http.h"
  #include "subproc.h"
  
@@ -115,3 +53,34 @@ diff --git a/tools/server/server-models.cpp b/tools/server/server-models.cpp
  #include <optional>
  
  #include <functional>
+diff --git a/vendor/CMakeLists.txt b/vendor/CMakeLists.txt
+index 4479daf..7ca6aa5 100644
+--- a/vendor/CMakeLists.txt
++++ b/vendor/CMakeLists.txt
+@@ -1,11 +1,21 @@
+ # mtmd needs these even when common is not built
+ add_subdirectory(hash)
+-add_subdirectory(miniaudio)
+-add_subdirectory(nlohmann)
++if (LLAMA_BUILD_TOOLS OR LLAMA_BUILD_MTMD)
++    find_path(MINIAUDIO_INCLUDE_DIR miniaudio.h REQUIRED)
++    add_library(miniaudio INTERFACE)
++    add_library(vendor::miniaudio ALIAS miniaudio)
++    target_include_directories(miniaudio INTERFACE "${MINIAUDIO_INCLUDE_DIR}")
++    find_path(STB_INCLUDE_DIR stb_image.h REQUIRED)
++    add_library(stb INTERFACE)
++    add_library(vendor::stb ALIAS stb)
++    target_include_directories(stb INTERFACE "${STB_INCLUDE_DIR}")
++endif()
++find_package(nlohmann_json CONFIG REQUIRED GLOBAL)
++add_library(vendor::nlohmann ALIAS nlohmann_json::nlohmann_json)
+ add_subdirectory(sheredom)
+-add_subdirectory(stb)
+-
++
+ # only used by common
+ if (LLAMA_BUILD_COMMON)
+-    add_subdirectory(cpp-httplib)
++    find_package(httplib CONFIG REQUIRED GLOBAL)
++    add_library(cpp-httplib ALIAS httplib::httplib)
+ endif()
