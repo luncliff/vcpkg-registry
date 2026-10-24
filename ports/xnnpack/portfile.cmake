@@ -11,6 +11,7 @@ vcpkg_from_github(
     PATCHES
         fix-cmake.patch
         fix-compiler-compat.patch
+        fix-windows-benchmark-link.patch
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)
