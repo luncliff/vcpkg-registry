@@ -25,7 +25,7 @@
       "port-version": 0
     },
     "cpuinfo": {
-      "baseline": "2025-09-05",
+      "baseline": "2026-07-30",
       "port-version": 0
     },
     "cudnn": {
@@ -99,6 +99,10 @@
     "imgui": {
       "baseline": "1.92.5",
       "port-version": 1
+    },
+    "kleidiai": {
+      "baseline": "1.32.0",
+      "port-version": 0
     },
     "libdispatch": {
       "baseline": "6.1",
@@ -277,8 +281,8 @@
       "port-version": 0
     },
     "xnnpack": {
-      "baseline": "2025-12-26",
-      "port-version": 2
+      "baseline": "2026-10-21",
+      "port-version": 1
     },
     "xnvctrl": {
       "baseline": "515.43.04",
