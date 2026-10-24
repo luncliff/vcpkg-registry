@@ -113,8 +113,8 @@
       "port-version": 0
     },
     "llama-cpp": {
-      "baseline": "9353",
-      "port-version": 0
+      "baseline": "0.7.0",
+      "port-version": 1
     },
     "magma": {
       "baseline": "2.9.0",
