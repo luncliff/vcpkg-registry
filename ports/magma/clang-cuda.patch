@@ -1,0 +1,11 @@
+diff --git a/control/magma_internal.h b/control/magma_internal.h
+index 0097b23..0b90ec3 100644
+--- a/control/magma_internal.h
++++ b/control/magma_internal.h
+@@ -36 +36 @@
+-    #ifndef __NVCC__
++    #if !defined(__NVCC__) && !defined(__clang__)
+@@ -45,0 +46,3 @@
++    #elif !defined(__NVCC__)
++        // make sure this actually uses the C version and not the C++ overloads
++        #define copysign(x,y) copysign((double)x,(double)y)
