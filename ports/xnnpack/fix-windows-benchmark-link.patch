@@ -1,0 +1,13 @@
+diff --git a/bench/CMakeLists.txt b/bench/CMakeLists.txt
+--- a/bench/CMakeLists.txt
++++ b/bench/CMakeLists.txt
+@@ -21,6 +21,9 @@ ENDIF()
+ ADD_LIBRARY(xnnpack-bench-utils STATIC utils.cc)
+ TARGET_LINK_LIBRARIES(xnnpack-bench-utils PRIVATE benchmark::benchmark cpuinfo pthreadpool)
+ TARGET_LINK_LIBRARIES(xnnpack-bench-utils PRIVATE xnnpack-base xnnpack-hardware-config)
++IF(WIN32)
++  TARGET_LINK_LIBRARIES(xnnpack-bench-utils PRIVATE shlwapi)
++ENDIF()
+ IF(XNNPACK_BUILD_LIBRARY)
+   TARGET_LINK_LIBRARIES(xnnpack-bench-utils PRIVATE xnnpack-logging xnnpack-memory xnnpack-test)
+ ENDIF()
