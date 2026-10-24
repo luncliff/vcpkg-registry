@@ -8,6 +8,7 @@ vcpkg_from_github(
     SHA512 1b5a165e910352ea39ba09cafa7f010a98cadc9b0f97f0884235d561dacdac772c2e502f0c84405fb24b77fd5b88172c43ef93f1f2aa533a9e5a9281728487cb
     PATCHES
         fix-cmakelists.patch
+        fix-asmjit-1.24.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
