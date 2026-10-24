@@ -17,3 +17,11 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
    IF(WIN32)
      # Target Windows 7+ API
      TARGET_COMPILE_DEFINITIONS(XNNPACK PRIVATE _WIN32_WINNT=0x0601)
+@@ -1386,4 +1386,6 @@
+ # ---[ Configure KleidiAI
+ IF(XNNPACK_ENABLE_KLEIDIAI)
++  FIND_PACKAGE(KleidiAI CONFIG REQUIRED)
++  ADD_LIBRARY(kleidiai ALIAS KleidiAI::kleidiai)
+   IF(NOT TARGET kleidiai)
+     IF(NOT XNNPACK_USE_SYSTEM_LIBS)
+       SET(KLEIDIAI_BUILD_TESTS OFF CACHE BOOL "")
