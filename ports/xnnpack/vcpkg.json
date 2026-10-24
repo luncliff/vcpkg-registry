@@ -19,7 +19,10 @@
       "description": "Use KleidiAI GEMM microkernels for Arm",
       "supports": "arm64",
       "dependencies": [
-        "kleidiai"
+        {
+          "name": "kleidiai",
+          "version>=": "1.32.0"
+        }
       ]
     },
     "test": {
