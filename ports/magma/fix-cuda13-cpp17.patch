@@ -1,0 +1,6 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 405b272..c20fea8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -546 +545,0 @@ if (MAGMA_ENABLE_CUDA)
+-    set_property(TARGET magma_sparse PROPERTY CUDA_STANDARD 14)
