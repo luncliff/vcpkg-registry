@@ -1,0 +1,14 @@
+diff --git a/ggml/src/ggml-opencl/kernels/embed_kernel.py b/ggml/src/ggml-opencl/kernels/embed_kernel.py
+--- a/ggml/src/ggml-opencl/kernels/embed_kernel.py
++++ b/ggml/src/ggml-opencl/kernels/embed_kernel.py
+@@ -12,8 +12,8 @@ def main():
+         logger.info("Usage: python embed_kernel.py <input_file> <output_file>")
+         sys.exit(1)
+ 
+-    ifile = open(sys.argv[1], "r")
+-    ofile = open(sys.argv[2], "w")
++    ifile = open(sys.argv[1], "r", encoding="utf-8")
++    ofile = open(sys.argv[2], "w", encoding="utf-8")
+ 
+     for i in ifile:
+         ofile.write('R"({})"\n'.format(i))
