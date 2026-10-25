@@ -120,9 +120,9 @@
           "name": "opencl-on-dx12",
           "platform": "windows"
         },
-        "openssl3",
+        "openssl",
         {
-          "name": "openssl3",
+          "name": "openssl",
           "features": [
             "tools"
           ],

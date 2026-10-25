@@ -173,7 +173,7 @@ if(VCPKG_TARGET_IS_WINDOWS)
     include("${CMAKE_CURRENT_LIST_DIR}/install-pc-files.cmake")
 endif()
 vcpkg_fixup_pkgconfig()
-vcpkg_cmake_config_fixup(CONFIG_PATH "share/openssl" PACKAGE_NAME OpenSSL)
+vcpkg_cmake_config_fixup(CONFIG_PATH "share/OpenSSL" PACKAGE_NAME OpenSSL)
 
 if("tools" IN_LIST FEATURES)
     vcpkg_copy_tools(TOOL_NAMES openssl AUTO_CLEAN)
