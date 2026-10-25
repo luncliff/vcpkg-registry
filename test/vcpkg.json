@@ -21,19 +21,6 @@
       "supports": "native",
       "dependencies": [
         {
-          "name": "godot",
-          "host": true,
-          "features": [
-            "spine-runtimes"
-          ],
-          "platform": "osx"
-        },
-        {
-          "name": "godot",
-          "host": true,
-          "platform": "linux"
-        },
-        {
           "name": "llama-cpp",
           "host": true,
           "features": [
