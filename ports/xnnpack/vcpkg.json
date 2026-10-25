@@ -1,6 +1,6 @@
 {
   "name": "xnnpack",
-  "version-date": "2025-12-26",
+  "version-date": "2026-10-21",
   "port-version": 1,
   "description": "High-efficiency floating-point neural network inference operators for mobile, server, and Web",
   "homepage": "https://github.com/google/XNNPACK",
@@ -8,7 +8,6 @@
   "dependencies": [
     "cpuinfo",
     "fp16",
-    "fxdiv",
     "google-pthreadpool",
     {
       "name": "vcpkg-cmake",
@@ -20,7 +19,10 @@
       "description": "Use KleidiAI GEMM microkernels for Arm",
       "supports": "arm64",
       "dependencies": [
-        "kleidiai"
+        {
+          "name": "kleidiai",
+          "version>=": "1.32.0"
+        }
       ]
     },
     "test": {
