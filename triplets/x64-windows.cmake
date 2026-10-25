@@ -12,6 +12,7 @@
 set(VCPKG_TARGET_ARCHITECTURE x64)
 set(VCPKG_CRT_LINKAGE dynamic)
 set(VCPKG_LIBRARY_LINKAGE dynamic)
+set(VCPKG_PROVIDED_FORTRAN ON)
 
 # If target system is Windows, we don't set this variable.
 # set(VCPKG_CMAKE_SYSTEM_NAME WindowsStore) # for UWP build
