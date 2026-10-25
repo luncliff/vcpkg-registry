@@ -17,6 +17,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-3rdparty.patch
+        fix-opencl-kernel-encoding.patch
 )
 file(REMOVE_RECURSE
     "${SOURCE_PATH}/vendor/nlohmann" # nlohmann-json
