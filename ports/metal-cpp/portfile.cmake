@@ -1,8 +1,8 @@
 # see https://github.com/bkaradzic/metal-cpp
 vcpkg_download_distfile(ARCHIVE
-    URLS "https://developer.apple.com/metal/cpp/files/metal-cpp_${VERSION}.zip"
-    FILENAME metal-cpp_${VERSION}.zip
-    SHA512 983ab6c6a791925b436b3402707be8634d77c31f53875e88dbf56097c71d9097377d495ad472db18f1703c2fa812f2d3d03384ec14661a497346fd9cc14c58d5
+    URLS "https://github.com/apple/metal-cpp/archive/refs/tags/release%2Fmetal-cpp_${VERSION}.tar.gz"
+    FILENAME metal-cpp_${VERSION}.tar.gz
+    SHA512 377432024c4a1aabbcff85da95e260ee30a7efd6d3130b2518c329817ae2fb192885b92c700974e7761dce2658e8b8974abe9f45e684fee1f9330f15db6cb5da
 )
 
 vcpkg_extract_source_archive_ex(
