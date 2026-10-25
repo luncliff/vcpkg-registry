@@ -4,14 +4,6 @@
       "baseline": "20260817.0",
       "port-version": 0
     },
-    "apple-crypto": {
-      "baseline": "3.0.0",
-      "port-version": 0
-    },
-    "apple-nio-ssl": {
-      "baseline": "2.25.0",
-      "port-version": 0
-    },
     "asmjit": {
       "baseline": "2026-10-16",
       "port-version": 0
@@ -83,10 +75,6 @@
     "glslang": {
       "baseline": "15.1.0",
       "port-version": 0
-    },
-    "godot": {
-      "baseline": "4.3",
-      "port-version": 1
     },
     "google-jni-bind": {
       "baseline": "1.2.1-beta",
@@ -211,10 +199,6 @@
     "opencl-on-dx12": {
       "baseline": "1.2404.1.0",
       "port-version": 1
-    },
-    "openjdk": {
-      "baseline": "jdk-23+10",
-      "port-version": 0
     },
     "openssl": {
       "baseline": "3.2.1",
