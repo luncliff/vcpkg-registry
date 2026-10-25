@@ -1,9 +1,7 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -41,7 +41,13 @@ IF(NOT CMAKE_BUILD_TYPE)
- ENDIF()
- 
+@@ -43,5 +43,11 @@
  SET(CMAKE_C_STANDARD 99)
  SET(CMAKE_C_EXTENSIONS NO)
 +IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -12,18 +10,13 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
 +IF(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
 +  ADD_COMPILE_OPTIONS(/Zc:preprocessor)
 +ENDIF()
- SET(CMAKE_CXX_STANDARD 14)
+ SET(CMAKE_CXX_STANDARD 17)
  SET(CMAKE_CXX_STANDARD_REQUIRED YES)
  SET(CMAKE_CXX_EXTENSIONS NO)
 diff --git a/src/xnnpack/internal.h b/src/xnnpack/internal.h
 --- a/src/xnnpack/internal.h
 +++ b/src/xnnpack/internal.h
-@@ -25,12 +25,11 @@
- // Macro to check the `enum xnn_status` result of an expression and return it
- // if it is not `xnn_status_success`, followed by an optional string literal and
- // parameters for `xnn_log_error`.
--#define XNN_VAR_ARG_HEAD(FIRST, ...) FIRST
- #define XNN_RETURN_IF_ERROR(expr, ...)                             \
+@@ -33,7 +33,7 @@
    do {                                                             \
      const enum xnn_status status_ = (expr);                        \
      if (status_ != xnn_status_success) {                           \
@@ -32,7 +25,16 @@ diff --git a/src/xnnpack/internal.h b/src/xnnpack/internal.h
          xnn_log_error("" __VA_ARGS__);                             \
        }                                                            \
        return status_;                                              \
-@@ -41,7 +40,7 @@
+@@ -52,7 +52,7 @@
+ #define _XNN_ASSIGN_OR_RETURN_IMPL(line, ret, lhs, expr, ...)    \
+   const ret maybe_value##line = (expr);                          \
+   if (maybe_value##line.status != xnn_status_success) {          \
+-    if (sizeof(XNN_VAR_ARG_HEAD("" __VA_ARGS__)) > sizeof("")) { \
++    if (sizeof(#__VA_ARGS__) > sizeof("")) {                     \
+       xnn_log_error("" __VA_ARGS__);                             \
+     }                                                            \
+     return maybe_value##line.status;                             \
+@@ -63,7 +63,7 @@
    do {                                                             \
      status = (expr);                                               \
      if (status != xnn_status_success) {                            \

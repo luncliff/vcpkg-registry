@@ -20,7 +20,7 @@ jobs:
   overlay:
     name: "Overlay"
     runs-on: ["self-hosted", "Windows"]
-    timeout-minutes: 300
+    timeout-minutes: 600
     strategy:
       matrix:
         include:
@@ -102,7 +102,7 @@ jobs:
   overlay_cuda:
     name: "CUDA"
     continue-on-error: true
-    timeout-minutes: 300
+    timeout-minutes: 600
     defaults:
       run:
         shell: pwsh

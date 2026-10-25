@@ -25,7 +25,7 @@
       "port-version": 0
     },
     "cpuinfo": {
-      "baseline": "2025-09-05",
+      "baseline": "2026-07-30",
       "port-version": 0
     },
     "cudnn": {
@@ -100,8 +100,12 @@
       "baseline": "1.92.5",
       "port-version": 1
     },
+    "kleidiai": {
+      "baseline": "1.32.0",
+      "port-version": 0
+    },
     "libdispatch": {
-      "baseline": "6.1",
+      "baseline": "6.4.0",
       "port-version": 0
     },
     "libkineto": {
@@ -117,8 +121,8 @@
       "port-version": 0
     },
     "magma": {
-      "baseline": "2.9.0",
-      "port-version": 1
+      "baseline": "2.10.0",
+      "port-version": 0
     },
     "metal-cpp": {
       "baseline": "macOS26_iOS26-beta2",
@@ -277,7 +281,7 @@
       "port-version": 0
     },
     "xnnpack": {
-      "baseline": "2025-12-26",
+      "baseline": "2026-10-21",
       "port-version": 1
     },
     "xnvctrl": {

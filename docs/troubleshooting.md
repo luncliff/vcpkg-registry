@@ -35,6 +35,15 @@ When encountering CMake configuration issues:
 Resources:
 - [CMake Documentation](https://cmake.org/cmake/help/latest/)
 
+#### LAPACK on Windows
+
+If `lapack-reference` reports `Deferring Fortran compiler selection to the
+triplet toolchain` followed by `No CMAKE_Fortran_COMPILER could be found`, check
+the overlay triplet. The registry's `x64-windows` triplet sets
+`VCPKG_PROVIDED_FORTRAN ON`, matching vcpkg's built-in triplet, so vcpkg acquires
+and selects its bundled MinGW gfortran. Use `--overlay-triplets=.\triplets`
+alongside `--overlay-ports=.\ports`; no custom LAPACK port is needed.
+
 ### Compiler Errors
 
 When encountering compiler errors:
