@@ -7,8 +7,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO swiftlang/swift-corelibs-libdispatch
-    REF swift-6.1-RELEASE
-    SHA512 09613b213e57f6c2ca483a0a7833b2240e5017cf33f90405f88cbf20131b301f96127f69808720e44f6a050f1ae19f80da40f6eecc63395beeea4f796d27b222
+    REF swift-6.4.0-RELEASE
+    SHA512 84db81ec3d353c07f51b9e4d95af5950e1512b5bb2f1574f5827da4e80e2d2a5da3a707c44c5b425549223741d4bdce20d59abc9274948740f2fdef68b28b3b8
     PATCHES
         fix-cmake.patch
         fix-sources-windows.patch

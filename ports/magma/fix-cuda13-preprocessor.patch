@@ -1,0 +1,17 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -206,6 +206,13 @@ if (MAGMA_ENABLE_CUDA)
+             )
+         endif()
+ 
++        if(MSVC)
++            target_compile_options(magma_nvcc_flags INTERFACE
++                $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/Zc:preprocessor>
++                $<$<COMPILE_LANGUAGE:C,CXX>:/Zc:preprocessor>
++            )
++        endif()
++
+         set( MAGMA_HAVE_CUDA "1" )
+ 
+         message( STATUS "Define -DMAGMA_HAVE_CUDA -DMAGMA_CUDA_ARCH_MIN=${MAGMA_CUDA_ARCH_MIN}" )
