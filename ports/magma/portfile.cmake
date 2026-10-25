@@ -16,10 +16,16 @@ vcpkg_extract_source_archive(SOURCE_PATH
 )
 vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT cuda_toolkit_root)
 
-if(VCPKG_TARGET_IS_WINDOWS AND VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
+if(VCPKG_TARGET_IS_WINDOWS)
+  # vcpkg's MSVC /utf-8 flag is not forwarded through nvcc.
   list(APPEND PLATFORM_OPTIONS
-    -DCMAKE_CUDA_SEPARABLE_COMPILATION:BOOL=OFF
+    "-DCMAKE_CUDA_FLAGS_INIT=-Xcompiler=/utf-8"
   )
+  if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
+    list(APPEND PLATFORM_OPTIONS
+      -DCMAKE_CUDA_SEPARABLE_COMPILATION:BOOL=OFF
+    )
+  endif()
 endif()
 
 vcpkg_cmake_configure(
