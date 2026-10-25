@@ -17,7 +17,7 @@ endif()
 
 if(USE_OPENCL)
    find_package(OpenCL REQUIRED)
-   add_compile_definitions(BASISD_SUPPORT_OPENCL=1)
+   add_compile_definitions(BASISU_SUPPORT_OPENCL=1)
 endif()
 
 # Emscripten-specific settings (aligned with upstream)
@@ -73,20 +73,29 @@ set(ENCODER_LIB_SRC_LIST
     encoder/basisu_resample_filters.cpp
     encoder/basisu_ssim.cpp
     encoder/basisu_uastc_enc.cpp
+    encoder/basisu_bc7e_scalar.cpp
+    encoder/basisu_dds_export.cpp
     encoder/basisu_bc7enc.cpp
     encoder/jpgd.cpp
     encoder/basisu_kernels_sse.cpp
+    encoder/basisu_bc15_spmd.cpp
+    encoder/basisu_bc15_spmd_sse.cpp
     encoder/basisu_opencl.cpp
     encoder/pvpngreader.cpp
     encoder/basisu_uastc_hdr_4x4_enc.cpp
     encoder/basisu_astc_hdr_6x6_enc.cpp
     encoder/basisu_astc_hdr_common.cpp
+    encoder/basisu_astc_ldr_common.cpp
+    encoder/basisu_astc_ldr_encode.cpp
+    encoder/basisu_astc_ldr_fencode.cpp
+    encoder/basisu_xbc7_encode.cpp
+    encoder/basisu_tinyexr.cpp
     encoder/3rdparty/android_astc_decomp.cpp
-    encoder/3rdparty/tinyexr.cpp
 )
 
 # Create static encoder library (following upstream approach)
 add_library(basisu_encoder STATIC ${ENCODER_LIB_SRC_LIST})
+target_compile_definitions(basisu_encoder PRIVATE BASISU_SUPPORT_ASTCENC=0)
 
 # Create separate transcoder library for vcpkg compatibility
 set(TRANSCODER_LIB_SRC_LIST
@@ -113,7 +122,10 @@ install(DIRECTORY encoder
 # install transcoder/basisu_*.h headers to ${CMAKE_INSTALL_INCLUDEDIR}/transcoder
 install(DIRECTORY transcoder
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    FILES_MATCHING PATTERN "basisu_*.h"
+    FILES_MATCHING
+        PATTERN "basisu.h"
+        PATTERN "basisu_*.h"
+        PATTERN "basisu_*.inl"
 )
 
 install(TARGETS basisu_encoder basisu_transcoder

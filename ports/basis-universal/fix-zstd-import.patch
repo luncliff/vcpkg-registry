@@ -1,7 +1,7 @@
-diff --git a/encoder/basisu_comp.cpp b/encoder/basisu_comp.cpp
-index 41eae2b..4e69e9e 100644
---- a/encoder/basisu_comp.cpp
-+++ b/encoder/basisu_comp.cpp
+diff --git a/encoder/basisu_astc_ldr_encode.cpp b/encoder/basisu_astc_ldr_encode.cpp
+index b9603ae..8a892a8 100644
+--- a/encoder/basisu_astc_ldr_encode.cpp
++++ b/encoder/basisu_astc_ldr_encode.cpp
 @@ -28,7 +28,7 @@
  #endif
  
@@ -10,17 +10,64 @@ index 41eae2b..4e69e9e 100644
 +#include <zstd.h>
  #endif
  
- // Set to 1 to disable the mipPadding alignment workaround (which only seems to be needed when no key-values are written at all)
-diff --git a/transcoder/basisu_transcoder.cpp b/transcoder/basisu_transcoder.cpp
-index 3aeba0e..c698861 100644
---- a/transcoder/basisu_transcoder.cpp
-+++ b/transcoder/basisu_transcoder.cpp
-@@ -155,7 +155,7 @@
-    // If BASISD_SUPPORT_KTX2_ZSTD is 0, UASTC files compressed with Zstd cannot be loaded.
- 	#if BASISD_SUPPORT_KTX2_ZSTD
- 		// We only use two Zstd API's: ZSTD_decompress() and ZSTD_isError()
--		#include "../zstd/zstd.h"
-+		#include <zstd.h>
- 	#endif
+ #ifndef BASISU_SUPPORT_ASTCENC
+diff --git a/encoder/basisu_comp.cpp b/encoder/basisu_comp.cpp
+index 37ecd49..b510252 100644
+--- a/encoder/basisu_comp.cpp
++++ b/encoder/basisu_comp.cpp
+@@ -34,7 +34,7 @@
  #endif
  
+ #if BASISD_SUPPORT_KTX2_ZSTD
+-#include "../zstd/zstd.h"
++#include <zstd.h>
+ #endif
+ 
+ // Set to 1 to disable the mipPadding alignment workaround (which only seems to be needed when no key-values are written at all)
+diff --git a/encoder/basisu_xbc7_encode.cpp b/encoder/basisu_xbc7_encode.cpp
+index 035e722..1eec75b 100644
+--- a/encoder/basisu_xbc7_encode.cpp
++++ b/encoder/basisu_xbc7_encode.cpp
+@@ -1,7 +1,9 @@
+ // File: basisu_xbc7_encode.cpp
+ #include "basisu_xbc7_encode.h"
+ #include "../transcoder/basisu_transcoder.h"
+-#include "../zstd/zstd.h"
++#if BASISD_SUPPORT_KTX2_ZSTD
++#include <zstd.h>
++#endif
+ #include "../transcoder/basisu_xbc7_decoder.h"
+ #include "basisu_bc7e_scalar.h"
+ 
+@@ -97,6 +99,7 @@ namespace xbc7
+ 				const uint8_t* pStored = blob.data();
+ 				uint32_t stored_size = 0; // 0 == raw
+ 
++#if BASISD_SUPPORT_KTX2_ZSTD
+ 				const size_t bound = ZSTD_compressBound(blob.size());
+ 				comp_buf.resize(bound);
+ 
+@@ -115,6 +118,10 @@ namespace xbc7
+ 					}
+ 				}
+ 
++#else
++				(void)zstd_level;
++#endif
++
+ 				if (pStored_sizes)
+ 					pStored_sizes[id] = stored_size ? stored_size : uncomp_size;
+ 
+diff --git a/transcoder/basisu_transcoder.cpp b/transcoder/basisu_transcoder.cpp
+index f3d5593..5a4b069 100644
+--- a/transcoder/basisu_transcoder.cpp
++++ b/transcoder/basisu_transcoder.cpp
+@@ -175,7 +175,7 @@
+ // If BASISD_SUPPORT_KTX2_ZSTD is 0, data compressed with Zstd cannot be loaded.
+ #if BASISD_SUPPORT_KTX2_ZSTD
+ 	// We only use these Zstd API's: ZSTD_decompress(), ZSTD_isError() and ZSTD_getFrameContentSize()
+-	#include "../zstd/zstd.h"
++	#include <zstd.h>
+ #endif
+ 
+ #if BASISD_SUPPORT_UASTC_HDR
