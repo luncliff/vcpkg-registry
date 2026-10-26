@@ -116,10 +116,6 @@ vcpkg_execute_required_process(
     LOGNAME "configure-perl-${TARGET_TRIPLET}-rel"
 )
 
-if("tools" IN_LIST FEATURES)
-    list(APPEND TARGETS install_runtime)
-endif()
-
 if(VCPKG_TARGET_IS_UWP OR VCPKG_TARGET_IS_WINDOWS)
     message(STATUS "Building ${TARGET_TRIPLET}-dbg")
     vcpkg_execute_required_process(
@@ -129,10 +125,18 @@ if(VCPKG_TARGET_IS_UWP OR VCPKG_TARGET_IS_WINDOWS)
     )
     message(STATUS "Building ${TARGET_TRIPLET}-rel")
     vcpkg_execute_required_process(
-        COMMAND ${JOM} /K /J ${VCPKG_CONCURRENCY} /F makefile install_dev ${TARGETS}
+        COMMAND ${JOM} /K /J ${VCPKG_CONCURRENCY} /F makefile install_dev
         WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel"
         LOGNAME "install-${TARGET_TRIPLET}-rel"
     )
+    if("tools" IN_LIST FEATURES)
+        # run after install_dev. parallel sub-makes may generate the same sources at once
+        vcpkg_execute_required_process(
+            COMMAND ${JOM} /K /J ${VCPKG_CONCURRENCY} /F makefile install_runtime
+            WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel"
+            LOGNAME "install-tools-${TARGET_TRIPLET}-rel"
+        )
+    endif()
     vcpkg_copy_pdbs()
 
 else()
@@ -144,10 +148,18 @@ else()
     )
     message(STATUS "Building ${TARGET_TRIPLET}-rel")
     vcpkg_execute_required_process(
-        COMMAND ${MAKE} -j ${VCPKG_CONCURRENCY} install_dev ${TARGETS}
+        COMMAND ${MAKE} -j ${VCPKG_CONCURRENCY} install_dev
         WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel"
         LOGNAME "install-${TARGET_TRIPLET}-rel"
     )
+    if("tools" IN_LIST FEATURES)
+        # run after install_dev. parallel sub-makes may generate the same sources at once
+        vcpkg_execute_required_process(
+            COMMAND ${MAKE} -j ${VCPKG_CONCURRENCY} install_runtime
+            WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel"
+            LOGNAME "install-tools-${TARGET_TRIPLET}-rel"
+        )
+    endif()
     if(VCPKG_TARGET_IS_ANDROID AND VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
         # install_dev copies symbolic link. overwrite them with the actual shared objects
         file(INSTALL "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/libcrypto.so"
@@ -186,7 +198,8 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
                 "${CURRENT_PACKAGES_DIR}/lib/libssl.a"
     )
     # see https://github.com/microsoft/vcpkg/issues/30805
-    if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+    # note: for OSX, vcpkg fixes install names and rpaths after the portfile (VCPKG_FIXUP_MACHO_RPATH)
+    if(VCPKG_TARGET_IS_IOS)
         find_program(INSTALL_NAME_TOOL install_name_tool
             HINTS /usr/bin /Library/Developer/CommandLineTools/usr/bin/
             REQUIRED

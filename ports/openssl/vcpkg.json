@@ -13,7 +13,7 @@
   "features": {
     "tools": {
       "description": "Build/Install OpenSSL CLI tools",
-      "supports": "windows"
+      "supports": "(windows & !uwp) | linux | osx"
     }
   }
 }

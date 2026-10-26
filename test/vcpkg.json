@@ -126,7 +126,7 @@
           "features": [
             "tools"
           ],
-          "platform": "windows"
+          "platform": "(windows & !uwp) | linux | osx"
         },
         {
           "name": "sfml",
