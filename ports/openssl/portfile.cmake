@@ -198,45 +198,9 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
                 "${CURRENT_PACKAGES_DIR}/lib/libssl.a"
     )
     # see https://github.com/microsoft/vcpkg/issues/30805
-    # note: for OSX, vcpkg fixes install names and rpaths after the portfile (VCPKG_FIXUP_MACHO_RPATH)
-    if(VCPKG_TARGET_IS_IOS)
-        find_program(INSTALL_NAME_TOOL install_name_tool
-            HINTS /usr/bin /Library/Developer/CommandLineTools/usr/bin/
-            REQUIRED
-        )
-        message(STATUS "Using install_name_tool: ${INSTALL_NAME_TOOL}")
-        # ${CURRENT_PACKAGES_DIR}/debug/lib -> @rpath
-        vcpkg_execute_build_process(
-            COMMAND "${INSTALL_NAME_TOOL}" -id "@rpath/libcrypto.4.dylib" "libcrypto.4.dylib"
-            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/lib"
-            LOGNAME "fix-rpath-dbg"
-        )
-        vcpkg_execute_build_process(
-            COMMAND "${INSTALL_NAME_TOOL}" -change "${CURRENT_PACKAGES_DIR}/debug/lib/libcrypto.4.dylib" "@rpath/libcrypto.4.dylib" "libssl.4.dylib"
-            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/lib"
-            LOGNAME "fix-rpath-dbg"
-        )
-        vcpkg_execute_build_process(
-            COMMAND "${INSTALL_NAME_TOOL}" -id "@rpath/libssl.4.dylib" "libssl.4.dylib"
-            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/lib"
-            LOGNAME "fix-rpath-dbg"
-        )
-        # ${CURRENT_PACKAGES_DIR}/lib -> @rpath
-        vcpkg_execute_build_process(
-            COMMAND "${INSTALL_NAME_TOOL}" -id "@rpath/libcrypto.4.dylib" "libcrypto.4.dylib"
-            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/lib"
-            LOGNAME "fix-rpath-rel"
-        )
-        vcpkg_execute_build_process(
-            COMMAND "${INSTALL_NAME_TOOL}" -change "${CURRENT_PACKAGES_DIR}/lib/libcrypto.4.dylib" "@rpath/libcrypto.4.dylib" "libssl.4.dylib"
-            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/lib"
-            LOGNAME "fix-rpath-rel"
-        )
-        vcpkg_execute_build_process(
-            COMMAND "${INSTALL_NAME_TOOL}" -id "@rpath/libssl.4.dylib" "libssl.4.dylib"
-            WORKING_DIRECTORY "${CURRENT_PACKAGES_DIR}/lib"
-            LOGNAME "fix-rpath-rel"
-        )
+    # vcpkg fixes Mach-O install names and rpaths after the portfile. It is enabled by default only for OSX
+    if(VCPKG_TARGET_IS_IOS AND NOT DEFINED VCPKG_FIXUP_MACHO_RPATH)
+        set(VCPKG_FIXUP_MACHO_RPATH ON)
     endif()
 else()
     file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin"
