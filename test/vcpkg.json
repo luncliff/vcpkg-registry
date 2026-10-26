@@ -123,10 +123,10 @@
         "openssl",
         {
           "name": "openssl",
+          "host": true,
           "features": [
             "tools"
-          ],
-          "platform": "(windows & !uwp) | linux | osx"
+          ]
         },
         {
           "name": "sfml",
