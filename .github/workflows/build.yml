@@ -251,7 +251,10 @@ jobs:
           git config --global --add safe.directory /__w/vcpkg-registry/vcpkg-registry
 
       - name: "Change vcpkg.json"
-        run: mv test/test-emsdk.json test/vcpkg.json
+        run: |
+          mv test/test-emsdk.json test/vcpkg.json
+          # github.workspace is a host path; the runner translates only a leading one for the container
+          echo "VCPKG_OVERLAY_PORTS=$GITHUB_WORKSPACE/ports:$GITHUB_WORKSPACE/test/ports" >> "$GITHUB_ENV"
 
       - uses: lukka/run-vcpkg@v11.6
         with:
@@ -262,5 +265,4 @@ jobs:
           runVcpkgInstall: true
         env:
           VCPKG_DEFAULT_TRIPLET: "wasm32-emscripten"
-          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports:${{ github.workspace }}/test/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"
