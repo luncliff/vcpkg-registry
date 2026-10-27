@@ -5,7 +5,7 @@
     Runs vcpkg executable and manipulates existing vcpkg.json files.
 
 .LINK
-    https://github.com/microsoft/vcpkg
+    https://github.com/microsoft/vcpkg/releases/tag/2026.10.16
     https://github.com/microsoft/vcpkg-tool/blob/2023-06-15/include/vcpkg/vcpkgcmdarguments.h
 
 .PARAMETER VcpkgRoot

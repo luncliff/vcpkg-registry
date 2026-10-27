@@ -24,8 +24,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - vcpkg_tag: "2026.07.29"
-            vcpkg_commit: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
+          - vcpkg_tag: "2026.10.16"
+            vcpkg_commit: "9eec002df1cd109f8f104cd966a763daf9751489" # 2026.10.16
       fail-fast: false
     env:
       VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
@@ -133,7 +133,7 @@ jobs:
         name: "Setup vcpkg"
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
+          vcpkgGitCommitId: "9eec002df1cd109f8f104cd966a763daf9751489" # 2026.10.16
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: false
@@ -180,7 +180,7 @@ jobs:
         name: "Run vcpkg(x64-windows)"
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
+          vcpkgGitCommitId: "9eec002df1cd109f8f104cd966a763daf9751489" # 2026.10.16
           vcpkgJsonGlob: "test/vcpkg.json"
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
@@ -215,7 +215,7 @@ jobs:
         name: "Setup vcpkg"
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
+          vcpkgGitCommitId: "9eec002df1cd109f8f104cd966a763daf9751489" # 2026.10.16
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: false
 
@@ -231,7 +231,7 @@ jobs:
       - uses: lukka/run-vcpkg@v11.6
         with:
           vcpkgDirectory: "${{ runner.temp }}/vcpkg"
-          vcpkgGitCommitId: "9e593bb18ea69cc5095e012465dcd675a822ed0d" # 2026.07.29
+          vcpkgGitCommitId: "9eec002df1cd109f8f104cd966a763daf9751489" # 2026.10.16
           vcpkgConfigurationJsonGlob: "test/vcpkg-configuration.json"
           runVcpkgInstall: true
           runVcpkgFormatString: '[`install`, `--keep-going`, `--x-feature`, `vulkan`]'

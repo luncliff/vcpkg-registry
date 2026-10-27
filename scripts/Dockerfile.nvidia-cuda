@@ -14,8 +14,8 @@
 ARG CUDA_IMAGE=nvidia/cuda:13.4.3-cudnn-devel-ubuntu24.04
 FROM ${CUDA_IMAGE}
 
-# Match the current VCPKG_ROOT checkout (tag 2026.07.29).
-ARG VCPKG_REF=2026.07.29
+# Match the current VCPKG_ROOT checkout (tag 2026.10.16).
+ARG VCPKG_REF=2026.10.16
 ARG VCPKG_PORTS
 ARG VCPKG_TRIPLET=x64-linux
 ARG DEBIAN_FRONTEND=noninteractive

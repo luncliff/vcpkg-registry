@@ -178,8 +178,8 @@ The `ports/` folder contains `openssl3` and `tensorflow-lite`. Put them in the "
     "default-registry": {
         "kind": "git",
         "repository": "https://github.com/Microsoft/vcpkg",
-        "reference": "2025.12.12",
-        "baseline": "84bab45d415d22042bd0b9081aea57f362da3f35"
+        "reference": "2026.10.16",
+        "baseline": "9eec002df1cd109f8f104cd966a763daf9751489"
     },
     "registries": [
         {
