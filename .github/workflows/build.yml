@@ -262,5 +262,5 @@ jobs:
           runVcpkgInstall: true
         env:
           VCPKG_DEFAULT_TRIPLET: "wasm32-emscripten"
-          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports"
+          VCPKG_OVERLAY_PORTS: "${{ github.workspace }}/ports:${{ github.workspace }}/test/ports"
           VCPKG_OVERLAY_TRIPLETS: "${{ github.workspace }}/triplets"

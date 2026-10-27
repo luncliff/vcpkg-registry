@@ -1,0 +1,14 @@
+{
+  "name": "vcpkg-ci-emdawnwebgpu",
+  "version-date": "2026-10-27",
+  "description": "Validates emdawnwebgpu",
+  "license": null,
+  "supports": "emscripten",
+  "dependencies": [
+    "emdawnwebgpu",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}

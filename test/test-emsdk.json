@@ -21,6 +21,7 @@
     },
     "onnx",
     "tensorflow-lite",
+    "vcpkg-ci-emdawnwebgpu",
     "xnnpack"
   ]
 }
