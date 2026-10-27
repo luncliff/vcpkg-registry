@@ -13,7 +13,7 @@ set(VCPKG_BUILD_TYPE release)
 vcpkg_download_distfile(ARCHIVE
     URLS "https://github.com/google/dawn/releases/download/v${VERSION}/emdawnwebgpu_pkg-v${VERSION}.zip"
     FILENAME "emdawnwebgpu_pkg-v${VERSION}.zip"
-    SHA512 ffc9b905082fb5f7da18665b4596a94623489dff283a35b2a672912ff68418e51209ade07c65f6c946e63e9dad543428848b471148893b3d096706db9272549c
+    SHA512 fc8ce33f1253032b9ba8e6998ca07760d87ef3f943dff40a7dffe5809d8bde4a1d32f0d982c3092122bcaf15e466437cbccb1a3b4ee1d5b3ed6ae2eff3140f12
 )
 vcpkg_extract_source_archive_ex(
     OUT_SOURCE_PATH SOURCE_PATH

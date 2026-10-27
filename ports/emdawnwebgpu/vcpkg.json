@@ -1,6 +1,6 @@
 {
   "name": "emdawnwebgpu",
-  "version": "20251218.170355",
+  "version": "20261023.194543",
   "description": "Dawn's implementation of webgpu.h for Emscripten (on top of the WebGPU JS API)",
   "homepage": "https://github.com/google/dawn",
   "license": "Apache-2.0 AND MIT",
