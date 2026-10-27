@@ -120,13 +120,13 @@
           "name": "opencl-on-dx12",
           "platform": "windows"
         },
-        "openssl3",
+        "openssl",
         {
-          "name": "openssl3",
+          "name": "openssl",
+          "host": true,
           "features": [
             "tools"
-          ],
-          "platform": "windows"
+          ]
         },
         {
           "name": "sfml",
