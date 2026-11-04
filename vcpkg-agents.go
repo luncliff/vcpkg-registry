@@ -43,11 +43,34 @@ Report the result in extremely brief messages.
 `
 
 const portInstallSystemMessage = `
-Install the ports that the message confirms for installation. Follow the install-port skill.
+Install the ports that the message confirms for installation. Follow the install-port skill up to the installation.
 Before installing, run vcpkg_help for install and each other topic you use, such as triplet,
 so the arguments match this vcpkg.
 When the message confirms no port for installation, reply that nothing was installed.
+When vcpkg install fails, report the exact command, the exit status, the failed port, and the log paths
+that vcpkg printed, then stop. The port diagnose agent receives your reply.
 Report the result in extremely brief messages.
+`
+
+// portDiagnoseSystemMessage takes the user prompt through %s.
+const portDiagnoseSystemMessage = `
+The message is the report of the port install agent.
+When it reports a failed vcpkg install and the user prompt directs diagnosis or fixing, diagnose the failure:
+follow the search-if-known-issue skill, then check-port-upstream when a port update may hold the fix,
+then review-port for the ports you change.
+Read the vcpkg logs, the sources and build configuration in buildtrees, the portfiles, and the triplets.
+Search existing fixes with the gh tool. Read the vcpkg documentation with the microsoft-learn tools.
+Apply the fix to the files in the ports folder of the git root. New patch files are allowed.
+The next iteration installs the port again to verify the fix.
+Otherwise, repeat the message without diagnosis.
+
+Ground each claim in a log, source, document, issue, or pull request, and cite it.
+Separate facts, observations, and interpretations. Mark unverified details as unknown.
+Keep the fix to the smallest change within the failed port. Leave value judgments to the user.
+Report the result in extremely brief messages.
+
+User prompt:
+%s
 `
 
 const toolCheckSystemMessage = `
@@ -284,6 +307,7 @@ func main() {
 	searched := make(chan copilot.AssistantMessageData)
 	updated := make(chan copilot.AssistantMessageData)
 	installed := make(chan copilot.AssistantMessageData)
+	diagnosed := make(chan copilot.AssistantMessageData)
 	output := make(chan copilot.AssistantMessageData)
 	portSearchAgent := NewPortSearchAgent(client)
 	go portSearchAgent.Run(ctx, input, searched)
@@ -291,8 +315,10 @@ func main() {
 	go portUpdateAgent.Run(ctx, searched, updated)
 	portInstallAgent := NewPortInstallAgent(client)
 	go portInstallAgent.Run(ctx, updated, installed)
+	portDiagnoseAgent := NewPortDiagnoseAgent(client, *prompt)
+	go portDiagnoseAgent.Run(ctx, installed, diagnosed)
 	toolCheckAgent := NewToolCheckAgent(client)
-	go toolCheckAgent.Run(ctx, installed, output)
+	go toolCheckAgent.Run(ctx, diagnosed, output)
 	slog.Debug("agent goroutines ready; sessions start when messages arrive")
 
 	judge, err := NewJudge(ctx, client, *prompt)
@@ -874,6 +900,169 @@ func (a *PortInstallAgent) close(ctx context.Context) {
 	logUsage(ctx, "port install", a.session)
 	if err := a.session.Disconnect(); err != nil {
 		slog.Error("disconnect", "agent", "port install", "error", err)
+	}
+}
+
+// PortDiagnoseAgent owns a session with the built-in file tools, the Microsoft Learn MCP server for the vcpkg
+// documentation, and a read-only gh tool. Its write access covers only the ports folder, for portfiles and patches.
+// https://learn.microsoft.com/en-us/training/support/mcp-developer-reference
+type PortDiagnoseAgent struct {
+	client     *copilot.Client
+	session    *copilot.Session
+	prompt     string
+	readRoots  map[string]string
+	writeRoots map[string]string
+}
+
+// NewPortDiagnoseAgent returns an agent whose session starts with the first message.
+// The prompt decides whether the agent diagnoses install failures.
+func NewPortDiagnoseAgent(client *copilot.Client, prompt string) *PortDiagnoseAgent {
+	return &PortDiagnoseAgent{client: client, prompt: prompt}
+}
+
+type ghParams struct {
+	Args []string `json:"args" jsonschema:"arguments after gh, such as search issues \"error fragment\" --repo microsoft/vcpkg"`
+}
+
+// ghReadOnlyCommands are the gh subcommands that the gh tool allows.
+var ghReadOnlyCommands = [][]string{
+	{"search", "issues"}, {"search", "prs"}, {"search", "code"},
+	{"issue", "view"}, {"pr", "view"}, {"pr", "diff"},
+	{"release", "list"}, {"release", "view"},
+}
+
+// Run answers each input message and forwards the reply to output.
+// The session starts with the first message.
+func (a *PortDiagnoseAgent) Run(ctx context.Context, input <-chan copilot.AssistantMessageData, output chan<- copilot.AssistantMessageData) {
+	defer close(output)
+	defer a.close(ctx)
+	for message := range input {
+		if a.session == nil {
+			if err := a.start(ctx); err != nil {
+				slog.Error("create session", "agent", "port diagnose", "error", err)
+				return
+			}
+		}
+		reply, err := a.ask(ctx, message)
+		if err != nil {
+			slog.Error("ask", "agent", "port diagnose", "error", err)
+			return
+		}
+		slog.Info("reply", "agent", "port diagnose", "content", reply.Content)
+		output <- *reply
+	}
+}
+
+// start creates the session with the file tools, the gh tool, and the microsoft-learn MCP server.
+func (a *PortDiagnoseAgent) start(ctx context.Context) error {
+	a.readRoots = map[string]string{"VCPKG_ROOT": vcpkgEnvironment["VCPKG_ROOT"], "git root": gitRoot}
+	a.writeRoots = map[string]string{"ports": filepath.Join(gitRoot, "ports")}
+
+	gh := copilot.DefineTool("gh", "Run a read-only gh command: search issues, search prs, search code, issue view, pr view, pr diff, release list, or release view.", a.gh)
+
+	session, err := a.client.CreateSession(ctx, &copilot.SessionConfig{
+		Model:            "gpt-6-luna",
+		SkillDirectories: skillDirectories,
+		SystemMessage:    &copilot.SystemMessageConfig{Content: fmt.Sprintf(portDiagnoseSystemMessage, a.prompt)},
+		Tools:            []copilot.Tool{gh},
+		MCPServers: map[string]copilot.MCPServerConfig{
+			"microsoft-learn": copilot.MCPHTTPServerConfig{URL: "https://learn.microsoft.com/api/mcp", Tools: []string{"*"}},
+		},
+		AvailableTools: []string{
+			"view", "grep", "glob", "edit", "create", "web_fetch", "gh", "skill",
+			"mcp:microsoft-learn-microsoft_docs_search", "mcp:microsoft-learn-microsoft_docs_fetch",
+		},
+		Hooks:               &copilot.SessionHooks{OnPreToolUse: a.preToolUse},
+		OnPermissionRequest: a.permissionRequest,
+	})
+	if err != nil {
+		return err
+	}
+	a.session = session
+	slog.Debug("session created", "agent", "port diagnose", "session", session.SessionID)
+	return nil
+}
+
+// gh runs gh with the arguments and returns its exit status and output.
+func (a *PortDiagnoseAgent) gh(params ghParams, _ copilot.ToolInvocation) (string, error) {
+	slog.Debug("gh", "agent", "port diagnose", "args", params.Args)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	out, err := exec.CommandContext(ctx, toolPaths["gh"], params.Args...).CombinedOutput()
+	return fmt.Sprintf("error: %v\n%s", err, out), nil
+}
+
+// preToolUse is the harness: the gh tool runs only the subcommands in ghReadOnlyCommands.
+func (a *PortDiagnoseAgent) preToolUse(input copilot.PreToolUseHookInput, _ copilot.HookInvocation) (*copilot.PreToolUseHookOutput, error) {
+	if input.ToolName != "gh" {
+		return nil, nil
+	}
+	args, _ := input.ToolArgs.(map[string]any)
+	list, _ := args["args"].([]any)
+	for _, command := range ghReadOnlyCommands {
+		if len(list) >= 2 && list[0] == command[0] && list[1] == command[1] {
+			slog.Debug("hook allowed", "agent", "port diagnose", "tool", input.ToolName, "args", list)
+			return &copilot.PreToolUseHookOutput{PermissionDecision: "allow"}, nil
+		}
+	}
+	slog.Warn("hook denied", "agent", "port diagnose", "tool", input.ToolName, "args", list)
+	return &copilot.PreToolUseHookOutput{
+		PermissionDecision:       "deny",
+		PermissionDecisionReason: "gh allows only search issues, search prs, search code, issue view, pr view, pr diff, release list, and release view",
+	}, nil
+}
+
+// permissionRequest approves reads inside the git root and VCPKG_ROOT, writes inside the ports folder,
+// URL fetches, the microsoft-learn MCP server, and the gh tool. It rejects every other request.
+func (a *PortDiagnoseAgent) permissionRequest(request copilot.PermissionRequest, _ copilot.PermissionInvocation) (rpc.PermissionDecision, error) {
+	switch r := request.(type) {
+	case *rpc.PermissionRequestRead:
+		if insideAny(r.Path, a.readRoots) {
+			return &rpc.PermissionDecisionApproveOnce{}, nil
+		}
+	case *rpc.PermissionRequestWrite:
+		if insideAny(r.FileName, a.writeRoots) {
+			slog.Info("write approved", "agent", "port diagnose", "file", r.FileName)
+			return &rpc.PermissionDecisionApproveOnce{}, nil
+		}
+	case *rpc.PermissionRequestURL:
+		return &rpc.PermissionDecisionApproveOnce{}, nil
+	case *rpc.PermissionRequestMCP:
+		if r.ServerName == "microsoft-learn" {
+			return &rpc.PermissionDecisionApproveOnce{}, nil
+		}
+	case *rpc.PermissionRequestCustomTool:
+		if r.ToolName == "gh" {
+			return &rpc.PermissionDecisionApproveOnce{}, nil
+		}
+	}
+	slog.Warn("permission rejected", "agent", "port diagnose", "kind", request.Kind())
+	return &rpc.PermissionDecisionReject{}, nil
+}
+
+// ask sends one message and waits for the assistant reply. Diagnosis may read many logs and issues.
+func (a *PortDiagnoseAgent) ask(ctx context.Context, message copilot.AssistantMessageData) (*copilot.AssistantMessageData, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Minute)
+	defer cancel()
+	response, err := a.session.SendAndWait(ctx, copilot.MessageOptions{Prompt: message.Content})
+	if err != nil {
+		return nil, err
+	}
+	reply, ok := response.Data.(*copilot.AssistantMessageData)
+	if !ok || reply == nil {
+		return nil, fmt.Errorf("expected assistant message, received %T", response.Data)
+	}
+	return reply, nil
+}
+
+// close reports usage and disconnects the session when it was started.
+func (a *PortDiagnoseAgent) close(ctx context.Context) {
+	if a.session == nil {
+		return
+	}
+	logUsage(ctx, "port diagnose", a.session)
+	if err := a.session.Disconnect(); err != nil {
+		slog.Error("disconnect", "agent", "port diagnose", "error", err)
 	}
 }
 
