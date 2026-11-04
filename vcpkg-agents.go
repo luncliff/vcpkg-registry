@@ -2,18 +2,21 @@ package main
 
 import (
 	"context"
+	"crypto/sha512"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	copilot "github.com/github/copilot-sdk/go"
@@ -23,7 +26,28 @@ import (
 const portSearchSystemMessage = `
 Detect the vcpkg location and the current git root.
 Search which ports are available to meet the requirement of the user prompt.
+When the user prompt asks to update, confirm the ports to update and their current versions yourself.
+When the user prompt asks to install, confirm the port specs to install and the overlay options yourself.
+The port update agent and then the port install agent receive your reply.
 Report them in extremely brief messages.
+`
+
+const portUpdateSystemMessage = `
+Update the ports that the message confirms for update. Follow the update-port skill for the port files,
+then the update-version-baseline skill with registry_script for the version baseline.
+Edit files only inside the ports and versions folders of the git root.
+Use download_sha512 for the SHA512 of a source archive.
+When the message confirms no port for update, reply that nothing was updated.
+Repeat the port specs that the message confirms for installation, because the port install agent receives your reply.
+Report the result in extremely brief messages.
+`
+
+const portInstallSystemMessage = `
+Install the ports that the message confirms for installation. Follow the install-port skill.
+Before installing, run vcpkg_help for install and each other topic you use, such as triplet,
+so the arguments match this vcpkg.
+When the message confirms no port for installation, reply that nothing was installed.
+Report the result in extremely brief messages.
 `
 
 const toolCheckSystemMessage = `
@@ -71,13 +95,13 @@ var (
 	skillDirectories   []string
 )
 
-func SetupLogging(output io.Writer, verbose bool){
+// SetupLogging sets the default logger to DEBUG level when verbose, and INFO level otherwise.
+func SetupLogging(output io.Writer, verbose bool) {
 	level := slog.LevelInfo
 	if verbose {
 		level = slog.LevelDebug
 	}
 	slog.SetDefault(slog.New(slog.NewTextHandler(output, &slog.HandlerOptions{Level: level})))
-	slog.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 }
 
 // init parses the flags and sets the log level, then stores the environment checks in the globals and logs them.
@@ -144,7 +168,7 @@ func CheckSkillDirectories(gitRoot string) []string {
 // CheckSystemToolPaths returns the path of each tool found on PATH.
 func CheckSystemToolPaths() map[string]string {
 	paths := make(map[string]string)
-	for _, name := range []string{"go", "copilot", "curl", "tar", "zip", "unzip", "git", "gh", "cmake", "ninja", "vcpkg"} {
+	for _, name := range []string{"go", "copilot", "curl", "tar", "zip", "unzip", "git", "gh", "cmake", "ninja", "vcpkg", "pwsh"} {
 		if path, err := exec.LookPath(name); err == nil {
 			paths[name] = path
 		}
@@ -257,12 +281,18 @@ func main() {
 	slog.Info("vcpkg-agents started")
 
 	input := make(chan copilot.AssistantMessageData)
-	messages := make(chan copilot.AssistantMessageData)
+	searched := make(chan copilot.AssistantMessageData)
+	updated := make(chan copilot.AssistantMessageData)
+	installed := make(chan copilot.AssistantMessageData)
 	output := make(chan copilot.AssistantMessageData)
 	portSearchAgent := NewPortSearchAgent(client)
-	go portSearchAgent.Run(ctx, input, messages)
+	go portSearchAgent.Run(ctx, input, searched)
+	portUpdateAgent := NewPortUpdateAgent(client)
+	go portUpdateAgent.Run(ctx, searched, updated)
+	portInstallAgent := NewPortInstallAgent(client)
+	go portInstallAgent.Run(ctx, updated, installed)
 	toolCheckAgent := NewToolCheckAgent(client)
-	go toolCheckAgent.Run(ctx, messages, output)
+	go toolCheckAgent.Run(ctx, installed, output)
 	slog.Debug("agent goroutines ready; sessions start when messages arrive")
 
 	judge, err := NewJudge(ctx, client, *prompt)
@@ -545,6 +575,306 @@ func insideAny(path string, roots map[string]string) bool {
 		}
 	}
 	return false
+}
+
+// PortUpdateAgent owns a session with the built-in view, edit, and web_fetch tools,
+// a SHA512 tool, and a registry script tool. Its write access covers only the ports and versions folders.
+type PortUpdateAgent struct {
+	client     *copilot.Client
+	session    *copilot.Session
+	readRoots  map[string]string
+	writeRoots map[string]string
+}
+
+// NewPortUpdateAgent returns an agent whose session starts with the first message.
+func NewPortUpdateAgent(client *copilot.Client) *PortUpdateAgent {
+	return &PortUpdateAgent{client: client}
+}
+
+type downloadSHA512Params struct {
+	URL string `json:"url" jsonschema:"source archive URL, such as https://github.com/{owner}/{repo}/archive/refs/tags/{tag}.tar.gz"`
+}
+
+type registryScriptParams struct {
+	Script string `json:"script" jsonschema:"registry-format or registry-add-version"`
+	Port   string `json:"port" jsonschema:"port name; required for registry-add-version"`
+}
+
+// Run answers each input message and forwards the reply to output.
+// The session starts with the first message.
+func (a *PortUpdateAgent) Run(ctx context.Context, input <-chan copilot.AssistantMessageData, output chan<- copilot.AssistantMessageData) {
+	defer close(output)
+	defer a.close(ctx)
+	for message := range input {
+		if a.session == nil {
+			if err := a.start(ctx); err != nil {
+				slog.Error("create session", "agent", "port update", "error", err)
+				return
+			}
+		}
+		reply, err := a.ask(ctx, message)
+		if err != nil {
+			slog.Error("ask", "agent", "port update", "error", err)
+			return
+		}
+		slog.Info("reply", "agent", "port update", "content", reply.Content)
+		output <- *reply
+	}
+}
+
+// start creates the session with the file tools, the download_sha512 tool, and the registry_script tool.
+func (a *PortUpdateAgent) start(ctx context.Context) error {
+	a.readRoots = map[string]string{"VCPKG_ROOT": vcpkgEnvironment["VCPKG_ROOT"], "git root": gitRoot}
+	a.writeRoots = map[string]string{"ports": filepath.Join(gitRoot, "ports"), "versions": filepath.Join(gitRoot, "versions")}
+
+	downloadSHA512 := copilot.DefineTool("download_sha512", "Download a source archive and return its SHA512 in lowercase hex.", a.downloadSHA512)
+	registryScript := copilot.DefineTool("registry_script", "Run a registry script of the git root: registry-format formats the port manifests, registry-add-version updates the version baseline of a port.", a.registryScript)
+
+	session, err := a.client.CreateSession(ctx, &copilot.SessionConfig{
+		Model:               "gpt-6-luna",
+		SkillDirectories:    skillDirectories,
+		SystemMessage:       &copilot.SystemMessageConfig{Content: portUpdateSystemMessage},
+		Tools:               []copilot.Tool{downloadSHA512, registryScript},
+		AvailableTools:      []string{"view", "edit", "web_fetch", "download_sha512", "registry_script", "skill"},
+		OnPermissionRequest: a.permissionRequest,
+	})
+	if err != nil {
+		return err
+	}
+	a.session = session
+	slog.Debug("session created", "agent", "port update", "session", session.SessionID)
+	return nil
+}
+
+// downloadSHA512 downloads the URL and returns the SHA512 of its content.
+func (a *PortUpdateAgent) downloadSHA512(params downloadSHA512Params, _ copilot.ToolInvocation) (string, error) {
+	slog.Debug("download_sha512", "agent", "port update", "url", params.URL)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, params.URL, nil)
+	if err != nil {
+		return "", err
+	}
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("download %s: %s", params.URL, response.Status)
+	}
+	hash := sha512.New()
+	if _, err := io.Copy(hash, response.Body); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+// registryScript runs scripts/registry-format.ps1 or scripts/registry-add-version.ps1 of the git root
+// and returns its exit status and output.
+func (a *PortUpdateAgent) registryScript(params registryScriptParams, _ copilot.ToolInvocation) (string, error) {
+	slog.Info("registry_script", "agent", "port update", "script", params.Script, "port", params.Port)
+	args := []string{"-NoProfile", "-File", filepath.Join(gitRoot, "scripts", params.Script+".ps1"),
+		"-VcpkgRoot", vcpkgEnvironment["VCPKG_ROOT"], "-RegistryRoot", gitRoot}
+	switch params.Script {
+	case "registry-format":
+	case "registry-add-version":
+		args = append(args, "-PortName", params.Port)
+	default:
+		return "", fmt.Errorf("%q is not registry-format or registry-add-version", params.Script)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, toolPaths["pwsh"], args...)
+	cmd.Dir = gitRoot
+	out, err := cmd.CombinedOutput()
+	return fmt.Sprintf("error: %v\n%s", err, out), nil
+}
+
+// permissionRequest approves reads inside the git root and VCPKG_ROOT, writes inside the ports and versions folders,
+// URL fetches, and the custom tools. It rejects every other request.
+func (a *PortUpdateAgent) permissionRequest(request copilot.PermissionRequest, _ copilot.PermissionInvocation) (rpc.PermissionDecision, error) {
+	switch r := request.(type) {
+	case *rpc.PermissionRequestRead:
+		if insideAny(r.Path, a.readRoots) {
+			return &rpc.PermissionDecisionApproveOnce{}, nil
+		}
+	case *rpc.PermissionRequestWrite:
+		if insideAny(r.FileName, a.writeRoots) {
+			slog.Info("write approved", "agent", "port update", "file", r.FileName)
+			return &rpc.PermissionDecisionApproveOnce{}, nil
+		}
+	case *rpc.PermissionRequestURL:
+		return &rpc.PermissionDecisionApproveOnce{}, nil
+	case *rpc.PermissionRequestCustomTool:
+		if r.ToolName == "download_sha512" || r.ToolName == "registry_script" {
+			return &rpc.PermissionDecisionApproveOnce{}, nil
+		}
+	}
+	slog.Warn("permission rejected", "agent", "port update", "kind", request.Kind())
+	return &rpc.PermissionDecisionReject{}, nil
+}
+
+// ask sends one message and waits for the assistant reply.
+func (a *PortUpdateAgent) ask(ctx context.Context, message copilot.AssistantMessageData) (*copilot.AssistantMessageData, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Minute)
+	defer cancel()
+	response, err := a.session.SendAndWait(ctx, copilot.MessageOptions{Prompt: message.Content})
+	if err != nil {
+		return nil, err
+	}
+	reply, ok := response.Data.(*copilot.AssistantMessageData)
+	if !ok || reply == nil {
+		return nil, fmt.Errorf("expected assistant message, received %T", response.Data)
+	}
+	return reply, nil
+}
+
+// close reports usage and disconnects the session when it was started.
+func (a *PortUpdateAgent) close(ctx context.Context) {
+	if a.session == nil {
+		return
+	}
+	logUsage(ctx, "port update", a.session)
+	if err := a.session.Disconnect(); err != nil {
+		slog.Error("disconnect", "agent", "port update", "error", err)
+	}
+}
+
+// PortInstallAgent owns a session with vcpkg help and vcpkg install tools. vcpkg_install writes
+// to the install roots, so its approval is the write access of this agent.
+// The pre-tool-use hook blocks vcpkg install until `vcpkg help install` has run.
+type PortInstallAgent struct {
+	client      *copilot.Client
+	session     *copilot.Session
+	installHelp atomic.Bool
+}
+
+// NewPortInstallAgent returns an agent whose session starts with the first message.
+func NewPortInstallAgent(client *copilot.Client) *PortInstallAgent {
+	return &PortInstallAgent{client: client}
+}
+
+type vcpkgHelpParams struct {
+	Topic string `json:"topic" jsonschema:"help topic, such as install, triplet, or topics"`
+}
+
+// Run answers each input message and forwards the reply to output.
+// The session starts with the first message.
+func (a *PortInstallAgent) Run(ctx context.Context, input <-chan copilot.AssistantMessageData, output chan<- copilot.AssistantMessageData) {
+	defer close(output)
+	defer a.close(ctx)
+	for message := range input {
+		if a.session == nil {
+			if err := a.start(ctx); err != nil {
+				slog.Error("create session", "agent", "port install", "error", err)
+				return
+			}
+		}
+		reply, err := a.ask(ctx, message)
+		if err != nil {
+			slog.Error("ask", "agent", "port install", "error", err)
+			return
+		}
+		slog.Info("reply", "agent", "port install", "content", reply.Content)
+		output <- *reply
+	}
+}
+
+// start creates the session with the vcpkg_help and vcpkg_install tools.
+func (a *PortInstallAgent) start(ctx context.Context) error {
+	vcpkgHelp := copilot.DefineTool("vcpkg_help", "Run `vcpkg help` with a topic and return its output.", a.vcpkgHelp)
+	vcpkgInstall := copilot.DefineTool("vcpkg_install", "Run `vcpkg install` with arguments in the git root. Run vcpkg_help with the install topic first.", a.vcpkgInstall)
+
+	session, err := a.client.CreateSession(ctx, &copilot.SessionConfig{
+		Model:               "gpt-6-luna",
+		SkillDirectories:    skillDirectories,
+		SystemMessage:       &copilot.SystemMessageConfig{Content: portInstallSystemMessage},
+		Tools:               []copilot.Tool{vcpkgHelp, vcpkgInstall},
+		AvailableTools:      []string{"vcpkg_help", "vcpkg_install", "skill"},
+		Hooks:               &copilot.SessionHooks{OnPreToolUse: a.preToolUse},
+		OnPermissionRequest: a.permissionRequest,
+	})
+	if err != nil {
+		return err
+	}
+	a.session = session
+	slog.Debug("session created", "agent", "port install", "session", session.SessionID)
+	return nil
+}
+
+// vcpkgHelp runs `vcpkg help` with the topic and records that the install topic has run.
+func (a *PortInstallAgent) vcpkgHelp(params vcpkgHelpParams, _ copilot.ToolInvocation) (string, error) {
+	slog.Debug("vcpkg_help", "agent", "port install", "topic", params.Topic)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	out, err := exec.CommandContext(ctx, toolPaths["vcpkg"], "help", params.Topic).CombinedOutput()
+	if err == nil && params.Topic == "install" {
+		a.installHelp.Store(true)
+	}
+	return fmt.Sprintf("error: %v\n%s", err, out), nil
+}
+
+// vcpkgInstall runs `vcpkg install` with the arguments in the git root and returns its exit status and output.
+func (a *PortInstallAgent) vcpkgInstall(params vcpkgInstallParams, _ copilot.ToolInvocation) (string, error) {
+	slog.Info("vcpkg_install", "agent", "port install", "args", params.Args)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, toolPaths["vcpkg"], append([]string{"install"}, params.Args...)...)
+	cmd.Dir = gitRoot
+	out, err := cmd.CombinedOutput()
+	return fmt.Sprintf("error: %v\n%s", err, out), nil
+}
+
+// preToolUse is the harness: vcpkg_install runs only after `vcpkg help install` has succeeded.
+func (a *PortInstallAgent) preToolUse(input copilot.PreToolUseHookInput, _ copilot.HookInvocation) (*copilot.PreToolUseHookOutput, error) {
+	if input.ToolName != "vcpkg_install" {
+		return nil, nil
+	}
+	if !a.installHelp.Load() {
+		slog.Warn("hook denied", "agent", "port install", "tool", input.ToolName, "args", input.ToolArgs)
+		return &copilot.PreToolUseHookOutput{
+			PermissionDecision:       "deny",
+			PermissionDecisionReason: "run vcpkg_help with the install topic before vcpkg_install",
+		}, nil
+	}
+	slog.Debug("hook allowed", "agent", "port install", "tool", input.ToolName, "args", input.ToolArgs)
+	return &copilot.PreToolUseHookOutput{PermissionDecision: "allow"}, nil
+}
+
+// permissionRequest approves vcpkg_help and vcpkg_install and rejects every other request.
+func (a *PortInstallAgent) permissionRequest(request copilot.PermissionRequest, _ copilot.PermissionInvocation) (rpc.PermissionDecision, error) {
+	if custom, ok := request.(*rpc.PermissionRequestCustomTool); ok && (custom.ToolName == "vcpkg_help" || custom.ToolName == "vcpkg_install") {
+		return &rpc.PermissionDecisionApproveOnce{}, nil
+	}
+	slog.Warn("permission rejected", "agent", "port install", "kind", request.Kind())
+	return &rpc.PermissionDecisionReject{}, nil
+}
+
+// ask sends one message and waits for the assistant reply. Installation may build for a long time.
+func (a *PortInstallAgent) ask(ctx context.Context, message copilot.AssistantMessageData) (*copilot.AssistantMessageData, error) {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Hour)
+	defer cancel()
+	response, err := a.session.SendAndWait(ctx, copilot.MessageOptions{Prompt: message.Content})
+	if err != nil {
+		return nil, err
+	}
+	reply, ok := response.Data.(*copilot.AssistantMessageData)
+	if !ok || reply == nil {
+		return nil, fmt.Errorf("expected assistant message, received %T", response.Data)
+	}
+	return reply, nil
+}
+
+// close reports usage and disconnects the session when it was started.
+func (a *PortInstallAgent) close(ctx context.Context) {
+	if a.session == nil {
+		return
+	}
+	logUsage(ctx, "port install", a.session)
+	if err := a.session.Disconnect(); err != nil {
+		slog.Error("disconnect", "agent", "port install", "error", err)
+	}
 }
 
 // ToolCheckAgent owns a session with one execution tool. The pre-tool-use hook blocks unregistered tools.
