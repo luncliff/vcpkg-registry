@@ -28,7 +28,7 @@ Detect the vcpkg location and the current git root.
 Search which ports are available to meet the requirement of the user prompt.
 When the user prompt asks to update, confirm the ports to update and their current versions yourself.
 When the user prompt asks to install, confirm the port specs to install and the overlay options yourself.
-The port update agent and then the port install agent receive your reply.
+The port update agent and then the port-install agent receive your reply.
 Report them in extremely brief messages.
 `
 
@@ -38,7 +38,7 @@ then the update-version-baseline skill with registry_script for the version base
 Edit files only inside the ports and versions folders of the git root.
 Use download_sha512 for the SHA512 of a source archive.
 When the message confirms no port for update, reply that nothing was updated.
-Repeat the port specs that the message confirms for installation, because the port install agent receives your reply.
+Repeat the port specs that the message confirms for installation, because the port-install agent receives your reply.
 Report the result in extremely brief messages.
 `
 
@@ -48,13 +48,13 @@ Before installing, run vcpkg_help for install and each other topic you use, such
 so the arguments match this vcpkg.
 When the message confirms no port for installation, reply that nothing was installed.
 When vcpkg install fails, report the exact command, the exit status, the failed port, and the log paths
-that vcpkg printed, then stop. The port diagnose agent receives your reply.
+that vcpkg printed, then stop. The port-diagnose agent receives your reply.
 Report the result in extremely brief messages.
 `
 
 // portDiagnoseSystemMessage takes the user prompt through %s.
 const portDiagnoseSystemMessage = `
-The message is the report of the port install agent.
+The message is the report of the port-install agent.
 When it reports a failed vcpkg install and the user prompt directs diagnosis or fixing, diagnose the failure:
 follow the search-if-known-issue skill, then check-port-upstream when a port update may hold the fix,
 then review-port for the ports you change.
@@ -191,7 +191,7 @@ func CheckSkillDirectories(gitRoot string) []string {
 // CheckSystemToolPaths returns the path of each tool found on PATH.
 func CheckSystemToolPaths() map[string]string {
 	paths := make(map[string]string)
-	for _, name := range []string{"go", "copilot", "curl", "tar", "zip", "unzip", "git", "gh", "cmake", "ninja", "vcpkg", "pwsh"} {
+	for _, name := range []string{"go", "copilot", "curl", "tar", "zip", "unzip", "git", "gh", "cmake", "ninja", "vcpkg"} {
 		if path, err := exec.LookPath(name); err == nil {
 			paths[name] = path
 		}
@@ -452,16 +452,16 @@ func (a *PortSearchAgent) Run(ctx context.Context, input <-chan copilot.Assistan
 	for message := range input {
 		if a.session == nil {
 			if err := a.start(ctx); err != nil {
-				slog.Error("create session", "agent", "port search", "error", err)
+				slog.Error("create session", "agent", "port-search", "error", err)
 				return
 			}
 		}
 		reply, err := a.ask(ctx, message)
 		if err != nil {
-			slog.Error("ask", "agent", "port search", "error", err)
+			slog.Error("ask", "agent", "port-search", "error", err)
 			return
 		}
-		slog.Info("reply", "agent", "port search", "content", reply.Content)
+		slog.Info("reply", "agent", "port-search", "content", reply.Content)
 		output <- *reply
 	}
 }
@@ -487,14 +487,14 @@ func (a *PortSearchAgent) start(ctx context.Context) error {
 		return err
 	}
 	a.session = session
-	slog.Debug("session created", "agent", "port search", "session", session.SessionID)
+	slog.Debug("session created", "agent", "port-search", "session", session.SessionID)
 	return nil
 }
 
 // readPath returns the roots for an empty path, the content of a file, or the entries of a directory.
 // The path must be inside the git root or VCPKG_ROOT.
 func (a *PortSearchAgent) readPath(params readPathParams, _ copilot.ToolInvocation) (any, error) {
-	slog.Debug("read_path", "agent", "port search", "path", params.Path)
+	slog.Debug("read_path", "agent", "port-search", "path", params.Path)
 	if params.Path == "" {
 		return a.roots, nil
 	}
@@ -530,7 +530,7 @@ func (a *PortSearchAgent) readPath(params readPathParams, _ copilot.ToolInvocati
 
 // vcpkgInstall runs `vcpkg install` with the arguments and returns its exit status and output.
 func (a *PortSearchAgent) vcpkgInstall(params vcpkgInstallParams, _ copilot.ToolInvocation) (string, error) {
-	slog.Debug("vcpkg_install", "agent", "port search", "args", params.Args)
+	slog.Debug("vcpkg_install", "agent", "port-search", "args", params.Args)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	out, err := exec.CommandContext(ctx, toolPaths["vcpkg"], append([]string{"install"}, params.Args...)...).CombinedOutput()
@@ -545,13 +545,13 @@ func (a *PortSearchAgent) preToolUse(input copilot.PreToolUseHookInput, _ copilo
 	args, _ := input.ToolArgs.(map[string]any)
 	list, _ := args["args"].([]any)
 	if !slices.Contains(list, any("--dry-run")) {
-		slog.Warn("hook denied", "agent", "port search", "tool", input.ToolName, "args", list)
+		slog.Warn("hook denied", "agent", "port-search", "tool", input.ToolName, "args", list)
 		return &copilot.PreToolUseHookOutput{
 			PermissionDecision:       "deny",
 			PermissionDecisionReason: "vcpkg install must contain --dry-run",
 		}, nil
 	}
-	slog.Debug("hook allowed", "agent", "port search", "tool", input.ToolName, "args", list)
+	slog.Debug("hook allowed", "agent", "port-search", "tool", input.ToolName, "args", list)
 	return &copilot.PreToolUseHookOutput{PermissionDecision: "allow"}, nil
 }
 
@@ -560,7 +560,7 @@ func (a *PortSearchAgent) permissionRequest(request copilot.PermissionRequest, _
 	if custom, ok := request.(*rpc.PermissionRequestCustomTool); ok && custom.ToolName == "vcpkg_install" {
 		return &rpc.PermissionDecisionApproveOnce{}, nil
 	}
-	slog.Warn("permission rejected", "agent", "port search", "kind", request.Kind())
+	slog.Warn("permission rejected", "agent", "port-search", "kind", request.Kind())
 	return &rpc.PermissionDecisionReject{}, nil
 }
 
@@ -584,9 +584,9 @@ func (a *PortSearchAgent) close(ctx context.Context) {
 	if a.session == nil {
 		return
 	}
-	logUsage(ctx, "port search", a.session)
+	logUsage(ctx, "port-search", a.session)
 	if err := a.session.Disconnect(); err != nil {
-		slog.Error("disconnect", "agent", "port search", "error", err)
+		slog.Error("disconnect", "agent", "port-search", "error", err)
 	}
 }
 
@@ -603,7 +603,7 @@ func insideAny(path string, roots map[string]string) bool {
 	return false
 }
 
-// PortUpdateAgent owns a session with the built-in view, edit, and web_fetch tools,
+// PortUpdateAgent owns a session with the built-in view, apply_patch, and web_fetch tools,
 // a SHA512 tool, and a registry script tool. Its write access covers only the ports and versions folders.
 type PortUpdateAgent struct {
 	client     *copilot.Client
@@ -661,7 +661,7 @@ func (a *PortUpdateAgent) start(ctx context.Context) error {
 		SkillDirectories:    skillDirectories,
 		SystemMessage:       &copilot.SystemMessageConfig{Content: portUpdateSystemMessage},
 		Tools:               []copilot.Tool{downloadSHA512, registryScript},
-		AvailableTools:      []string{"view", "edit", "web_fetch", "download_sha512", "registry_script", "skill"},
+		AvailableTools:      []string{"view", "apply_patch", "web_fetch", "download_sha512", "registry_script", "skill"},
 		OnPermissionRequest: a.permissionRequest,
 	})
 	if err != nil {
@@ -711,7 +711,7 @@ func (a *PortUpdateAgent) registryScript(params registryScriptParams, _ copilot.
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, toolPaths["pwsh"], args...)
+	cmd := exec.CommandContext(ctx, "pwsh", args...)
 	cmd.Dir = gitRoot
 	out, err := cmd.CombinedOutput()
 	return fmt.Sprintf("error: %v\n%s", err, out), nil
@@ -793,16 +793,16 @@ func (a *PortInstallAgent) Run(ctx context.Context, input <-chan copilot.Assista
 	for message := range input {
 		if a.session == nil {
 			if err := a.start(ctx); err != nil {
-				slog.Error("create session", "agent", "port install", "error", err)
+				slog.Error("create session", "agent", "port-install", "error", err)
 				return
 			}
 		}
 		reply, err := a.ask(ctx, message)
 		if err != nil {
-			slog.Error("ask", "agent", "port install", "error", err)
+			slog.Error("ask", "agent", "port-install", "error", err)
 			return
 		}
-		slog.Info("reply", "agent", "port install", "content", reply.Content)
+		slog.Info("reply", "agent", "port-install", "content", reply.Content)
 		output <- *reply
 	}
 }
@@ -825,13 +825,13 @@ func (a *PortInstallAgent) start(ctx context.Context) error {
 		return err
 	}
 	a.session = session
-	slog.Debug("session created", "agent", "port install", "session", session.SessionID)
+	slog.Debug("session created", "agent", "port-install", "session", session.SessionID)
 	return nil
 }
 
 // vcpkgHelp runs `vcpkg help` with the topic and records that the install topic has run.
 func (a *PortInstallAgent) vcpkgHelp(params vcpkgHelpParams, _ copilot.ToolInvocation) (string, error) {
-	slog.Debug("vcpkg_help", "agent", "port install", "topic", params.Topic)
+	slog.Debug("vcpkg_help", "agent", "port-install", "topic", params.Topic)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	out, err := exec.CommandContext(ctx, toolPaths["vcpkg"], "help", params.Topic).CombinedOutput()
@@ -843,7 +843,7 @@ func (a *PortInstallAgent) vcpkgHelp(params vcpkgHelpParams, _ copilot.ToolInvoc
 
 // vcpkgInstall runs `vcpkg install` with the arguments in the git root and returns its exit status and output.
 func (a *PortInstallAgent) vcpkgInstall(params vcpkgInstallParams, _ copilot.ToolInvocation) (string, error) {
-	slog.Info("vcpkg_install", "agent", "port install", "args", params.Args)
+	slog.Info("vcpkg_install", "agent", "port-install", "args", params.Args)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, toolPaths["vcpkg"], append([]string{"install"}, params.Args...)...)
@@ -858,13 +858,13 @@ func (a *PortInstallAgent) preToolUse(input copilot.PreToolUseHookInput, _ copil
 		return nil, nil
 	}
 	if !a.installHelp.Load() {
-		slog.Warn("hook denied", "agent", "port install", "tool", input.ToolName, "args", input.ToolArgs)
+		slog.Warn("hook denied", "agent", "port-install", "tool", input.ToolName, "args", input.ToolArgs)
 		return &copilot.PreToolUseHookOutput{
 			PermissionDecision:       "deny",
 			PermissionDecisionReason: "run vcpkg_help with the install topic before vcpkg_install",
 		}, nil
 	}
-	slog.Debug("hook allowed", "agent", "port install", "tool", input.ToolName, "args", input.ToolArgs)
+	slog.Debug("hook allowed", "agent", "port-install", "tool", input.ToolName, "args", input.ToolArgs)
 	return &copilot.PreToolUseHookOutput{PermissionDecision: "allow"}, nil
 }
 
@@ -873,7 +873,7 @@ func (a *PortInstallAgent) permissionRequest(request copilot.PermissionRequest, 
 	if custom, ok := request.(*rpc.PermissionRequestCustomTool); ok && (custom.ToolName == "vcpkg_help" || custom.ToolName == "vcpkg_install") {
 		return &rpc.PermissionDecisionApproveOnce{}, nil
 	}
-	slog.Warn("permission rejected", "agent", "port install", "kind", request.Kind())
+	slog.Warn("permission rejected", "agent", "port-install", "kind", request.Kind())
 	return &rpc.PermissionDecisionReject{}, nil
 }
 
@@ -897,9 +897,9 @@ func (a *PortInstallAgent) close(ctx context.Context) {
 	if a.session == nil {
 		return
 	}
-	logUsage(ctx, "port install", a.session)
+	logUsage(ctx, "port-install", a.session)
 	if err := a.session.Disconnect(); err != nil {
-		slog.Error("disconnect", "agent", "port install", "error", err)
+		slog.Error("disconnect", "agent", "port-install", "error", err)
 	}
 }
 
@@ -939,16 +939,16 @@ func (a *PortDiagnoseAgent) Run(ctx context.Context, input <-chan copilot.Assist
 	for message := range input {
 		if a.session == nil {
 			if err := a.start(ctx); err != nil {
-				slog.Error("create session", "agent", "port diagnose", "error", err)
+				slog.Error("create session", "agent", "port-diagnose", "error", err)
 				return
 			}
 		}
 		reply, err := a.ask(ctx, message)
 		if err != nil {
-			slog.Error("ask", "agent", "port diagnose", "error", err)
+			slog.Error("ask", "agent", "port-diagnose", "error", err)
 			return
 		}
-		slog.Info("reply", "agent", "port diagnose", "content", reply.Content)
+		slog.Info("reply", "agent", "port-diagnose", "content", reply.Content)
 		output <- *reply
 	}
 }
@@ -969,7 +969,7 @@ func (a *PortDiagnoseAgent) start(ctx context.Context) error {
 			"microsoft-learn": copilot.MCPHTTPServerConfig{URL: "https://learn.microsoft.com/api/mcp", Tools: []string{"*"}},
 		},
 		AvailableTools: []string{
-			"view", "grep", "glob", "edit", "create", "web_fetch", "gh", "skill",
+			"view", "rg", "glob", "apply_patch", "web_fetch", "gh", "skill",
 			"mcp:microsoft-learn-microsoft_docs_search", "mcp:microsoft-learn-microsoft_docs_fetch",
 		},
 		Hooks:               &copilot.SessionHooks{OnPreToolUse: a.preToolUse},
@@ -979,13 +979,13 @@ func (a *PortDiagnoseAgent) start(ctx context.Context) error {
 		return err
 	}
 	a.session = session
-	slog.Debug("session created", "agent", "port diagnose", "session", session.SessionID)
+	slog.Debug("session created", "agent", "port-diagnose", "session", session.SessionID)
 	return nil
 }
 
 // gh runs gh with the arguments and returns its exit status and output.
 func (a *PortDiagnoseAgent) gh(params ghParams, _ copilot.ToolInvocation) (string, error) {
-	slog.Debug("gh", "agent", "port diagnose", "args", params.Args)
+	slog.Debug("gh", "agent", "port-diagnose", "args", params.Args)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	out, err := exec.CommandContext(ctx, toolPaths["gh"], params.Args...).CombinedOutput()
@@ -1001,11 +1001,11 @@ func (a *PortDiagnoseAgent) preToolUse(input copilot.PreToolUseHookInput, _ copi
 	list, _ := args["args"].([]any)
 	for _, command := range ghReadOnlyCommands {
 		if len(list) >= 2 && list[0] == command[0] && list[1] == command[1] {
-			slog.Debug("hook allowed", "agent", "port diagnose", "tool", input.ToolName, "args", list)
+			slog.Debug("hook allowed", "agent", "port-diagnose", "tool", input.ToolName, "args", list)
 			return &copilot.PreToolUseHookOutput{PermissionDecision: "allow"}, nil
 		}
 	}
-	slog.Warn("hook denied", "agent", "port diagnose", "tool", input.ToolName, "args", list)
+	slog.Warn("hook denied", "agent", "port-diagnose", "tool", input.ToolName, "args", list)
 	return &copilot.PreToolUseHookOutput{
 		PermissionDecision:       "deny",
 		PermissionDecisionReason: "gh allows only search issues, search prs, search code, issue view, pr view, pr diff, release list, and release view",
@@ -1022,7 +1022,7 @@ func (a *PortDiagnoseAgent) permissionRequest(request copilot.PermissionRequest,
 		}
 	case *rpc.PermissionRequestWrite:
 		if insideAny(r.FileName, a.writeRoots) {
-			slog.Info("write approved", "agent", "port diagnose", "file", r.FileName)
+			slog.Info("write approved", "agent", "port-diagnose", "file", r.FileName)
 			return &rpc.PermissionDecisionApproveOnce{}, nil
 		}
 	case *rpc.PermissionRequestURL:
@@ -1036,7 +1036,7 @@ func (a *PortDiagnoseAgent) permissionRequest(request copilot.PermissionRequest,
 			return &rpc.PermissionDecisionApproveOnce{}, nil
 		}
 	}
-	slog.Warn("permission rejected", "agent", "port diagnose", "kind", request.Kind())
+	slog.Warn("permission rejected", "agent", "port-diagnose", "kind", request.Kind())
 	return &rpc.PermissionDecisionReject{}, nil
 }
 
@@ -1060,9 +1060,9 @@ func (a *PortDiagnoseAgent) close(ctx context.Context) {
 	if a.session == nil {
 		return
 	}
-	logUsage(ctx, "port diagnose", a.session)
+	logUsage(ctx, "port-diagnose", a.session)
 	if err := a.session.Disconnect(); err != nil {
-		slog.Error("disconnect", "agent", "port diagnose", "error", err)
+		slog.Error("disconnect", "agent", "port-diagnose", "error", err)
 	}
 }
 
@@ -1091,16 +1091,16 @@ func (a *ToolCheckAgent) Run(ctx context.Context, input <-chan copilot.Assistant
 	for message := range input {
 		if a.session == nil {
 			if err := a.start(ctx); err != nil {
-				slog.Error("create session", "agent", "tool check", "error", err)
+				slog.Error("create session", "agent", "tool-check", "error", err)
 				return
 			}
 		}
 		reply, err := a.ask(ctx, message)
 		if err != nil {
-			slog.Error("ask", "agent", "tool check", "error", err)
+			slog.Error("ask", "agent", "tool-check", "error", err)
 			return
 		}
-		slog.Info("reply", "agent", "tool check", "content", reply.Content)
+		slog.Info("reply", "agent", "tool-check", "content", reply.Content)
 		output <- *reply
 	}
 }
@@ -1127,13 +1127,13 @@ func (a *ToolCheckAgent) start(ctx context.Context) error {
 		return err
 	}
 	a.session = session
-	slog.Debug("session created", "agent", "tool check", "session", session.SessionID)
+	slog.Debug("session created", "agent", "tool-check", "session", session.SessionID)
 	return nil
 }
 
 // executeTool runs a registered tool with the arguments and returns its exit status and output.
 func (a *ToolCheckAgent) executeTool(params executeToolParams, _ copilot.ToolInvocation) (string, error) {
-	slog.Debug("execute_tool", "agent", "tool check", "tool", params.Tool, "args", params.Args)
+	slog.Debug("execute_tool", "agent", "tool-check", "tool", params.Tool, "args", params.Args)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	out, err := exec.CommandContext(ctx, toolPaths[params.Tool], params.Args...).CombinedOutput()
@@ -1148,13 +1148,13 @@ func (a *ToolCheckAgent) preToolUse(input copilot.PreToolUseHookInput, _ copilot
 	args, _ := input.ToolArgs.(map[string]any)
 	name, _ := args["tool"].(string)
 	if _, ok := toolPaths[name]; !ok {
-		slog.Warn("hook denied", "agent", "tool check", "tool", input.ToolName, "args", input.ToolArgs)
+		slog.Warn("hook denied", "agent", "tool-check", "tool", input.ToolName, "args", input.ToolArgs)
 		return &copilot.PreToolUseHookOutput{
 			PermissionDecision:       "deny",
 			PermissionDecisionReason: fmt.Sprintf("%q is not a registered tool", name),
 		}, nil
 	}
-	slog.Debug("hook allowed", "agent", "tool check", "tool", input.ToolName, "args", input.ToolArgs)
+	slog.Debug("hook allowed", "agent", "tool-check", "tool", input.ToolName, "args", input.ToolArgs)
 	return &copilot.PreToolUseHookOutput{PermissionDecision: "allow"}, nil
 }
 
@@ -1163,7 +1163,7 @@ func (a *ToolCheckAgent) permissionRequest(request copilot.PermissionRequest, _ 
 	if custom, ok := request.(*rpc.PermissionRequestCustomTool); ok && custom.ToolName == "execute_tool" {
 		return &rpc.PermissionDecisionApproveOnce{}, nil
 	}
-	slog.Warn("permission rejected", "agent", "tool check", "kind", request.Kind())
+	slog.Warn("permission rejected", "agent", "tool-check", "kind", request.Kind())
 	return &rpc.PermissionDecisionReject{}, nil
 }
 
@@ -1187,8 +1187,8 @@ func (a *ToolCheckAgent) close(ctx context.Context) {
 	if a.session == nil {
 		return
 	}
-	logUsage(ctx, "tool check", a.session)
+	logUsage(ctx, "tool-check", a.session)
 	if err := a.session.Disconnect(); err != nil {
-		slog.Error("disconnect", "agent", "tool check", "error", err)
+		slog.Error("disconnect", "agent", "tool-check", "error", err)
 	}
 }
