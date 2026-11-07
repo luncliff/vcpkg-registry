@@ -1,437 +1,574 @@
-# vcpkg agent team design v2 (pending approval)
+# vcpkg agent team design v3 (pending approval)
 
 ## Status and sources
 
-- Status: design only, awaiting user approval. No repository file has changed.
-- Request: "We will Implement 4 workflows (create, update, diagnose, troubleshoot) in vcpkg-agents.go ... Team of small agents will cooperate ... goroutine & channel based communicating sequential process patterns ... each goroutine owns a session, handles messages from multiple in/out channels. Design first. Do not go without approval. Place `Judge` agent ... We don't want to go too far (coordinator, orchestrator, etc.)."
-- Correction: "You didn't visualize the role, ownership, delegation, relationship between agents ... entirely wrong assumption that user will request just a single, very simple port ... complex dependency graph ... cross compile with triplet guidance ... state transition of the agent team ... various vcpkg user scenarios ... research vcpkg commands."
-- Superseded: v1 design (PortResearch, PortEdit, PortInstall, Judge with first-line token routing). It treated a request as one port and covered no graph, triplets, team states, or scenarios.
+- Status: design only, awaiting user approval. `vcpkg-agents.go` is unchanged. v2 is in commit `ccfe506`.
+- Request: "We will Implement 4 workflows (create, update, diagnose, troubleshoot) in vcpkg-agents.go ... each goroutine owns a session, handles messages from multiple in/out channels ... Place `Judge` agent to follow loop engineering ... The agent team may work on multiple ports if the instruction requires it."
+- Corrections applied in v3:
+  - "NO max iteration. Therefore, no `Exhausted`. ... They MUST accomplish the order ... In the boundary of allowed/approved/limited."
+  - "You didn't design tools and hooks."
+  - "You're delegating too much jobs to LLM. Several steps can be deterministic with Hooks and exact `vcpkg` command executions."
+  - "You can edit triplet if and only if there is no way."
+  - "Registry regression is NOT our goal. ... They will aggregate multiple vcpkg registries over vcpkg root."
+  - "Be simple. Reduce complexity. I never instructed you to create some command."
+  - "Distinguish port update and baseline update. Also, commit must be separated either."
+- Superseded from v2: Scout agent, 34-field Ledger, iteration budget and `Exhausted`, `record_*` model tools, `depend-info` and `x-check-support` gates, and registry-wide checks.
 
-## Verified vcpkg facts (vcpkg 2026-04-08, Windows x64 host)
+## Verified facts
 
-| Command | Team use | Observed behavior |
+vcpkg 2026-04-08 on a Windows x64 host, VCPKG_ROOT `D:\vcpkg`. Probes ran in temporary folders, which have been deleted.
+
+| Fact | Team use | Source |
 |---|---|---|
-| `depend-info <specs> --format=list --show-depth` | graph, reverse dependents | All 71 overlay ports: 1 s, 158 lines. Mixed-triplet specs work; nodes without a suffix belong to `--triplet`. Prints `supports` warnings and continues. Without `--x-install-root` it waited on the `D:\vcpkg\installed` lock. |
-| `x-check-support <port[features]:triplet> --x-json` | supports gate | Exits 1 even when the port is supported, so the team parses output instead of the exit code. JSON means supported; plain text means unsupported (`kleidiai:x64-windows` is limited to 'arm64'). Checks `[core]` unless features are named. |
-| `x-set-installed <specs> --dry-run` | host feasibility, rebuild plan | Runs compiler detection: arm64-android without `ANDROID_NDK_HOME` fails with "unable to detect the active compiler's information"; arm64-windows finds `Hostx64/arm64/cl.exe`. `install --dry-run` skips compiler detection. |
-| `x-set-installed <specs> --keep-going` | build | After a portfile edit, plans "will be rebuilt" (ABI changed), while classic `install` reports "already installed". Removes unlisted packages from the root. With `--keep-going`, prints `RESULTS` and `  port:triplet: CODE: elapsed` for non-success specs, then exits 1. |
-| triplet load | host feasibility | `arm64-ios-simulator` on Windows fails with "Could not find XCODEBUILD_EXE" during graph and support checks. |
-| `list --x-json` | success evidence | Returns a JSON object of installed specs (`{}` for an empty root). |
-| lock | ownership | One `vcpkg-running.lock` per install root; `buildtrees` and `packages` have no lock. |
-| result codes | attribution | Root failures: `BUILD_FAILED`, `POST_BUILD_CHECKS_FAILED`, `FILE_CONFLICTS`. Cascaded: `CASCADED_DUE_TO_MISSING_DEPENDENCIES`. Support: `CASCADED_DUE_TO_SUPPORTS`, `UNSUPPORTED`. |
-| `x-add-version` | baseline | Requires committed port files (docs/guide-update-version-baseline.md). AGENTS.md forbids automatic commits. |
+| A failed build prints `See logs for more information:` with the err log paths, then `error: building <spec> failed with: BUILD_FAILED`, a known-issues search URL for the port, and a `gh issue create --body-file .../issue_body.md` hint | Evidence files, prior-art search | probe |
+| `issue_body.md` holds the spec and version, the host and compiler, the vcpkg-tool and scripts versions, and every err log | Diagnosis context | probe |
+| With `--keep-going`, `RESULTS` lists every spec as `<spec>: SUCCEEDED, BUILD_FAILED, or CASCADED_DUE_TO_MISSING_DEPENDENCIES`. A cascade prints `due to the following missing dependencies:` followed by its root spec. `issue_body.md` is not written | Results, root-failure attribution | probe |
+| `buildtrees/<port>/` has `error-logs-<triplet>.txt` (the list of err logs), `build-<triplet>-err.log`, `-out.log`, `stdout-<triplet>.log`, and `<triplet>.vcpkg_abi_info.txt` | Evidence files | probe |
+| Log names name the phase: `patch-<triplet>-<n>`, `config-<triplet>`, `build`, `install` | Evidence locates the phase | `scripts/cmake/z_vcpkg_apply_patches.cmake:20`, `ports/vcpkg-cmake/vcpkg_cmake_configure.cmake:33`, `vcpkg_cmake_build.cmake:10`, `vcpkg_cmake_install.cmake:18` |
+| The install plan prints each port's origin: overlay ` -- <path>`, builtin with no suffix (classic), git registry ` -- git+<url>@<git-tree>` (manifest) | Where a port lives | probe, classic and manifest with two `file:///` git registries |
+| `--overlay-ports=<one port dir>` overrides a git registry for that port, and the other ports keep their registry | Edits reach vcpkg in any registry setup | probe |
+| Every `vcpkg_abi_info.txt` has a `triplet_abi` line | A triplet edit rebuilds every package of that triplet | `D:\vcpkg\buildtrees\vcpkg-cmake\x64-windows.vcpkg_abi_info.txt` |
+| Classic `install` into an existing root skips an edited port ("already installed") | Fresh install root per attempt | probe |
+| A missing port prints `error: while looking for <port>` and `<port> does not exist`, and exits 1 | Create a missing port | probe |
+| A compiler-detection failure aborts a multi-triplet command; `arm64-ios-simulator` fails at triplet load on Windows ("Could not find XCODEBUILD_EXE") | One install per triplet, environment diagnoses | probe |
+| `x-package-info <port> --x-json` returns the version and port-version; `list --x-json --x-install-root=<root>` returns installed specs | Version gate, success evidence | probe |
+| `install` accepts `--keep-going`, `--dry-run`, `--x-install-root`, `--x-buildtrees-root`, `--x-packages-root`, `--overlay-ports`, `--overlay-triplets`, `--host-triplet`, `--binarysource` | Builder command | `vcpkg help install` |
+| `x-add-version` hashes the complete file contents of the port directory, including untracked files; `--overwrite-version` replaces an existing entry | Baseline update preconditions | [add-version](https://learn.microsoft.com/en-us/vcpkg/commands/add-version) |
+| A version change sets `port-version` to 0; a change without a new version increments it | Porter gate | [registries](https://learn.microsoft.com/en-us/vcpkg/concepts/registries) |
+| A git registry commits the port files first, runs `vcpkg --x-builtin-ports-root=./ports --x-builtin-registry-versions-dir=./versions x-add-version --all`, and then commits the version files | Two commits | [publish to a git registry](https://learn.microsoft.com/en-us/vcpkg/produce/publish-to-a-git-registry) |
+| A triplet describes the target environment (CPU, OS, compiler, runtime) for every library built with it | Triplet rule | [triplets](https://learn.microsoft.com/en-us/vcpkg/concepts/triplets) |
+| Upstream built-in Windows triplets set `VCPKG_PROVIDED_FORTRAN ON`, and `scripts/cmake/vcpkg_find_fortran.cmake` reads it. The local `D:\vcpkg` (2026-04-28) has neither. PR 613 added the line to this registry's `triplets/x64-windows.cmake` | Triplet example, scenario S8 | `gh search code`, `git show bdaf419` |
+| Hooks: `OnPreToolUse` (allow, deny, modify args), `OnPostToolUse` (modify result, add context), `OnAgentStop` (`Decision: "block"` continues the turn with a reason), `OnPermissionRequest`; `SendAndWait[T]` returns typed output | Tools and hooks | copilot-sdk/go v1.0.28 `types.go`, `structured_output.go` |
 
-- Not used (YAGNI): `ci`, `x-test-features`, `--only-downloads` gate, `--editable` (not available for `x-set-installed`), parallel install roots.
+## Concepts
 
-## Decisions (5-why)
+- **Order**: the user's `--prompt`. It is the only input. The flags stay `--prompt` and `--verbose`.
+- **Objective**: one spec `port[features]:triplet` that the order needs, either installed or diagnosed, with an optional version target. A request may cover many ports and triplets.
+- **Attempt**: one Go-run `vcpkg install` per triplet, with every edited port passed as an overlay.
+- **Diagnosis**: a testable hypothesis about one root failure: evidence, cause, owning layer, and fix.
+- **Settled objective**: achieved (installed, or diagnosed and reported) or blocked with a reason. The team stops only when every objective has settled.
 
-### vcpkg schedules the graph
-1. Why can a request not be one port? Requests expand into graphs: onnxruntime has 26 nodes at depth 6, and cpuinfo has the overlay dependents xnnpack, onnxruntime, fbgemm, and tensorflow-lite.
-2. Why does the expansion matter? An edit changes the ABI of every dependent, so the dependents rebuild and can fail.
-3. Why not let agents order builds? Ordering, ABI propagation, binary-cache reuse, and cascades are vcpkg internals.
-4. Why trust vcpkg for it? It builds in topological order and reports each spec as root-failed or cascaded.
-5. Why iterate on root failures only? Fixing a root unblocks its cascades, so each iteration shrinks the failure frontier.
-- Decision: the team plans top-level targets, vcpkg schedules the closure, and the team fixes the frontier.
+### Boundary
 
-### Builder runs `x-set-installed` in isolated roots
-1. Why `x-set-installed`? Classic `install` skips an edited port that is already installed; `x-set-installed` rebuilds it on ABI change.
-2. Why isolated roots? The lock is per install root, the shared `D:\vcpkg\installed` is contended, and `buildtrees` has no lock.
-3. Why one Builder? One root has one lock, so builds serialize anyway.
-4. Why Go-built arguments? The current PortInstallAgent lets the model choose arguments and builds in the shared root.
-5. Why `--keep-going`? One call yields every root failure in the graph.
+| Kind | Content | Enforced by |
+|---|---|---|
+| Allowed | Reads inside read roots. Porter writes inside the port directories of the objectives, the diagnoses, and new ports. Allowlisted `vcpkg` and `gh` subcommands. Builds inside scratch roots | `OnPermissionRequest`, `OnPreToolUse`, Go-built commands |
+| Approved by the order | Commit of port files, baseline update (`x-add-version`) and its commit, triplet edit (G3) | Judge's `Scope`, open gaps G3 and G4 |
+| Limited | No writes outside write roots, no change to the user's `installed` tree, no shell, no network writes (`git push`, `gh` writes), no new CLI flags | Hooks deny with a reason |
 
-### Triplets are gated before builds
-1. Why gate per triplet? Hosts fail differently per triplet: iOS at triplet load, Android at compiler detection.
-2. Why before the build? The gate costs seconds; a failed build costs hours and looks like a port bug.
-3. Why separate Blocked from Failed? Porter cannot fix an environment, and iterating on one spends the budget.
-4. Why a graph per triplet? Platform qualifiers and host dependencies change the nodes, for example kleidiai on arm64 and host tools for Android.
-5. Why always pass overlay triplets? Registry triplets change linkage and ABI (x64-windows and x64-linux are dynamic), matching CI.
+## Diagnosis
 
-### Typed ledger as the only message
-1. Why typed? The Judge and Go guards compare iterations.
-2. Why compare? To detect stalls and to confirm ACHIEVED against evidence.
-3. Why parse at the boundary? RESULTS lines, `--x-json`, and `depend-info` lists are machine formats.
-4. Why typed tools for the model? `record_plan`, `record_edit`, `record_diagnosis`, and `record_verdict` produce structs instead of free text.
-5. Why one message object? Sending it transfers ownership, so no state is shared and no mutex is needed.
+### Terms
 
-### One ledger in flight (baton)
-1. Why one? The delegation graph has a cycle (Judge, Scout, Porter, Builder, Judge), and two messages on an unbuffered cycle can deadlock.
-2. Why accept no parallelism? Builds serialize on one lock, and model steps are short in comparison.
-3. Why one channel per relationship? Each edge has one sender and one receiver, the diagram matches the code, and receivers know provenance.
+- **Evidence**: verbatim lines with their file paths. At least one line comes from vcpkg's failure output: the console output or a file listed in `error-logs-<triplet>.txt`. Others may quote port, source, script, or triplet files. Go checks every line against its file before anything acts on it.
+- **Cause**: a hypothesis naming the decision that failed and the layer that owns it. A rebuild tests the fix, so a cause is never proven, only not refuted.
+- **Issues (prior art)**: earlier reports and fixes for the same evidence. Sources are the known-issues URL that vcpkg prints, microsoft/vcpkg issues and PRs, and upstream commits. They are inputs to the fix, cited in its text, and are not a field.
+- **Layer**: `manifest`, `portfile`, `patch`, `environment`, or `triplet`. Go routes by it.
+- **Fix**: the smallest change in the owning layer that would make the quoted failure lines disappear if the cause is true.
 
-### Judge is the only loop
-1. Why a Judge? ACHIEVED is a judgment against a natural-language goal.
-2. Why Go guards? A model verdict can contradict the vcpkg evidence.
-3. Why the only loop? One budget and one stop decision, with no hidden inner retries.
-4. Why no orchestrator? Routing is local: each agent routes by the ledger fields it owns.
+### Fix procedure (Builder session)
+
+1. Locate the root failure. Go picks the first root failure in `RESULTS` order (cascades excluded) that has no settled diagnosis, or the triplet when vcpkg fails before any build. The log name gives the phase.
+2. Assign the owning layer by asking who decided what failed:
+
+| Layer | Owns | Typical evidence |
+|---|---|---|
+| manifest | dependencies, features, `"host": true` tools, `supports` | `<port> does not exist`, missing package, tool executed for the wrong architecture |
+| portfile | configure options, `VCPKG_TARGET_IS_*` branches, `vcpkg_check_linkage`, install and fixup calls | config log option errors, post-build check messages, `config_fixup` errors |
+| patch | the project's build system and source (CMakeLists, meson.build, code) | `patch-<triplet>-<n>` failure, compiler or linker errors in project code |
+| environment | the host machine: SDK, NDK, Xcode, network | compiler detection or triplet load errors, missing executables |
+| triplet | toolchain governance for every port of that triplet | a vcpkg script line reading a triplet variable, plus the triplet file lines |
+
+3. Search prior art and prefer an accepted fix.
+4. Write the smallest fix in that layer that differs from every refuted diff.
+5. The rebuild is the test.
+
+### When Evidence or Fix is wrong
+
+| What is wrong | Detected by (Go) | Transition |
+|---|---|---|
+| Evidence not verbatim, no failure-output line, or Layer outside the enum | Quote check after `SendAndWait` | Proposed again: same session, corrective follow-up |
+| Layer `triplet` without a quote from a triplet file | Quote check | Proposed again |
+| Fix the Porter cannot express | Empty diff with a note | Refuted with the note; next diagnosis without a rebuild |
+| Diff equal to a refuted diff | Porter `OnAgentStop` | Porter continues: a different diff, or an empty one as refusal |
+| Quoted failure line recurs in the spec's new logs | Rebuild, rule 3 | Refuted; Porter restores the snapshot, rebuild, next diagnosis sees Diff and Outcome |
+| A spec that succeeded in the previous attempt now fails | Rebuild, rule 2 | Refuted (regression), same path |
+| Failure moved elsewhere | Rebuild, rule 4 | Kept; Builder diagnoses the new failure; a later diagnosis may name a kept diff as cause by quoting its lines |
+
+Experiment rules after an attempt with an applied diagnosis, evaluated in order:
+
+1. Its spec succeeds: kept.
+2. A spec that succeeded in the previous attempt fails: refuted (regression).
+3. Its spec fails and a quoted failure line appears in its new logs: refuted.
+4. Otherwise: kept (progress).
+
+```mermaid
+stateDiagram-v2
+    [*] --> Proposed: Builder session reads logs
+    Proposed --> Proposed: Go quote check fails, follow-up in the same session
+    Proposed --> Verified: quotes verbatim and layer valid
+    Verified --> Reported: objective wants a diagnosis only
+    Verified --> Blocked: environment, port not writable, or triplet not approved
+    Verified --> Applied: Porter diff passes the stop gate
+    Verified --> Refuted: Porter returns an empty diff with a note
+    Applied --> Kept: spec succeeds or the failure moves
+    Applied --> Refuted: quoted line recurs or a passing spec fails
+    Refuted --> [*]: snapshot restored, next diagnosis reads Diff and Outcome
+    Kept --> [*]
+    Reported --> [*]
+    Blocked --> [*]
+```
 
 ## Team: roles, ownership, delegation
 
 ```mermaid
 C4Component
-  title vcpkg agent team: roles, ownership, delegation
-  Person(user, "User", "one --prompt")
-  Container_Boundary(team, "vcpkg-agents process") {
-    Component(main, "main", "goroutine", "owns ctx, channels, WaitGroup, client")
-    Component(judge, "Judge", "goroutine + session", "owns goal, iteration, verdict, fingerprints")
-    Component(scout, "Scout", "goroutine + session", "owns items, triplets, graph, targets, blocked")
-    Component(porter, "Porter", "goroutine + session", "owns edits")
-    Component(builder, "Builder", "goroutine + session", "owns results, diagnoses")
-  }
-  Container_Boundary(repo, "git root") {
-    ComponentDb(src, "ports/ and triplets/", "files", "writer: Porter")
-    ComponentDb(roots, "installed/ buildtrees/ packages/", "files, one vcpkg lock", "writer: Builder")
-  }
-  System_Ext(vcpkg, "vcpkg", "VCPKG_ROOT")
-  System_Ext(web, "GitHub and Microsoft Learn", "read-only")
-  Rel(user, main, "prompt")
-  Rel(main, judge, "starts, waits on done")
-  Rel(judge, scout, "task", "delegates goal")
-  Rel(scout, porter, "edit", "delegates edits")
-  Rel(scout, builder, "check", "delegates reproduction")
-  Rel(scout, judge, "scoped", "early stop")
-  Rel(porter, builder, "build", "hands off edits")
-  Rel(builder, judge, "report", "returns evidence")
-  Rel(judge, main, "done")
-  Rel(porter, src, "writes")
-  Rel(builder, roots, "writes")
-  Rel(scout, vcpkg, "depend-info, x-check-support, dry-run")
-  Rel(builder, vcpkg, "x-set-installed, list")
-  Rel(scout, web, "upstream versions")
-  Rel(builder, web, "known issues")
+    title vcpkg agent team v3 - roles, ownership, delegation
+    Person(user, "User", "one prompt with the order")
+    System_Boundary(proc, "vcpkg-agents process") {
+        Component(judge, "Judge", "main goroutine and session", "owns objectives, routing, review, recording")
+        Component(porter, "Porter", "goroutine and session", "sole writer of port files")
+        Component(builder, "Builder", "goroutine and session", "owns attempts and diagnoses")
+    }
+    ComponentDb(ports, "Port directories", "write roots", "manifest, portfile, patches")
+    ComponentDb(scratch, "Scratch roots", "installed, buildtrees, packages", "attempt output and logs")
+    System_Ext(vcpkg, "vcpkg", "user VCPKG_ROOT, registries, binary cache")
+    System_Ext(git, "git", "user repository")
+    System_Ext(github, "GitHub and Microsoft Learn", "prior art and docs, read only")
+    Rel(user, judge, "order", "--prompt")
+    Rel(judge, porter, "delegates edits and reverts", "fix chan Work")
+    Rel(judge, builder, "delegates the next diagnosis", "check chan Work")
+    Rel(porter, builder, "hands edited ports", "build chan Work")
+    Rel(builder, judge, "reports results and a diagnosis", "report chan Work")
+    Rel(porter, ports, "writes, snapshots, restores")
+    Rel(builder, scratch, "writes")
+    Rel(builder, vcpkg, "install per triplet")
+    Rel(porter, vcpkg, "format-manifest, x-download, hash, x-package-info, dry-run")
+    Rel(judge, git, "commit 1 and commit 2 when asked")
+    Rel(judge, vcpkg, "x-add-version when asked")
+    Rel(builder, github, "issues, PRs, docs")
+    Rel(porter, github, "releases, upstream changes")
 ```
 
-| Agent | Responsibility | Owns (sole writer) | In | Out | Session tools | Go-run commands | Skills |
-|---|---|---|---|---|---|---|---|
-| Judge | grade each iteration, own the loop | Iteration, Verdict, Fingerprints | scoped, report | task, done | record_verdict | guards | none |
-| Scout | scope and plan | Items, Host, Triplets, Graph, Targets, Blocked | task | edit, check, scoped | view, rg, glob, web_fetch, gh (read-only), Learn MCP, vcpkg_query (search, x-package-info), record_plan | depend-info, x-check-support, x-set-installed --dry-run | search-port, check-port-upstream, check-environment |
-| Porter | edit ports in topological order | Edits; files in `ports/` (and `triplets/` per D1) | edit | build | view, rg, glob, apply_patch (path hook), web_fetch, vcpkg_hash, record_edit | format-manifest | create-port, update-port, review-port |
-| Builder | build and explain root failures | Results, Diagnoses; `installed/`, `buildtrees/`, `packages/` | check, build | report | view (buildtrees, ports, triplets), gh (read-only), Learn MCP, record_diagnosis | x-set-installed --dry-run and --keep-going, list --x-json | search-if-known-issue, install-port |
-| main | process lifetime | ctx, channels, WaitGroup, client | done | stdout | none | none | none |
+| Agent | Role | Owns | Delegates to | LLM steps | Go steps |
+|---|---|---|---|---|---|
+| Judge | Loop owner | objectives, `Record`, recording | Porter (edits, reverts), Builder (next diagnosis) | Scope (order to objectives), Review (done or revised objectives), triplet decision G3 | settle objectives, route, commit 1, `x-add-version`, commit 2 |
+| Porter | Sole writer of port files | port snapshots, `Work.Ports`, `Diagnosis.Diff` | Builder | create and update ports, apply a verified fix | revert, format, stop gate, diff |
+| Builder | Evidence owner | scratch roots, attempt output, `Objective.Result` | Judge | diagnose one root failure | install per triplet, parse results, experiment rules, quote check |
 
-- Others may read an owned resource while its owner is idle; with one baton, the owner is always idle when another agent holds the ledger.
+## Tools and hooks
+
+| Agent | Built-in tools | Custom tools (`DefineTool`, exec without shell) | Hooks |
+|---|---|---|---|
+| Judge | `view`, `glob`, `rg` | none | `OnPermissionRequest`: reads in read roots, rejects the rest |
+| Porter | `view`, `glob`, `rg`, `apply_patch`, `web_fetch` | `vcpkg`: `x-download`, `hash`, `format-manifest`, `x-package-info`, `search`. `gh`: existing `ghReadOnlyCommands` | `OnPreToolUse`: subcommand allowlists. `OnPermissionRequest`: writes only in write roots, with a snapshot of the port directory on its first write in a turn; triplet roots only for an approved triplet diagnosis. `OnPostToolUse`: after a `vcpkg.json` edit, Go runs `vcpkg format-manifest <file>` and adds its output as context. `OnAgentStop`: the gate below |
+| Builder | `view`, `glob`, `rg`, `web_fetch`, Learn MCP | `gh`: existing `ghReadOnlyCommands` | `OnPreToolUse`: existing gh allowlist. `OnPermissionRequest`: reads in read roots and scratch, no writes |
+
+Porter stop gate (`OnAgentStop` returns `Decision: "block"` with the failed checks until all pass; an empty diff passes as a refusal):
+
+1. `vcpkg format-manifest` succeeds for every edited manifest.
+2. Port-version rule against the run-start snapshot, when the port's registry has `versions/baseline.json`.
+3. `vcpkg install <specs> --dry-run --x-install-root=<scratch>/dry --overlay-ports=<each edited dir>` resolves for every triplet. `<port> does not exist` means the Porter creates that port.
+4. `vcpkg x-package-info <port> --x-json` shows the objective's version when one is set. Go replaces `latest` with that version.
+5. The diff differs from every refuted diff.
+
+### Deterministic steps
+
+| Step | Owner | Exact mechanism |
+|---|---|---|
+| Tools, environment, manifest, configuration, git root | `init` | existing detection |
+| Attempt | Builder | per triplet: `vcpkg install <specs> --keep-going --x-install-root=<scratch>/installed --x-buildtrees-root=<scratch>/buildtrees --x-packages-root=<scratch>/packages --overlay-ports=<each Work.Ports dir>`; installed root deleted before each attempt; console saved to `<scratch>/<triplet>.log` |
+| Skip unchanged attempt | Builder | rebuild only when the objective specs or the content of `Work.Ports` differ from the last attempt |
+| Results | Builder | `RESULTS` lines, cascade lines, `list --x-json --x-install-root=<scratch>/installed` |
+| Next root failure | Builder | first non-cascade failure in `RESULTS` order without a settled diagnosis |
+| Quote check | Builder | each quote in its file; one from failure output; Layer in the enum; triplet layer needs a triplet quote |
+| Experiment rules 1 to 4 | Builder | previous and current results, quoted lines in `error-logs-<triplet>.txt` files |
+| Revert | Porter | restore the snapshot taken before the refuted diagnosis |
+| Settle and route | Judge | rules in Team states |
+| Port commit, baseline update, baseline commit | Judge | Port update and baseline update section |
 
 ## CSP wiring
 
-| Channel | Sender | Receiver | Meaning |
-|---|---|---|---|
-| task | Judge | Scout | start iteration n |
-| edit | Scout | Porter | create, update, or fix items exist |
-| check | Scout | Builder | verify or diagnose items only |
-| build | Porter | Builder | edits are ready |
-| scoped | Scout | Judge | nothing feasible or nothing to do |
-| report | Builder | Judge | results and diagnoses |
-| done | Judge | main | final ledger |
-
 ```go
-task, edit, check, build := make(chan *Ledger), make(chan *Ledger), make(chan *Ledger), make(chan *Ledger)
-scoped, report, done := make(chan *Ledger), make(chan *Ledger), make(chan *Ledger)
+func main() {
+	// flags and init unchanged: --prompt, --verbose
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	client := copilot.NewClient(nil) // Start and Stop as today
 
-go judge.Run(ctx, scoped, report, task, done) // in: scoped, report  out: task, done
-go scout.Run(ctx, task, edit, check, scoped)  // in: task            out: edit, check, scoped
-go porter.Run(ctx, edit, build)               // in: edit            out: build
-go builder.Run(ctx, check, build, report)     // in: check, build    out: report
+	fix := make(chan Work)    // Judge to Porter
+	check := make(chan Work)  // Judge to Builder
+	build := make(chan Work)  // Porter to Builder
+	report := make(chan Work) // Builder to Judge
 
-func (b *Builder) Run(ctx context.Context, check, build <-chan *Ledger, report chan<- *Ledger) {
-	defer b.close(context.WithoutCancel(ctx))
+	go NewPorter(client, *prompt).Run(ctx, fix, build)
+	go NewBuilder(client, *prompt).Run(ctx, check, build, report)
+	judge := NewJudge(client, *prompt)
+	final := judge.Run(ctx, report, fix, check) // main goroutine owns the Judge session
+	for range report { // Builder closes report after Porter and Builder disconnect
+	}
+	judge.Close(ctx)
+	slog.Info("report", "content", final)
+}
+
+func (j *Judge) Run(ctx context.Context, report <-chan Work, fix, check chan<- Work) string {
+	defer close(fix)
+	defer close(check)
+	w := j.scope(ctx) // SendAndWait[Scope]
+	to := fix         // the first Work goes to the Porter
 	for {
-		var l *Ledger
+		if !send(ctx, to, w) {
+			return "canceled"
+		}
+		var ok bool
+		if w, ok = receive(ctx, report); !ok {
+			return "canceled"
+		}
+		for to = j.route(ctx, &w); to == nil; to = j.route(ctx, &w) { // nil: every objective settled
+			r := j.review(ctx, w) // SendAndWait[Review]
+			if r.Done {
+				return j.record(ctx, w, r.Report) // only as the order asks
+			}
+			w.Objectives = r.Objectives
+		}
+	}
+}
+
+func (p *Porter) Run(ctx context.Context, fix <-chan Work, build chan<- Work) {
+	defer close(build)
+	defer p.close(ctx) // logUsage, Disconnect
+	for w := range fix {
+		p.revert(&w) // Go: latest diagnosis refuted with a diff
+		if p.needsEdit(w) {
+			p.edit(ctx, &w) // session turn, OnAgentStop gate, Go fills Diff, Status, Outcome, Ports
+		}
+		if !send(ctx, build, w) {
+			return
+		}
+	}
+}
+
+func (b *Builder) Run(ctx context.Context, check, build <-chan Work, report chan<- Work) {
+	defer close(report)
+	defer b.close(ctx)
+	for check != nil || build != nil {
+		var w Work
+		var ok bool
 		select {
+		case w, ok = <-check:
+			if !ok {
+				check = nil
+				continue
+			}
+		case w, ok = <-build:
+			if !ok {
+				build = nil
+				continue
+			}
 		case <-ctx.Done():
 			return
-		case l = <-check: // reproduce; no edits this iteration
-		case l = <-build: // verify Porter edits
 		}
-		if err := b.handle(ctx, l); err != nil {
-			b.cancel(err)
-			return
+		if b.attempt(ctx, &w) { // Go: install, results, experiment rules; false after a refutation
+			b.diagnose(ctx, &w) // session: one root failure, Go quote check
 		}
-		if !send(ctx, report, l) {
+		if !send(ctx, report, w) {
 			return
 		}
 	}
 }
 ```
 
-- Invariant: the Judge creates exactly one ledger, and every handler sends exactly once per receive.
-- Consequence: at most one goroutine is outside its receive `select`, so each send finds its sole receiver waiting. The cycle cannot deadlock.
-- Shutdown: channels stay open because some agents have several inputs. `main` waits for `done` or `ctx.Done()`, then calls `cancel(nil)` and `wg.Wait()`. An SDK error calls `cancel(cause)`.
-- Sessions start lazily on the first message and close with `logUsage`, then `Disconnect`.
+- Baton invariant: one `Work` exists, and each goroutine sends exactly once per receive. At most one goroutine holds it; the others wait in receive, so the cycle cannot deadlock.
+- Shutdown: the Judge closes `fix` and `check`, the Porter closes `build`, the Builder closes `report` when both inputs are closed, and `main` drains `report`.
+- Canceled: Ctrl+C cancels `ctx`; every `send`, `receive`, and session call returns.
+- Sessions start on the first message and end with `logUsage` and `Disconnect`, as today.
 
-## Ledger (typed message)
+```mermaid
+stateDiagram-v2
+    [*] --> Receiving
+    Receiving --> Working: Work received
+    Working --> Sending: Go steps and session turn done
+    Sending --> Receiving: one send per receive
+    Receiving --> Closing: every input closed
+    Working --> Closing: ctx canceled
+    Sending --> Closing: ctx canceled
+    Closing --> [*]: logUsage, Disconnect, close outputs
+```
+
+## Messages and field basis
 
 ```go
-type Need string // create | update | fix | verify | diagnose
-
-type Spec struct {
-	Port     string
-	Features []string
-	Triplet  string
+type Work struct {
+	Objectives []Objective
+	Diagnoses  []Diagnosis
+	Ports      []string // port directories the Porter wrote in this run
 }
 
-type Item struct {
-	Port   string
-	Need   Need
-	Origin string // overlay | builtin | new
-	Goal   string // "version 1.32.0", "fix arm64-android link"
-}
-
-type Edit struct {
-	Port    string
-	Files   []string
-	Summary string
-}
-
-type Result struct {
-	Spec    Spec
-	Code    string // RESULTS code, or INSTALLED from list --x-json
-	Elapsed string
+type Objective struct {
+	Spec    string // port[features]:triplet in vcpkg syntax
+	Want    string // installed | diagnosed
+	Version string // "" keeps; "latest" or a version; Go writes the applied version
+	Result  string // vcpkg RESULTS code of the last attempt
 }
 
 type Diagnosis struct {
-	Spec     Spec
-	Kind     string // port | environment | upstream
-	Phase    string // download | configure | build | install | post-build
+	Spec     string  // root failure spec, or the triplet when vcpkg fails before any build
+	Evidence []Quote // verbatim, checked by Go
 	Cause    string
-	Evidence string // log path and excerpt
-	Issues   []string
-	Fix      string
+	Layer    string // manifest | portfile | patch | environment | triplet
+	Fix      string // cites prior art
+	Diff     string // Go: port files after the Porter turn versus its snapshot
+	Status   string // verified | applied | kept | refuted | reported | blocked
+	Outcome  string // Go: experiment result, Porter note, or block reason
 }
 
-type Ledger struct {
-	Prompt       string
-	Iteration    int                 // Judge
-	Host         string              // Scout (Go: runtime.GOOS and GOARCH)
-	Triplets     []string            // Scout
-	Items        []Item              // Scout
-	Graph        map[string][]string // Scout (Go: depend-info), key "port:triplet"
-	Targets      []Spec              // Scout
-	Blocked      map[string]string   // Scout (Go gates), triplet or spec to reason
-	Edits        []Edit              // Porter
-	Plan         string              // Builder (dry-run plan text)
-	Results      []Result            // Builder (Go parse)
-	Diagnoses    []Diagnosis         // Builder session
-	Verdict      string              // Judge: ACHIEVED | ITERATE | BLOCKED
-	Fingerprints []string            // Judge (Go), one per iteration
+type Quote struct {
+	File string
+	Text string
 }
 ```
 
-## Dependency graph handling
+Judge-only typed outputs: `Scope{Objectives, Record}` and `Review{Done, Objectives, Report}`. `Record` is `""`, `port`, or `baseline`.
 
-1. Scout's session reads the prompt and calls `record_plan` with the items, triplets, and features.
-2. For each target triplet, Go runs `depend-info` over all overlay ports and inverts the edges to find reverse dependents inside `ports/`. Those dependents become `verify` items.
-3. Each item gets an origin: `overlay` if `ports/<p>` exists, `new` if it is planned but absent, `builtin` otherwise.
-4. Targets are the top-level specs only: items times feasible triplets, minus unsupported specs. vcpkg pulls the closure, including host nodes and builtin dependencies.
-5. Porter edits in topological order, dependencies first: kleidiai before xnnpack; google-pthreadpool before xnnpack before tensorflow-lite.
-6. Builder runs one `x-set-installed --keep-going` for all targets. vcpkg rebuilds the ABI-changed nodes and their dependents and reuses the binary cache for the rest.
-7. Builder parses RESULTS. Root failures get diagnoses; cascaded specs retry automatically in the next iteration.
-8. Builtin consumers of an overriding overlay port (abseil reaches protobuf, re2, utf8-range) are covered when they sit inside the targets' closure. A wider regression set is D2.
+| Field | Writer | Reader | Decision it drives | Why it is not derived |
+|---|---|---|---|---|
+| `Work.Objectives` | Judge | all | what to edit, build, settle | the order is natural language |
+| `Work.Diagnoses` | Builder, Porter, Go | Judge, Porter, Builder | apply, revert, report, block, non-repeat | hypotheses and experiment history exist nowhere else |
+| `Work.Ports` | Porter (Go) | Builder, Judge | `--overlay-ports` per attempt, commit 1 set, `x-add-version` names | created ports, such as a new dependency, are in no objective |
+| `Objective.Spec` | Judge | Builder, Porter, Judge | install arguments, triplet grouping | vcpkg syntax, so vcpkg parses it |
+| `Objective.Want` | Judge | Judge, Porter | edits allowed or report only | diagnose and troubleshoot differ only in the order |
+| `Objective.Version` | Judge, Go | Porter gate, Judge | update target | stated by the order |
+| `Objective.Result` | Builder (Go) | Judge | settle | copy of the vcpkg result code |
+| `Diagnosis.Spec` | Builder (Go) | Porter, Judge | port to edit, objectives it settles through cascades | picked from `RESULTS` |
+| `Evidence` | Builder session | Go, Porter, user | quote check, rule 3 | the only grounding of a hypothesis |
+| `Cause` | Builder session | Porter, next diagnosis, user | understanding of the failure | hypothesis |
+| `Layer` | Builder session | Judge, Porter hooks | route, write roots, triplet gate | judgment, enum checked by Go |
+| `Fix` | Builder session | Porter | what to change | judgment |
+| `Diff` | Go | Porter gate, next diagnosis, user | non-repeat, revert target | content of the experiment |
+| `Status` | Go | Judge, Builder | lifecycle | experiment result |
+| `Outcome` | Go, Porter | next diagnosis, user | why refuted or blocked | experiment result |
+| `Quote.File`, `Quote.Text` | Builder session | Go | verbatim check | evidence |
+
+v2 fields removed (34 to 17):
+
+| v2 field | v3 |
+|---|---|
+| `Prompt` | system message of each session, as in current code |
+| `Iteration`, `Verdict`, `Fingerprints` | no maximum; settle rules; refuted `Diff` |
+| `Host`, `Triplets`, `Graph`, `Plan` | vcpkg detects the host, the triplet is in `Spec`, vcpkg builds the graph, cascades name the root, the plan is in the saved console output |
+| `Items` (Need, Origin, Goal), `Targets` | `Objective`; the need is derived by gates; the origin is printed in the plan |
+| `Blocked`, `Edits`, `Results` | `Status` and `Outcome`, `Ports` and `Diff`, `Result` |
+| `Diagnosis.Kind`, `Phase`, `Issues`, `Result.Elapsed` | `Layer`, log name, cited in `Fix`, unused |
+
+## Team states
+
+```mermaid
+stateDiagram-v2
+    [*] --> Scoping
+    Scoping --> Editing: first Work to Porter
+    Editing --> Building: gate passed, snapshot restored, or nothing to edit
+    Building --> Diagnosing: unsettled root failure
+    Building --> Deciding: refuted, or no unsettled root failure
+    Diagnosing --> Deciding: verified diagnosis
+    Deciding --> Editing: apply a fix or revert
+    Deciding --> Diagnosing: reported or blocked, next root failure without a rebuild
+    Deciding --> Reviewing: every objective settled
+    Reviewing --> Deciding: objectives revised
+    Reviewing --> Recording: all achieved and the order asks to record
+    Reviewing --> Achieved: all achieved
+    Reviewing --> Blocked: an objective is blocked
+    Recording --> Achieved
+    Recording --> Blocked: git or x-add-version error outside the boundary
+    Achieved --> [*]
+    Blocked --> [*]
+    Canceled --> [*]
+    note right of Canceled
+        Ctrl+C or an SDK error from any state
+    end note
+```
+
+Judge routing (Go), in order:
+
+1. Settle each objective. Achieved: `Result` is `SUCCEEDED`, and `x-package-info` shows `Version` when set. A diagnosed objective is also achieved when its spec, triplet, or cascade root has a reported diagnosis. Blocked: its spec, triplet, or cascade root has a blocked diagnosis.
+2. Every objective settled: Reviewing. `Review.Done` false with unchanged objectives makes Go re-prompt the Judge session.
+3. Latest diagnosis refuted with a diff: Porter (revert).
+4. Latest diagnosis verified:
+   - The affected objectives want only a diagnosis: reported, then Builder through `check`.
+   - Layer `environment`, or the port directory is outside the write roots (G2): blocked, then Builder through `check`.
+   - Layer `triplet`: G3.
+   - Otherwise: Porter (apply).
+5. Otherwise, such as objectives revised by Review: Porter, which edits when needed and hands over to the Builder.
+
+Builder invariant: after every attempt that refutes nothing, the Builder appends one diagnosis while any objective is unsettled. A root failure without a settled diagnosis always exists in that case, because an unsettled objective failed, cascaded from a root, or shares a triplet that failed before any build.
+
+No maximum iteration and no `Exhausted` state. Termination comes from settling: each objective ends achieved or blocked by something outside the boundary.
 
 ## Triplets and cross-compilation
 
-- Host triplet comes from the Go runtime (windows/amd64 is x64-windows, linux/amd64 is x64-linux, darwin/arm64 is arm64-osx) and is always passed as `--host-triplet`. `VCPKG_DEFAULT_*` is unset on this host.
-- Target triplets come from Scout (the default is the host triplet). Go validates that each one exists in `triplets/` or `VCPKG_ROOT/triplets` and its `community` folder.
-- Every vcpkg command gets `--classic --overlay-ports=ports --overlay-triplets=triplets --x-install-root=installed --x-buildtrees-root=buildtrees --x-packages-root=packages` with `cmd.Dir = gitRoot`. The model never chooses these arguments.
-- Feasibility gate per triplet (Go, seconds):
-  - Triplet load during `depend-info`: arm64-ios-simulator on Windows fails because `XCODEBUILD_EXE` is missing.
-  - Compiler detection during `x-set-installed --dry-run`: arm64-android without `ANDROID_NDK_HOME` fails.
-  - Result: `Blocked[triplet]` holds the reason and the CI job that covers the triplet: the macOS job for ios, the Ubuntu+NDK job for android.
-- Supports gate: `x-check-support` with explicit features, parsing output text instead of the exit code. An unsupported spec becomes Unsupported, not Failed.
-- Host nodes are separate specs: tensorflow-lite:arm64-android pulls flatbuffers, protobuf, and abseil for x64-windows, so a change to abseil affects both triplets.
-- The Builder's system message carries the target triplet files and these facts:
-  - `VCPKG_CROSSCOMPILING`
-  - host tools that come from host dependencies
-  - Android ABI arm64-v8a with API level 26
-  - linkage and CRT per triplet
-  These are the facts search-if-known-issue records.
+Rule: the triplet is the consumer's target environment for every port. The port adapts to it. The team edits a triplet only when the evidence shows a toolchain governance setting that every port of that triplet needs, and no port layer can provide it. G3 decides how that is established and who approves it.
 
-## State machines
+| Concern | Layer | vcpkg mechanism |
+|---|---|---|
+| Build-time tool such as protoc or flatc | manifest, portfile | `"host": true` dependency, `${CURRENT_HOST_INSTALLED_DIR}/tools` |
+| Platform-specific options | portfile | `VCPKG_TARGET_IS_ANDROID`, `VCPKG_TARGET_IS_IOS`, `VCPKG_TARGET_ARCHITECTURE` |
+| Linkage limits | portfile | `vcpkg_check_linkage` |
+| Unsupported platform | manifest | `supports` expression |
+| Project assumes host equals target (try_run, find_program) | patch | patch file in the port |
+| SDK or NDK missing on the host | environment | blocked, or reported for a diagnosis order |
+| Compiler, CRT, linkage default, chainload toolchain, provided Fortran | triplet | triplet file, gated by G3 |
 
-### Team
+- The Builder runs one install per triplet. vcpkg builds host dependencies for the host triplet itself.
+- Triplet files are read-only evidence for every agent until G3 approves an edit.
+- A triplet edit changes `triplet_abi` and rebuilds every package of that triplet.
 
-```mermaid
-stateDiagram-v2
-  [*] --> Iteration: Judge sends task
-  state Iteration {
-    [*] --> Scoping
-    Scoping --> Editing: create, update, or fix items
-    Scoping --> Building: verify or diagnose items only
-    Scoping --> [*]: nothing feasible
-    Editing --> Building
-    Building --> Diagnosing: root failures
-    Building --> [*]: no root failures
-    Diagnosing --> [*]
-  }
-  Iteration --> Judging: scoped or report
-  Judging --> Iteration: ITERATE with progress and n below max
-  Judging --> Achieved: ACHIEVED confirmed by vcpkg list
-  Judging --> Blocked: BLOCKED or only infeasible, unsupported, environment left
-  Judging --> Stalled: failure fingerprint repeated
-  Judging --> Exhausted: n reached max
-  Iteration --> Canceled: ctx canceled
-  Judging --> Canceled: ctx canceled
-  Achieved --> [*]
-  Blocked --> [*]
-  Stalled --> [*]
-  Exhausted --> [*]
-  Canceled --> [*]
-```
+## Multiple registries
 
-- Go guards, applied after the Judge:
-  - Go downgrades ACHIEVED to ITERATE unless every create, update, fix, or verify target on a feasible triplet appears in `list --x-json` and every diagnose item has evidence.
-  - The fingerprint is the sorted set of (spec, code, first error line). If it repeats, the team moves to Stalled.
+- vcpkg runs with the user's working directory and environment: classic mode with `VCPKG_ROOT`, or manifest mode with the user's `vcpkg-configuration.json` registries and overlays (G1).
+- The plan line gives each port's origin. Go maps it to a directory: an overlay path, `VCPKG_ROOT/ports/<port>` for builtin, or a writable clone for a git registry (G2).
+- Edits reach vcpkg through single-port overlays, so registry resolution and every other port stay unchanged.
+- The team builds only the objectives' closure. Registry-wide regression belongs to the registry's own CI.
+- Instructions live in the Go system messages. Repository skills and scripts are optional; `SkillDirectories` stays as `init` detects it.
 
-### Spec
+## Port update and baseline update
 
-```mermaid
-stateDiagram-v2
-  [*] --> Discovered: record_plan or depend-info
-  Discovered --> Infeasible: triplet gate failed
-  Discovered --> Unsupported: x-check-support
-  Discovered --> Planned
-  Planned --> Edited: Porter create, update, fix
-  Planned --> Queued: verify or diagnose
-  Edited --> Queued
-  Queued --> Installed: vcpkg list
-  Queued --> RootFailed: BUILD_FAILED, POST_BUILD_CHECKS_FAILED, FILE_CONFLICTS
-  Queued --> Cascaded: CASCADED_DUE_TO_MISSING_DEPENDENCIES
-  RootFailed --> Diagnosed: Builder session
-  Diagnosed --> Planned: next iteration, fixable in ports
-  Diagnosed --> Reported: diagnose item, builtin, or environment
-  Cascaded --> Queued: next iteration
-  Installed --> [*]
-  Infeasible --> [*]
-  Unsupported --> [*]
-  Reported --> [*]
-```
+| | Port update | Baseline update |
+|---|---|---|
+| Files | `ports/<port>/` | `versions/baseline.json`, `versions/<letter>-/<port>.json` |
+| Writer | Porter edits; Judge (Go) makes commit 1 | Judge (Go) runs `x-add-version` and makes commit 2 |
+| Commands | `git add -- <Work.Ports>`, `git commit` | `vcpkg x-add-version <ports>` in VCPKG_ROOT; elsewhere `vcpkg --x-builtin-ports-root=<repo>/ports --x-builtin-registry-versions-dir=<repo>/versions x-add-version <ports>`; then `git add -- <versions files>`, `git commit` |
+| Preconditions | every objective achieved; Porter gate passed the port-version rule | commit 1 done; `git status --porcelain -- <Work.Ports>` is empty, because the hash includes untracked files |
+| Trigger | `Record` is `port` or `baseline` | `Record` is `baseline` |
 
-### Goroutine
+- A port update without recording leaves the edits in the working tree.
+- The consumer baseline (`vcpkg-configuration.json` `baseline`, `x-update-baseline`) is a separate concept (G5).
 
-```mermaid
-stateDiagram-v2
-  [*] --> Idle: go agent.Run
-  Idle --> Busy: receive ledger on any input
-  Busy --> Sending: route from owned fields
-  Sending --> Idle: receiver accepted
-  Idle --> Closing: ctx done
-  Busy --> Closing: ctx done or SDK error, cancel cause
-  Sending --> Closing: ctx done
-  Closing --> [*]: logUsage, Disconnect, wg.Done
-```
+## Decision basis (5-why)
 
-## Workflows as item routes
+### Go runs vcpkg
+1. Why Go? The command decides which roots vcpkg reads and writes.
+2. Why does that matter? The user's `installed` tree and its lock belong to the user.
+3. Why not the model? The arguments are a pure function of the objectives and `Work.Ports`.
+4. Why prefer a pure function? The same input gives the same command, so outcomes are attributable.
+5. Why attributable? The experiment rules depend on it.
 
-| Workflow | Items | Route of iteration 1 | Edits | Done when |
-|---|---|---|---|---|
-| create | create for the port and for missing dependencies | task, edit, build, report | new `ports/<p>` | new specs installed on feasible triplets |
-| update | update, plus verify for overlay reverse dependents | task, edit, build, report | `ports/` of items; fix promotion per D3 | all targets installed |
-| diagnose | diagnose | task, check, report | none (Scout never routes to Porter) | each failing spec has a diagnosis with evidence |
-| troubleshoot | fix, plus verify | iteration 1 task, check, report (reproduce); then edit, build | `ports/` of fix items | targets installed |
+### One applied diagnosis per attempt
+1. Why one? Refute and revert must know which diff to undo.
+2. Why not one per failing port? A fix in a dependency changes the ABI of its dependents.
+3. Why accept extra attempts? Unchanged packages restore from the binary cache.
+4. Why no maximum? The order must be accomplished; refuted diffs never repeat.
+5. Why does the team stop? Each objective settles as achieved or blocked.
 
-- A mixed prompt is a mix of items; no workflow switch exists.
+### The triplet comes last
+1. Why last? A triplet is the target environment for every port built with it.
+2. Why does every port matter? `triplet_abi` is part of every package ABI.
+3. Why port layers first? The port owns its adaptation through manifest, portfile, and patch.
+4. Why ever the triplet? Toolchain governance is shared by every port, as in PR 613.
+5. Why gated? The triplet belongs to the consumer.
 
-## Scenario verification (desk checks)
+### Three agents
+1. Why not one? Write authority, evidence judgment, and goal judgment stay in separate sessions.
+2. Why separate the writer from the diagnostician? A rebuild grades the fix, and the Builder reads that grade.
+3. Why no Scout? Host, triplets, graph, and origin come from vcpkg output.
+4. Why a Judge? Scope and done are judgments against a natural-language order.
+5. Why not more? Every other step is deterministic Go.
 
-- The commands and gate behaviors in these walkthroughs were verified on this host.
-- The failure contents come from the merged PRs; this is a replay, not an executed run.
+## Scenarios
 
-| Scenario | Graph and triplets | Trace | Outcome | Exercises |
-|---|---|---|---|---|
-| S1 #613: update cpuinfo and xnnpack | cpuinfo dependents xnnpack, onnxruntime, fbgemm, tensorflow-lite; x64-windows, arm64-windows | Scoping, Editing (creates new kleidiai), Building, Diagnosing (triplet and LAPACK cause), Judging ITERATE, Editing `triplets/x64-windows.cmake`, Building, ACHIEVED | ACHIEVED if D1 allows triplet edits, otherwise BLOCKED with proposed diff | new dependency port mid-task, reverse dependents, triplet edit |
-| S2 #601: update tensorflow-lite 2.21.0 | google-pthreadpool, xnnpack, tensorflow-lite; host nodes flatbuffers, protobuf, abseil; x64-windows, arm64-android | gate, Editing in topological order, Building (android link failure), Diagnosing with triplet facts, ITERATE, fix, ACHIEVED | without NDK: arm64-android Blocked in seconds, x64-windows continues, final BLOCKED with evidence | cross-compile, host nodes, partial feasibility |
-| S3 #600: update abseil, onnx, onnxruntime | abseil overrides builtin; closure rebuilds protobuf, re2, utf8-range | Building attributes builtin failures to abseil through Graph; fixes go to overlay ports; CUDA missing becomes an environment diagnosis | builtin never edited; CUDA spec Blocked | overlay blast radius, environment versus port failure |
-| S4: why does tensorflow-lite fail on arm64-ios-simulator (Windows host) | triplet load fails | Scoping, scoped, Judging BLOCKED | zero builds; points to macOS host or CI macOS job | host infeasibility |
-| S5: troubleshoot onnxruntime on arm64-android | android closure | without NDK: Blocked at Scoping. With NDK: check (reproduce), Diagnosing, ITERATE, edit, build | ACHIEVED or Stalled when the same error repeats | troubleshoot route, stall guard |
-| S6: update all outdated ports | 71 overlay ports, host triplet | Scout checks upstream per port, Porter edits N ports in topological order, one build, frontier fixes per iteration | partial progress reported per spec; Exhausted bounds cost | fan-out, frontier, budget |
-| S7: create a port whose dependencies are missing upstream | graph absent until ports exist | Scout finds missing dependencies with vcpkg_query, items create dependency then root, Builder dry-run validates the new graph | ACHIEVED or plan failure reported | create with dependency chain |
+| ID | Order | Path | End |
+|---|---|---|---|
+| S1 | Update cpuinfo and xnnpack to latest for x64-windows and arm64-windows, then commit the port and the baseline (PR 613 shape) | Porter updates both; dry-run on arm64 prints `kleidiai does not exist`, so the gate makes the Porter create kleidiai; patch failure diagnosed as `patch` and applied; all succeed; commit 1, `x-add-version` for 3 ports, commit 2 | Achieved |
+| S2 | Install tensorflow-lite for arm64-android | without the NDK: compiler detection fails, diagnosis `environment` on the triplet, Blocked with the reason; with the NDK: a host tool diagnosis (`manifest` host dependency) is applied and kept | Blocked or Achieved |
+| S3 | Why does cpuinfo fail on arm64-ios-simulator | triplet load fails with `Could not find XCODEBUILD_EXE`, diagnosis `environment`, reported, zero edits | Achieved (diagnosed) |
+| S4 | Fix libfoo on x64-windows in my vcpkg clone and commit it | classic mode, builtin origin, `VCPKG_ROOT/ports/libfoo` in write roots; fix kept; commit 1, `vcpkg x-add-version libfoo`, commit 2 | Achieved |
+| S5 | Make my manifest project build | port from a git registry without a writable clone; diagnosis `patch` verified, port outside write roots, so Blocked with the Fix in the report (G2) | Blocked |
+| S6 | Create a port for a GitHub project whose dependency has no port | Porter creates the port; dry-run gate finds the missing dependency; Porter creates it; build and fixes follow | Achieved |
+| S7 | Install a port whose first fix is wrong | D1 applied; quoted line recurs; refuted; revert; rebuild; D2 sees D1 and is kept | Achieved |
+| S8 | Install lapack-reference on x64-windows with this registry's overlay triplet | evidence quotes `vcpkg_find_fortran.cmake` reading `VCPKG_PROVIDED_FORTRAN` and the triplet file without it; Layer `triplet`; G3 approves the edit or the objective is Blocked with the Fix | Achieved or Blocked |
+| S9 | Update every outdated port in this registry | Scope lists every port in the write roots with `latest`; one attempt builds all; root failures are fixed one per attempt; cascades settle with their roots | Achieved or Blocked |
 
 ```mermaid
 sequenceDiagram
-  autonumber
-  actor U as User
-  participant J as Judge
-  participant S as Scout
-  participant P as Porter
-  participant B as Builder
-  participant V as vcpkg
-  U->>J: prompt update cpuinfo and xnnpack for x64-windows and arm64-windows
-  J->>S: task, iteration 1
-  S->>V: depend-info all overlay ports per triplet
-  S->>V: x-set-installed --dry-run per triplet
-  Note over S: update cpuinfo, xnnpack<br/>verify fbgemm, onnxruntime, tensorflow-lite
-  S->>P: edit
-  P->>P: update cpuinfo, then xnnpack
-  P->>P: create kleidiai 1.32.0 required by xnnpack
-  P->>B: build
-  B->>V: x-set-installed --keep-going
-  V-->>B: RESULTS root failure and cascaded dependents
-  B->>B: diagnose root failure from buildtrees logs
-  B->>J: report
-  J->>S: task, iteration 2
-  S->>P: edit, fix triplets/x64-windows.cmake
-  P->>B: build
-  B->>V: x-set-installed --keep-going
-  B->>V: list --x-json
-  B->>J: report, all targets installed
-  J-->>U: ACHIEVED with baseline commands
+    actor User
+    participant Judge
+    participant Porter
+    participant Builder
+    participant vcpkg
+    participant git
+    User->>Judge: update cpuinfo and xnnpack, commit port and baseline
+    Judge->>Judge: Scope - 4 objectives with latest, Record baseline
+    Judge->>Porter: fix Work
+    Porter->>vcpkg: x-download and hash new sources
+    Porter->>vcpkg: install dry-run for arm64-windows
+    vcpkg-->>Porter: kleidiai does not exist
+    Note over Porter: OnAgentStop blocks, Porter creates kleidiai
+    Porter->>vcpkg: install dry-run resolves for both triplets
+    Porter->>Builder: build Work with 3 Ports
+    Builder->>vcpkg: install keep-going, one call per triplet
+    vcpkg-->>Builder: xnnpack arm64-windows BUILD_FAILED in patch log
+    Builder->>Builder: diagnose - Layer patch, quotes from the patch log
+    Builder->>Judge: report Work
+    Judge->>Porter: fix Work - apply the verified diagnosis
+    Porter->>Builder: build Work - rebased patch in Diff
+    Builder->>vcpkg: install keep-going, one call per triplet
+    vcpkg-->>Builder: all specs SUCCEEDED
+    Builder->>Judge: report Work - diagnosis kept
+    Judge->>Judge: Review - Done
+    Judge->>git: commit 1 - port files
+    Judge->>vcpkg: x-add-version cpuinfo xnnpack kleidiai
+    Judge->>git: commit 2 - versions files
+    Judge-->>User: report - Achieved
 ```
 
 ```mermaid
 sequenceDiagram
-  autonumber
-  participant J as Judge
-  participant S as Scout
-  participant P as Porter
-  participant B as Builder
-  participant V as vcpkg
-  J->>S: task, update tensorflow-lite 2.21.0 for x64-windows and arm64-android
-  S->>V: depend-info --triplet arm64-android --host-triplet x64-windows
-  V-->>S: target nodes plus host nodes flatbuffers, protobuf, abseil
-  S->>V: x-set-installed --dry-run arm64-android
-  alt ANDROID_NDK_HOME unset
-    V-->>S: unable to detect the active compiler
-    Note over S: Blocked arm64-android, continue with x64-windows
-  else NDK available
-    V-->>S: rebuild plan for both triplets
-  end
-  S->>P: edit google-pthreadpool, xnnpack, tensorflow-lite in topological order
-  P->>B: build
-  B->>V: x-set-installed --keep-going
-  V-->>B: tensorflow-lite arm64-android BUILD_FAILED
-  B->>B: diagnose link error with triplet facts
-  B->>J: report
-  J->>S: task, iteration 2, fix Android link
+    participant Judge
+    participant Porter
+    participant Builder
+    participant vcpkg
+    Builder->>Judge: report - D1 verified, Layer portfile, quotes a linker error
+    Judge->>Porter: fix - apply D1
+    Porter->>Porter: snapshot port, edit portfile
+    Porter->>Builder: build - D1 applied with Diff
+    Builder->>vcpkg: install keep-going
+    vcpkg-->>Builder: BUILD_FAILED, quoted linker error recurs
+    Builder->>Judge: report - D1 refuted by rule 3
+    Judge->>Porter: fix - revert
+    Porter->>Porter: restore snapshot, Go only
+    Porter->>Builder: build
+    Builder->>vcpkg: install keep-going
+    vcpkg-->>Builder: same failure as before D1
+    Builder->>Builder: diagnose D2 with D1 Diff and Outcome
+    Builder->>Judge: report - D2 verified, Layer patch
+    Judge->>Porter: fix - apply D2
+    Note over Porter: OnAgentStop rejects a Diff equal to D1
+    Porter->>Builder: build - D2 applied
+    Builder->>vcpkg: install keep-going
+    vcpkg-->>Builder: SUCCEEDED
+    Builder->>Judge: report - D2 kept, objective settled
 ```
 
-```mermaid
-sequenceDiagram
-  autonumber
-  actor U as User
-  participant J as Judge
-  participant S as Scout
-  participant V as vcpkg
-  U->>J: prompt why does tensorflow-lite fail on arm64-ios-simulator
-  J->>S: task, iteration 1
-  S->>V: depend-info tensorflow-lite --triplet arm64-ios-simulator
-  V-->>S: Could not find XCODEBUILD_EXE
-  S->>J: scoped, arm64-ios-simulator needs a macOS host
-  J-->>U: BLOCKED, run on macOS or the CI macOS job
-```
+## Mapping to vcpkg-agents.go
 
-## Mapping to current vcpkg-agents.go
+| Current | v3 |
+|---|---|
+| Flags `--prompt`, `--verbose`; `init` detection | unchanged; `init` also feeds read roots, write roots, and scratch |
+| `main` pipeline of 5 agents and Ralph loop | 4 channels, Porter and Builder goroutines, Judge loop in `main` |
+| `Judge.Achieved` (`ACHIEVED` prefix) | `SendAndWait[Scope]`, `SendAndWait[Review]`, Go routing, settle, record |
+| `PortSearchAgent` (dry-run hook) | Porter stop gate (dry-run) |
+| `PortUpdateAgent` | Porter |
+| `PortInstallAgent` (model chooses arguments) | Builder Go attempt |
+| `PortDiagnoseAgent` (gh tool, `preToolUse`, Learn MCP, permission roots) | Builder session, same patterns |
+| `ToolCheckAgent` | `init` plus `environment` diagnoses |
+| `logUsage`, `Disconnect` | unchanged for every session |
 
-- PortSearchAgent becomes Scout. It keeps the read-only path pattern; vcpkg runs only through Go.
-- PortUpdateAgent becomes Porter. It keeps the write hook limited to `ports/`.
-- PortInstallAgent and PortDiagnoseAgent become Builder. Go runs vcpkg; the session keeps the gh allowlist and Learn MCP for diagnosis.
-- ToolCheckAgent is removed. The `init` facts go into the system messages.
-- Judge keeps one session for the run, gains `record_verdict`, and Go guards now apply after its verdict.
-- The model-chosen `vcpkg install` in the shared root is removed.
+## Open gaps
 
-## Open decisions (recommended default first)
-
-- D1: Porter may edit `triplets/` (yes; #613 needed it) / no.
-- D2: Regression scope: overlay reverse dependents (default) / plus the `test` feature of `test/vcpkg.json`.
-- D3: A failing overlay `verify` item may be promoted to `fix` (yes; builtin failures are reported only) / no.
-- D4: `--max-iterations` default: 5 / 3.
-- D5: Baseline: report the commit and `registry-add-version.ps1` commands only / other.
-- D6: Approval to implement this design.
+- G1: build form, classic `install <specs>` or a scratch manifest that copies the user's configuration (relative overlay paths break when copied).
+- G2: write roots and the mapping from a git registry URL to a writable clone. Current code uses `<git root>/ports`.
+- G3: how "no way except triplet" is established, and who approves a triplet edit.
+- G4: order wording that requests a port commit or a baseline update, and the commit message format (this repository uses `[port] update to X (#PR)`).
+- G5: consumer baseline updates.
+- G6: whether a diagnose-only fix is verified in a scratch copy of the port.
+- G7: meaning of "some command". Reading used: the invented `record_*` tools, query tools, `--max-iterations`, and repository-script reporting from v2.
+- G8: delivery of Blocked: final report and exit, or approval during the run.
+- Noted: cost and time are unbounded by design, and Ctrl+C is the stop. Rule 3 matches verbatim lines, so a fix that only shifts line numbers counts as progress, and the next diagnosis sees it.
