@@ -13,7 +13,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggml-org/llama.cpp
     REF "v${VERSION}"
-    SHA512 88cd464c20370ecca12b174e36fa4f21b271f42851f474dd83b03191dd444dcc96543849a56aaa16a35368d09e5be9c3481bebe66c2d614a0965d882f530ca91
+    SHA512 d5e204e7983280001e4fba1c4cba2d6b82eca3a628867dcf9c3ff3333fff93d2d416535edeb4baad546979967d0b04c9b35d9728e0ab200d49d832b137cc4a56
     HEAD_REF master
     PATCHES
         fix-3rdparty.patch

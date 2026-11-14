@@ -2,8 +2,8 @@ diff --git a/common/http.h b/common/http.h
 index 878ad1c..87d5456 100644
 --- a/common/http.h
 +++ b/common/http.h
-@@ -1,6 +1,6 @@
- #pragma once
+@@ -3,6 +3,6 @@
+ #include "log.h"
  
 -#include <cpp-httplib/httplib.h>
 +#include <httplib.h>
@@ -38,8 +38,8 @@ index 33cbb15..b97f53e 100644
 -#include <cpp-httplib/httplib.h>
 +#include <httplib.h>
  
- #include <functional>
- #include <future>
+ #include <algorithm>
+ #include <cctype>
 diff --git a/tools/server/server-models.cpp b/tools/server/server-models.cpp
 index 6035324..0ea8746 100644
 --- a/tools/server/server-models.cpp
