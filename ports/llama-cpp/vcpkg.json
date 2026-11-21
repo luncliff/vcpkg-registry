@@ -6,11 +6,6 @@
   "license": "MIT",
   "dependencies": [
     "cpp-httplib",
-    {
-      "name": "curl",
-      "default-features": false
-    },
-    "minja",
     "nlohmann-json",
     {
       "name": "vcpkg-cmake",
@@ -31,8 +26,7 @@
     "cuda": {
       "description": "Use CUDA",
       "dependencies": [
-        "cuda",
-        "cudnn-frontend"
+        "cuda"
       ]
     },
     "metal": {
@@ -54,12 +48,6 @@
       "dependencies": [
         {
           "name": "cpp-httplib",
-          "features": [
-            "openssl"
-          ]
-        },
-        {
-          "name": "curl",
           "features": [
             "openssl"
           ]

@@ -1,8 +1,3 @@
-# Vulkan feature temporarily disabled due to shader compilation failures:
-# Error: mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem.spv file not found during
-# vulkan-shaders-gen.exe execution, causing unresolved external symbols
-# mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem_data and mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem_len
-
 if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 endif()
@@ -17,6 +12,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-3rdparty.patch
+        fix-cmake-configs.patch
         fix-opencl-kernel-encoding.patch
 )
 file(REMOVE_RECURSE
@@ -24,8 +20,13 @@ file(REMOVE_RECURSE
     "${SOURCE_PATH}/vendor/miniaudio" # miniaudio
     "${SOURCE_PATH}/vendor/cpp-httplib" # cpp-httplib
     "${SOURCE_PATH}/vendor/stb" # stb
-    "${SOURCE_PATH}/vendor/minja" # minja
+    "${SOURCE_PATH}/vendor/hash/xxhash" # xxhash
+    "${SOURCE_PATH}/vendor/hash/sha1" # SHA-1
+    "${SOURCE_PATH}/vendor/hash/sha256" # OpenSSL
 )
+if(NOT "tools" IN_LIST FEATURES)
+    file(REMOVE_RECURSE "${SOURCE_PATH}/vendor/sheredom")
+endif()
 
 vcpkg_find_acquire_program(GIT)
 message(STATUS "Using git: ${GIT}")
@@ -38,28 +39,15 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         tools   LLAMA_BUILD_TOOLS
         tools   LLAMA_BUILD_SERVER
-        tools   LLAMA_SERVER_SSL
+        tools   LLAMA_OPENSSL
+        tools   LLAMA_SUBPROCESS
         cuda    GGML_CUDA
         cuda    GGML_CUDA_GRAPHS
-        cuda    GGML_CUDA_FORCE_MMQ
-        cuda    GGML_CUDA_FORCE_CUBLAS
-        cuda    GGML_CUDA_NO_VMM
-        cuda    GGML_CUDA_F16
-        cuda    GGML_CUDA_DMMV_F16
-        cuda    GGML_CUDA_NO_PEER_COPY
         opencl  GGML_OPENCL
         opencl  GGML_OPENCL_EMBED_KERNELS
         openmp  GGML_OPENMP
-        vulkan  GGML_VULKAN
-        vulkan  GGML_VULKAN_CHECK_RESULTS
-        # vulkan  GGML_VULKAN_PERF
-        metal   GGML_METAL_USE_BF16
+        metal   GGML_METAL
         metal   GGML_METAL_EMBED_LIBRARY
-        # todo: support these in native environment?
-        test    LLAMA_BUILD_TESTS
-        test    GGML_BUILD_TESTS
-        example LLAMA_BUILD_EXAMPLES
-        example GGML_BUILD_EXAMPLES
 )
 
 if(VCPKG_TARGET_IS_OSX)
@@ -81,29 +69,6 @@ if("cuda" IN_LIST FEATURES)
     )
 endif()
 
-if("vulkan" IN_LIST FEATURES)
-    list(APPEND TOOL_PATHS
-        "${VCPKG_HOST_INSTALLED_DIR}/tools/glslang"
-        "${VCPKG_HOST_INSTALLED_DIR}/tools/shaderc"
-    )
-    if(DEFINED ENV{VULKAN_SDK})
-        list(APPEND TOOL_PATHS "$ENV{VULKAN_SDK}/Bin")
-    endif()
-    if(DEFINED ENV{VK_SDK_PATH})
-        list(APPEND TOOL_PATHS "$ENV{VK_SDK_PATH}/Bin")
-    endif()
-    find_program(GLSLC NAMES glslc PATHS ${TOOL_PATHS} REQUIRED)
-    message(STATUS "Using glslc: ${GLSLC}")
-    find_program(GLSLANG_VALIDATOR NAMES glslangValidator PATHS ${TOOL_PATHS} REQUIRED)
-    message(STATUS "Using glslangValidator: ${GLSLANG_VALIDATOR}")
-    list(APPEND FEATURE_OPTIONS
-        "-DVulkan_GLSLC_EXECUTABLE:FILEPATH=${GLSLC}"
-        "-DVulkan_GLSLANG_VALIDATOR_EXECUTABLE=${GLSLANG_VALIDATOR}"
-    )
-    get_filename_component(GLSL_TOOL_DIR "${GLSLC}" PATH)
-    vcpkg_add_to_path(PREPEND "${GLSL_TOOL_DIR}")
-endif()
-
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
     list(APPEND ARCH_OPTIONS
         -DGGML_AVX2=ON
@@ -114,9 +79,6 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
     )
 endif()
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-    list(APPEND ARCH_OPTIONS
-        -DGGML_AARCH64=ON
-    )
     if(VCPKG_TARGET_IS_WINDOWS)
         # ggml-cpu: MSVC is not supported for ARM, use clang
         set(VCPKG_PLATFORM_TOOLSET ClangCL) # see CMAKE_GENERATOR_TOOLSET
@@ -145,7 +107,6 @@ vcpkg_cmake_configure(
         "-DBUILD_COMMIT:STRING=b${VERSION}"
         # ${SOURCE_PATH}/CMakeLists.txt
         -DLLAMA_STANDALONE=ON
-        -DLLAMA_CURL=ON
         -DLLAMA_LLGUIDANCE=OFF
         -DLLAMA_ALL_WARNINGS=OFF
         # ${SOURCE_PATH}/ggml/CMakeLists.txt
@@ -164,16 +125,11 @@ vcpkg_cmake_configure(
         -DGGML_BUILD_EXAMPLES=OFF
         -DLLAMA_BUILD_APP=OFF
     OPTIONS_DEBUG
-        -DGGML_VULKAN_DEBUG=ON
-        -DGGML_VULKAN_VALIDATE=ON
-        -DGGML_VULKAN_MEMORY_DEBUG=ON
-        -DGGML_VULKAN_SHADER_DEBUG_INFO=ON
         -DGGML_METAL_SHADER_DEBUG=ON
     OPTIONS_RELEASE
         -DGGML_METAL_NDEBUG=ON
         -DGGML_METAL_SHADER_DEBUG=OFF
     MAYBE_UNUSED_VARIABLES
-        LLAMA_SERVER_SSL
         Python3_EXECUTABLE
 )
 vcpkg_cmake_install()
