@@ -23,11 +23,23 @@
     }
   ],
   "features": {
+    "blas": {
+      "description": "Use OpenBLAS for CPU matrix operations",
+      "supports": "windows | linux | osx",
+      "dependencies": [
+        "openblas"
+      ]
+    },
     "cuda": {
       "description": "Use CUDA",
+      "supports": "(windows & x64 & !uwp & !xbox) | (linux & (x64 | arm64))",
       "dependencies": [
         "cuda"
       ]
+    },
+    "llamafile": {
+      "description": "Use llamafile CPU kernels",
+      "supports": "windows | linux | osx"
     },
     "metal": {
       "description": "Use Metal",
@@ -42,6 +54,24 @@
     "openmp": {
       "description": "Use OpenMP"
     },
+    "openvino": {
+      "description": "Use Intel OpenVINO",
+      "supports": "!uwp & !x86 & !(android & arm32) & !(windows & arm64)",
+      "dependencies": [
+        "opencl",
+        {
+          "name": "openvino",
+          "default-features": false,
+          "features": [
+            "cpu"
+          ]
+        }
+      ]
+    },
+    "rpc": {
+      "description": "Build the RPC backend",
+      "supports": "windows | linux | osx"
+    },
     "tools": {
       "description": "Build llama tools",
       "supports": "windows | linux | osx",
@@ -54,6 +84,13 @@
         },
         "miniaudio",
         "stb"
+      ]
+    },
+    "webgpu": {
+      "description": "Use Dawn for WebGPU",
+      "supports": "(windows & !uwp) | linux | osx",
+      "dependencies": [
+        "dawn"
       ]
     }
   }

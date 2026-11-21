@@ -3,7 +3,6 @@ if(VCPKG_TARGET_IS_WINDOWS)
 endif()
 set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
-# https://github.com/ggml-org/llama.cpp/releases/tag/v${VERSION}
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggml-org/llama.cpp
@@ -12,9 +11,21 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         fix-3rdparty.patch
-        fix-cmake-configs.patch
-        fix-opencl-kernel-encoding.patch
+        fix-llama-cmake-config.patch
 )
+vcpkg_from_github(
+    OUT_SOURCE_PATH GGML_SOURCE_PATH
+    REPO ggml-org/ggml
+    REF "v${VERSION}"
+    SHA512 a5098169d420d84f93389f10a4d558651d38140d8cac88f6007156256e1b18987efb3767d384484c14bc42d00e583a3ee538bdbc1b714ce0c3d58de94dd4b614
+    HEAD_REF master
+    PATCHES
+        fix-ggml-cmake-config.patch
+        fix-ggml-opencl-kernel-encoding.patch
+)
+file(REMOVE_RECURSE "${SOURCE_PATH}/ggml")
+file(COPY "${GGML_SOURCE_PATH}/" DESTINATION "${SOURCE_PATH}/ggml")
+
 file(REMOVE_RECURSE
     "${SOURCE_PATH}/vendor/nlohmann" # nlohmann-json
     "${SOURCE_PATH}/vendor/miniaudio" # miniaudio
@@ -31,23 +42,21 @@ endif()
 vcpkg_find_acquire_program(GIT)
 message(STATUS "Using git: ${GIT}")
 
-vcpkg_find_acquire_program(PYTHON3)
-message(STATUS "Using python3: ${PYTHON3}")
-
-# for BLAS, see https://cmake.org/cmake/help/latest/module/FindBLAS.html#blas-lapack-vendors
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
+        blas    GGML_BLAS
         tools   LLAMA_BUILD_TOOLS
         tools   LLAMA_BUILD_SERVER
         tools   LLAMA_OPENSSL
         tools   LLAMA_SUBPROCESS
         cuda    GGML_CUDA
-        cuda    GGML_CUDA_GRAPHS
+        llamafile GGML_LLAMAFILE
         opencl  GGML_OPENCL
-        opencl  GGML_OPENCL_EMBED_KERNELS
         openmp  GGML_OPENMP
+        openvino GGML_OPENVINO
+        rpc     GGML_RPC
+        webgpu  GGML_WEBGPU
         metal   GGML_METAL
-        metal   GGML_METAL_EMBED_LIBRARY
 )
 
 if(VCPKG_TARGET_IS_OSX)
@@ -69,6 +78,19 @@ if("cuda" IN_LIST FEATURES)
     )
 endif()
 
+if("blas" IN_LIST FEATURES)
+    list(APPEND FEATURE_OPTIONS
+        -DGGML_BLAS_VENDOR=OpenBLAS
+    )
+endif()
+
+if("opencl" IN_LIST FEATURES OR "webgpu" IN_LIST FEATURES)
+    vcpkg_find_acquire_program(PYTHON3)
+    list(APPEND FEATURE_OPTIONS
+        "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}"
+    )
+endif()
+
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
     list(APPEND ARCH_OPTIONS
         -DGGML_AVX2=ON
@@ -86,12 +108,10 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
     endif()
 endif()
 
-string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
-
-if(VCPKG_CROSSCOMPILING)
-    set(BUILD_NATIVE OFF)
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    set(GGML_STATIC ON)
 else()
-    set(BUILD_NATIVE ON)
+    set(GGML_STATIC OFF)
 endif()
 
 vcpkg_cmake_configure(
@@ -102,35 +122,24 @@ vcpkg_cmake_configure(
         ${ARCH_OPTIONS}
         # see cmake/build-info.cmake
         "-DGIT_EXECUTABLE:FILEPATH=${GIT}"
-        "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}"
         "-DBUILD_NUMBER:STRING=${VERSION}"
         "-DBUILD_COMMIT:STRING=b${VERSION}"
         # ${SOURCE_PATH}/CMakeLists.txt
-        -DLLAMA_STANDALONE=ON
-        -DLLAMA_LLGUIDANCE=OFF
+        -DLLAMA_USE_PREBUILT_UI=OFF
         -DLLAMA_ALL_WARNINGS=OFF
         # ${SOURCE_PATH}/ggml/CMakeLists.txt
-        -DGGML_STANDALONE=ON
-        -DGGML_NATIVE=${BUILD_NATIVE}
+        -DGGML_STATIC=${GGML_STATIC}
         -DGGML_BUILD_NUMBER=${VERSION}
-        -DGGML_LLAMAFILE_DEFAULT=OFF
-        -DGGML_CPU_ALL_VARIANTS=OFF
-        -DGGML_BACKEND_DL=OFF # requires BUILD_SHARED_LIBS
-        -DGGML_OPENCL_PROFILING=OFF
-        -DGGML_FATAL_WARNINGS=OFF
+        -DGGML_BACKEND_DL=OFF
         # Explicitly disable test/benchmark executables
         -DLLAMA_BUILD_TESTS=OFF
-        -DGGML_BUILD_TESTS=OFF
         -DLLAMA_BUILD_EXAMPLES=OFF
-        -DGGML_BUILD_EXAMPLES=OFF
         -DLLAMA_BUILD_APP=OFF
     OPTIONS_DEBUG
         -DGGML_METAL_SHADER_DEBUG=ON
     OPTIONS_RELEASE
         -DGGML_METAL_NDEBUG=ON
         -DGGML_METAL_SHADER_DEBUG=OFF
-    MAYBE_UNUSED_VARIABLES
-        Python3_EXECUTABLE
 )
 vcpkg_cmake_install()
 
