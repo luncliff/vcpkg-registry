@@ -1,65 +1,69 @@
-# Vulkan feature temporarily disabled due to shader compilation failures:
-# Error: mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem.spv file not found during
-# vulkan-shaders-gen.exe execution, causing unresolved external symbols
-# mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem_data and mul_mat_vec_iq1_m_f32_f32_subgroup_no_shmem_len
-
-if(VCPKG_TARGET_IS_WINDOWS)
-    vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled)
 endif()
-set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
-# https://github.com/ggml-org/llama.cpp/releases/tag/v${VERSION}
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ggml-org/llama.cpp
     REF "v${VERSION}"
-    SHA512 88cd464c20370ecca12b174e36fa4f21b271f42851f474dd83b03191dd444dcc96543849a56aaa16a35368d09e5be9c3481bebe66c2d614a0965d882f530ca91
+    SHA512 d5e204e7983280001e4fba1c4cba2d6b82eca3a628867dcf9c3ff3333fff93d2d416535edeb4baad546979967d0b04c9b35d9728e0ab200d49d832b137cc4a56
     HEAD_REF master
     PATCHES
         fix-3rdparty.patch
-        fix-opencl-kernel-encoding.patch
+        fix-llama-cmake-config.patch
 )
+vcpkg_from_github(
+    OUT_SOURCE_PATH GGML_SOURCE_PATH
+    REPO ggml-org/ggml
+    REF "v${VERSION}"
+    SHA512 a5098169d420d84f93389f10a4d558651d38140d8cac88f6007156256e1b18987efb3767d384484c14bc42d00e583a3ee538bdbc1b714ce0c3d58de94dd4b614
+    HEAD_REF master
+    PATCHES
+        fix-ggml-cmake-config.patch
+        fix-ggml-opencl-kernel-encoding.patch
+)
+file(REMOVE_RECURSE "${SOURCE_PATH}/ggml")
+file(COPY "${GGML_SOURCE_PATH}/" DESTINATION "${SOURCE_PATH}/ggml")
+
 file(REMOVE_RECURSE
-    "${SOURCE_PATH}/vendor/nlohmann" # nlohmann-json
-    "${SOURCE_PATH}/vendor/miniaudio" # miniaudio
-    "${SOURCE_PATH}/vendor/cpp-httplib" # cpp-httplib
-    "${SOURCE_PATH}/vendor/stb" # stb
-    "${SOURCE_PATH}/vendor/minja" # minja
+    "${SOURCE_PATH}/vendor/nlohmann" # port: nlohmann-json
+    "${SOURCE_PATH}/vendor/miniaudio" # port: miniaudio
+    "${SOURCE_PATH}/vendor/cpp-httplib" # port: cpp-httplib
+    "${SOURCE_PATH}/vendor/stb" # port: stb
+    "${SOURCE_PATH}/vendor/hash/xxhash" # port: xxhash
+    "${SOURCE_PATH}/vendor/hash/sha1" # port: openssl?
+    "${SOURCE_PATH}/vendor/hash/sha256" # port: openssl
 )
+if(NOT "tools" IN_LIST FEATURES)
+    file(REMOVE_RECURSE "${SOURCE_PATH}/vendor/sheredom")
+endif()
+
+vcpkg_find_acquire_program(PYTHON3)
+message(STATUS "Using Python3: ${PYTHON3}")
 
 vcpkg_find_acquire_program(GIT)
 message(STATUS "Using git: ${GIT}")
 
-vcpkg_find_acquire_program(PYTHON3)
-message(STATUS "Using python3: ${PYTHON3}")
+if(VCPKG_TARGET_IS_WINDOWS)
+    set(VCPKG_C_FLAGS "${VCPKG_C_FLAGS} /wd4819")
+    set(VCPKG_CXX_FLAGS "${VCPKG_CXX_FLAGS} /wd4819")
+endif()
 
-# for BLAS, see https://cmake.org/cmake/help/latest/module/FindBLAS.html#blas-lapack-vendors
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
+        blas    GGML_BLAS
         tools   LLAMA_BUILD_TOOLS
         tools   LLAMA_BUILD_SERVER
-        tools   LLAMA_SERVER_SSL
+        tools   LLAMA_OPENSSL
+        tools   LLAMA_SUBPROCESS
         cuda    GGML_CUDA
-        cuda    GGML_CUDA_GRAPHS
-        cuda    GGML_CUDA_FORCE_MMQ
-        cuda    GGML_CUDA_FORCE_CUBLAS
-        cuda    GGML_CUDA_NO_VMM
-        cuda    GGML_CUDA_F16
-        cuda    GGML_CUDA_DMMV_F16
-        cuda    GGML_CUDA_NO_PEER_COPY
+        llamafile GGML_LLAMAFILE
         opencl  GGML_OPENCL
-        opencl  GGML_OPENCL_EMBED_KERNELS
         openmp  GGML_OPENMP
-        vulkan  GGML_VULKAN
-        vulkan  GGML_VULKAN_CHECK_RESULTS
-        # vulkan  GGML_VULKAN_PERF
-        metal   GGML_METAL_USE_BF16
-        metal   GGML_METAL_EMBED_LIBRARY
-        # todo: support these in native environment?
-        test    LLAMA_BUILD_TESTS
-        test    GGML_BUILD_TESTS
-        example LLAMA_BUILD_EXAMPLES
-        example GGML_BUILD_EXAMPLES
+        openvino GGML_OPENVINO
+        rpc     GGML_RPC
+        webgpu  GGML_WEBGPU
+        metal   GGML_METAL
 )
 
 if(VCPKG_TARGET_IS_OSX)
@@ -79,30 +83,20 @@ if("cuda" IN_LIST FEATURES)
         "-DCMAKE_CUDA_COMPILER:FILEPATH=${NVCC}"
         "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
     )
+    if(VCPKG_TARGET_IS_WINDOWS)
+        list(APPEND FEATURE_OPTIONS
+            "-DCMAKE_CUDA_FLAGS=-Xcompiler=/wd4819"
+        )
+    endif()
 endif()
 
-if("vulkan" IN_LIST FEATURES)
-    list(APPEND TOOL_PATHS
-        "${VCPKG_HOST_INSTALLED_DIR}/tools/glslang"
-        "${VCPKG_HOST_INSTALLED_DIR}/tools/shaderc"
-    )
-    if(DEFINED ENV{VULKAN_SDK})
-        list(APPEND TOOL_PATHS "$ENV{VULKAN_SDK}/Bin")
-    endif()
-    if(DEFINED ENV{VK_SDK_PATH})
-        list(APPEND TOOL_PATHS "$ENV{VK_SDK_PATH}/Bin")
-    endif()
-    find_program(GLSLC NAMES glslc PATHS ${TOOL_PATHS} REQUIRED)
-    message(STATUS "Using glslc: ${GLSLC}")
-    find_program(GLSLANG_VALIDATOR NAMES glslangValidator PATHS ${TOOL_PATHS} REQUIRED)
-    message(STATUS "Using glslangValidator: ${GLSLANG_VALIDATOR}")
+if("blas" IN_LIST FEATURES)
     list(APPEND FEATURE_OPTIONS
-        "-DVulkan_GLSLC_EXECUTABLE:FILEPATH=${GLSLC}"
-        "-DVulkan_GLSLANG_VALIDATOR_EXECUTABLE=${GLSLANG_VALIDATOR}"
+        -DGGML_BLAS_VENDOR=OpenBLAS
+        "-DBLAS_INCLUDE_DIRS:PATH=${CURRENT_INSTALLED_DIR}/include/openblas"
     )
-    get_filename_component(GLSL_TOOL_DIR "${GLSLC}" PATH)
-    vcpkg_add_to_path(PREPEND "${GLSL_TOOL_DIR}")
 endif()
+
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
     list(APPEND ARCH_OPTIONS
@@ -114,9 +108,6 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
     )
 endif()
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-    list(APPEND ARCH_OPTIONS
-        -DGGML_AARCH64=ON
-    )
     if(VCPKG_TARGET_IS_WINDOWS)
         # ggml-cpu: MSVC is not supported for ARM, use clang
         set(VCPKG_PLATFORM_TOOLSET ClangCL) # see CMAKE_GENERATOR_TOOLSET
@@ -124,12 +115,10 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
     endif()
 endif()
 
-string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
-
-if(VCPKG_CROSSCOMPILING)
-    set(BUILD_NATIVE OFF)
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    set(GGML_STATIC ON)
 else()
-    set(BUILD_NATIVE ON)
+    set(GGML_STATIC OFF)
 endif()
 
 vcpkg_cmake_configure(
@@ -139,42 +128,26 @@ vcpkg_cmake_configure(
         ${FEATURE_OPTIONS}
         ${ARCH_OPTIONS}
         # see cmake/build-info.cmake
-        "-DGIT_EXECUTABLE:FILEPATH=${GIT}"
         "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}"
+        "-DGIT_EXECUTABLE:FILEPATH=${GIT}"
         "-DBUILD_NUMBER:STRING=${VERSION}"
         "-DBUILD_COMMIT:STRING=b${VERSION}"
         # ${SOURCE_PATH}/CMakeLists.txt
-        -DLLAMA_STANDALONE=ON
-        -DLLAMA_CURL=ON
-        -DLLAMA_LLGUIDANCE=OFF
+        -DLLAMA_USE_PREBUILT_UI=OFF
         -DLLAMA_ALL_WARNINGS=OFF
         # ${SOURCE_PATH}/ggml/CMakeLists.txt
-        -DGGML_STANDALONE=ON
-        -DGGML_NATIVE=${BUILD_NATIVE}
+        -DGGML_STATIC=${GGML_STATIC}
         -DGGML_BUILD_NUMBER=${VERSION}
-        -DGGML_LLAMAFILE_DEFAULT=OFF
-        -DGGML_CPU_ALL_VARIANTS=OFF
-        -DGGML_BACKEND_DL=OFF # requires BUILD_SHARED_LIBS
-        -DGGML_OPENCL_PROFILING=OFF
-        -DGGML_FATAL_WARNINGS=OFF
+        -DGGML_BACKEND_DL=OFF
         # Explicitly disable test/benchmark executables
         -DLLAMA_BUILD_TESTS=OFF
-        -DGGML_BUILD_TESTS=OFF
         -DLLAMA_BUILD_EXAMPLES=OFF
-        -DGGML_BUILD_EXAMPLES=OFF
         -DLLAMA_BUILD_APP=OFF
     OPTIONS_DEBUG
-        -DGGML_VULKAN_DEBUG=ON
-        -DGGML_VULKAN_VALIDATE=ON
-        -DGGML_VULKAN_MEMORY_DEBUG=ON
-        -DGGML_VULKAN_SHADER_DEBUG_INFO=ON
         -DGGML_METAL_SHADER_DEBUG=ON
     OPTIONS_RELEASE
         -DGGML_METAL_NDEBUG=ON
         -DGGML_METAL_SHADER_DEBUG=OFF
-    MAYBE_UNUSED_VARIABLES
-        LLAMA_SERVER_SSL
-        Python3_EXECUTABLE
 )
 vcpkg_cmake_install()
 
@@ -220,7 +193,9 @@ endif()
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
-    "${CURRENT_PACKAGES_DIR}/debug/bin"
 )
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin")
+endif()
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

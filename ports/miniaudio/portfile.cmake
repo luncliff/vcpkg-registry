@@ -5,6 +5,7 @@ vcpkg_from_github(
     REPO mackron/miniaudio
     REF 0.11.23
     SHA512 b12566432e0167082dd9ad5b5c5fc3d80a80c7803016a59c670f5fb3436c2db8b16411e3f10571eafbf6791c53b761c3deeabb22b6329f80bbe891c760365c3c
+    PATCHES fix-arm64-atomics.patch
 )
 
 # Build as a C++ or Objective-C++. Not in C language

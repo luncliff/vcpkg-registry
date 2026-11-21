@@ -1,6 +1,6 @@
-diff --git a/ggml/src/ggml-opencl/kernels/embed_kernel.py b/ggml/src/ggml-opencl/kernels/embed_kernel.py
---- a/ggml/src/ggml-opencl/kernels/embed_kernel.py
-+++ b/ggml/src/ggml-opencl/kernels/embed_kernel.py
+diff --git a/src/ggml-opencl/kernels/embed_kernel.py b/src/ggml-opencl/kernels/embed_kernel.py
+--- a/src/ggml-opencl/kernels/embed_kernel.py
++++ b/src/ggml-opencl/kernels/embed_kernel.py
 @@ -12,8 +12,8 @@ def main():
          logger.info("Usage: python embed_kernel.py <input_file> <output_file>")
          sys.exit(1)

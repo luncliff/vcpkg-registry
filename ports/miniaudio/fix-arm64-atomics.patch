@@ -1,0 +1,22 @@
+diff --git a/miniaudio.h b/miniaudio.h
+--- a/miniaudio.h
++++ b/miniaudio.h
+@@ -14280,16 +14280,8 @@ static MA_INLINE ma_atomic_flag ma_atomic_flag_test_and_set_explicit(volatile ma
+     }
+     static MA_INLINE void ma_atomic_flag_clear_explicit(volatile ma_atomic_flag* dst, ma_atomic_memory_order order)
+     {
+-        #if defined(MA_ARM)
+-        {
+-            MA_ATOMIC_MSVC_ARM_INTRINSIC(dst, 0, order, _InterlockedExchange, ma_atomic_flag, long);
+-        }
+-        #else
+-        {
+-            (void)order;
+-            _InterlockedExchange((volatile long*)dst, (long)0);
+-        }
+-        #endif
++        (void)order;
++        (void)_InterlockedExchange((volatile long*)dst, (long)0);
+     }
+     static MA_INLINE ma_atomic_flag ma_atomic_flag_load_explicit(volatile const ma_atomic_flag* dst, ma_atomic_memory_order order)
+     {
