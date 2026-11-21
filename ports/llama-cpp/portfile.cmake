@@ -1,7 +1,6 @@
-if(VCPKG_TARGET_IS_WINDOWS)
-    vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled)
 endif()
-set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled) # there are some python scripts
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH

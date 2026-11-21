@@ -89,10 +89,13 @@ diff --git a/tools/server/server-models.cpp b/tools/server/server-models.cpp
 diff --git a/tools/server/server-common.cpp b/tools/server/server-common.cpp
 --- a/tools/server/server-common.cpp
 +++ b/tools/server/server-common.cpp
-@@ -10,4 +10,4 @@
+@@ -9,7 +9,7 @@
+ 
  #include "server-common.h"
+ 
 -#include <cpp-httplib/httplib.h>
 +#include <httplib.h>
+ 
  #include <algorithm>
  #include <cmath>
 diff --git a/vendor/hash/CMakeLists.txt b/vendor/hash/CMakeLists.txt
