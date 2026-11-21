@@ -15,9 +15,7 @@ dependency availability.
 |---|---|---|---|
 | `blas` | `GGML_BLAS=ON`, `GGML_BLAS_VENDOR=OpenBLAS` | `openblas` | Windows, Linux, macOS |
 | `llamafile` | `GGML_LLAMAFILE=ON` | None | Windows, Linux, macOS |
-| `openvino` | `GGML_OPENVINO=ON` | `openvino[cpu]`, `opencl` | OpenVINO-supported x64/arm64 triplets; excludes Windows ARM64 and x86 |
 | `rpc` | `GGML_RPC=ON` | None beyond platform sockets | Windows, Linux, macOS |
-| `webgpu` | `GGML_WEBGPU=ON` | `dawn` | Windows, Linux, macOS |
 
 Existing features remain:
 
@@ -39,8 +37,8 @@ Existing features remain:
 | BLAS/OpenBLAS | New | New | New | New | New | Future |
 | llamafile | New | New | New | New | New | Future |
 | RPC | New | New | New | New | New | Candidate |
-| OpenVINO | New | Excluded | New | New | Candidate | Candidate |
-| WebGPU/Dawn | New | New | New | New | New | Candidate |
+| OpenVINO | Phase 6 | Excluded | Phase 6 | Phase 6 | Candidate | Candidate |
+| WebGPU/Dawn | Phase 6 | Phase 6 | Phase 6 | Phase 6 | Phase 6 | Candidate |
 
 Android and Apple support expressions must be validated with real ggml backend
 code and available SDK/toolchain ports before widening the initial expressions.
@@ -50,11 +48,13 @@ code and available SDK/toolchain ports before widening the initial expressions.
 ### Implementable with current vcpkg ports
 
 - **OpenBLAS:** `openblas` 0.3.x supplies CMake-discoverable BLAS for
-  `GGML_BLAS_VENDOR=OpenBLAS`.
+  `GGML_BLAS_VENDOR=OpenBLAS`. The port passes the target include directory
+  directly as `BLAS_INCLUDE_DIRS`, avoiding a host pkg-config dependency.
 - **OpenVINO:** `openvino` supplies runtime and threading targets and has a
   `cpu` feature. ggml also directly links `OpenCL::OpenCL`.
 - **Dawn:** `dawn` supplies the `dawn::webgpu_dawn` target expected by
-  `ggml-webgpu`.
+  `ggml-webgpu`, but the current vcpkg build fails in Dawn's Python generator
+  before llama.cpp is configured.
 - **Vulkan toolchain:** `vulkan`, `spirv-headers`, and `shaderc` exist. `shaderc`
   installs host `glslc`; this backend still needs integration work before
   exposing a manifest feature.
@@ -85,12 +85,11 @@ code and available SDK/toolchain ports before widening the initial expressions.
 
 ### Phase 1: Validate the new manifest features
 
-1. Build `blas`, `llamafile`, `rpc`, `openvino`, and `webgpu` independently on
+1. Build `blas`, `llamafile`, and `rpc` independently on
    `x64-windows`.
 2. Build representative no-CUDA combinations to catch transitive target issues.
 3. Build `arm64-windows` for `blas`, `llamafile`, `rpc`, and `webgpu`.
-4. Build `x64-linux` and `arm64-linux` for `blas`, `rpc`, `openvino`, and
-   `webgpu`.
+4. Build `x64-linux` and `arm64-linux` for `blas` and `rpc`.
 5. Keep all feature packages opt-in and non-default.
 
 ### Phase 2: Make Vulkan reproducible
@@ -128,9 +127,21 @@ code and available SDK/toolchain ports before widening the initial expressions.
 3. Do not install tests by default. Add a CI-only validation path instead.
 4. Keep `tools` as the supported end-user executable feature.
 
+### Phase 6: Revisit OpenVINO and Dawn after dependency fixes
+
+1. Re-add `openvino` after resolving the OpenVINO default-feature expansion and
+   the MSYS2 `hwloc` extraction requirement on exFAT/non-NTFS hosts.
+2. Re-add `webgpu` after the Dawn generator import failure and DXC source
+   extraction are fixed in the Dawn/directx-dxc ports or registry overlays.
+3. Preserve the OpenVINO and Dawn dependency definitions prepared in this
+   plan rather than silently falling back to system SDK discovery.
+
 ## Required portfile work
 
-- Acquire Python for `opencl` or `webgpu`.
+- Acquire Python for `opencl`; WebGPU will add its own host Python path when it
+  returns from Phase 6.
+- Pass `BLAS_INCLUDE_DIRS` directly for `blas`; do not add a host pkg-config tool
+  only to recover OpenBLAS headers already installed by vcpkg.
 - Keep host tool dependencies marked `"host": true`.
 - Set `GGML_BLAS_VENDOR=OpenBLAS` only when `blas` is enabled.
 - Keep static linkage metadata synchronized through `GGML_STATIC`.
@@ -145,8 +156,6 @@ Representative commands:
 vcpkg install --overlay-ports .\ports 'llama-cpp[blas]:x64-windows'
 vcpkg install --overlay-ports .\ports 'llama-cpp[llamafile]:x64-windows'
 vcpkg install --overlay-ports .\ports 'llama-cpp[rpc]:x64-windows'
-vcpkg install --overlay-ports .\ports 'llama-cpp[openvino]:x64-windows'
-vcpkg install --overlay-ports .\ports 'llama-cpp[webgpu]:x64-windows'
 ```
 
 For each feature:

@@ -26,20 +26,28 @@ file(REMOVE_RECURSE "${SOURCE_PATH}/ggml")
 file(COPY "${GGML_SOURCE_PATH}/" DESTINATION "${SOURCE_PATH}/ggml")
 
 file(REMOVE_RECURSE
-    "${SOURCE_PATH}/vendor/nlohmann" # nlohmann-json
-    "${SOURCE_PATH}/vendor/miniaudio" # miniaudio
-    "${SOURCE_PATH}/vendor/cpp-httplib" # cpp-httplib
-    "${SOURCE_PATH}/vendor/stb" # stb
-    "${SOURCE_PATH}/vendor/hash/xxhash" # xxhash
-    "${SOURCE_PATH}/vendor/hash/sha1" # SHA-1
-    "${SOURCE_PATH}/vendor/hash/sha256" # OpenSSL
+    "${SOURCE_PATH}/vendor/nlohmann" # port: nlohmann-json
+    "${SOURCE_PATH}/vendor/miniaudio" # port: miniaudio
+    "${SOURCE_PATH}/vendor/cpp-httplib" # port: cpp-httplib
+    "${SOURCE_PATH}/vendor/stb" # port: stb
+    "${SOURCE_PATH}/vendor/hash/xxhash" # port: xxhash
+    "${SOURCE_PATH}/vendor/hash/sha1" # port: openssl?
+    "${SOURCE_PATH}/vendor/hash/sha256" # port: openssl
 )
 if(NOT "tools" IN_LIST FEATURES)
     file(REMOVE_RECURSE "${SOURCE_PATH}/vendor/sheredom")
 endif()
 
+vcpkg_find_acquire_program(PYTHON3)
+message(STATUS "Using Python3: ${PYTHON3}")
+
 vcpkg_find_acquire_program(GIT)
 message(STATUS "Using git: ${GIT}")
+
+if(VCPKG_TARGET_IS_WINDOWS)
+    set(VCPKG_C_FLAGS "${VCPKG_C_FLAGS} /wd4819")
+    set(VCPKG_CXX_FLAGS "${VCPKG_CXX_FLAGS} /wd4819")
+endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
@@ -75,20 +83,20 @@ if("cuda" IN_LIST FEATURES)
         "-DCMAKE_CUDA_COMPILER:FILEPATH=${NVCC}"
         "-DCUDAToolkit_ROOT=${cuda_toolkit_root}"
     )
+    if(VCPKG_TARGET_IS_WINDOWS)
+        list(APPEND FEATURE_OPTIONS
+            "-DCMAKE_CUDA_FLAGS=-Xcompiler=/wd4819"
+        )
+    endif()
 endif()
 
 if("blas" IN_LIST FEATURES)
     list(APPEND FEATURE_OPTIONS
         -DGGML_BLAS_VENDOR=OpenBLAS
+        "-DBLAS_INCLUDE_DIRS:PATH=${CURRENT_INSTALLED_DIR}/include/openblas"
     )
 endif()
 
-if("opencl" IN_LIST FEATURES OR "webgpu" IN_LIST FEATURES)
-    vcpkg_find_acquire_program(PYTHON3)
-    list(APPEND FEATURE_OPTIONS
-        "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}"
-    )
-endif()
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
     list(APPEND ARCH_OPTIONS
@@ -120,6 +128,7 @@ vcpkg_cmake_configure(
         ${FEATURE_OPTIONS}
         ${ARCH_OPTIONS}
         # see cmake/build-info.cmake
+        "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}"
         "-DGIT_EXECUTABLE:FILEPATH=${GIT}"
         "-DBUILD_NUMBER:STRING=${VERSION}"
         "-DBUILD_COMMIT:STRING=b${VERSION}"
@@ -184,7 +193,9 @@ endif()
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
     "${CURRENT_PACKAGES_DIR}/debug/share"
-    "${CURRENT_PACKAGES_DIR}/debug/bin"
 )
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin")
+endif()
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
