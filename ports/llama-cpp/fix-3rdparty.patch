@@ -1,20 +1,46 @@
 diff --git a/common/http.h b/common/http.h
-index 878ad1c..87d5456 100644
 --- a/common/http.h
 +++ b/common/http.h
-@@ -1,6 +1,6 @@
- #pragma once
+@@ -2,7 +2,7 @@
+ 
+ #include "log.h"
  
 -#include <cpp-httplib/httplib.h>
 +#include <httplib.h>
  
  #ifdef _WIN32
  #include <winsock2.h>
+diff --git a/common/download.cpp b/common/download.cpp
+--- a/common/download.cpp
++++ b/common/download.cpp
+@@ -482,7 +482,7 @@ std::pair<long, std::vector<char>> common_remote_get_content(const std::string
+         }
+         if (params.resolve_host) {
+             // pin checked address, follow redirects manually to check each hop
+-            cli.set_direct_hostname_addr_map({{parts.host, params.resolve_host(parts.host)}});
++            cli.set_hostname_addr_map({{parts.host, params.resolve_host(parts.host)}});
+             cli.set_follow_location(false);
+         }
+ 
+diff --git a/common/CMakeLists.txt b/common/CMakeLists.txt
+--- a/common/CMakeLists.txt
++++ b/common/CMakeLists.txt
+@@ -138,7 +138,10 @@ set_target_properties(${TARGET} PROPERTIES
+ )
+ 
+ target_include_directories(${TARGET} PUBLIC .)
+-target_link_libraries     (${TARGET} PUBLIC vendor::nlohmann vendor::sheredom)
++target_link_libraries     (${TARGET} PUBLIC vendor::nlohmann)
++if (LLAMA_SUBPROCESS)
++    target_link_libraries (${TARGET} PUBLIC vendor::sheredom)
++endif()
+ target_compile_features   (${TARGET} PUBLIC cxx_std_17)
+ 
+ if (LLAMA_SUBPROCESS)
 diff --git a/tools/mtmd/mtmd-helper.cpp b/tools/mtmd/mtmd-helper.cpp
-index eba034f..c29a97f 100644
 --- a/tools/mtmd/mtmd-helper.cpp
 +++ b/tools/mtmd/mtmd-helper.cpp
-@@ -30,10 +30,10 @@
+@@ -32,10 +32,10 @@
  #define MA_NO_ENGINE
  #define MA_NO_GENERATION
  #define MA_API static
@@ -28,7 +54,6 @@ index eba034f..c29a97f 100644
  #ifdef MTMD_INTERNAL_HEADER
  #error "mtmd-helper is a public library outside of mtmd. it must not include internal headers"
 diff --git a/tools/server/server-http.cpp b/tools/server/server-http.cpp
-index 33cbb15..b97f53e 100644
 --- a/tools/server/server-http.cpp
 +++ b/tools/server/server-http.cpp
 @@ -4,7 +4,7 @@
@@ -38,13 +63,12 @@ index 33cbb15..b97f53e 100644
 -#include <cpp-httplib/httplib.h>
 +#include <httplib.h>
  
- #include <functional>
- #include <future>
+ #include <algorithm>
+ #include <cctype>
 diff --git a/tools/server/server-models.cpp b/tools/server/server-models.cpp
-index 6035324..0ea8746 100644
 --- a/tools/server/server-models.cpp
 +++ b/tools/server/server-models.cpp
-@@ -11,7 +11,7 @@
+@@ -12,7 +12,7 @@
  #include "http.h"
  #include "subproc.h"
  
@@ -53,16 +77,109 @@ index 6035324..0ea8746 100644
  #include <optional>
  
  #include <functional>
+@@ -2674,7 +2674,7 @@ server_http_proxy::server_http_proxy(
+     // setup Client
+     if (!resolved_addr.empty()) {
+         // pin the checked address; a redirect could lead to an unchecked one
+-        cli->set_direct_hostname_addr_map({{host, resolved_addr}});
++        cli->set_hostname_addr_map({{host, resolved_addr}});
+     }
+     cli->set_follow_location(resolved_addr.empty());
+     cli->set_connection_timeout(timeout_read, 0); // use --timeout value instead of hardcoded 5 s
+diff --git a/tools/server/server-common.cpp b/tools/server/server-common.cpp
+--- a/tools/server/server-common.cpp
++++ b/tools/server/server-common.cpp
+@@ -9,7 +9,7 @@
+ 
+ #include "server-common.h"
+ 
+-#include <cpp-httplib/httplib.h>
++#include <httplib.h>
+ 
+ #include <algorithm>
+ #include <cmath>
+diff --git a/vendor/hash/CMakeLists.txt b/vendor/hash/CMakeLists.txt
+--- a/vendor/hash/CMakeLists.txt
++++ b/vendor/hash/CMakeLists.txt
+@@ -4,35 +4,18 @@ llama_add_compile_flags()
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(VENDOR_SRCS
+-    xxhash/xxhash.c
+-    sha1/sha1.c
+-    sha256/sha256.c
+-)
+-
+ add_library(${TARGET} STATIC
+     hash.cpp
+     hash.h
+-    ${VENDOR_SRCS}
+ )
+ 
+ add_library(vendor::hash ALIAS ${TARGET})
+ 
+ target_compile_features(${TARGET} PRIVATE cxx_std_17)
+ 
+-# disable warnings in 3rd party code, but keep them for hash.cpp
+-if (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+-    set(NO_WARN_FLAG /w)
+-else()
+-    set(NO_WARN_FLAG -w)
+-endif()
+-set_source_files_properties(${VENDOR_SRCS} PROPERTIES COMPILE_OPTIONS ${NO_WARN_FLAG})
+-
+-# sha1 lives in a namespace to avoid a clash with boringssl, see scripts/sync_vendor.py
+-set_source_files_properties(sha1/sha1.c PROPERTIES LANGUAGE CXX)
++find_package(OpenSSL REQUIRED)
++target_link_libraries(${TARGET} PRIVATE OpenSSL::Crypto)
+ 
+ # expose the vendor/ root so consumers can include via "hash/hash.h"
+ target_include_directories(${TARGET} PUBLIC ..)
+ 
+-# internal includes of the vendored sources, e.g. sha256.c -> "rotate-bits/rotate-bits.h"
+-target_include_directories(${TARGET} PRIVATE .)
+diff --git a/vendor/hash/hash.cpp b/vendor/hash/hash.cpp
+--- a/vendor/hash/hash.cpp
++++ b/vendor/hash/hash.cpp
+@@ -1,8 +1,8 @@
+ #include "hash.h"
+ 
+-extern "C" {
+-#include "sha256/sha256.h"
+-}
++#include <openssl/evp.h>
++
++#include <stdexcept>
+ 
+ static std::string to_hex(const unsigned char * digest, size_t len) {
+     static const char hex[] = "0123456789abcdef";
+@@ -17,7 +17,10 @@ static std::string to_hex(const unsigned char * digest, size_t len) {
+ }
+ 
+ std::string hash_sha256_hex(const void * data, size_t len) {
+-    unsigned char digest[SHA256_DIGEST_SIZE];
+-    sha256_hash(digest, (const unsigned char *) data, len);
+-    return to_hex(digest, SHA256_DIGEST_SIZE);
++    unsigned char digest[EVP_MAX_MD_SIZE];
++    unsigned int digest_len = 0;
++    if (EVP_Digest(data, len, digest, &digest_len, EVP_sha256(), nullptr) != 1) {
++        throw std::runtime_error("failed to compute SHA-256 digest");
++    }
++    return to_hex(digest, digest_len);
+ }
 diff --git a/vendor/CMakeLists.txt b/vendor/CMakeLists.txt
-index 4479daf..7ca6aa5 100644
 --- a/vendor/CMakeLists.txt
 +++ b/vendor/CMakeLists.txt
-@@ -1,11 +1,21 @@
- # mtmd needs these even when common is not built
- add_subdirectory(hash)
+@@ -1,11 +1,22 @@
+-# mtmd needs these even when common is not built
+-add_subdirectory(hash)
 -add_subdirectory(miniaudio)
 -add_subdirectory(nlohmann)
+-add_subdirectory(sheredom)
+-add_subdirectory(stb)
 +if (LLAMA_BUILD_TOOLS OR LLAMA_BUILD_MTMD)
++    add_subdirectory(hash)
 +    find_path(MINIAUDIO_INCLUDE_DIR miniaudio.h REQUIRED)
 +    add_library(miniaudio INTERFACE)
 +    add_library(vendor::miniaudio ALIAS miniaudio)
@@ -74,10 +191,10 @@ index 4479daf..7ca6aa5 100644
 +endif()
 +find_package(nlohmann_json CONFIG REQUIRED GLOBAL)
 +add_library(vendor::nlohmann ALIAS nlohmann_json::nlohmann_json)
- add_subdirectory(sheredom)
--add_subdirectory(stb)
--
-+
++if (LLAMA_SUBPROCESS)
++    add_subdirectory(sheredom)
++endif()
+ 
  # only used by common
  if (LLAMA_BUILD_COMMON)
 -    add_subdirectory(cpp-httplib)
