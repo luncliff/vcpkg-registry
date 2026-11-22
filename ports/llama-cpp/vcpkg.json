@@ -7,7 +7,6 @@
   "dependencies": [
     "cpp-httplib",
     "nlohmann-json",
-    "xxhash",
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -15,7 +14,8 @@
     {
       "name": "vcpkg-cmake-config",
       "host": true
-    }
+    },
+    "xxhash"
   ],
   "default-features": [
     {
@@ -55,20 +55,6 @@
     "openmp": {
       "description": "Use OpenMP"
     },
-    "openvino": {
-      "description": "Use Intel OpenVINO",
-      "supports": "!uwp & !x86 & !(android & arm32) & !(windows & arm64)",
-      "dependencies": [
-        "opencl",
-        {
-          "name": "openvino",
-          "default-features": false,
-          "features": [
-            "cpu"
-          ]
-        }
-      ]
-    },
     "rpc": {
       "description": "Build the RPC backend",
       "supports": "windows | linux | osx"
@@ -85,13 +71,6 @@
         },
         "miniaudio",
         "stb"
-      ]
-    },
-    "webgpu": {
-      "description": "Use Dawn for WebGPU",
-      "supports": "(windows & !uwp) | linux | osx",
-      "dependencies": [
-        "dawn"
       ]
     }
   }

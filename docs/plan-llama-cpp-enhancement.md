@@ -88,7 +88,7 @@ code and available SDK/toolchain ports before widening the initial expressions.
 1. Build `blas`, `llamafile`, and `rpc` independently on
    `x64-windows`.
 2. Build representative no-CUDA combinations to catch transitive target issues.
-3. Build `arm64-windows` for `blas`, `llamafile`, `rpc`, and `webgpu`.
+3. Build `arm64-windows` for `blas`, `llamafile`, and `rpc`.
 4. Build `x64-linux` and `arm64-linux` for `blas` and `rpc`.
 5. Keep all feature packages opt-in and non-default.
 
