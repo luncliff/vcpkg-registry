@@ -55,6 +55,20 @@
     "openmp": {
       "description": "Use OpenMP"
     },
+    "openvino": {
+      "description": "Use Intel OpenVINO",
+      "supports": "!uwp & !x86 & !(android & arm32) & !(windows & arm64)",
+      "dependencies": [
+        "opencl",
+        {
+          "name": "openvino",
+          "default-features": false,
+          "features": [
+            "cpu"
+          ]
+        }
+      ]
+    },
     "rpc": {
       "description": "Build the RPC backend",
       "supports": "windows | linux | osx"

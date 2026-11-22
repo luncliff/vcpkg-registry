@@ -38,6 +38,9 @@ if(NOT "tools" IN_LIST FEATURES)
     file(REMOVE_RECURSE "${SOURCE_PATH}/vendor/sheredom")
 endif()
 
+vcpkg_find_acquire_program(PYTHON3)
+message(STATUS "Using Python3: ${PYTHON3}")
+
 vcpkg_find_acquire_program(GIT)
 message(STATUS "Using git: ${GIT}")
 
@@ -57,6 +60,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         llamafile GGML_LLAMAFILE
         opencl  GGML_OPENCL
         openmp  GGML_OPENMP
+        openvino GGML_OPENVINO
         rpc     GGML_RPC
         metal   GGML_METAL
 )
@@ -92,13 +96,6 @@ if("blas" IN_LIST FEATURES)
     )
 endif()
 
-if("opencl" IN_LIST FEATURES)
-    vcpkg_find_acquire_program(PYTHON3)
-    list(APPEND FEATURE_OPTIONS
-        "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}"
-    )
-endif()
-
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
     list(APPEND ARCH_OPTIONS
         -DGGML_AVX2=ON
@@ -129,6 +126,7 @@ vcpkg_cmake_configure(
         ${FEATURE_OPTIONS}
         ${ARCH_OPTIONS}
         # see cmake/build-info.cmake
+        "-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}"
         "-DGIT_EXECUTABLE:FILEPATH=${GIT}"
         "-DBUILD_NUMBER:STRING=${VERSION}"
         "-DBUILD_COMMIT:STRING=b${VERSION}"
