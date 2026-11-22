@@ -117,7 +117,7 @@
       "port-version": 0
     },
     "miniaudio": {
-      "baseline": "0.11.23",
+      "baseline": "0.11.26",
       "port-version": 0
     },
     "minja": {
