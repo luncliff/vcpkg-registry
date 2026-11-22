@@ -4,7 +4,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ARM-software/kleidiai
     REF "v${VERSION}"
-    SHA512 af021720668a7b86b8b994d9a2c433a2179d9c3fdd984385f33f26cf0014a08469dd634f62a1c19f8ddb4bac5cbe9f5429a6debca51c9b9e20d12e07d7f18c12
+    SHA512 d28f9e9001dd58bf6402efcfb4377e3096ff969d5acdc06b874c7198186498b839e145dd6dae9be53a4a31d15d82e7523128e8d215e0085efa42bcc99122b963
     HEAD_REF main
 )
 
@@ -30,6 +30,7 @@ file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/include/kai/ukernels/matmul/matmul_clamp_qai8_qai8p_qsi4cxp"
     "${CURRENT_PACKAGES_DIR}/include/kai/ukernels/matmul/matmul_clamp_qai8_qai8p_qsu2cxp"
     "${CURRENT_PACKAGES_DIR}/include/kai/ukernels/matmul/matmul_i32_u8p_u8p"
+    "${CURRENT_PACKAGES_DIR}/include/kai/ukernels/softmax/softmax_f32_f32"
 )
 
 file(GLOB LICENSE_FILES
