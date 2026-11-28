@@ -9,10 +9,10 @@ assignees: ''
 ## Suggestion
 
 ### 1. Which page or document?
-Provide the path to the document in this repository and, if possible, the URL of the live page.
+Provide the path to the document in this repository and, if possible, the URL of its file on GitHub.
 
 - **Path:** [e.g., `docs/guide-create-port.md`]
-- **URL (optional):** [e.g., https://luncliff.github.io/vcpkg-registry/guide-create-port.html]
+- **URL (optional):** [e.g., https://github.com/luncliff/vcpkg-registry/blob/main/docs/guide-create-port.md]
 
 ### 2. Problem type
 - [ ] Content error (wrong or outdated instructions)
@@ -33,4 +33,3 @@ Is this related to a specific port or feature?
 ## References
 * [README](../../README.md)
 * [Documentation Home](../../docs/index.md)
-* [VitePress Maintenance Guide](../../docs/maintenance-vitepress.md)
