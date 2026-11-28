@@ -2,12 +2,13 @@
 
 | Item | Value |
 |------|-------|
-| Status | Draft 3, 2026-11-28 (concurrency model, harness, access control added; redundancy cut) |
+| Status | Draft 3 implementation, 2026-11-28 (unit, real vcpkg/Git, and live SDK verified) |
 | Architecture source | [vcpkg-agents-ideation.md](./vcpkg-agents-ideation.md) (fixed) |
 | Requirements | [vcpkg-agents-requirements.md](./vcpkg-agents-requirements.md) (user stories, FR/NFR, gaps G-1..G-26) |
 | Facts and tests | [vcpkg-agents-research.md](./vcpkg-agents-research.md) (cited as Research §n) |
 | Style reference | [vcpkg-agents.go](./vcpkg-agents.go) (style only) |
-| SDK | `github.com/microsoft/copilot-sdk/go/v2` v2.0.4; Copilot CLI 1.0.114, protocol 4 (Research §5.1) |
+| Implementation | [vcpkg-agents.go](./vcpkg-agents.go), [vcpkg-agents_test.go](./vcpkg-agents_test.go) |
+| SDK | `github.com/microsoft/copilot-sdk/go/v2` v2.0.4; Copilot CLI 1.0.114, protocol 4; model default `gpt-6-luna` |
 
 This document maps the ideation onto Go and the Copilot SDK. It adds no member and no relationship. **Gap-fill G-n** marks a detail the ideation leaves open. The Go patterns in sections 4 and 6 were compiled against SDK v2.0.4 (`go vet`, `go run`, 2026-11-28); excerpts omit bodies marked by comments.
 
@@ -42,9 +43,9 @@ Orange members have write scopes. The dashed edge is not in the ideation; it onl
 
 ## 2. Process Model
 
-### 2.1 `init`
+### 2.1 Startup
 
-Deterministic, no model. Results go to package-level variables (Ideation §Implementation Styles).
+Deterministic, no model. `main` calls `LoadRuntimeConfig` after flag parsing; results stay in one `RuntimeConfig` rather than package globals.
 
 1. Parse flags (§2.3). Set up `log/slog`.
 2. `exec.LookPath` for vcpkg, git, gh, cmake, ninja, shells. Copilot CLI from `COPILOT_CLI_PATH`; record its version (protocol must match the SDK, Research §5.1).
@@ -243,6 +244,8 @@ func turn[T any](ctx context.Context, team *Team, m *Member, s *copilot.Session,
 ```
 
 A member whose outbound set has several types (Doctor: `PortGoals`, `TripletGoals`, `Blocker`) calls `turn[any]` and switches on the dynamic type. Usage attribution: `s.RPC.Usage.GetMetrics` before and after; all usage lands under `main` (Research §5.1), the difference belongs to `m`.
+
+Implementation detail: a `gpt-6-luna` turn that ends without the required terminal handoff gets one short retry. Deterministic handoffs (detection, installation reports, install plans, final reports, and limit blockers) are validated by Go and replaced with the already-computed payload after the model calls the terminal tool. This keeps the light model from changing paths, ports, triplets, commits, or limits.
 
 ```mermaid
 sequenceDiagram
@@ -659,7 +662,7 @@ flowchart TB
 Two paths. Both end in a bounded summary for the model and a full log on disk.
 
 1. Built-in shell tool (`bash` or `powershell`), only for members with `Scope.Shell`: L2 pins `cwd` and the member; L3 checks every parsed `Commands[].Identifier` against `Scope.Shell`, every `PossiblePaths` entry against `Scope.Read`, and rejects write redirection for members without `Scope.Write`. The runtime parses the command; Go never re-parses shell text.
-2. Custom tools (`vcpkg_*`, `probe_tool`, `make_patch`, `version_update`, `git_commit`, `gh_read`): the model supplies a struct, Go builds argv. No shell. Shape:
+2. Custom tools (`vcpkg_*`, `probe_tool`, `make_patch`, `version_update`, `git_commit`, `gh_read`): the model supplies a struct, Go builds argv. No shell. `probe_tool` accepts only the exact default read-only version arguments for that tool; it cannot accept an interpreter or shell program. Shape:
 
 ```go
 func runVcpkg(ctx context.Context, m *Member, logDir string, args ...string) (string, error) {
@@ -684,7 +687,7 @@ vcpkg rules applied by Go, not by the model:
 2. The summary returns only: exit code, duration, the dry-run plan, `RESULTS` states, `error: building <spec> failed with: <RESULT>` lines, paths from `buildtrees/<port>/error-logs-<triplet>.txt`, the `<installed>/vcpkg/issue_body.md` path, `info: loaded overlay triplet from here` / `info: installing overlay port from here` lines, binary cache warnings (Research §8.1, §8.2, §8.8).
 3. `--x-wait-for-lock` on every locking command; the handler watches for `note: waiting to take filesystem lock...` and stops vcpkg after `--lock-wait` (**Gap-fill G-19**; Research §8.3).
 4. `vcpkg_query` subcommand allowlist: `version`, `z-print-config`, `list`, `search`, `depend-info`, `x-package-info`, `help`. `detect_compiler` always adds `--dry-run` to `x-set-installed` (without it, vcpkg removes every other installed package).
-5. Never `--debug`, `--debug-env`; probes pass `--disable-metrics`. Never run the `gh issue create` line vcpkg prints (FR-T-13); `gh_read` rejects write subcommands.
+5. Never `--debug`, `--debug-env`; probes pass `--disable-metrics`. Never run the `gh issue create` line vcpkg prints (FR-T-13); `gh_read` scans the full argument list, rejects GraphQL and any non-GET method (including repeated or conflicting methods), and rejects field/input upload flags.
 6. On an argument error the member runs `vcpkg_help` and retries (FR-T-5).
 
 Tool set (member column is the `CustomAgentConfig.Tools` allowlist):
@@ -735,7 +738,7 @@ Format: inputs → outputs; tools; behavior as goals and checks (FR-T-4). Scopes
 
 - In: `DetectRequest`, `HostFactsRequest`. Out: `EnvReport`, `HostFacts`.
 - Tools: `probe_tool`, `detect_compiler`, `vcpkg_query`, `vcpkg_help`, `gh_read` (auth, rate limit), `view`, `glob`. No file writes except probe files (FR-E-5).
-- Procedure, identical to `init` (FR-E-10):
+- Procedure, identical to startup (FR-E-10):
   1. Tool paths and versions: vcpkg, git, gh, cmake, ninja, shells, curl, tar, meson, pkg-config, zip, unzip, python, compilers, package managers.
   2. Roots and triplets from `z-print-config`; overlays from flags, `VCPKG_OVERLAY_*`, `vcpkg-configuration.json`; the winning triplet file per requested triplet (overlay → `triplets/` → `triplets/community/`).
   3. `VCPKG_*` names and status (§9).
@@ -784,10 +787,10 @@ Format: inputs → outputs; tools; behavior as goals and checks (FR-T-4). Scopes
 
 - In: `BaselineRequest` (registry only). Out: `BaselineReport`.
 - Tools: `version_update`, `git_commit`, `view`, `vcpkg_help`, handoff tools.
-- Per port, 2 commits (FR-B-2): format (`registry-format.ps1`, else `vcpkg format-manifest`) and commit `ports/<port>/`; update versions (`registry-add-version.ps1`, else `vcpkg x-add-version <port>` with `--x-builtin-ports-root` and `--x-builtin-registry-versions-dir`) and commit `versions/`.
+- Per port, 2 commits (FR-B-2): call `version_update(stage: "format")`, commit `ports/<port>/`, call `version_update(stage: "versions")`, then commit `versions/`. Overlay flags are not passed to `x-add-version`. For a new record, Go creates `{"versions":[]}` and uses `--overwrite-version`; existing records never receive that flag.
 - Order (**Gap-fill G-16**): dependencies first; ties follow the order the team changed the ports.
 - `--overwrite-version` (**Gap-fill G-21**): only for an entry not yet on the base branch; otherwise report the port as blocked ("`port-version` not bumped"; see G-1).
-- Tree guard: recorded `git-tree` must equal `git rev-parse <port commit>:ports/<port>`; on mismatch revert the version commit and report a blocker (CRLF cause, Research §8.10). `x-ci-verify-versions` is not used (false errors for upstream ports).
+- Tree guard: before the version commit, and again in `validateBaselineReport`, recorded `git-tree` must equal `git rev-parse <port commit>:ports/<port>`. A mismatch blocks the handoff and leaves no version commit. The validator also checks actual changed paths and port-before-versions commit ancestry. `x-ci-verify-versions` is not used (false errors for upstream ports).
 
 ## 8. Flows
 
@@ -847,7 +850,7 @@ Failure paths:
 
 **Gap-fill G-13.** Facts and the full table: Research §4, §8.6.
 
-- `init` and the Environment Detector record each `VCPKG_*` and `X_VCPKG_*` name with a status (set, path exists, writable, parse result). Values are shown only for roots, triplets, overlays, flags.
+- Startup and the Environment Detector record each `VCPKG_*` and `X_VCPKG_*` name with a status (set, path exists, writable, parse result). Values are shown only for roots, triplets, overlays, flags.
 - Never logged or sent to the session: `VCPKG_BINARY_SOURCES`, `X_VCPKG_ASSET_SOURCES`, NuGet settings, `X_VCPKG_RECURSIVE_DATA`, proxy credentials, any name or value matching `TOKEN`, `KEY`, `SECRET`, `sig=`, `AccessKey`. Report structure only (provider, host, mode, SAS expiry).
 - Lint binary and asset sources before vcpkg sees them: a vcpkg parse error echoes the whole value (Research §4.6).
 - `scrubbedEnv()` keeps system variables, every variable vcpkg reads, proxies, and `VCPKG_KEEP_ENV_VARS` names; drops secrets vcpkg does not read (`GITHUB_TOKEN`, custom `VCPKG_`-prefixed credentials). Linux and macOS pass the full environment into builds, so this matters most there (Research §4.3).
@@ -918,4 +921,5 @@ requirementDiagram
 
 - G-1 (critical, user decision): how update requests reach the Port Editor. Recommended Planner → Port Doctor; not adopted (adds an edge).
 - Open: G-20, G-23. Pending confirmation: G-6 to G-11, G-14 to G-17, G-19, G-21, G-22, G-24, G-26 (requirements §9).
-- To verify in the first live run: built-in shell tool names in `PreToolUseHookInput.ToolName`; whether `WorkingDirectory` is filled for custom tools; `rpc.SandboxConfig` on Windows (AppContainer) with vcpkg child processes.
+- Implemented and live-verified for registry dry runs: one `gpt-6-luna` session, five terminal handoffs for the simple scenario, and no port installation.
+- Still unverified: `rpc.SandboxConfig` on Windows (AppContainer) with vcpkg child processes. G-1 update stories remain blocked rather than adding an architecture edge.

@@ -455,7 +455,7 @@ As any user, I want clear reports of conditions the team cannot fix, so that I k
 - vcpkg tool 2026-09-26. Its locks cover `installed/`, `buildtrees/`, and `packages/`, and `x-add-version` hashes the working tree (Research §2).
 - Copilot CLI 1.0.114 speaks SDK protocol 4. The team needs `github.com/microsoft/copilot-sdk/go/v2` (v2.0.4 or newer). The draft's `github.com/github/copilot-sdk/go` v1.0.28 speaks protocol 3 and fails at start (Research §5.1).
 - The shared-session mechanism (`Agent.Select` with per-member tool allowlists, compaction that keeps the selection and the shared history) was verified live (Research §5.1). `Agent.Select` is still marked experimental.
-- Go 1.24 or newer (`go.mod`).
+- Go 1.26 or newer (`go.mod`; required by Copilot SDK Go v2.0.4).
 - `gh` is authenticated. Without network access, the Port Doctor and Port Editor degrade to local evidence.
 - Single model per run (Ideation).
 
@@ -534,3 +534,5 @@ The ideation calls the user stories "ideas to test vcpkg team". This table links
 | FR-T-2, FR-T-3 | Research §5.1 (SDK live probe: `Agent.Select` enforces tool allowlists; compaction keeps the selection and the shared history) | Two members with disjoint tools | Each member calls only its tools; the next member recalls earlier results after compaction |
 
 Scenarios without local evidence (US-2.1, US-2.4, US-3, US-4, US-6, US-7) need network access, other hosts, or real upstream changes. They remain design-level until the team exists.
+
+Implementation coverage in `vcpkg-agents_test.go` now exercises the local registry dry run (including the compiled CLI and one live shared SDK session), manifest dry run, unknown port, unsupported target, real install/remove, patch generation, two local baseline commits, version-record tree guards, environment blockers, hooks, and all member definitions. No mock, fake, or stub is used. A full Doctor/Editor repair and Triplet Editor reinstall remain live-fixture tests rather than verified implementation acceptance.
