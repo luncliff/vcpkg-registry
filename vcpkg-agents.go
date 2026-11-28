@@ -54,7 +54,6 @@ type Options struct {
 	Write           []string
 	MaxPortCycles   int
 	MaxTripletEdits int
-	EnableSandbox   bool
 }
 
 func ParseOptions(args []string) (Options, error) {
@@ -76,7 +75,6 @@ func ParseOptions(args []string) (Options, error) {
 	fs.Var(&writes, "write", "write scope: ports,triplets,versions,manifest,overlays,create-overlays,commit; repeatable")
 	fs.IntVar(&options.MaxPortCycles, "max-port-cycles", 3, "maximum failed cycles per port")
 	fs.IntVar(&options.MaxTripletEdits, "max-triplet-edits", 1, "maximum triplet edits per triplet")
-	fs.BoolVar(&options.EnableSandbox, "sandbox", false, "enable the experimental Copilot OS sandbox")
 	if err := fs.Parse(args); err != nil {
 		return Options{}, err
 	}
@@ -143,20 +141,17 @@ type VcpkgRoots struct {
 	Packages   string `json:"packages"`
 }
 type RuntimeConfig struct {
-	Options          Options
 	WorkingDirectory string
 	Workspace        string
 	ManifestRoot     string
 	Scenario         string
-	ScenarioEvidence []string
+	DryRun           bool
 	Tools            map[string]string
 	Roots            VcpkgRoots
 	OverlayPorts     []string
 	OverlayTriplets  []string
-	DefaultTriplet   string
 	HostTriplet      string
 	Variables        []VariableStatus
-	DetectionError   string
 	Warnings         []string
 	Blockers         []string
 	SecretValues     []string
@@ -165,11 +160,9 @@ type RuntimeConfig struct {
 	Scratch          string
 	LogDirectory     string
 	WriteScopes      map[string]bool
-	RunID            string
 }
-type zPrintConfig struct {
+type vcpkgConfiguration struct {
 	Buildtrees          string `json:"buildtrees"`
-	DefaultTriplet      string `json:"default-triplet"`
 	Downloads           string `json:"downloads"`
 	HostTriplet         string `json:"host-triplet"`
 	Installed           string `json:"installed"`
@@ -179,24 +172,9 @@ type zPrintConfig struct {
 }
 
 func LoadRuntimeConfig(options Options) (*RuntimeConfig, error) {
-	wd, err := os.Getwd()
+	wd, workspace, toolPaths, err := discoverRuntimePaths()
 	if err != nil {
 		return nil, err
-	}
-	wd, _ = filepath.Abs(wd)
-	workspace := wd
-	toolPaths := make(map[string]string)
-	for _, name := range []string{"vcpkg", "git", "gh", "cmake", "ninja", "pwsh", "powershell", "bash", "curl", "tar", "zip", "unzip", "python", "meson", "pkg-config", "winget", "choco", "apt-cache", "brew"} {
-		if path, pathErr := exec.LookPath(name); pathErr == nil {
-			toolPaths[name], _ = filepath.Abs(path)
-		}
-	}
-	if toolPaths["git"] != "" {
-		ctx := context.Background()
-		out, gitErr := exec.CommandContext(ctx, toolPaths["git"], "-C", wd, "rev-parse", "--show-toplevel").Output()
-		if gitErr == nil {
-			workspace = filepath.Clean(strings.TrimSpace(string(out)))
-		}
 	}
 	manifestRoot := strings.TrimSpace(options.ManifestRoot)
 	if manifestRoot != "" && !filepath.IsAbs(manifestRoot) {
@@ -219,6 +197,79 @@ func LoadRuntimeConfig(options Options) (*RuntimeConfig, error) {
 	}
 	secretValues := collectSecretValues()
 	env := scrubbedVcpkgEnvironment(os.Environ(), nil)
+	printed, printOutput, printErr := loadVcpkgConfiguration(options, wd, manifestRoot, vcpkgPath, env)
+	roots := printed.roots(options, vcpkgPath)
+	scratch, logDirectory, err := createRuntimeDirectories(options.LogRoot)
+	if err != nil {
+		return nil, err
+	}
+	overlays := existingCleanPaths(append(append([]string(nil), options.OverlayPorts...), splitPathList(os.Getenv("VCPKG_OVERLAY_PORTS"))...))
+	overlayTriplets := existingCleanPaths(append(append([]string(nil), options.OverlayTriplets...), splitPathList(os.Getenv("VCPKG_OVERLAY_TRIPLETS"))...))
+	scenario, overlays, overlayTriplets := resolveScenario(printed.ManifestModeEnabled, manifestRoot, workspace, overlays, overlayTriplets)
+	variables, warnings, blockers := inspectVcpkgVariables()
+	if envRoot := cleanPath(os.Getenv("VCPKG_ROOT")); envRoot != "" && roots.Vcpkg != "" && !samePath(envRoot, roots.Vcpkg) {
+		warnings = append(warnings, "VCPKG_ROOT differs from the root resolved by vcpkg: vcpkg ignores the mismatching value")
+	}
+	if printErr != nil {
+		diagnostic := redactText(string(printOutput), secretValues)
+		if diagnostic == "" {
+			diagnostic = printErr.Error()
+		}
+		blockers = append(blockers, diagnostic)
+	}
+	writeScopes := resolvedWriteScopes(options.Write, scenario)
+	if len(writeScopes) == 0 {
+		writeScopes = defaultWriteScopes(scenario)
+	}
+	if scenario == "registry" && (writeScopes["versions"] || writeScopes["commit"]) && !isDryRunPrompt(options.Prompt) {
+		blockers = append(blockers, registryVersionPreconditions(workspace, toolPaths["git"])...)
+	}
+	return &RuntimeConfig{
+		WorkingDirectory: wd,
+		Workspace:        workspace,
+		ManifestRoot:     manifestRoot,
+		Scenario:         scenario,
+		DryRun:           isDryRunPrompt(options.Prompt),
+		Tools:            toolPaths,
+		Roots:            roots,
+		OverlayPorts:     overlays,
+		OverlayTriplets:  overlayTriplets,
+		HostTriplet:      printed.HostTriplet,
+		Variables:        variables,
+		Warnings:         uniqueStrings(warnings),
+		Blockers:         uniqueStrings(blockers),
+		SecretValues:     secretValues,
+		VcpkgEnv:         env,
+		InitialDirty:     gitDirtyPaths(workspace, toolPaths["git"]),
+		Scratch:          scratch,
+		LogDirectory:     logDirectory,
+		WriteScopes:      writeScopes,
+	}, nil
+}
+
+func discoverRuntimePaths() (string, string, map[string]string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", "", nil, err
+	}
+	wd, _ = filepath.Abs(wd)
+	tools := make(map[string]string)
+	for _, name := range []string{"vcpkg", "git", "gh", "cmake", "ninja", "pwsh", "powershell", "bash", "curl", "tar", "zip", "unzip", "python", "meson", "pkg-config", "winget", "choco", "apt-cache", "brew"} {
+		if path, pathErr := exec.LookPath(name); pathErr == nil {
+			tools[name], _ = filepath.Abs(path)
+		}
+	}
+	workspace := wd
+	if tools["git"] != "" {
+		out, gitErr := exec.CommandContext(context.Background(), tools["git"], "-C", wd, "rev-parse", "--show-toplevel").Output()
+		if gitErr == nil {
+			workspace = filepath.Clean(strings.TrimSpace(string(out)))
+		}
+	}
+	return wd, workspace, tools, nil
+}
+
+func loadVcpkgConfiguration(options Options, wd, manifestRoot, vcpkgPath string, env []string) (vcpkgConfiguration, []byte, error) {
 	printArgs := []string{"z-print-config", "--disable-metrics"}
 	if options.VcpkgRoot != "" {
 		printArgs = append(printArgs, "--vcpkg-root="+cleanPath(options.VcpkgRoot))
@@ -240,9 +291,19 @@ func LoadRuntimeConfig(options Options) (*RuntimeConfig, error) {
 	cmd.Dir = wd
 	cmd.Env = env
 	printOutput, printErr := cmd.CombinedOutput()
-	var printed zPrintConfig
+	var printed vcpkgConfiguration
 	_ = json.Unmarshal(printOutput, &printed)
-	roots := VcpkgRoots{Vcpkg: cleanPath(firstNonEmpty(printed.VcpkgRoot, options.VcpkgRoot, os.Getenv("VCPKG_ROOT"))), Buildtrees: cleanPath(firstNonEmpty(printed.Buildtrees, options.BuildtreesRoot)), Downloads: cleanPath(printed.Downloads), Installed: cleanPath(firstNonEmpty(printed.Installed, options.InstallRoot)), Packages: cleanPath(firstNonEmpty(printed.Packages, options.PackagesRoot))}
+	return printed, printOutput, printErr
+}
+
+func (printed vcpkgConfiguration) roots(options Options, vcpkgPath string) VcpkgRoots {
+	roots := VcpkgRoots{
+		Vcpkg:      cleanPath(firstNonEmpty(printed.VcpkgRoot, options.VcpkgRoot, os.Getenv("VCPKG_ROOT"))),
+		Buildtrees: cleanPath(firstNonEmpty(printed.Buildtrees, options.BuildtreesRoot)),
+		Downloads:  cleanPath(printed.Downloads),
+		Installed:  cleanPath(firstNonEmpty(printed.Installed, options.InstallRoot)),
+		Packages:   cleanPath(firstNonEmpty(printed.Packages, options.PackagesRoot)),
+	}
 	if roots.Vcpkg == "" {
 		roots.Vcpkg = filepath.Dir(vcpkgPath)
 	}
@@ -258,13 +319,17 @@ func LoadRuntimeConfig(options Options) (*RuntimeConfig, error) {
 	if roots.Packages == "" {
 		roots.Packages = filepath.Join(roots.Vcpkg, "packages")
 	}
+	return roots
+}
+
+func createRuntimeDirectories(logRoot string) (string, string, error) {
 	scratch, err := os.MkdirTemp("", "vcpkg-agents-")
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
 	logDirectory := filepath.Join(scratch, "logs")
-	if options.LogRoot != "" {
-		root := cleanPath(options.LogRoot)
+	if logRoot != "" {
+		root := cleanPath(logRoot)
 		if err = os.MkdirAll(root, 0o700); err == nil {
 			logDirectory, err = os.MkdirTemp(root, "vcpkg-agents-logs-")
 		}
@@ -273,57 +338,25 @@ func LoadRuntimeConfig(options Options) (*RuntimeConfig, error) {
 	}
 	if err != nil {
 		_ = os.RemoveAll(scratch)
-		return nil, fmt.Errorf("create command log directory: %w", err)
+		return "", "", fmt.Errorf("create command log directory: %w", err)
 	}
-	overlays := append([]string(nil), options.OverlayPorts...)
-	overlayTriplets := append([]string(nil), options.OverlayTriplets...)
-	overlays = append(overlays, splitPathList(os.Getenv("VCPKG_OVERLAY_PORTS"))...)
-	overlayTriplets = append(overlayTriplets, splitPathList(os.Getenv("VCPKG_OVERLAY_TRIPLETS"))...)
-	overlays = existingCleanPaths(overlays)
-	overlayTriplets = existingCleanPaths(overlayTriplets)
-	scenario := ""
-	var scenarioEvidence []string
-	if printed.ManifestModeEnabled || manifestRoot != "" {
-		scenario = "manifest"
-		scenarioEvidence = append(scenarioEvidence, "vcpkg manifest discovery enabled")
-		if manifestRoot != "" {
-			scenarioEvidence = append(scenarioEvidence, filepath.Join(manifestRoot, "vcpkg.json"))
-		}
-	} else if isDir(filepath.Join(workspace, "ports")) && fileExists(filepath.Join(workspace, "versions", "baseline.json")) {
-		scenario = "registry"
-		scenarioEvidence = append(scenarioEvidence, filepath.Join(workspace, "ports"), filepath.Join(workspace, "versions", "baseline.json"))
-		if isDir(filepath.Join(workspace, "ports")) && !containsPath(overlays, filepath.Join(workspace, "ports")) {
+	return scratch, logDirectory, nil
+}
+
+func resolveScenario(manifestMode bool, manifestRoot, workspace string, overlays, overlayTriplets []string) (string, []string, []string) {
+	if manifestMode || manifestRoot != "" {
+		return "manifest", overlays, overlayTriplets
+	}
+	if isDir(filepath.Join(workspace, "ports")) && fileExists(filepath.Join(workspace, "versions", "baseline.json")) {
+		if !containsPath(overlays, filepath.Join(workspace, "ports")) {
 			overlays = append([]string{filepath.Join(workspace, "ports")}, overlays...)
 		}
 		if isDir(filepath.Join(workspace, "triplets")) && !containsPath(overlayTriplets, filepath.Join(workspace, "triplets")) {
 			overlayTriplets = append([]string{filepath.Join(workspace, "triplets")}, overlayTriplets...)
 		}
-	} else {
-		scenario = "registry"
-		scenarioEvidence = append(scenarioEvidence, "no vcpkg manifest; registry layout not found")
+		return "registry", overlays, overlayTriplets
 	}
-	variables, warnings, blockers := inspectVcpkgVariables()
-	if envRoot := cleanPath(os.Getenv("VCPKG_ROOT")); envRoot != "" && roots.Vcpkg != "" && !samePath(envRoot, roots.Vcpkg) {
-		warnings = append(warnings, "VCPKG_ROOT differs from the root resolved by vcpkg: vcpkg ignores the mismatching value")
-	}
-	detectionError := ""
-	if printErr != nil {
-		detectionError = redactText(string(printOutput), secretValues)
-		if detectionError == "" {
-			detectionError = printErr.Error()
-		}
-		blockers = append(blockers, detectionError)
-	}
-	writeScopes := resolvedWriteScopes(options.Write, scenario)
-	if len(writeScopes) == 0 {
-		writeScopes = defaultWriteScopes(scenario)
-	}
-	if scenario == "registry" && (writeScopes["versions"] || writeScopes["commit"]) && !isDryRunPrompt(options.Prompt) {
-		versionBlockers := registryVersionPreconditions(workspace, toolPaths["git"])
-		blockers = append(blockers, versionBlockers...)
-	}
-	config := &RuntimeConfig{Options: options, WorkingDirectory: wd, Workspace: workspace, ManifestRoot: manifestRoot, Scenario: scenario, ScenarioEvidence: scenarioEvidence, Tools: toolPaths, Roots: roots, OverlayPorts: overlays, OverlayTriplets: overlayTriplets, DefaultTriplet: firstNonEmpty(printed.DefaultTriplet, os.Getenv("VCPKG_DEFAULT_TRIPLET")), HostTriplet: printed.HostTriplet, Variables: variables, DetectionError: detectionError, Warnings: uniqueStrings(warnings), Blockers: uniqueStrings(blockers), SecretValues: secretValues, VcpkgEnv: env, InitialDirty: gitDirtyPaths(workspace, toolPaths["git"]), Scratch: scratch, LogDirectory: logDirectory, WriteScopes: writeScopes, RunID: filepath.Base(scratch)}
-	return config, nil
+	return "registry", overlays, overlayTriplets
 }
 func (c *RuntimeConfig) Cleanup() error {
 	return os.RemoveAll(c.Scratch)
@@ -1215,15 +1248,6 @@ var agentDefinitions = []copilot.CustomAgentConfig{
 	{Name: baselineUpdaterName, Description: baselineUpdaterPrompt, Prompt: baselineUpdaterPrompt, Infer: copilot.Bool(false), Tools: []string{"view", "glob", "rg", "execute_tool"}},
 }
 
-func send[T any](ctx context.Context, output chan<- T, message T) error {
-	select {
-	case output <- message:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
-	}
-}
-
 func structuredResponseSchema(choices map[string]any) (map[string]any, error) {
 	properties := make(map[string]any, len(choices))
 	required := make([]string, 0, len(choices))
@@ -1247,68 +1271,67 @@ func structuredResponseSchema(choices map[string]any) (map[string]any, error) {
 	return map[string]any{"type": "object", "properties": properties, "required": required, "additionalProperties": false}, nil
 }
 
-func waitForResponse(ctx context.Context, session *copilot.Session, options copilot.MessageOptions, choices map[string]any) (map[string]json.RawMessage, error) {
+func sendStructuredResponse(ctx context.Context, session *copilot.Session, options copilot.MessageOptions, choices map[string]any) (map[string]json.RawMessage, error) {
 	var err error
 	options.ResponseSchema, err = structuredResponseSchema(choices)
 	if err != nil {
 		return nil, err
 	}
-	completed := make(chan error, 1)
-	var response string
+	events := make(chan copilot.SessionEvent, 2)
 	unsubscribe := session.On(func(event copilot.SessionEvent) {
 		if event.AgentID != nil && *event.AgentID != "" {
 			return
 		}
 		switch data := event.Data.(type) {
 		case *copilot.AssistantMessageData:
-			if len(data.ToolRequests) == 0 {
-				response = data.Content
+			if len(data.ToolRequests) != 0 {
+				return
 			}
-		case *copilot.SessionIdleData:
-			var err error
-			if data.Aborted != nil && *data.Aborted {
-				err = context.Canceled
-			}
-			select {
-			case completed <- err:
-			default:
-			}
-		case *copilot.SessionErrorData:
-			select {
-			case completed <- fmt.Errorf("session error: %s", data.Message):
-			default:
-			}
-		case *copilot.SessionShutdownData:
-			select {
-			case completed <- errors.New("session closed before response completed"):
-			default:
-			}
+		case *copilot.SessionIdleData, *copilot.SessionErrorData, *copilot.SessionShutdownData:
+		default:
+			return
+		}
+		select {
+		case events <- event:
+		case <-ctx.Done():
 		}
 	})
 	defer unsubscribe()
 	if _, err := session.Send(ctx, options); err != nil {
 		return nil, err
 	}
-	select {
-	case err := <-completed:
-		if err != nil {
-			return nil, err
-		}
-		var result map[string]json.RawMessage
-		if err := json.Unmarshal([]byte(response), &result); err != nil {
-			return nil, fmt.Errorf("decode structured response: %w", err)
-		}
-		for name, value := range result {
-			if bytes.Equal(bytes.TrimSpace(value), []byte("null")) {
-				delete(result, name)
+	response := ""
+	for {
+		select {
+		case event := <-events:
+			switch data := event.Data.(type) {
+			case *copilot.AssistantMessageData:
+				response = data.Content
+			case *copilot.SessionIdleData:
+				if data.Aborted != nil && *data.Aborted {
+					return nil, context.Canceled
+				}
+				var result map[string]json.RawMessage
+				if err := json.Unmarshal([]byte(response), &result); err != nil {
+					return nil, fmt.Errorf("decode structured response: %w", err)
+				}
+				for name, value := range result {
+					if bytes.Equal(bytes.TrimSpace(value), []byte("null")) {
+						delete(result, name)
+					}
+				}
+				if len(result) != 1 {
+					return nil, fmt.Errorf("structured response selected %d routes", len(result))
+				}
+				return result, nil
+			case *copilot.SessionErrorData:
+				return nil, fmt.Errorf("session error: %s", data.Message)
+			case *copilot.SessionShutdownData:
+				return nil, errors.New("session closed before response completed")
 			}
+		case <-ctx.Done():
+			return nil, ctx.Err()
 		}
-		if len(result) != 1 {
-			return nil, fmt.Errorf("structured response selected %d routes", len(result))
-		}
-		return result, nil
-	case <-ctx.Done():
-		return nil, ctx.Err()
 	}
 }
 
@@ -1346,19 +1369,28 @@ func (planner *Planner) Run(ctx context.Context,
 		slog.Info("handoff", "agent", plannerName, "target", edge)
 		switch edge {
 		case environmentDetectorName:
-			err = send(ctx, detect, result.(Handoff))
-		case portInstallerName:
-			err = send(ctx, install, result.(Handoff))
-		case baselineUpdaterName:
-			err = send(ctx, baseline, result.(Handoff))
-		case "user":
-			if err := send(ctx, final, result.(FinalReport)); err != nil {
-				errorsOut <- fmt.Errorf("%s: %w", plannerName, err)
+			select {
+			case detect <- result.(Handoff):
+			case <-ctx.Done():
+				return
 			}
-			return
-		}
-		if err != nil {
-			errorsOut <- fmt.Errorf("%s: %w", plannerName, err)
+		case portInstallerName:
+			select {
+			case install <- result.(Handoff):
+			case <-ctx.Done():
+				return
+			}
+		case baselineUpdaterName:
+			select {
+			case baseline <- result.(Handoff):
+			case <-ctx.Done():
+				return
+			}
+		case "user":
+			select {
+			case final <- result.(FinalReport):
+			case <-ctx.Done():
+			}
 			return
 		}
 	}
@@ -1375,7 +1407,7 @@ func (planner *Planner) decide(ctx context.Context, message Handoff) (string, an
 	if err != nil {
 		return "", nil, err
 	}
-	response, err := waitForResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
+	response, err := sendStructuredResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
 		environmentDetectorName: Handoff{},
 		portInstallerName:       Handoff{},
 		baselineUpdaterName:     Handoff{},
@@ -1434,13 +1466,17 @@ func (detector *EnvironmentDetector) Run(ctx context.Context, requests, hostRequ
 		slog.Info("handoff", "agent", environmentDetectorName, "target", edge)
 		switch edge {
 		case plannerName:
-			err = send(ctx, planner, next)
+			select {
+			case planner <- next:
+			case <-ctx.Done():
+				return
+			}
 		case tripletEditorName:
-			err = send(ctx, triplet, next)
-		}
-		if err != nil {
-			errorsOut <- fmt.Errorf("%s: %w", environmentDetectorName, err)
-			return
+			select {
+			case triplet <- next:
+			case <-ctx.Done():
+				return
+			}
 		}
 	}
 }
@@ -1456,7 +1492,7 @@ func (detector *EnvironmentDetector) detect(ctx context.Context, message Handoff
 	if err != nil {
 		return "", Handoff{}, err
 	}
-	response, err := waitForResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
+	response, err := sendStructuredResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
 		plannerName:       Handoff{},
 		tripletEditorName: Handoff{},
 	})
@@ -1503,13 +1539,17 @@ func (installer *PortInstaller) Run(ctx context.Context, requests, retries <-cha
 		slog.Info("handoff", "agent", portInstallerName, "target", edge)
 		switch edge {
 		case portDoctorName:
-			err = send(ctx, doctor, next)
+			select {
+			case doctor <- next:
+			case <-ctx.Done():
+				return
+			}
 		case plannerName:
-			err = send(ctx, planner, next)
-		}
-		if err != nil {
-			errorsOut <- fmt.Errorf("%s: %w", portInstallerName, err)
-			return
+			select {
+			case planner <- next:
+			case <-ctx.Done():
+				return
+			}
 		}
 	}
 }
@@ -1525,7 +1565,7 @@ func (installer *PortInstaller) install(ctx context.Context, message Handoff) (s
 	if err != nil {
 		return "", Handoff{}, err
 	}
-	response, err := waitForResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
+	response, err := sendStructuredResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
 		portDoctorName: Handoff{},
 		plannerName:    Handoff{},
 	})
@@ -1570,15 +1610,23 @@ func (doctor *PortDoctor) Run(ctx context.Context, input <-chan Handoff, editor,
 		slog.Info("handoff", "agent", portDoctorName, "target", edge)
 		switch edge {
 		case portEditorName:
-			err = send(ctx, editor, next)
+			select {
+			case editor <- next:
+			case <-ctx.Done():
+				return
+			}
 		case tripletEditorName:
-			err = send(ctx, triplet, next)
+			select {
+			case triplet <- next:
+			case <-ctx.Done():
+				return
+			}
 		case plannerName:
-			err = send(ctx, planner, next)
-		}
-		if err != nil {
-			errorsOut <- fmt.Errorf("%s: %w", portDoctorName, err)
-			return
+			select {
+			case planner <- next:
+			case <-ctx.Done():
+				return
+			}
 		}
 	}
 }
@@ -1594,7 +1642,7 @@ func (doctor *PortDoctor) diagnose(ctx context.Context, message Handoff) (string
 	if err != nil {
 		return "", Handoff{}, err
 	}
-	response, err := waitForResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
+	response, err := sendStructuredResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
 		portEditorName:    Handoff{},
 		tripletEditorName: Handoff{},
 		plannerName:       Handoff{},
@@ -1638,8 +1686,9 @@ func (editor *PortEditor) Run(ctx context.Context, input <-chan Handoff, retries
 			return
 		}
 		slog.Info("handoff", "agent", portEditorName, "target", portInstallerName)
-		if err := send(ctx, retries, next); err != nil {
-			errorsOut <- fmt.Errorf("%s: %w", portEditorName, err)
+		select {
+		case retries <- next:
+		case <-ctx.Done():
 			return
 		}
 	}
@@ -1656,7 +1705,7 @@ func (editor *PortEditor) repair(ctx context.Context, message Handoff) (string, 
 	if err != nil {
 		return "", Handoff{}, err
 	}
-	response, err := waitForResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
+	response, err := sendStructuredResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
 		portInstallerName: Handoff{},
 	})
 	if err != nil {
@@ -1702,13 +1751,17 @@ func (editor *TripletEditor) Run(ctx context.Context, goals, hostFacts <-chan Ha
 		slog.Info("handoff", "agent", tripletEditorName, "target", edge)
 		switch edge {
 		case environmentDetectorName:
-			err = send(ctx, detector, next)
+			select {
+			case detector <- next:
+			case <-ctx.Done():
+				return
+			}
 		case plannerName:
-			err = send(ctx, planner, next)
-		}
-		if err != nil {
-			errorsOut <- fmt.Errorf("%s: %w", tripletEditorName, err)
-			return
+			select {
+			case planner <- next:
+			case <-ctx.Done():
+				return
+			}
 		}
 	}
 }
@@ -1724,7 +1777,7 @@ func (editor *TripletEditor) edit(ctx context.Context, message Handoff) (string,
 	if err != nil {
 		return "", Handoff{}, err
 	}
-	response, err := waitForResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
+	response, err := sendStructuredResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
 		environmentDetectorName: Handoff{},
 		plannerName:             Handoff{},
 	})
@@ -1767,8 +1820,9 @@ func (updater *BaselineUpdater) Run(ctx context.Context, input <-chan Handoff, r
 			return
 		}
 		slog.Info("handoff", "agent", baselineUpdaterName, "target", plannerName)
-		if err := send(ctx, reports, next); err != nil {
-			errorsOut <- fmt.Errorf("%s: %w", baselineUpdaterName, err)
+		select {
+		case reports <- next:
+		case <-ctx.Done():
 			return
 		}
 	}
@@ -1785,7 +1839,7 @@ func (updater *BaselineUpdater) update(ctx context.Context, message Handoff) (st
 	if err != nil {
 		return "", Handoff{}, err
 	}
-	response, err := waitForResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
+	response, err := sendStructuredResponse(ctx, message.Session, copilot.MessageOptions{Prompt: string(data), Source: copilot.MessageSourceAgent(name)}, map[string]any{
 		plannerName: Handoff{},
 	})
 	if err != nil {
@@ -1819,12 +1873,9 @@ type commandResult struct {
 }
 
 func executeTool(config *RuntimeConfig, role string, message Handoff, params commandParams, ctx context.Context) (commandResult, error) {
-	if err := checkCommand(config, role, message, params); err != nil {
+	directory, err := params.validate(config, role, message)
+	if err != nil {
 		return commandResult{}, err
-	}
-	directory := params.Directory
-	if directory == "" {
-		directory = config.Workspace
 	}
 	args := slices.Clone(params.Args)
 	if params.Tool == "vcpkg" {
@@ -1859,7 +1910,7 @@ func executeTool(config *RuntimeConfig, role string, message Handoff, params com
 	return result, err
 }
 func writePaths(config *RuntimeConfig, role string, message Handoff) []string {
-	if isDryRunPrompt(config.Options.Prompt) {
+	if config.DryRun {
 		return nil
 	}
 	var roots []string
@@ -1918,29 +1969,33 @@ func validName(name string) bool {
 	}
 	return true
 }
-func checkCommand(config *RuntimeConfig, role string, message Handoff, params commandParams) error {
-	directory, err := checkCommandInput(config, params)
+func (params commandParams) validate(config *RuntimeConfig, role string, message Handoff) (string, error) {
+	directory, err := params.validateInput(config)
 	if err != nil {
-		return err
+		return "", err
 	}
+	err = fmt.Errorf("%s cannot run %s %s", role, params.Tool, params.Args[0])
 	switch params.Tool {
 	case "vcpkg":
-		return checkVcpkgCommand(config, role, message, params)
+		err = params.validateVcpkg(config, role, message)
 	case "git":
-		return checkGitCommand(config, role, message, params, directory)
+		err = params.validateGit(config, role, message, directory)
 	case "gh":
 		if (role == portDoctorName || role == portEditorName || role == environmentDetectorName) && isReadOnlyGH(params.Args) {
-			return nil
+			return directory, nil
 		}
 	default:
 		if role == environmentDetectorName && len(params.Args) == 1 && (params.Args[0] == "--version" || params.Args[0] == "--help") {
-			return nil
+			return directory, nil
 		}
 	}
-	return fmt.Errorf("%s cannot run %s %s", role, params.Tool, params.Args[0])
+	if err != nil {
+		return "", err
+	}
+	return directory, nil
 }
 
-func checkCommandInput(config *RuntimeConfig, params commandParams) (string, error) {
+func (params commandParams) validateInput(config *RuntimeConfig) (string, error) {
 	if config.Tools[params.Tool] == "" || len(params.Args) == 0 {
 		return "", errors.New("registered tool and arguments are required")
 	}
@@ -1951,18 +2006,24 @@ func checkCommandInput(config *RuntimeConfig, params commandParams) (string, err
 	if !insideAny(directory, configReadRoots(config)) {
 		return "", errors.New("command directory is outside allowed folders")
 	}
+	restrictedPrefixes := []string{"--debug", "--binarysource", "--x-asset-sources", "--overlay-", "--downloads-root", "--vcpkg-root", "--x-buildtrees-root", "--x-packages-root", "--x-install-root", "--x-manifest-root", "--feature-flags"}
 	for _, arg := range params.Args {
 		if strings.ContainsAny(arg, "\x00\r\n") && params.Tool != "git" {
 			return "", errors.New("multiline command arguments are restricted to git commit messages")
 		}
-		if strings.HasPrefix(arg, "--debug") || strings.HasPrefix(arg, "--binarysource") || strings.HasPrefix(arg, "--x-asset-sources") || strings.HasPrefix(arg, "--overlay-") || strings.HasPrefix(arg, "--downloads-root") || strings.HasPrefix(arg, "--vcpkg-root") || strings.HasPrefix(arg, "--x-buildtrees-root") || strings.HasPrefix(arg, "--x-packages-root") || strings.HasPrefix(arg, "--x-install-root") || strings.HasPrefix(arg, "--x-manifest-root") || strings.HasPrefix(arg, "--feature-flags") || arg == "--editable" || arg == "--allow-unsupported" {
+		if arg == "--editable" || arg == "--allow-unsupported" {
 			return "", errors.New("tool roots, caches and environment are fixed at initialization")
+		}
+		for _, prefix := range restrictedPrefixes {
+			if strings.HasPrefix(arg, prefix) {
+				return "", errors.New("tool roots, caches and environment are fixed at initialization")
+			}
 		}
 	}
 	return directory, nil
 }
 
-func checkVcpkgCommand(config *RuntimeConfig, role string, message Handoff, params commandParams) error {
+func (params commandParams) validateVcpkg(config *RuntimeConfig, role string, message Handoff) error {
 	subcommand := params.Args[0]
 	if slices.Contains([]string{"help", "version", "--version", "z-print-config", "list", "search", "depend-info", "x-package-info"}, subcommand) {
 		return nil
@@ -1973,10 +2034,10 @@ func checkVcpkgCommand(config *RuntimeConfig, role string, message Handoff, para
 			return nil
 		}
 	case portInstallerName:
-		if subcommand == "install" && (!isDryRunPrompt(config.Options.Prompt) || slices.Contains(params.Args, "--dry-run")) {
+		if subcommand == "install" && (!config.DryRun || slices.Contains(params.Args, "--dry-run")) {
 			return nil
 		}
-		if subcommand == "remove" && config.Scenario == "registry" && !isDryRunPrompt(config.Options.Prompt) {
+		if subcommand == "remove" && config.Scenario == "registry" && !config.DryRun {
 			return nil
 		}
 	case portEditorName:
@@ -1999,7 +2060,7 @@ func checkVcpkgCommand(config *RuntimeConfig, role string, message Handoff, para
 	return fmt.Errorf("%s cannot run vcpkg %s", role, subcommand)
 }
 
-func checkGitCommand(config *RuntimeConfig, role string, message Handoff, params commandParams, directory string) error {
+func (params commandParams) validateGit(config *RuntimeConfig, role string, message Handoff, directory string) error {
 	subcommand := params.Args[0]
 	if slices.Contains([]string{"status", "log", "show", "diff", "rev-parse", "ls-files", "cat-file", "diff-tree", "merge-base"}, subcommand) {
 		for index, arg := range params.Args {
@@ -2109,13 +2170,13 @@ func (config *RuntimeConfig) authorizeRequest(role string, message Handoff, requ
 	}
 	return reject
 }
-func sessionOptions(config *RuntimeConfig) *copilot.CreateSessionOptions {
+func sessionOptions(config *RuntimeConfig, options Options) *copilot.CreateSessionOptions {
 	var available []string
 	for _, agent := range agentDefinitions {
 		available = append(available, agent.Tools...)
 	}
-	facts, _ := json.Marshal(map[string]any{"scenario": config.Scenario, "workspace": config.Workspace, "manifestRoot": config.ManifestRoot, "roots": config.Roots, "overlayPorts": config.OverlayPorts, "overlayTriplets": config.OverlayTriplets, "tools": config.Tools, "variables": config.Variables, "warnings": config.Warnings, "blockers": config.Blockers, "writePermissions": config.WriteScopes, "scratch": config.Scratch, "logDirectory": config.LogDirectory, "coauthorTrailer": coauthorTrailer, "maxPortCycles": config.Options.MaxPortCycles, "maxTripletEdits": config.Options.MaxTripletEdits, "userRequest": config.Options.Prompt})
-	return &copilot.CreateSessionOptions{ClientName: "vcpkg-agents", Model: config.Options.Model, WorkingDirectory: config.Workspace, EnableConfigDiscovery: copilot.Bool(false), Filesystem: copilot.CreateSessionFilesystemOptions{TrustWorkingDirectory: copilot.WorkingDirectoryTrustSession, AdditionalDirectories: configReadRoots(config)}, Instructions: copilot.CreateSessionInstructionOptions{OnDemandDiscovery: copilot.Bool(false), SkipCustomInstructions: copilot.Bool(true)}, Hooks: copilot.SessionHookOptions{EnableRepositoryHooks: copilot.Bool(false), Handlers: &copilot.SessionHooks{OnPostToolUse: config.redactToolResult}}, Git: copilot.SessionGitOptions{EnableHostGitOperations: copilot.Bool(false), CoauthorEnabled: copilot.Bool(false)}, Skills: copilot.SessionSkillOptions{Enabled: copilot.Bool(false), IncludedBuiltinSkills: []string{}}, Agents: copilot.SessionAgentOptions{Definitions: agentDefinitions, Selected: plannerName, LocalDiscoveryOnly: copilot.Bool(true), IncludedBuiltinAgents: []string{}}, Tools: copilot.SessionToolOptions{AvailableTools: uniqueStrings(available)}, Permissions: copilot.SessionPermissionOptions{Mode: rpc.PermissionModeManual, OnRequest: config.authorize}, MCP: copilot.SessionMCPOptions{Servers: map[string]copilot.MCPServerConfig{microsoftLearnMCPName: copilot.MCPHTTPServerConfig{URL: "https://learn.microsoft.com/api/mcp", Tools: []string{"microsoft_docs_search", "microsoft_docs_fetch"}}}}, SystemMessage: &copilot.SystemMessageConfig{Mode: "append", Content: sharedInstructions + "\nInitialized facts:\n" + redactText(string(facts), config.SecretValues)}}
+	facts, _ := json.Marshal(map[string]any{"scenario": config.Scenario, "workspace": config.Workspace, "manifestRoot": config.ManifestRoot, "roots": config.Roots, "overlayPorts": config.OverlayPorts, "overlayTriplets": config.OverlayTriplets, "tools": config.Tools, "variables": config.Variables, "warnings": config.Warnings, "blockers": config.Blockers, "writePermissions": config.WriteScopes, "scratch": config.Scratch, "logDirectory": config.LogDirectory, "coauthorTrailer": coauthorTrailer, "maxPortCycles": options.MaxPortCycles, "maxTripletEdits": options.MaxTripletEdits, "userRequest": options.Prompt})
+	return &copilot.CreateSessionOptions{ClientName: "vcpkg-agents", Model: options.Model, WorkingDirectory: config.Workspace, EnableConfigDiscovery: copilot.Bool(false), Filesystem: copilot.CreateSessionFilesystemOptions{TrustWorkingDirectory: copilot.WorkingDirectoryTrustSession, AdditionalDirectories: configReadRoots(config)}, Instructions: copilot.CreateSessionInstructionOptions{OnDemandDiscovery: copilot.Bool(false), SkipCustomInstructions: copilot.Bool(true)}, Hooks: copilot.SessionHookOptions{EnableRepositoryHooks: copilot.Bool(false), Handlers: &copilot.SessionHooks{OnPostToolUse: config.redactToolResult}}, Git: copilot.SessionGitOptions{EnableHostGitOperations: copilot.Bool(false), CoauthorEnabled: copilot.Bool(false)}, Skills: copilot.SessionSkillOptions{Enabled: copilot.Bool(false), IncludedBuiltinSkills: []string{}}, Agents: copilot.SessionAgentOptions{Definitions: agentDefinitions, Selected: plannerName, LocalDiscoveryOnly: copilot.Bool(true), IncludedBuiltinAgents: []string{}}, Tools: copilot.SessionToolOptions{AvailableTools: uniqueStrings(available)}, Permissions: copilot.SessionPermissionOptions{Mode: rpc.PermissionModeManual, OnRequest: config.authorize}, MCP: copilot.SessionMCPOptions{Servers: map[string]copilot.MCPServerConfig{microsoftLearnMCPName: copilot.MCPHTTPServerConfig{URL: "https://learn.microsoft.com/api/mcp", Tools: []string{"microsoft_docs_search", "microsoft_docs_fetch"}}}}, SystemMessage: &copilot.SystemMessageConfig{Mode: "append", Content: sharedInstructions + "\nInitialized facts:\n" + redactText(string(facts), config.SecretValues)}}
 }
 
 func main() {
@@ -2137,13 +2198,13 @@ func run() int {
 		return 1
 	}
 	defer client.Stop()
-	session, err := client.CreateSession(ctx, sessionOptions(config))
+	session, err := client.CreateSession(ctx, sessionOptions(config, startup))
 	if err != nil {
 		slog.Error("create session", "error", err)
 		return 1
 	}
 	defer session.Disconnect()
-	slog.Info("session created", "session", session.SessionID, "model", config.Options.Model)
+	slog.Info("session created", "session", session.SessionID, "model", startup.Model)
 	userRequests := make(chan Handoff)
 	detectRequests := make(chan Handoff)
 	environmentReports := make(chan Handoff)
@@ -2189,8 +2250,10 @@ func run() int {
 	go editor.Run(ctx, portGoals, retries, errorsOut, &wait)
 	go triplet.Run(ctx, tripletGoals, hostFacts, hostRequests, reinstalls, errorsOut, &wait)
 	go baseline.Run(ctx, baselineRequests, baselineReports, errorsOut, &wait)
-	if err := send(ctx, userRequests, Handoff{Session: session, Goal: startup.Prompt, Evidence: []string{"initialized environment facts and original user request"}}); err != nil {
-		errorsOut <- err
+	select {
+	case userRequests <- Handoff{Session: session, Goal: startup.Prompt, Evidence: []string{"initialized environment facts and original user request"}}:
+	case <-ctx.Done():
+		err = ctx.Err()
 	}
 	var report FinalReport
 	select {

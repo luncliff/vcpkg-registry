@@ -120,6 +120,8 @@ type Handoff struct {
 
 The structured response records one allowed target and carries its typed payload. It stays local to the sender; the inter-role message remains domain data. No function or SDK invocation metadata is sent through a channel. No separate `turn` framework owns this sequence.
 
+`sendStructuredResponse` owns this SDK turn boundary. It applies the response schema, copies final root response/completion events from `Session.On`, calls `Session.Send`, and decodes exactly one route. This preserves caller-controlled lifetime because SDK v2.0.4 `SendAndWait` supplies a 60-second deadline to a deadline-free caller context (Research section 5.4).
+
 ### 3.2 Serialization Boundary
 
 Channel ownership serializes member-to-member model work. SDK tool handlers can themselves execute concurrently (Research section 5.4); channel serialization alone is not evidence that arbitrary parallel tool calls inside one model invocation are safe. Preserve the requirement for serial vcpkg operations and verify it in live traces. Any adjustment belongs in the supported SDK/tool harness, not a replacement global task scheduler.
@@ -135,6 +137,7 @@ Each `Run` should read as three operations: **receive -> role-specific processin
 - A single local result is forwarded through the role's permitted outbound channels. The error path reports to the shared error channel and exits.
 - Private methods take context and a message explicitly, return their processing result, and leave inter-role sends to `Run`.
 - Shared logic within one role may be reused by its private methods. A method rename by itself does not establish a responsibility split; review the actual data flow and side effects.
+- Every `Run` contains its channel send directly in a context-aware `select`, keeping each CSP edge visible at its source.
 
 | Role | Incoming processing | Outgoing choices |
 |------|---------------------|------------------|
@@ -151,6 +154,8 @@ Each `Run` should read as three operations: **receive -> role-specific processin
 The current role types are stateless. Session baton, domain work, and routing stay in method arguments, local structured results, and explicit channels.
 
 Use messages, local variables, and initialized facts before adding a field. Additional mutable fields require a concrete need that those existing mechanisms cannot represent and explicit review against the user's no-state-growth constraint. Renaming a God object, embedding it, or distributing references to it does not satisfy this rule.
+
+`Options` owns parsed CLI input. `RuntimeConfig` owns resolved execution facts and resources consumed after initialization. Configuration loading delegates tool/workspace discovery, `z-print-config` adaptation, root resolution, temporary/log directory creation, and scenario resolution to focused functions. The external `z-print-config` JSON shape is represented by `vcpkgConfiguration`; it remains separate from runtime state.
 
 One actor never reads or mutates another actor's state. In particular, Doctor sends goals instead of calling an Editor's setters. A receiving Editor derives its authorized target from initialization policy and the received goal.
 
@@ -178,7 +183,7 @@ Use built-in file/search/edit/web tools where their role permissions allow them.
 
 ### 5.2 Hooks and Permissions
 
-- `CustomAgentConfig.Tools` defines role tool visibility. `checkCommand` enforces command restrictions at the executable tool boundary. File, network, MCP, and custom-tool access goes through the named manual authorization callback.
+- `CustomAgentConfig.Tools` defines role tool visibility. `commandParams.validate` owns common input checks and dispatches to its vcpkg and Git policy methods at the executable tool boundary. File, network, MCP, and custom-tool access goes through the named manual authorization callback.
 - The post-tool hook has one responsibility: redact secrets from results before they return to the model.
 - The authorization callback approves initialized read/write/URL/MCP/custom-tool boundaries and rejects every request outside them. A missing callback leaves SDK permission requests pending in a non-interactive run.
 - The SDK permission request can lack member identity. The minimal active-role/message reference exists only for these callbacks (Research sections 5.1 and 5.5); it is not an orchestration object or alternative task state.
@@ -316,11 +321,13 @@ The 2026-11-29 corrections establish the code structure and local regression con
 
 Live session `1799783a-3776-491e-90fc-193af6d2cbce` verified the structured-response path with `zlib:x64-windows --dry-run`: Planner delegated through the shared session, Port Installer ran `vcpkg list` and `vcpkg install ... --dry-run`, Planner returned a typed final report, and the process exited 0. The run installed no packages and retained its command logs under the isolated smoke directory.
 
+Cleanup session `2966d79c-d771-4268-8d1f-8cb33a7f30ef` verified the revised SDK event routine and explicit channel sends with the same dry-run class. The observed route was `Planner -> Environment Detector -> Planner -> Port Installer -> Planner`; `vcpkg install zlib:x64-windows --dry-run` exited 0, the final report was decoded from the structured response, and package writes remained zero.
+
 Final-binary session `279e30dd-4470-4b7a-ad06-42d83108271d` recorded `Planner -> Environment Detector -> Planner -> Port Installer` through structured targets. A later Installer/Doctor retry cycle continued until caller cancellation, providing live evidence for the existing cycle-limit acceptance item below.
 
 Remaining acceptance includes a full Doctor/Editor repair cycle, triplet/host-facts rescheduling, verified baseline commit pairs in the current tool-led path, concurrent SDK-tool behavior, cross-platform builds, S11's live induced ONNX fault, and the documented S28/S29 security/host variants. A local test or prerequisite-negative run does not replace these.
 
-`--max-port-cycles` and `--max-triplet-edits` are supplied as initialized facts; hard enforcement in the current model-led path remains an acceptance item. The user's execution-lifetime correction removes application deadlines and `--lock-wait`; SDK `Send` plus completion events also keeps its default `SendAndWait` deadline outside this path. User cancellation controls execution lifetime. `--sandbox` remains a parsed option whose OS enforcement requires separate verification.
+`--max-port-cycles` and `--max-triplet-edits` are supplied as initialized facts; hard enforcement in the current model-led path remains an acceptance item. The user's execution-lifetime correction removes application deadlines and `--lock-wait`; SDK `Send` plus completion events also keeps its default `SendAndWait` deadline outside this path. User cancellation controls execution lifetime. The CLI surface omits the previously inert `--sandbox` flag; experimental SDK sandbox support remains research evidence for a separately authorized implementation.
 
 G-1 remains open: the ideation has update user stories but no explicit initial update edge to Port Editor. G-8 and other unresolved behavioral gap-fills remain governed by the requirements and user decisions. Preserve the existing graph; report a concrete blocker until an authorized route exists.
 

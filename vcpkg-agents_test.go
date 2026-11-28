@@ -34,6 +34,9 @@ func TestParseOptionsDefaultModelAndScopes(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "unknown") {
 		t.Fatalf("unknown write scope error = %v", err)
 	}
+	if _, err = ParseOptions([]string{"--prompt", "x", "--sandbox"}); err == nil {
+		t.Fatal("unused sandbox option remains accepted")
+	}
 }
 func TestLoadRuntimeConfigDetectsRegistryAndManifest(t *testing.T) {
 	t.Run("registry", func(t *testing.T) {
@@ -55,7 +58,7 @@ func TestLoadRuntimeConfigDetectsRegistryAndManifest(t *testing.T) {
 			if config.Scenario != "registry" {
 				t.Fatalf("scenario = %q", config.Scenario)
 			}
-			if !samePath(config.WorkingDirectory, root) || !samePath(config.Workspace, root) || !samePath(sessionOptions(config).WorkingDirectory, root) {
+			if !samePath(config.WorkingDirectory, root) || !samePath(config.Workspace, root) || !samePath(sessionOptions(config, options).WorkingDirectory, root) {
 				t.Fatalf("invocation workspace = %q, %q", config.WorkingDirectory, config.Workspace)
 			}
 			if !containsPath(config.OverlayPorts, filepath.Join(root, "ports")) {
@@ -105,7 +108,7 @@ func TestLoadRuntimeConfigDetectsRegistryAndManifest(t *testing.T) {
 			}
 			defer config.Cleanup()
 			blockers := strings.Join(config.Blockers, "\n")
-			if !strings.Contains(blockers, "VCPKG_DEFAULT_TRIPLET is set but empty") || !strings.Contains(config.DetectionError, "Invalid triplet:") || !strings.Contains(config.DetectionError, "Built-in Triplets:") {
+			if !strings.Contains(blockers, "VCPKG_DEFAULT_TRIPLET is set but empty") || !strings.Contains(blockers, "Invalid triplet:") || !strings.Contains(blockers, "Built-in Triplets:") {
 				t.Fatalf("default triplet blockers = %q", blockers)
 			}
 		})
@@ -247,7 +250,7 @@ func newTestRuntimeConfig(t *testing.T, scenario string) *RuntimeConfig {
 		triplet = "x64-osx"
 	}
 	writeScopes := defaultWriteScopes(scenario)
-	return &RuntimeConfig{Options: Options{Model: defaultModel, MaxPortCycles: 3, MaxTripletEdits: 1}, WorkingDirectory: workspace, Workspace: workspace, Scenario: scenario, ScenarioEvidence: []string{filepath.Join(workspace, "ports")}, Tools: tools, Roots: roots, OverlayPorts: []string{filepath.Join(workspace, "ports")}, OverlayTriplets: []string{filepath.Join(workspace, "triplets")}, DefaultTriplet: triplet, HostTriplet: triplet, VcpkgEnv: scrubbedVcpkgEnvironment(os.Environ(), nil), Scratch: scratch, LogDirectory: logs, WriteScopes: writeScopes, SecretValues: collectSecretValues(), RunID: "test"}
+	return &RuntimeConfig{WorkingDirectory: workspace, Workspace: workspace, Scenario: scenario, Tools: tools, Roots: roots, OverlayPorts: []string{filepath.Join(workspace, "ports")}, OverlayTriplets: []string{filepath.Join(workspace, "triplets")}, HostTriplet: triplet, VcpkgEnv: scrubbedVcpkgEnvironment(os.Environ(), nil), Scratch: scratch, LogDirectory: logs, WriteScopes: writeScopes, SecretValues: collectSecretValues()}
 }
 func createPortFixture(t *testing.T, portsRoot, name string) string {
 	t.Helper()
@@ -335,7 +338,7 @@ func currentVcpkgRoot(t *testing.T, vcpkg string) string {
 	if err != nil {
 		t.Fatalf("vcpkg z-print-config: %v", err)
 	}
-	var printed zPrintConfig
+	var printed vcpkgConfiguration
 	if err := json.Unmarshal(output, &printed); err != nil {
 		t.Fatal(err)
 	}
@@ -383,7 +386,7 @@ func testConfig(t *testing.T) *RuntimeConfig {
 			tools[name] = path
 		}
 	}
-	config := &RuntimeConfig{Options: Options{Model: defaultModel, MaxPortCycles: 3, MaxTripletEdits: 1}, Workspace: root, WorkingDirectory: root, Scenario: "registry", Tools: tools, Roots: VcpkgRoots{Vcpkg: os.Getenv("VCPKG_ROOT"), Buildtrees: filepath.Join(root, "b"), Installed: filepath.Join(root, "i"), Packages: filepath.Join(root, "p")}, Scratch: filepath.Join(root, "scratch"), LogDirectory: filepath.Join(root, "logs"), OverlayPorts: []string{filepath.Join(root, "ports")}, OverlayTriplets: []string{filepath.Join(root, "triplets")}, WriteScopes: defaultWriteScopes("registry"), VcpkgEnv: scrubbedVcpkgEnvironment(os.Environ(), nil)}
+	config := &RuntimeConfig{Workspace: root, WorkingDirectory: root, Scenario: "registry", Tools: tools, Roots: VcpkgRoots{Vcpkg: os.Getenv("VCPKG_ROOT"), Buildtrees: filepath.Join(root, "b"), Installed: filepath.Join(root, "i"), Packages: filepath.Join(root, "p")}, Scratch: filepath.Join(root, "scratch"), LogDirectory: filepath.Join(root, "logs"), OverlayPorts: []string{filepath.Join(root, "ports")}, OverlayTriplets: []string{filepath.Join(root, "triplets")}, WriteScopes: defaultWriteScopes("registry"), VcpkgEnv: scrubbedVcpkgEnvironment(os.Environ(), nil)}
 	for _, directory := range []string{config.Scratch, config.LogDirectory, config.Roots.Buildtrees, config.Roots.Installed, config.Roots.Packages, config.OverlayPorts[0], config.OverlayTriplets[0]} {
 		if err := os.MkdirAll(directory, 0755); err != nil {
 			t.Fatal(err)
@@ -505,7 +508,7 @@ func TestRoleFilePermissions(t *testing.T) {
 	if _, allowed := config.authorizeRequest(portDoctorName, message, &rpc.PermissionRequestRead{Path: outside}).(*rpc.PermissionDecisionApproveOnce); allowed {
 		t.Fatal("outside read allowed")
 	}
-	config.Options.Prompt = "dry run install zlib"
+	config.DryRun = true
 	if len(writePaths(config, portEditorName, message)) != 0 {
 		t.Fatal("dry run grants file writes")
 	}
@@ -519,7 +522,7 @@ func TestSessionPermissionPolicyUsesAgentTools(t *testing.T) {
 	if _, ok := config.authorizeRequest(plannerName, message, &rpc.PermissionRequestCustomTool{ToolName: "apply_patch"}).(*rpc.PermissionDecisionReject); !ok {
 		t.Fatal("planner gained an editor tool")
 	}
-	options := sessionOptions(config)
+	options := sessionOptions(config, Options{Model: defaultModel})
 	if options.Hooks.Handlers == nil || options.Hooks.Handlers.OnPostToolUse == nil || options.Hooks.Handlers.OnPreToolUse != nil {
 		t.Fatal("session hooks must only redact tool results")
 	}
@@ -539,17 +542,17 @@ func TestCommandHarness(t *testing.T) {
 		params  commandParams
 		allowed bool
 	}{{plannerName, commandParams{Tool: "vcpkg", Args: []string{"help", "install"}}, true}, {plannerName, commandParams{Tool: "vcpkg", Args: []string{"install", "zlib"}}, false}, {portInstallerName, commandParams{Tool: "vcpkg", Args: []string{"install", "zlib:x64-windows", "--dry-run"}}, true}, {portDoctorName, commandParams{Tool: "git", Args: []string{"push"}}, false}, {portDoctorName, commandParams{Tool: "gh", Args: []string{"issue", "create"}}, false}, {portDoctorName, commandParams{Tool: "gh", Args: []string{"search", "issues", "error"}}, true}, {portInstallerName, commandParams{Tool: "vcpkg", Args: []string{"install", "--debug-env"}}, false}, {portInstallerName, commandParams{Tool: "vcpkg", Args: []string{"install", "--binarysource=clear"}}, false}, {portInstallerName, commandParams{Tool: "vcpkg", Args: []string{"install", "--x-install-root=C:/outside"}}, false}, {portEditorName, commandParams{Tool: "git", Args: []string{"diff", "--output=" + filepath.Join(t.TempDir(), "outside.patch")}}, false}, {portEditorName, commandParams{Tool: "git", Args: []string{"diff", "--output=" + filepath.Join(config.Workspace, "ports", "zlib", "fix.patch")}}, true}} {
-		if err := checkCommand(config, test.role, message, test.params); (err == nil) != test.allowed {
+		if _, err := test.params.validate(config, test.role, message); (err == nil) != test.allowed {
 			t.Errorf("%s %v: %v, allowed=%t", test.role, test.params, err, test.allowed)
 		}
 	}
-	config.Options.Prompt = "dry run install zlib"
-	if err := checkCommand(config, portInstallerName, message, commandParams{Tool: "vcpkg", Args: []string{"install", "zlib"}}); err == nil {
+	config.DryRun = true
+	if _, err := (commandParams{Tool: "vcpkg", Args: []string{"install", "zlib"}}).validate(config, portInstallerName, message); err == nil {
 		t.Fatal("dry run permits real installation")
 	}
-	config.Options.Prompt = "install this manifest"
+	config.DryRun = false
 	config.Scenario = "manifest"
-	if err := checkCommand(config, portInstallerName, message, commandParams{Tool: "vcpkg", Args: []string{"remove", "zlib"}}); err == nil {
+	if _, err := (commandParams{Tool: "vcpkg", Args: []string{"remove", "zlib"}}).validate(config, portInstallerName, message); err == nil {
 		t.Fatal("manifest removal allowed")
 	}
 }
@@ -608,11 +611,11 @@ func TestCommitRequiresAuthority(t *testing.T) {
 	config.WriteScopes = map[string]bool{"ports": true}
 	message := Handoff{Ports: []string{"zlib"}}
 	params := commandParams{Tool: "git", Args: []string{"commit", "-m", "port update\n\n" + coauthorTrailer}}
-	if err := checkCommand(config, baselineUpdaterName, message, params); err == nil {
+	if _, err := params.validate(config, baselineUpdaterName, message); err == nil {
 		t.Fatal("commit without authority allowed")
 	}
 	params.Args = []string{"add", "--", "ports/zlib"}
-	if err := checkCommand(config, baselineUpdaterName, message, params); err == nil {
+	if _, err := params.validate(config, baselineUpdaterName, message); err == nil {
 		t.Fatal("staging without commit authority allowed")
 	}
 }
@@ -625,6 +628,7 @@ func TestProductionSourcePolicies(t *testing.T) {
 	for _, forbidden := range []string{
 		"context.WithTimeout(", "context.WithTimeoutCause(", "context.WithDeadline(", "context.WithDeadlineCause(", ".SendAndWait(",
 		"chan copilot.ToolInvocation", "(copilot.ToolInvocation, error)", "defer os.Exit", "type agentResult", "type responseWaiter", "type handoffTool", "type commandTool", "type crlfPortScanner",
+		"func send[", "waitForResponse(", "Options Options", "EnableSandbox",
 	} {
 		if bytes.Contains(data, []byte(forbidden)) {
 			t.Errorf("production source contains %q", forbidden)
