@@ -2,24 +2,25 @@
 
 | Item | Value |
 |------|-------|
-| Status | Draft 2, 2026-11-28 (research and live tests merged) |
+| Status | Draft 3, 2026-11-28 (concurrency model, harness, access control added; redundancy cut) |
 | Architecture source | [vcpkg-agents-ideation.md](./vcpkg-agents-ideation.md) (fixed) |
-| Requirements | [vcpkg-agents-requirements.md](./vcpkg-agents-requirements.md) |
-| Facts and tests | [vcpkg-agents-research.md](./vcpkg-agents-research.md) |
-| Style reference | [vcpkg-agents.go](./vcpkg-agents.go) (style only, not design) |
+| Requirements | [vcpkg-agents-requirements.md](./vcpkg-agents-requirements.md) (user stories, FR/NFR, gaps G-1..G-26) |
+| Facts and tests | [vcpkg-agents-research.md](./vcpkg-agents-research.md) (cited as Research §n) |
+| Style reference | [vcpkg-agents.go](./vcpkg-agents.go) (style only) |
+| SDK | `github.com/microsoft/copilot-sdk/go/v2` v2.0.4; Copilot CLI 1.0.114, protocol 4 (Research §5.1) |
 
-This document maps the ideation onto Go and the Copilot SDK for Go v2 (`github.com/microsoft/copilot-sdk/go/v2`). It adds no member and no relationship. **Gap-fill** marks a detail the ideation leaves open; each cites a gap ID from the requirements, section 9.
+This document maps the ideation onto Go and the Copilot SDK. It adds no member and no relationship. **Gap-fill G-n** marks a detail the ideation leaves open. The Go patterns in sections 4 and 6 were compiled against SDK v2.0.4 (`go vet`, `go run`, 2026-11-28); excerpts omit bodies marked by comments.
 
 ## 1. Architecture
 
-The team is one Go process. Seven members run as goroutines. They talk over typed Go channels. They share one Copilot session. Exactly one member takes a turn at a time.
+One Go process. Seven members, one goroutine each. One channel per ideation edge. One Copilot session. Exactly one member takes a turn at a time.
 
 ```mermaid
 flowchart LR
-    U([User]) -->|UserRequest| P[Planner]
-    P <-->|DetectRequest / EnvReport| ED[Environment Detector]
+    U([main]) -->|UserRequest| P[Planner]
+    P -->|DetectRequest| ED[Environment Detector]
+    ED -->|EnvReport| P
     P -->|InstallRequest| PI[Port Installer]
-    PI -->|next stacked request| PI
     PI -->|InstallReport| P
     PI -->|InstallFailure| PD[Port Doctor]
     PD -->|PortGoals| PE[Port Editor]
@@ -27,329 +28,770 @@ flowchart LR
     PD -->|Blocker| P
     PE -->|RetryRequest| PI
     TE -->|ReinstallRequest| P
-    TE <-->|HostFactsRequest / HostFacts| ED
-    P <-->|BaselineRequest / BaselineReport| BU[Baseline Updater]
+    TE -->|HostFactsRequest| ED
+    ED -->|HostFacts| TE
+    P -->|BaselineRequest| BU[Baseline Updater]
+    BU -->|BaselineReport| P
     P -->|FinalReport| U
-    P -.->|"UpdateGoal (G-1, pending)"| PE
+    P -.->|"G-1: no edge for update requests"| PE
     classDef writer fill:#ffe9d6,stroke:#d9822b
     class PE,TE,BU writer
 ```
 
-Orange members have write scopes. The dashed edge is not in the ideation. It is shown only to locate gap G-1.
+Orange members have write scopes. The dashed edge is not in the ideation; it only locates gap G-1.
 
 ## 2. Process Model
 
 ### 2.1 `init`
 
-`init` runs deterministic checks and stores the results in package-level variables (Ideation §Implementation Styles):
+Deterministic, no model. Results go to package-level variables (Ideation §Implementation Styles).
 
-1. Parse flags (section 2.3). Set up `log/slog`.
-2. Find tool paths with `exec.LookPath`. The Copilot CLI path comes from `COPILOT_CLI_PATH` or `LookPath("copilot")`; `init` records its version, because the SDK protocol must match it (Research §5.1).
-3. Read `VCPKG_*` variable names and classify them (section 10). Values of secret-bearing variables are never stored in logs.
-4. Find the git root (`git rev-parse --show-toplevel`).
-5. Run `vcpkg z-print-config`, passing designated roots and `--x-manifest-root`. It takes no lock and writes nothing. It returns `buildtrees`, `downloads`, `installed`, `packages`, `vcpkg-root`, `default-triplet`, `host-triplet`, and `manifest-mode-enabled`.
-6. Detect the scenario (section 3) and log the evidence.
-7. Resolve the write scopes (section 9).
+1. Parse flags (§2.3). Set up `log/slog`.
+2. `exec.LookPath` for vcpkg, git, gh, cmake, ninja, shells. Copilot CLI from `COPILOT_CLI_PATH`; record its version (protocol must match the SDK, Research §5.1).
+3. Classify `VCPKG_*` variable names (§9). Never store secret values.
+4. `git rev-parse --show-toplevel`.
+5. `vcpkg z-print-config` with designated roots and `--x-manifest-root`. No lock, no writes. Gives `buildtrees`, `downloads`, `installed`, `packages`, `vcpkg-root`, `default-triplet`, `host-triplet`, `manifest-mode-enabled`.
+6. Detect the scenario (§3). Resolve member scopes (§6.3).
 
 ### 2.2 `main`
 
-1. Start the Copilot client.
-2. Create the shared session (section 4).
-3. Create the channels (section 5) and start the member goroutines.
-4. Send the `UserRequest` to the Planner.
-5. Wait for the `FinalReport` and drain the error channel.
+1. `copilot.NewClient(&copilot.ClientOptions{Mode: copilot.ModeCodingAgent, Runtime: copilot.SpawnedStdioConnection{Path, Env}})`.
+2. `client.CreateSession(ctx, sessionOptions(...))` (§6.1).
+3. `wire(...)` (§4.4): create edges, start goroutines, send `UserRequest`, wait for `FinalReport` or the first error, cancel, wait, close `Errors`.
 
-The error channel is closed unused on success. On failure it carries every error, and the process exits non-zero (Ideation §Implementation Styles). A `sync.WaitGroup` closer goroutine closes it after all members return.
-
-Runs are non-interactive (**Gap-fill G-22**): no member asks the user during a run. There is no resume in v1 (**Gap-fill G-24**): after a crash the user reruns the command, and binary caching restores finished ports.
+Exit code is non-zero if `Errors` carried anything. Runs are non-interactive (**Gap-fill G-22**). No resume in v1 (**Gap-fill G-24**): rerun; binary caching restores finished ports.
 
 ### 2.3 CLI Flags
 
 | Flag | Meaning | Source |
 |------|---------|--------|
-| `--prompt` | The user request. Required. | Draft style |
-| `--verbose` | DEBUG logging. | Draft style |
-| `--model` | The single model for all members. | FR-T-8 |
-| `--overlay-ports`, `--overlay-triplets` | Explicit overlay folders, repeatable. | Ideation §registry scenario |
-| `--x-buildtrees-root`, `--x-packages-root`, `--x-install-root` | Designated roots, passed to every vcpkg call. | Ideation §Environment Detector |
-| `--x-manifest-root` | Manifest folder when not at the root. | Ideation §manifest scenario |
-| `--write` | Write scopes: `ports`, `triplets`, `versions`, `manifest`, `overlays`, `create-overlays`, `commit`. Default by scenario. | **Gap-fill G-6** |
-| `--max-port-cycles` (3), `--max-triplet-edits` (1) | Failure limits. | **Gap-fill G-10** |
-| `--lock-wait` (10m) | Budget for waiting on a vcpkg lock held by another process. | **Gap-fill G-19** |
+| `--prompt` (required), `--verbose`, `--model` | request, DEBUG logs, single model (FR-T-8) | draft |
+| `--overlay-ports`, `--overlay-triplets` | explicit overlays, repeatable | Ideation §registry |
+| `--x-buildtrees-root`, `--x-packages-root`, `--x-install-root`, `--x-manifest-root` | passed to every vcpkg call | Ideation §Environment Detector, §manifest |
+| `--write` | scopes: `ports`, `triplets`, `versions`, `manifest`, `overlays`, `create-overlays`, `commit`; default by scenario (§6.3) | **Gap-fill G-6** |
+| `--max-port-cycles` (3), `--max-triplet-edits` (1) | failure limits | **Gap-fill G-10** |
+| `--lock-wait` (10m) | budget for a vcpkg lock held by another process | **Gap-fill G-19** |
+| `--sandbox` | enable the OS sandbox layer (§6.2 L0); off until verified live | this draft |
 
 ## 3. Scenario Detection
 
-**Gap-fill G-5.** Detection reuses vcpkg's own discovery, so the team and vcpkg always agree.
+**Gap-fill G-5.** Reuse vcpkg's own discovery so the team and vcpkg agree.
 
 | Order | Evidence | Scenario |
 |-------|----------|----------|
-| 1 | `z-print-config` reports `"manifest-mode-enabled": true` (vcpkg found `vcpkg.json` from the working directory upward, or from `--x-manifest-root`). | manifest |
-| 2 | The git root (or the working directory) has `ports/` and `versions/baseline.json`. | registry: installs run in classic mode with explicit overlays (**Gap-fill G-26**) |
-| 3 | Neither. | registry, classic mode; the Planner reports that the workspace has no registry layout. |
+| 1 | `z-print-config` says `"manifest-mode-enabled": true` | manifest |
+| 2 | git root or working directory has `ports/` and `versions/baseline.json` | registry; installs run in classic mode with explicit overlays (**Gap-fill G-26**) |
+| 3 | neither | registry, classic mode; Planner reports the missing layout |
 
-Hybrid workspaces follow the working directory. Example: this repository's root is a registry; its `test/` folder holds a manifest. The decision, the evidence, and the losing candidate are logged at INFO.
+Hybrid workspaces follow the working directory (this repository: root is a registry, `test/` is a manifest). Log the decision, the evidence, and the losing candidate at INFO.
 
-## 4. Shared Session and Handoff
+## 4. Concurrency Model
 
-### 4.1 Session Setup
+### 4.1 Rules
 
-`main` creates one session (`client.CreateSession`). The SDK is `github.com/microsoft/copilot-sdk/go/v2` (v2.0.4 or newer), because the installed Copilot CLI 1.0.114 speaks protocol 4 and the draft's v1.0.28 speaks protocol 3 (Research §5.1). The client uses `ClientOptions{Mode: ModeCodingAgent, Runtime: SpawnedStdioConnection{Path: <copilot CLI from init>, Env: <scrubbed environment>}}`.
+1. One goroutine per member. One `chan T` per ideation edge, typed by its message (§5).
+2. Every channel has exactly one writer. The writer closes it with `defer` when its `Run` returns. Readers treat `!ok` as shutdown.
+3. The channel a message arrives on identifies the sender. Messages carry no `From` field.
+4. Receivers loop on one `select` over all inbound channels plus `ctx.Done()`. Sends also `select` on `ctx.Done()` (`send` helper).
+5. The baton is `Handoff.Session`. The goroutine that holds a message holds the session. Only it calls `SendAndWait` (FR-T-2). Every other goroutine sits in `select`.
+6. All channels are unbuffered except `InstallRequest` (`maxQueuedInstalls`, 16). Reason: the Planner queues one request per triplet (Ideation §Planner -> Port Installer) while the Installer is busy; without a buffer the Planner blocks and cannot receive a `Blocker` from the same cycle.
+7. Shutdown is `ctx` cancellation, not channel close. The Installer → Doctor → Editor → Installer cycle cannot drain by close alone.
+8. The vcpkg lock is respected by construction: rule 5 means one member runs, and only the Port Installer and Environment Detector start vcpkg.
 
-The SDK mapping below is a **spec choice**. The live probe in Research §5.1 verified every row marked "live".
+Deadlock argument: with rule 5, at most one goroutine sends at any moment and every other goroutine is in `select` on its inbound channels, so every unbuffered send has a ready receiver. The one exception (Planner sending several `InstallRequest`s in one turn) is covered by rule 6.
 
-| Ideation need | SDK v2 feature | Evidence |
-|---------------|----------------|----------|
-| One session, one model | One `copilot.Session`; `CreateSessionOptions.Model` | source |
-| Member roles | `Agents.Definitions`: one `CustomAgentConfig` per member, with `Name`, `Prompt`, `Tools`, and `Infer: copilot.Bool(false)`, so the runtime never delegates to a member by itself | live |
-| Member takes its turn | `session.RPC.Agent.Select(ctx, &rpc.AgentSelectRequest{Name})` before the turn. The selected member can call only the tools in its `Tools` list. | live |
-| Per-member permissions | One `Permissions.OnRequest` handler and one `Hooks.Handlers.OnPreToolUse` hook. Neither receives a member identity, so both read the active member from an `atomic.Pointer` set at handoff and apply that member's policy (section 9). | live |
-| Compact before send | `session.RPC.History.Compact` with `Trigger: manual` and `CustomInstructions` that name the handoff state. The agent selection and the shared history survive it. | live |
-| Usage per member | `session.RPC.Usage.GetMetrics` before and after each turn. All usage lands under `main`, so the team attributes the difference to the active member. | live |
-| Message provenance | `MessageOptions.Source: copilot.MessageSourceAgent(<sender>)` on each turn prompt | source |
+### 4.2 Member Loop Pattern
 
-Constraints from Research §5.2 to §5.6:
-
-- Only the baton holder may call `Send` or `SendAndWait`. The runtime queues concurrent sends and has no session locking.
-- Every turn passes a context with an explicit deadline; `SendAndWait` otherwise waits only 60 seconds.
-- No member tool sets `SkipPermission`: such tools bypass the permission handler. The pre-tool-use hook guards every tool.
-- Every tool result sets `TextResultForLLM`.
-- `Session.On` handlers only copy events into a buffered channel; a blocking handler stalls the session.
-- Never use `ResumeSession` to switch members: it replaces the handle and can interrupt a running tool call. v1 has no crash resume (**Gap-fill G-24**). A later version that adds one must pass `ContinuePendingWork: true`.
-
-Fallback if `Agent.Select` changes in a later SDK: switch members with live reconfiguration (`Session.SetTools`, `RPC.Options.Update` for available tools, `RPC.Permissions.Configure`) and send the member's role prompt at the start of its turn.
-
-### 4.2 Handoff Protocol
-
-A member that receives a message takes these steps:
-
-1. Mark itself active (`team.active.Store(member)`) and snapshot usage.
-2. Select its custom agent.
-3. Send the goal and evidence from the message as the prompt (`SendAndWait`, with the member's deadline).
-4. Collect its outbound message. The model emits it by calling the member's handoff tool (section 6.2). Handoff tools are `IsTerminal`, so a successful call ends the turn. The Go handler validates the fields against the message type and rejects invalid calls, so the model must retry.
-5. Compact the session (FR-T-3) and log the result.
-6. Attribute the usage difference to the member.
-7. Send the outbound message on the channel. This passes the session identity (FR-T-2).
-
-Messages are self-contained: goal, evidence, paths (NFR-3). Compaction may then drop details without loss.
-
-### 4.3 Turns Without the Model
-
-Some steps are deterministic: running vcpkg commands, parsing logs, formatting, version updates. A member's tool handler runs them inside the member's turn. The model sees a bounded summary, never the raw terminal output (FR-I-6).
-
-### 4.4 Team-wide Prompt Rules
-
-The session system message holds the rules every member follows. Each custom agent prompt adds the member's role, inputs, outputs, and write scope from section 7.
-
-1. You are one member of a team. Other members exist; you reach them only through your handoff tools.
-2. Work toward the goal in the message. Do not expect step-by-step instructions, and do not send any (FR-T-4).
-3. Base every claim on evidence: a log path with lines, a document URL, an issue, or a pull request. Mark each finding as fact, observation, or interpretation.
-4. When a vcpkg command rejects your arguments, run `vcpkg_help` for that command and retry (FR-T-5).
-5. End your turn by calling exactly one handoff tool. Put everything the next member needs into it: the session is compacted before it reaches them (FR-T-3, NFR-3).
-6. Never print secret values. Never run `gh issue create` or any command that writes to a remote service (FR-T-12, FR-T-13).
-7. Binary caching problems are warnings, not errors (FR-T-11).
-
-## 5. Message Catalog
-
-Each edge of the ideation is one typed channel. A member's `Run` loop selects over its inbound channels and `ctx.Done()`.
+Planner: one `select`, one case per inbound edge. Outputs close on return.
 
 ```go
-// Handoff is embedded in every message. It carries the session identity and the goal.
-type Handoff struct {
-	SessionID string   // shared session identity (FR-T-2)
-	From      string   // sender member name
-	Goal      string   // what the receiver must achieve; not steps (FR-T-4)
-	Evidence  []string // log paths, document URLs, issue and pull request links
+func (p *Planner) Run(ctx context.Context, team *Team, e *Edges) {
+	defer close(e.DetectRequest)
+	defer close(e.InstallRequest)
+	defer close(e.BaselineRequest)
+	defer close(e.FinalReport)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case m, ok := <-e.UserRequest:
+			if !ok {
+				return
+			}
+			req, err := turn[DetectRequest](ctx, team, p.Member, m.Session, m.Prompt)
+			if err != nil {
+				e.Errors <- err
+				return
+			}
+			req.Session = m.Session
+			if send(ctx, e.DetectRequest, req) != nil {
+				return
+			}
+		case m, ok := <-e.EnvReport:      // plan: one InstallRequest per triplet, in order
+		case m, ok := <-e.InstallReport:  // judge: FinalReport, or BaselineRequest (registry)
+		case m, ok := <-e.Blocker:        // judge: blocked, or continue with the rest
+		case m, ok := <-e.ReinstallRequest: // reschedule the affected requests (FR-P-6)
+		case m, ok := <-e.BaselineReport: // FinalReport with commits
+		}
+	}
 }
 ```
 
-| Message | Edge | Fields besides `Handoff` | Ideation source |
-|---------|------|--------------------------|-----------------|
-| `UserRequest` | main to Planner | `Prompt` | §Relationships, "The start" |
-| `DetectRequest` | Planner to Environment Detector | `Triplets []string` (requested or guessed), `Reply chan<- EnvReport` | §Planner <-> Environment Detector |
-| `EnvReport` | Environment Detector to Planner | `Scenario`, `ScenarioEvidence`, `Roots` (z-print-config), `Overlays`, `Triplets []TripletFile`, `Tools []ToolInfo`, `Variables []VariableStatus`, `Access []FolderAccess`, `Web`, `PackageManagers`, `Host`, `Compiler`, `Warnings`, `Blockers` | §Environment Detector |
-| `InstallRequest` | Planner to Port Installer | `Triplet`, `Ports []string` (registry specs such as `name[feature]`), `Features []string` (manifest, **Gap-fill G-7**), `ManifestRoot`, `Reason` (user, reinstall) | §Planner -> Port Installer |
-| `InstallReport` | Port Installer to Planner | `Done []Spec`, `Unresolved []Unresolved` (spec, last failure, attempts) | §Port Installer -> Planner |
-| `InstallFailure` | Port Installer to Port Doctor | `Spec`, `Triplet`, `Stage` (dry-run, downloads, build), `ExitCode`, `ResultCode` (for example `BUILD_FAILED`), `Command`, `ErrorLogs []string`, `IssueBody`, `OutputLog`, `Attempt` | §Port Installer -> Port Doctor |
-| `PortGoals` | Port Doctor to Port Editor | `Port`, `Goals []string`, `Diagnosis []Finding` (may cover several ports), `NewPort *NewPortGoal` | §Port Doctor -> Port Editor |
-| `TripletGoals` | Port Doctor to Triplet Editor | `TripletFile`, `Variables []string`, `Guidance` | §Port Doctor -> Triplet Editor |
-| `Blocker` | Port Doctor to Planner | `Spec`, `Category`, `Reason`, `Findings []Finding` | §Port Doctor -> Planner |
-| `RetryRequest` | Port Editor to Port Installer | `Spec`, `Triplets []string`, `ChangedFiles []string` | §Port Editor -> Port Installer |
-| `ReinstallRequest` | Triplet Editor to Planner | `Triplet`, `TripletFile`, `Change`, `Ports []string` | §Triplet Editor -> Planner |
-| `HostFactsRequest` / `HostFacts` | Triplet Editor to Environment Detector, with reply | `Question`, `Reply chan<- HostFacts` / `HostTriplet`, `Compilers`, `SDKs`, `Notes` | §Triplet Editor <-> Environment Detector |
-| `BaselineRequest` / `BaselineReport` | Planner to Baseline Updater, and back | `Ports []string` / `Commits []Commit`, `Skipped []string` | §Planner <-> Baseline Updater |
-| `FinalReport` | Planner to main | `Status` (finished, blocked), `Ledger []LedgerEntry`, `Commits`, `Warnings` | §Port Installer -> Planner |
+Port Installer: a stack and a `waiting` flag. The stack runs only while no `InstallFailure` is outstanding.
 
-`Finding` holds `Kind` (fact, observation, interpretation), `Text`, and `Source` (path with line, URL, or issue).
+```go
+type Installer struct {
+	*Member
+	stack   []InstallRequest // arrival order (G-11)
+	waiting bool             // an InstallFailure is out; the stack pauses
+}
 
-Request and reply edges (`DetectRequest`, `HostFactsRequest`) carry a reply channel. Without it, a cycle of unbuffered sends can deadlock. The Port Installer's inbound request channel is buffered, so the Planner can send several requests in sequence (§Planner -> Port Installer).
+func (i *Installer) Run(ctx context.Context, team *Team, e *Edges) {
+	defer close(e.InstallFailure)
+	defer close(e.InstallReport)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case r, ok := <-e.InstallRequest:
+			if !ok {
+				return
+			}
+			i.stack = append(i.stack, r)
+		case r, ok := <-e.RetryRequest:
+			if !ok {
+				return
+			}
+			i.waiting = false
+			// reinstall r.Spec; a second failure sends InstallFailure again
+		}
+		for !i.waiting && len(i.stack) > 0 {
+			if err := i.drain(ctx, team, e); err != nil { // head: install; pop on success, else InstallFailure + waiting
+				e.Errors <- err
+				return
+			}
+		}
+	}
+}
+```
 
-## 6. Tools
+The other five members follow the Planner shape with their own inbound set (§7). Helper:
 
-### 6.1 Tool Set
+```go
+func send[T any](ctx context.Context, ch chan<- T, m T) error {
+	select {
+	case ch <- m:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+```
 
-| Tool | Kind | Members | Side effects | Guard |
-|------|------|---------|--------------|-------|
-| `view`, `glob`, `rg` | built-in | all | none | read roots per member |
-| `edit`, `create`, `apply_patch` | built-in | Port Editor, Triplet Editor, Baseline Updater | file writes | write scope per member |
-| `web_fetch` | built-in | Port Doctor, Port Editor, Triplet Editor | network | URL permission |
-| shell (`powershell` or `bash`) | built-in | members with a shell policy (section 9) | per command | command policy per member in `OnPreToolUse` |
-| `skill` | built-in | all (optional) | none | none |
-| `vcpkg_help` | custom | all | none | topic must be a word |
-| `vcpkg_query` | custom | Environment Detector, Port Installer, Port Doctor | none | subcommand allowlist: `version`, `z-print-config`, `list`, `search`, `depend-info`, `x-package-info`, `help` |
-| `vcpkg_install` | custom | Port Installer | vcpkg roots | stage flag required; explicit `--triplet`; explicit overlays and designated roots added by Go |
-| `vcpkg_remove` | custom | Port Installer | vcpkg roots | registry scenario only (G-12) |
-| `read_log` | custom | Port Installer, Port Doctor | none | path inside a vcpkg root; returns a bounded tail and matching lines |
-| `probe_tool` | custom | Environment Detector | none | runs `<tool> --version`-style commands from an allowlist |
-| `detect_compiler` | custom | Environment Detector | vcpkg `buildtrees`, locks | runs `vcpkg x-set-installed vcpkg-cmake:<triplet> --dry-run` and parses the `#COMPILER_*` lines; Go always adds `--dry-run`, because `x-set-installed` without it removes every other installed package |
-| `gh_read` | custom | Port Doctor, Port Editor, Environment Detector | network | read-only subcommands (as in the draft) |
-| `vcpkg_create` | custom | Port Editor | port folder | target inside the write scope |
-| `make_patch` | custom | Port Editor | scratch folder, port folder | **Gap-fill G-9** |
-| `download_sha512` | custom | Port Editor | network | HTTPS only |
-| `version_update` | custom | Baseline Updater | `ports/<port>/vcpkg.json` format, `versions/` | registry scripts when present; otherwise `vcpkg format-manifest` and `vcpkg x-add-version` |
-| `git_commit` | custom | Baseline Updater | git index and history | paths limited to `ports/<port>/` or `versions/` |
-| MCP `microsoft-learn` | MCP | Port Doctor, Triplet Editor | network | read-only |
-| MCP enterprise (optional) | MCP | Port Doctor | network | read-only, configured by flag |
-| Handoff tools | custom | each member | none | one per outbound message type; schema from Go struct tags |
+### 4.3 Turn and Handoff
 
-### 6.2 Handoff Tools
+One generic `turn` does steps 1 to 6 of the handoff protocol. The model ends its turn by calling a handoff tool; the tool handler drops the typed message into the member's `out` channel (capacity 1). `IsTerminal` ends the turn on success (Research §5.4).
 
-Each member gets one tool per outbound message type, for example `send_install_failure` and `send_port_goals`. `copilot.DefineTool` derives the JSON schema from the Go struct (`jsonschema` tags), as in the draft. Handoff tools set `IsTerminal: true`, so a successful call ends the member's turn (Research §5.4). The handler validates the fields and stores the message for step 4 of section 4.2.
+```go
+func handoffTool[T any](m *Member, name, description string) copilot.Tool {
+	tool := copilot.DefineTool(name, description, func(msg T, inv copilot.ToolInvocation) (string, error) {
+		select {
+		case m.out <- msg:
+			return "handoff accepted", nil
+		default:
+			return "", errors.New("error: this turn already handed off; do not call a second handoff tool")
+		}
+	})
+	tool.IsTerminal = true
+	return tool
+}
 
-### 6.3 vcpkg Invocation Rules
+func turn[T any](ctx context.Context, team *Team, m *Member, s *copilot.Session, prompt string) (T, error) {
+	var zero T
+	team.active.Store(m)                 // 1. hooks and permissions read this
+	defer team.active.Store(nil)
+	if _, err := s.RPC.Agent.Select(ctx, &rpc.AgentSelectRequest{Name: m.Name}); err != nil { // 2.
+		return zero, fmt.Errorf("%s: select agent: %w", m.Name, err)
+	}
+	tctx, cancel := context.WithTimeout(ctx, m.Turn) // 3. explicit deadline; SendAndWait defaults to 60 s
+	defer cancel()
+	if _, err := s.SendAndWait(tctx, copilot.MessageOptions{
+		Prompt: prompt,
+		Source: copilot.MessageSourceAgent(m.Name),
+	}); err != nil {
+		return zero, fmt.Errorf("%s: turn: %w", m.Name, err)
+	}
+	var msg T
+	select { // 4. the handoff tool ran, or the model stopped without one
+	case v := <-m.out:
+		var ok bool
+		if msg, ok = v.(T); !ok {
+			return zero, fmt.Errorf("%s: handed off %T, want %T", m.Name, v, zero)
+		}
+	default:
+		return zero, fmt.Errorf("%s: turn ended without a handoff", m.Name)
+	}
+	trigger := rpc.SessionHistoryCompactRequestTriggerManual // 5. compact before the channel send (FR-T-3)
+	instructions := "Keep: scenario, roots, write scopes, per-port state, open goals. Drop: tool output already summarized."
+	if _, err := s.RPC.History.Compact(ctx, &rpc.SessionHistoryCompactRequest{
+		Trigger: &trigger, CustomInstructions: &instructions,
+	}); err != nil {
+		team.log.Warn("compact failed", "agent", m.Name, "err", err)
+	}
+	return msg, nil // 6. caller sets msg.Session and sends on the edge
+}
+```
 
-1. Pass `--triplet` on every call. Pass `--host-triplet` when designated.
-2. Pass overlays explicitly with `--overlay-ports` and `--overlay-triplets` (Ideation: "need to be explicit"). Report overlays that come from `VCPKG_OVERLAY_*` variables or `vcpkg-configuration.json`.
-3. Pass designated roots on every call (`--x-buildtrees-root`, `--x-packages-root`, `--x-install-root`).
-4. Write stdout and stderr to a team log file per call. Return only: exit code, duration, the plan (dry run), the `RESULTS` states (`SUCCEEDED`, `DOWNLOADED`, `BUILD_FAILED`, ...), each `error: building <spec> failed with: <RESULT>` line, the paths listed in `buildtrees/<port>/error-logs-<triplet>.txt`, the `<installed>/vcpkg/issue_body.md` path, the `info: loaded overlay triplet from here` and `info: installing overlay port from here` lines, and binary cache warnings (Research §8.1, §8.2, §8.8).
-5. On an unknown argument, the member runs `vcpkg_help` for the command and retries (FR-T-5).
-6. Lock contention (**Gap-fill G-19**): pass `--x-wait-for-lock` on every command that takes the locks. The tool handler watches the output stream for `note: waiting to take filesystem lock...`. If waiting exceeds the budget (`--lock-wait`, default 10 minutes), it stops vcpkg and the Port Installer reports a blocker with the lock path. Without the flag, vcpkg fails after about 1.5 s (Research §8.3).
-7. vcpkg prints a `gh issue create -R microsoft/vcpkg ...` command after a failure. No member runs it (FR-T-13). `gh_read` rejects every write subcommand.
+A member whose outbound set has several types (Doctor: `PortGoals`, `TripletGoals`, `Blocker`) calls `turn[any]` and switches on the dynamic type. Usage attribution: `s.RPC.Usage.GetMetrics` before and after; all usage lands under `main` (Research §5.1), the difference belongs to `m`.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant G as member goroutine
+    participant T as Team (hooks, permissions)
+    participant S as copilot.Session
+    participant R as Copilot CLI runtime
+    G->>T: active.Store(member)
+    G->>S: RPC.Agent.Select(member)
+    G->>S: SendAndWait(prompt, Source: agent)
+    loop model turn
+        R->>T: OnPreToolUse(toolName, args, cwd)
+        T-->>R: allow / deny / ask
+        R->>T: Permissions.OnRequest(Read | Write | Shell | URL | CustomTool)
+        T-->>R: Approved / Reject(feedback)
+        R->>G: tool handler (custom tool, in-process)
+        G-->>R: ToolResult.TextResultForLLM (bounded)
+        R->>T: OnPostToolUse(result)
+        T-->>R: ModifiedResult (redacted)
+    end
+    R->>G: handoff tool (IsTerminal) -> m.out
+    S-->>G: SendAndWait returns
+    G->>S: RPC.History.Compact(manual)
+    G->>T: active.Store(nil)
+    G->>G: msg.Session = s, then send on the edge channel
+```
+
+### 4.4 Wiring and Shutdown
+
+```go
+func wire(ctx context.Context, team *Team, s *copilot.Session, prompt string) error {
+	ctx, cancel := context.WithCancel(ctx) // ctx is the shutdown signal for every member
+	defer cancel()
+	e := newEdges()
+	var wg sync.WaitGroup
+	for _, run := range members(team) { // seven Run funcs
+		wg.Add(1)
+		go func() { defer wg.Done(); run(ctx, team, e) }()
+	}
+	e.UserRequest <- UserRequest{Handoff: Handoff{Session: s}, Prompt: prompt}
+	close(e.UserRequest)
+	var final FinalReport
+	select {
+	case final = <-e.FinalReport:
+	case err := <-e.Errors:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+	cancel()
+	wg.Wait()
+	close(e.Errors)
+	team.log.Info("final", "status", final.Status)
+	return nil
+}
+```
+
+`Errors` has capacity 64 so a member can report and return without a receiver. It is closed unused on success (Ideation §Implementation Styles).
+
+### 4.5 State Machines
+
+Member lifecycle (every member):
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: Run starts
+    Idle --> Active: message received (holds Session)
+    Active --> Active: tool call (hook, permission, handler)
+    Active --> HandedOff: handoff tool (IsTerminal)
+    Active --> Failed: deadline, SDK error, no handoff
+    HandedOff --> Compacting
+    Compacting --> Sending: compact done or warned
+    Sending --> Idle: receiver took the message
+    Failed --> [*]: Errors <- err
+    Idle --> [*]: ctx.Done or inbound closed
+    Sending --> [*]: ctx.Done
+```
+
+Port lifecycle inside one `InstallRequest`:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Queued
+    Queued --> Removed: registry: vcpkg remove
+    Queued --> DryRun: manifest
+    Removed --> DryRun: vcpkg install --dry-run
+    DryRun --> Downloaded: --only-downloads (runs detect_compiler)
+    Downloaded --> Built: vcpkg install
+    Built --> Done
+    DryRun --> Failed: unknown port, version conflict
+    Downloaded --> Failed: hash, download, unsupported target
+    Built --> Failed: configure, build, install
+    Failed --> Diagnosing: InstallFailure -> Port Doctor
+    Diagnosing --> Editing: PortGoals
+    Diagnosing --> TripletEdit: TripletGoals
+    Diagnosing --> Blocked: Blocker -> Planner
+    Editing --> Retry: RetryRequest
+    Retry --> Removed: cycle < max-port-cycles
+    Retry --> Unresolved: cycle = max-port-cycles
+    TripletEdit --> Queued: ReinstallRequest -> Planner -> InstallRequest (all ports of the triplet)
+    Done --> [*]
+    Unresolved --> [*]: InstallReport.Unresolved
+    Blocked --> [*]
+```
+
+## 5. Messages
+
+```go
+// Handoff is embedded in every message. Session is the baton.
+type Handoff struct {
+	Session  *copilot.Session `json:"-"`
+	Goal     string           `json:"goal" jsonschema:"What the receiver must achieve. Goals, not steps."`
+	Evidence []string         `json:"evidence" jsonschema:"Log paths with lines, URLs, issue or pull request links."`
+}
+```
+
+`copilot.DefineTool` derives the handoff tool schema from these structs (`json` and `jsonschema` tags). `Session` is excluded from the schema.
+
+```mermaid
+classDiagram
+    class Handoff {
+        +copilot.Session Session
+        +string Goal
+        +string[] Evidence
+    }
+    class UserRequest {
+        +string Prompt
+    }
+    class DetectRequest {
+        +string[] Triplets
+    }
+    class EnvReport {
+        +string Scenario
+        +string[] ScenarioEvidence
+        +Roots Roots
+        +string[] Overlays
+        +TripletFile[] Triplets
+        +ToolInfo[] Tools
+        +VariableStatus[] Variables
+        +FolderAccess[] Access
+        +Web Web
+        +PackageManager[] PackageManagers
+        +Host Host
+        +Compiler Compiler
+        +string[] Warnings
+        +string[] Blockers
+    }
+    class InstallRequest {
+        +string Triplet
+        +string[] Ports
+        +string[] Features
+        +string ManifestRoot
+        +string Reason
+    }
+    class InstallReport {
+        +Spec[] Done
+        +Unresolved[] Unresolved
+    }
+    class InstallFailure {
+        +Spec Spec
+        +string Triplet
+        +string Stage
+        +int ExitCode
+        +string ResultCode
+        +string Command
+        +string[] ErrorLogs
+        +string IssueBody
+        +string OutputLog
+        +int Attempt
+    }
+    class PortGoals {
+        +string Port
+        +string[] Goals
+        +Finding[] Diagnosis
+        +NewPortGoal NewPort
+    }
+    class TripletGoals {
+        +string TripletFile
+        +string[] Variables
+        +string Guidance
+    }
+    class Blocker {
+        +Spec Spec
+        +string Category
+        +string Reason
+        +Finding[] Findings
+    }
+    class RetryRequest {
+        +Spec Spec
+        +string[] Triplets
+        +string[] ChangedFiles
+    }
+    class ReinstallRequest {
+        +string Triplet
+        +string TripletFile
+        +string Change
+        +string[] Ports
+    }
+    class HostFactsRequest {
+        +string Question
+    }
+    class HostFacts {
+        +string HostTriplet
+        +string[] Compilers
+        +string[] SDKs
+        +string[] Notes
+    }
+    class BaselineRequest {
+        +string[] Ports
+    }
+    class BaselineReport {
+        +Commit[] Commits
+        +string[] Skipped
+    }
+    class FinalReport {
+        +string Status
+        +LedgerEntry[] Ledger
+        +Commit[] Commits
+        +string[] Warnings
+    }
+    class Finding {
+        +string Kind
+        +string Text
+        +string Source
+    }
+    Handoff <|-- UserRequest
+    Handoff <|-- DetectRequest
+    Handoff <|-- EnvReport
+    Handoff <|-- InstallRequest
+    Handoff <|-- InstallReport
+    Handoff <|-- InstallFailure
+    Handoff <|-- PortGoals
+    Handoff <|-- TripletGoals
+    Handoff <|-- Blocker
+    Handoff <|-- RetryRequest
+    Handoff <|-- ReinstallRequest
+    Handoff <|-- HostFactsRequest
+    Handoff <|-- HostFacts
+    Handoff <|-- BaselineRequest
+    Handoff <|-- BaselineReport
+    Handoff <|-- FinalReport
+    PortGoals o-- Finding
+    Blocker o-- Finding
+```
+
+`Finding.Kind` is fact, observation, or interpretation. `InstallFailure.Stage` is dry-run, downloads, or build; `ResultCode` is vcpkg's `RESULTS` state (`BUILD_FAILED`, ...). `InstallRequest.Reason` is user or reinstall. Features (**Gap-fill G-7**) apply to the manifest scenario.
+
+Edges (`type Edges struct`), one field per arrow in §1, plus `Errors chan error`. Request and reply pairs (`DetectRequest`/`EnvReport`, `HostFactsRequest`/`HostFacts`) are two plain channels, not a reply channel inside the message.
+
+## 6. Harness
+
+The harness is everything around the model: tool wrappers, hooks, permission policy, scopes, logs. Rules follow the sources in §6.5. The SDK already provides most of it; the team adds policy, not mechanism.
+
+### 6.1 SDK Reuse
+
+| Need | SDK type or call | Team adds |
+|------|------------------|-----------|
+| Member roles, tool allowlists | `copilot.CustomAgentConfig{Name, Prompt, Tools, Infer: copilot.Bool(false)}`; `session.RPC.Agent.Select` | prompt constants, allowlists (§7) |
+| Custom tools, schema from structs | `copilot.DefineTool`, `copilot.Tool{IsTerminal, Idempotent, Exposure}`, `copilot.ToolResult`, `ToolInvocation.ReportProgress` | handlers |
+| Pre-tool gate, cwd pin | `SessionHooks.OnPreToolUse` → `PreToolUseHookInput{ToolName, ToolArgs, WorkingDirectory}` → `PreToolUseHookOutput{PermissionDecision, ModifiedArgs}` | one function (`preToolUse`) |
+| Parsed shell commands, paths, URLs | `rpc.PermissionRequestShell{Commands[].Identifier, Commands[].ReadOnly, PossiblePaths, HasWriteFileRedirection, PossibleURLs}`, `rpc.PermissionRequestRead{Path}`, `rpc.PermissionRequestWrite{FileName, Diff}`, `rpc.PermissionRequestURL{URL}` | one function (`permission`) that compares with scopes |
+| Decisions | `rpc.PermissionDecisionApproved{}`, `rpc.PermissionDecisionReject{Feedback}` | none |
+| Result redaction, failure context | `SessionHooks.OnPostToolUse{ModifiedResult}`, `OnPostToolUseFailure{AdditionalContext}` | redactor |
+| OS sandbox (optional) | `SessionPermissionOptions.Sandbox: *rpc.SandboxConfig{Enabled, UserPolicy.Filesystem{ReadonlyPaths, ReadwritePaths, DeniedPaths}, UserPolicy.Network{AllowedHosts}}` | path lists from scopes |
+| Large tool output | `SessionToolOptions.LargeOutput` | thresholds |
+| Compaction | `session.RPC.History.Compact(&rpc.SessionHistoryCompactRequest{Trigger, CustomInstructions})` | call site in `turn` |
+| Provenance | `copilot.MessageOptions.Source = copilot.MessageSourceAgent(name)` | none |
+| Usage | `session.RPC.Usage.GetMetrics` | diff per turn |
+| Working directory of built-in tools | `CreateSessionOptions.WorkingDirectory` | workspace root |
+| Turn budget | `CustomAgentConfig.MaxToolTurns`, `MessageOptions.MaxToolTurns` | per member |
+
+Not defined by the team: tool, message, hook, or permission interfaces of its own. Not used: `CustomAgentConfig.Hooks` (declarative, per agent, undocumented shape), `ResumeSession` (Research §5.6), `SkipPermission` on any tool.
+
+### 6.2 Layers
+
+| Layer | Mechanism | Enforces | Verified |
+|-------|-----------|----------|----------|
+| L0 OS sandbox | `rpc.SandboxConfig` (Windows AppContainer, macOS seatbelt, Linux) | file and network access of every child process, including vcpkg and builds | not yet; `--sandbox` off by default; experimental API |
+| L1 tool visibility | `CustomAgentConfig.Tools` per member | a member cannot call a tool outside its list | live (Research §5.1) |
+| L2 pre-tool hook | `OnPreToolUse` | no active member → deny; `cwd` outside member `Scope.CWD` → deny; shell tool for a member without `Scope.Shell` → deny; else `ask` | source |
+| L3 permission | `Permissions.OnRequest` | read, write, shell, URL against `Scope`; custom tools approved (they enforce in Go) | source |
+| L4 custom tool handler | Go code | argv from struct, `cmd.Dir = Scope.CWD`, scrubbed env, output to log file, bounded summary; vcpkg flags added by Go (§6.4) | live for the vcpkg commands (Research §8) |
+| L5 post-tool hook | `OnPostToolUse`, `OnPostToolUseFailure` | redact secrets; add retry guidance on failure | source |
+| L6 turn guard | `turn` | deadline, exactly one handoff, compaction, usage | live |
+| L7 process | `init` checks, `Errors` channel, exit code | deterministic preconditions, fail fast | draft |
+
+Hooks and permission requests carry no member identity (`AgentID` was empty in the live probe), so L2 and L3 read `team.active`. `ToolInvocation.AgentID` is experimental; if a later runtime fills it, compare it with `team.active` and deny on mismatch.
+
+```go
+func (t *Team) preToolUse(in copilot.PreToolUseHookInput, _ copilot.HookInvocation) (*copilot.PreToolUseHookOutput, error) {
+	m := t.active.Load()
+	if m == nil {
+		return &copilot.PreToolUseHookOutput{PermissionDecision: "deny", PermissionDecisionReason: "no active member"}, nil
+	}
+	if in.WorkingDirectory != "" && !insideAny(in.WorkingDirectory, []string{m.Scope.CWD}) {
+		return &copilot.PreToolUseHookOutput{PermissionDecision: "deny", PermissionDecisionReason: "working directory outside the member scope"}, nil
+	}
+	switch in.ToolName {
+	case "bash", "powershell": // shell tool names as the runtime reports them; confirm in the first live run
+		if m.Scope.Shell == nil {
+			return &copilot.PreToolUseHookOutput{PermissionDecision: "deny", PermissionDecisionReason: m.Name + " has no shell"}, nil
+		}
+	}
+	return &copilot.PreToolUseHookOutput{PermissionDecision: "ask"}, nil // the permission handler decides with parsed data
+}
+
+func (t *Team) permission(req copilot.PermissionRequest, _ copilot.PermissionInvocation) (rpc.PermissionDecision, error) {
+	m := t.active.Load()
+	if m == nil {
+		return reject("no active member"), nil
+	}
+	switch r := req.(type) {
+	case rpc.PermissionRequestRead:
+		if insideAny(r.Path, m.Scope.Read) {
+			return &rpc.PermissionDecisionApproved{}, nil
+		}
+		return reject("read outside scope: " + r.Path), nil
+	case rpc.PermissionRequestWrite:
+		if insideAny(r.FileName, m.Scope.Write) {
+			return &rpc.PermissionDecisionApproved{}, nil
+		}
+		return reject("write outside scope: " + r.FileName), nil
+	case rpc.PermissionRequestShell:
+		for _, c := range r.Commands {
+			if !contains(m.Scope.Shell, c.Identifier) {
+				return reject("command not allowed: " + c.Identifier), nil
+			}
+		}
+		if r.HasWriteFileRedirection && len(m.Scope.Write) == 0 {
+			return reject("write redirection"), nil
+		}
+		for _, p := range r.PossiblePaths {
+			if !insideAny(p, m.Scope.Read) {
+				return reject("path outside scope: " + p), nil
+			}
+		}
+		return &rpc.PermissionDecisionApproved{}, nil
+	case rpc.PermissionRequestURL:
+		if strings.HasPrefix(r.URL, "https://") {
+			return &rpc.PermissionDecisionApproved{}, nil
+		}
+		return reject("only https"), nil
+	case rpc.PermissionRequestCustomTool:
+		return &rpc.PermissionDecisionApproved{}, nil // custom tools enforce their own scope in Go
+	}
+	return reject("unknown request kind"), nil
+}
+```
+
+`reject` wraps `&rpc.PermissionDecisionReject{Feedback: &why}`; the feedback reaches the model, so it states the rule, never a secret.
+
+### 6.3 Folder and Working Directory Scopes
+
+```go
+type Scope struct {
+	CWD   string   // working directory of every process the member starts
+	Read  []string // readable roots
+	Write []string // writable roots; always a subset of Read
+	Shell []string // allowed first words of shell commands; nil means no shell
+}
+```
+
+`insideAny` resolves `filepath.Abs` and `filepath.EvalSymlinks` first, then `filepath.Rel` must not start with `..`. Junctions and symlinks therefore cannot escape a root. Paths with a different volume fail `Rel` and are denied.
+
+Roots from `init`: `workspace` (git root), `manifestRoot`, `vcpkgRoot` (next to `vcpkg.exe`), `roots.{buildtrees,downloads,installed,packages}` (z-print-config), `overlays.{ports,triplets}` (flags, env, configuration), `registry.{ports,versions,triplets}` (registry scenario), `scratch` = `os.TempDir()/vcpkg-agents/<run-id>/`, `teamLogs` = `scratch/logs`.
+
+| Member | CWD | Read | Write | Shell |
+|--------|-----|------|-------|-------|
+| Planner | workspace | workspace, vcpkg roots | none | nil |
+| Environment Detector | workspace | workspace, vcpkg roots, tool folders | one probe file per planned write root (G-14), deleted after | version and path probes, package manager search |
+| Port Installer | manifestRoot or workspace | workspace, vcpkg roots | none; vcpkg writes its roots itself | nil (vcpkg only through custom tools) |
+| Port Doctor | workspace | workspace, vcpkg roots, buildtrees | none | `git log`, `git show`, `git diff` |
+| Port Editor | workspace | workspace, vcpkg roots, scratch | target `ports/<port>/`; manifest scenario: `vcpkg.json`, `vcpkg-configuration.json`, existing overlay folders (G-7); scratch | `git diff`, `git status` |
+| Triplet Editor | workspace | workspace, vcpkg roots | writable overlay triplet folders | nil |
+| Baseline Updater | registry root | workspace | `ports/<port>/` (format only), `versions/`, `.git` through `git_commit` | registry scripts, `git add`, `git commit` |
+
+Always denied for writes: `.git/` (except via `git_commit`), `vcpkgRoot/scripts`, the user home, anything outside `workspace`, `scratch`, and the vcpkg roots. `create-overlays` (new `ports/` or `triplets/` in the manifest scenario) is never a default (**Gap-fill G-6**).
+
+Default `--write`: registry → `ports`, `triplets`, `versions`, `commit`; manifest → `manifest`, `overlays`.
+
+```mermaid
+flowchart TB
+    subgraph WS[workspace]
+        PORTS[ports/ target port]
+        VERS[versions/]
+        TRIP[overlay triplets/]
+        MAN[vcpkg.json, vcpkg-configuration.json]
+        GIT[.git/]
+    end
+    subgraph VR[vcpkg roots]
+        BT[buildtrees/]
+        PK[packages/, installed/, downloads/]
+    end
+    SCR[scratch/ run-id]
+    PE[Port Editor] -->|write| PORTS
+    PE -->|"write (manifest)"| MAN
+    PE -->|write| SCR
+    TE[Triplet Editor] -->|write| TRIP
+    BU[Baseline Updater] -->|write| VERS
+    BU -->|format| PORTS
+    BU -->|git_commit| GIT
+    PI[Port Installer] -->|via vcpkg| BT
+    PI -->|via vcpkg| PK
+    ED[Environment Detector] -->|probe file| PORTS
+    ED -->|detect_compiler via vcpkg| BT
+    P[Planner] -.->|read| WS
+    PD[Port Doctor] -.->|read| BT
+    PD -.->|read| WS
+```
+
+### 6.4 CLI Command Harness
+
+Two paths. Both end in a bounded summary for the model and a full log on disk.
+
+1. Built-in shell tool (`bash` or `powershell`), only for members with `Scope.Shell`: L2 pins `cwd` and the member; L3 checks every parsed `Commands[].Identifier` against `Scope.Shell`, every `PossiblePaths` entry against `Scope.Read`, and rejects write redirection for members without `Scope.Write`. The runtime parses the command; Go never re-parses shell text.
+2. Custom tools (`vcpkg_*`, `probe_tool`, `make_patch`, `version_update`, `git_commit`, `gh_read`): the model supplies a struct, Go builds argv. No shell. Shape:
+
+```go
+func runVcpkg(ctx context.Context, m *Member, logDir string, args ...string) (string, error) {
+	logPath := filepath.Join(logDir, fmt.Sprintf("vcpkg-%d.log", time.Now().UnixMilli()))
+	f, err := os.Create(logPath)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	cmd := exec.CommandContext(ctx, "vcpkg", args...)
+	cmd.Dir = m.Scope.CWD
+	cmd.Env = scrubbedEnv()
+	cmd.Stdout, cmd.Stderr = f, f
+	err = cmd.Run()
+	return fmt.Sprintf("exit=%v log=%s", cmd.ProcessState.ExitCode(), logPath), err
+}
+```
+
+vcpkg rules applied by Go, not by the model:
+
+1. `--triplet` on every call; `--host-triplet` when designated; overlays explicit (`--overlay-ports`, `--overlay-triplets`); designated roots on every call.
+2. The summary returns only: exit code, duration, the dry-run plan, `RESULTS` states, `error: building <spec> failed with: <RESULT>` lines, paths from `buildtrees/<port>/error-logs-<triplet>.txt`, the `<installed>/vcpkg/issue_body.md` path, `info: loaded overlay triplet from here` / `info: installing overlay port from here` lines, binary cache warnings (Research §8.1, §8.2, §8.8).
+3. `--x-wait-for-lock` on every locking command; the handler watches for `note: waiting to take filesystem lock...` and stops vcpkg after `--lock-wait` (**Gap-fill G-19**; Research §8.3).
+4. `vcpkg_query` subcommand allowlist: `version`, `z-print-config`, `list`, `search`, `depend-info`, `x-package-info`, `help`. `detect_compiler` always adds `--dry-run` to `x-set-installed` (without it, vcpkg removes every other installed package).
+5. Never `--debug`, `--debug-env`; probes pass `--disable-metrics`. Never run the `gh issue create` line vcpkg prints (FR-T-13); `gh_read` rejects write subcommands.
+6. On an argument error the member runs `vcpkg_help` and retries (FR-T-5).
+
+Tool set (member column is the `CustomAgentConfig.Tools` allowlist):
+
+| Tool | Members | Side effects | Guard |
+|------|---------|--------------|-------|
+| `view`, `glob`, `rg` (built-in) | all | none | L3 read scope |
+| `edit`, `create`, `apply_patch` (built-in) | Port Editor, Triplet Editor, Baseline Updater | file writes | L3 write scope |
+| `web_fetch` (built-in) | Port Doctor, Port Editor, Triplet Editor | network | https only |
+| shell (built-in) | members with `Scope.Shell` | per command | L2, L3 |
+| `vcpkg_help` | all | none | topic is one word |
+| `vcpkg_query` | Environment Detector, Port Installer, Port Doctor | none | allowlist above |
+| `vcpkg_install` | Port Installer | vcpkg roots | stage flag required (`dry-run`, `only-downloads`, `build`) |
+| `vcpkg_remove` | Port Installer | vcpkg roots | registry scenario only (G-12) |
+| `read_log` | Port Installer, Port Doctor | none | path inside a vcpkg root; bounded tail and matches |
+| `probe_tool`, `detect_compiler` | Environment Detector | none; vcpkg `buildtrees` | allowlist; forced `--dry-run` |
+| `gh_read` | Port Doctor, Port Editor, Environment Detector | network | read-only subcommands |
+| `vcpkg_create`, `make_patch`, `download_sha512` | Port Editor | port folder, scratch, network | target inside write scope; https |
+| `version_update`, `git_commit` | Baseline Updater | `ports/<port>/vcpkg.json`, `versions/`, git | paths limited to `ports/<port>/` or `versions/` |
+| MCP `microsoft-learn`; enterprise MCP (optional) | Port Doctor, Triplet Editor; Port Doctor | network | read-only |
+| handoff tools (`send_*`) | one set per member | `m.out` | `IsTerminal`; schema validation |
+
+### 6.5 Harness Engineering Sources
+
+| Source | Applied here |
+|--------|--------------|
+| OpenAI, "Harness engineering: leveraging Codex in an agent-first world" (R. Lopopolo, 2026-02-11), https://openai.com/index/harness-engineering/ | enforce invariants mechanically, not by instruction: L2–L4 gates; short role prompts that point to evidence, not manuals (§4.4 prompt rules) |
+| B. Böckeler, "Harness engineering for coding agent users" (martinfowler.com, 2026-04-02), https://martinfowler.com/articles/harness-engineering.html | feedforward guides (prompts, tool descriptions) vs feedback sensors (vcpkg exit codes, logs, tree guard); deterministic checks first, model judgment second |
+| LangChain, "The Anatomy of an Agent Harness" (V. Trivedy, 2026-03-10), https://www.langchain.com/blog/the-anatomy-of-an-agent-harness | "Agent = Model + Harness"; hooks as deterministic middleware: compaction in `turn`, gates in hooks |
+| Anthropic, "Writing effective tools for AI agents" (2025-09-11), https://www.anthropic.com/engineering/writing-tools-for-agents | tools as a contract between deterministic code and the model: struct parameters, bounded token-efficient results, `TextResultForLLM` always set |
+| Anthropic, "Effective context engineering for AI agents" (2025-09-29), https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents | compaction with custom instructions; self-contained messages so compaction loses nothing (NFR-3) |
+| Anthropic, "Effective harnesses for long-running agents" (2025-11-26), https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents | compaction is not enough: per-port state and ledger live in Go, artifacts on disk (logs, patches, commits) |
+| Anthropic, "Scaling Managed Agents with stable interfaces" (2026-04-08), https://www.anthropic.com/engineering/managed-agents | brain/hands split: the model decides, Go executes (`execute(name, input) → string`) |
+| Yang et al., "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering" (arXiv 2405.15793, 2024) | purpose-built interfaces (`read_log`, `vcpkg_install` stages) beat raw shells |
+| Copilot SDK docs: hooks overview, pre-tool-use, post-tool-use, context management, custom agents (github.com/microsoft/copilot-sdk/docs) | `permissionDecision` allow/deny/ask; cwd allowlist example; `isTerminal` ends a turn only on success; audit by `(sessionId, toolCallId)` |
 
 ## 7. Members
 
-Each member lists: inputs, outputs, tools, scopes, behavior, and completion. Behavior is stated as goals and checks, not scripts (FR-T-4).
+Format: inputs → outputs; tools; behavior as goals and checks (FR-T-4). Scopes are in §6.3.
 
 ### 7.1 Planner
 
-- Inputs: `UserRequest`, `EnvReport`, `InstallReport`, `Blocker`, `ReinstallRequest`, `BaselineReport`.
-- Outputs: `DetectRequest`, `InstallRequest` (one per triplet, in sequence), `BaselineRequest`, `FinalReport`.
+- In: `UserRequest`, `EnvReport`, `InstallReport`, `Blocker`, `ReinstallRequest`, `BaselineReport`. Out: `DetectRequest`, `InstallRequest` (one per triplet, in order), `BaselineRequest`, `FinalReport`.
 - Tools: `view`, `glob`, `rg`, `vcpkg_help`, handoff tools. No writes (FR-P-5).
-- Behavior:
-  1. Delegate detection first (FR-P-2).
-  2. Turn the request into ordered requests per triplet. Example: `arm64-windows` with its ports, then `arm64-android` with its ports.
-  3. Judge each report. A report that meets the user's goals ends the run with `finished`. A blocker that removes every remaining path ends it with `blocked`.
-  4. In the registry scenario, after success, send `BaselineRequest` for the changed, verified ports (FR-P-7).
-  5. On `ReinstallRequest`, reschedule the affected requests (FR-P-6).
-- Completion: sends `FinalReport` with the ledger.
+- Delegate detection first (FR-P-2). Turn the request into ordered requests per triplet. A report that meets the user's goals → `finished`; a blocker that removes every remaining path → `blocked`. Registry scenario, after success: `BaselineRequest` for changed, verified ports (FR-P-7). On `ReinstallRequest`: reschedule the affected requests (FR-P-6).
 
 ### 7.2 Environment Detector
 
-- Inputs: `DetectRequest`, `HostFactsRequest`.
-- Outputs: `EnvReport`, `HostFacts`.
-- Tools: `probe_tool`, `detect_compiler`, `vcpkg_query`, `vcpkg_help`, `gh_read` (auth and rate limit only), `view`, `glob`. No file writes (FR-E-5). `detect_compiler` lets vcpkg write its own `buildtrees` logs, as the ideation's "vcpkg detect_compiler" requires.
-- Procedure (identical to `init`, FR-E-10):
-  1. Tools: path and version of vcpkg, git, gh, cmake, ninja, shells, curl, tar; meson, pkg-config, zip, unzip, python where relevant; compilers; package managers (apt, winget, Chocolatey, Homebrew).
-  2. vcpkg roots and triplets from `z-print-config`.
-  3. Overlays from flags, `VCPKG_OVERLAY_*`, and `vcpkg-configuration.json`.
-  4. For each requested or guessed triplet: the winning file. Search order: overlay folders, then built-in `triplets/`, then `triplets/community/`. `vcpkg help triplet --overlay-triplets=<dir>` lists overlay triplets in a section `Overlay Triplets from "<dir>":`.
-  5. `VCPKG_*` variables: names, status, and checks (section 10).
-  6. Folder access for roots, caches, overlays, and write scopes (**Gap-fill G-14**): read access everywhere; write access by creating and deleting one uniquely named probe file, only in folders the team plans to write and in the vcpkg roots. Binary cache folders are checked directly: vcpkg dry runs do not validate binary sources (Research §8.6, L6m).
-  7. Web access: GitHub (`gh api rate_limit`) and Microsoft Learn.
-  8. Compiler facts: `detect_compiler` runs `x-set-installed ... --dry-run` (2 s on the test host), then reads `buildtrees/detect_compiler/stdout-<triplet>.log`: `#COMPILER_HASH#`, `#COMPILER_C_ID#`, `#COMPILER_C_VERSION#`, `#COMPILER_C_PATH#`, and the `CXX` equivalents. A failure here means the host cannot build the triplet (Research §8.5).
-  9. Manifest scenario only: triplets and features used by CI. Sources: `CMakePresets.json` and `CMakeUserPresets.json` `cacheVariables` (`VCPKG_TARGET_TRIPLET`, `VCPKG_MANIFEST_FEATURES`, overlays, `VCPKG_INSTALLED_DIR`, `VCPKG_INSTALL_OPTIONS`), `VCPKG_MANIFEST_FEATURES` set before `project()` in `CMakeLists.txt`, `CMakeSettings.json` `variables`, and workflow `matrix.triplet`, `VCPKG_DEFAULT_TRIPLET`, `-DVCPKG_TARGET_TRIPLET`, or `--preset` (Research §7.4, §7.5).
-  10. vcpkg root clone state: `git rev-parse --is-shallow-repository`, the HEAD commit, and, with network access, how far upstream master is ahead (GitHub compare API). Manifest scenario: whether the clone contains each baseline commit (`git cat-file -e <sha>^{commit}`). A missing baseline commit fails installs (Research §6.6, §7.3).
-  11. Registry scenario, git environment for version commands: the file system type of the registry (exFAT, FAT, and network shares record no ownership), whether vcpkg's git can open the repository without the home variables, the effective `core.autocrlf`, `.gitattributes` line-ending rules for `ports/`, and whether port files in the working tree are LF. Any failure blocks the Baseline Updater (Research §8.10).
-- Completion: one `EnvReport`, or `HostFacts` for the Triplet Editor.
+- In: `DetectRequest`, `HostFactsRequest`. Out: `EnvReport`, `HostFacts`.
+- Tools: `probe_tool`, `detect_compiler`, `vcpkg_query`, `vcpkg_help`, `gh_read` (auth, rate limit), `view`, `glob`. No file writes except probe files (FR-E-5).
+- Procedure, identical to `init` (FR-E-10):
+  1. Tool paths and versions: vcpkg, git, gh, cmake, ninja, shells, curl, tar, meson, pkg-config, zip, unzip, python, compilers, package managers.
+  2. Roots and triplets from `z-print-config`; overlays from flags, `VCPKG_OVERLAY_*`, `vcpkg-configuration.json`; the winning triplet file per requested triplet (overlay → `triplets/` → `triplets/community/`).
+  3. `VCPKG_*` names and status (§9).
+  4. Folder access (**Gap-fill G-14**): read everywhere planned; write by one uniquely named probe file in planned write roots and vcpkg roots; binary cache folders checked directly, since dry runs do not validate them (Research §8.6).
+  5. Web: `gh api rate_limit`, Microsoft Learn.
+  6. Compiler facts: `detect_compiler` → `buildtrees/detect_compiler/stdout-<triplet>.log` (`#COMPILER_C_ID#`, `#COMPILER_C_VERSION#`, `#COMPILER_C_PATH#`, CXX equivalents). Failure means the host cannot build the triplet (Research §8.5).
+  7. Manifest scenario: triplets and features used by CI from `CMakePresets.json`, `CMakeUserPresets.json`, `CMakeLists.txt`, `CMakeSettings.json`, workflows (Research §7.4, §7.5).
+  8. vcpkg clone state: shallow, HEAD, distance behind upstream; manifest: each baseline commit present (Research §6.6, §7.3).
+  9. Registry scenario, git preconditions for version commands: file system records ownership, vcpkg's git opens the repository, `core.autocrlf`, `.gitattributes`, port files LF (Research §8.10).
 
 ### 7.3 Port Installer
 
-- Inputs: `InstallRequest` (buffered), `RetryRequest`.
-- Outputs: `InstallFailure`, `InstallReport`.
+- In: `InstallRequest` (buffered), `RetryRequest`. Out: `InstallFailure`, `InstallReport`.
 - Tools: `vcpkg_query` (`list`), `vcpkg_remove`, `vcpkg_install`, `read_log`, `vcpkg_help`, handoff tools. No direct file creation (FR-I-9).
-- Stack (**Gap-fill G-11**): requests run in arrival order. A retry runs before the remaining requests.
-- Per request:
-  1. `vcpkg list` records the installed state.
-  2. Registry scenario: `vcpkg remove` the requested ports for the triplet (`--recurse` when dependents exist). Classic mode never rebuilds an installed port, so this step is required before every retry (Research §8.1).
-  3. `vcpkg install --dry-run` checks that every port is known. Classic dry runs skip compiler detection, so they cannot catch an unsupported target.
-  4. `vcpkg install --only-downloads` gets sources and runs compiler detection. It reports `RESULTS` per spec (`SUCCEEDED`, `DOWNLOADED`) and catches unsupported targets (Research §8.5, §8.8).
-  5. `vcpkg install` builds in the foreground.
-  6. Read `error-logs-<triplet>.txt` and `issue_body.md` on failure.
-- Manifest scenario: the same stages run without port arguments, with `--x-manifest-root` and `--x-feature`. No `remove`: vcpkg rejects it and rebuilds changed ports by itself (G-12; Research §8.4). To reproduce a CMake configure, run the command `vcpkg.cmake` runs, with the same triplet, features, overlays, and install root (Research §7.4).
-- On failure: send `InstallFailure` for the first failed port. Count the attempt.
-- On retry: install the changed port. On success, resume the stack.
-- Limits (**Gap-fill G-10**): after `--max-port-cycles` failed cycles, the port is unresolved and the Port Installer continues with the rest.
-- Completion: `InstallReport` to the Planner when the stack is empty.
+- Per request (states in §4.5): `list`; registry: `remove` the requested ports (`--recurse` when dependents exist; classic mode never rebuilds an installed port, Research §8.1); `--dry-run` (classic dry runs skip compiler detection); `--only-downloads` (sources, compiler detection, catches unsupported targets, Research §8.5, §8.8); `install`; on failure read `error-logs-<triplet>.txt` and `issue_body.md`.
+- Manifest scenario: same stages without port arguments, with `--x-manifest-root` and `--x-feature`; no `remove` (vcpkg rejects it and rebuilds changed ports itself, G-12; Research §8.4).
+- Stack (**Gap-fill G-11**): arrival order; a retry runs before the rest. Limits (**Gap-fill G-10**): after `--max-port-cycles` failed cycles the port is unresolved and the stack continues.
 
 ### 7.4 Port Doctor
 
-- Inputs: `InstallFailure`.
-- Outputs: `PortGoals`, `TripletGoals`, `Blocker`.
+- In: `InstallFailure`. Out: `PortGoals`, `TripletGoals`, `Blocker`.
 - Tools: `view`, `glob`, `rg`, `read_log`, `vcpkg_query`, `vcpkg_help`, `gh_read`, `web_fetch`, MCP `microsoft-learn`, optional enterprise MCP. No writes.
-- Behavior:
-  1. Find the failed stage first (Research §6.2), then the axis. Read `stdout-<t>.log`, the paths in `error-logs-<t>.txt`, and `patch-<t>-*-err.log`. `error-logs-<t>.txt` never lists patch, download, hash, or post-build failures.
-  2. Classify the failure: build configuration, toolchain, installation, or misc (Research §6.3).
-  3. Staleness check: compare the port with upstream history (`gh api "repos/microsoft/vcpkg/commits?path=ports/<port>&since=<baseline date>"`). The local clone may be shallow and behind (Research §6.6). An upstream fix becomes a blocker ("update the vcpkg clone") or, in the registry scenario, an upstream copy of the fixed port.
-  4. Search known issues in this order: `scripts/ci.baseline.txt`, issues with `<port> in:title`, the exact signature phrase, merged pull requests, Discussions. Count a closed issue as fixed only if its `stateReason` is `COMPLETED` or a pull request closed it (Research §6.5).
-  5. Read the official troubleshooting guides. Prefer exact strings from vcpkg sources over the 2024 guide text.
-  6. Write findings as facts, observations, and interpretations, each with a source.
-  7. Set goals that let the Port Installer start with confidence. A hash mismatch needs a provenance check (moved tag, unstable archive) before a new `SHA512`. A post-build warning maps to the helper the message names, not to a `VCPKG_POLICY_*` escape hatch.
-- Routing (**Gap-fill G-8**):
-
-| Fix target | Writable under current scopes | Next member |
-|------------|-------------------------------|-------------|
-| Port files, a new port, or `vcpkg.json` in the manifest scenario | yes | Port Editor |
-| Triplet file | yes | Triplet Editor |
-| Any target | no | Planner (`Blocker`) |
-| Unsupported host or missing SDK | not applicable | Planner (`Blocker`) |
+- Find the failed stage, then the axis (build configuration, toolchain, installation, misc; Research §6.2, §6.3). `error-logs-<t>.txt` never lists patch, download, hash, or post-build failures: read `stdout-<t>.log` and `patch-<t>-*-err.log` too.
+- Staleness: compare the port with upstream history (`gh api "repos/microsoft/vcpkg/commits?path=ports/<port>&since=<baseline date>"`); the clone may be shallow and behind (Research §6.6).
+- Known issues in this order: `scripts/ci.baseline.txt`, issues `<port> in:title`, exact signature phrase, merged pull requests, Discussions. A closed issue counts as fixed only with `stateReason: COMPLETED` or a closing pull request (Research §6.5).
+- Findings are facts, observations, interpretations, each with a source. Goals let the Port Installer start with confidence: a hash mismatch needs a provenance check before a new `SHA512`; a post-build warning maps to the helper the message names, not to `VCPKG_POLICY_*`.
+- Routing (**Gap-fill G-8**): port files, new port, or manifest `vcpkg.json` writable → Port Editor; triplet writable → Triplet Editor; target not writable, unsupported host, or missing SDK → Planner (`Blocker`).
 
 ### 7.5 Port Editor
 
-- Inputs: `PortGoals`; `UpdateGoal` if G-1 adds that edge.
-- Outputs: `RetryRequest`.
+- In: `PortGoals` (and `UpdateGoal` if G-1 adds that edge). Out: `RetryRequest`.
 - Tools: `view`, `glob`, `rg`, `edit`, `create`, `apply_patch`, `vcpkg_create`, `make_patch`, `download_sha512`, `gh_read`, `web_fetch`, `vcpkg_help`, handoff tools.
-- Write scope: the target port folder. Manifest scenario: also `vcpkg.json`, `vcpkg-configuration.json`, and overlay ports (**Gap-fill G-7**).
-- Manifest edits follow vcpkg rules (Research §7.1, §7.2): strict JSON; a baseline change to upgrade in general, `version>=` for one port, `overrides` for an exact pin; never `builtin-baseline` next to a configuration-file `default-registry` (the configuration wins and the baseline is ignored); never `.` as an overlay path.
-- Patch workflow (**Gap-fill G-9**, verified in Research §8.9):
-  1. Copy `buildtrees/<port>/src/<name>.clean` to a team scratch folder. `make_patch` runs `git init`, then `git add -A` and a baseline commit.
-  2. Edit the copy.
-  3. `make_patch` runs `git diff --output=<file>` and writes `ports/<port>/<name>.patch`. Every git call uses `-c core.autocrlf=false` and `GIT_CONFIG_NOSYSTEM=1`. The diff never passes through a shell pipe, so line endings stay exact.
-  4. `make_patch` verifies the patch on a fresh copy of `.clean` with vcpkg's own command: `git -c core.longpaths=true -c core.autocrlf=false -c core.filemode=true --work-tree=. --git-dir=.git apply <patch> --ignore-whitespace --whitespace=nowarn --verbose`.
-  5. Append the patch to `PATCHES`, after the existing patches. The `.clean` folder already has those patches applied.
-  6. Delete the scratch folder. No untracked file may stay in the port folder, because `x-add-version` hashes untracked files.
-- Repository tips (**Gap-fill G-17**): follow the workspace's own guides and patch conventions (names, numbering, style of existing patches). Start each new patch with a short header that states why it exists and, when known, the upstream issue or pull request.
-- Versions: change `version` or `port-version` per vcpkg rules. Leave them if `git diff` shows they already changed (FR-PE-5).
-- New port: `vcpkg create <name> <url> --x-builtin-ports-root=<target ports folder>` writes the template into the target folder (Research §8.7). The template computes `SHA512` but uses `vcpkg_download_distfile` and the deprecated `vcpkg_extract_source_archive_ex`. The Port Editor replaces them (for example with `vcpkg_from_github`), then completes configure, install, config fixup, copyright, and usage.
-- Completion: `RetryRequest` with the changed files.
+- Manifest edits follow vcpkg rules (Research §7.1, §7.2): strict JSON; baseline change to upgrade in general, `version>=` for one port, `overrides` for an exact pin; never `builtin-baseline` next to a configuration-file `default-registry`; never `.` as an overlay path.
+- Patch workflow (**Gap-fill G-9**, verified in Research §8.9): copy `buildtrees/<port>/src/<name>.clean` to scratch; `make_patch` does `git init`, `git add -A`, baseline commit; edit the copy; `make_patch` runs `git diff --output=<file>` into `ports/<port>/<name>.patch` with `-c core.autocrlf=false` and `GIT_CONFIG_NOSYSTEM=1`, no shell pipe; verify on a fresh `.clean` copy with vcpkg's own `git apply` line; append to `PATCHES`; delete scratch. No untracked file may stay in the port folder (`x-add-version` hashes untracked files).
+- Repository tips (**Gap-fill G-17**): follow the workspace's guides and existing patch conventions; start each patch with a header stating why and the upstream issue or pull request.
+- Versions: bump `version` or `port-version` per vcpkg rules; leave them if `git diff` shows they already changed (FR-PE-5).
+- New port: `vcpkg create <name> <url> --x-builtin-ports-root=<target ports folder>`; replace the template's `vcpkg_download_distfile` and deprecated `vcpkg_extract_source_archive_ex` (Research §8.7); complete configure, install, config fixup, copyright, usage.
 
 ### 7.6 Triplet Editor
 
-- Inputs: `TripletGoals`.
-- Outputs: `ReinstallRequest`, `HostFactsRequest`.
+- In: `TripletGoals`, `HostFacts`. Out: `ReinstallRequest`, `HostFactsRequest`.
 - Tools: `view`, `glob`, `rg`, `edit`, `create`, `web_fetch`, MCP `microsoft-learn`, `vcpkg_help` (`triplet`), handoff tools.
-- Write scope: writable overlay triplet folders. A built-in triplet is changed by creating an overlay copy (US-7.3).
-- Behavior: read the triplet in use, read the official triplet variables, evaluate the candidates, apply one change, and state its effect.
-- Every triplet change alters `triplet_abi` and invalidates cached binaries for that triplet. The Port Installer rebuilds every port of that triplet.
-- Limit (**Gap-fill G-10**): `--max-triplet-edits` per triplet per run.
-- Completion: `ReinstallRequest` to the Planner.
+- Read the triplet in use and the official variables; evaluate candidates; apply one change; state its effect. A built-in triplet is changed by creating an overlay copy (US-7.3). Every change alters `triplet_abi` and invalidates cached binaries for that triplet, so the Port Installer rebuilds every port of it. Limit: `--max-triplet-edits` per triplet (**Gap-fill G-10**).
 
 ### 7.7 Baseline Updater
 
-- Inputs: `BaselineRequest`. Registry scenario only.
-- Outputs: `BaselineReport`.
+- In: `BaselineRequest` (registry only). Out: `BaselineReport`.
 - Tools: `version_update`, `git_commit`, `view`, `vcpkg_help`, handoff tools.
-- Per port, 2 commits (FR-B-2):
-  1. Format the port (`registry-format.ps1` when present, else `vcpkg format-manifest`). Commit `ports/<port>/`.
-  2. Update the version database (`registry-add-version.ps1` when present, else `vcpkg x-add-version <port>` with `--x-builtin-ports-root` and `--x-builtin-registry-versions-dir` for non-upstream registries). Commit `versions/`.
-- Order (**Gap-fill G-16**): dependencies first, so that a new or changed dependency port is committed before the ports that need it. Ties follow the order in which the team changed the ports.
-- `--overwrite-version` (**Gap-fill G-21**): only for a version entry that is not yet on the base branch. Otherwise `x-add-version` fails, and the Baseline Updater reports the port to the Planner, which reports it as blocked ("`port-version` not bumped"). No ideation edge leads from the Planner back to the Port Editor (see G-1).
-- Tree guard: after the version commit, the `git-tree` recorded for the port must equal `git rev-parse <port commit>:ports/<port>`. The ideation's first commit makes this exact. A mismatch means the working tree's line endings differ from the commit (Research §8.10); the Baseline Updater reverts its version commit and reports a blocker.
-- Not used: `x-ci-verify-versions`. It assumes a complete registry and reports false errors for ports that come from upstream (Research §8.10).
-- Preconditions reported by the Environment Detector: the registry's file system records ownership, or vcpkg's git can see a `safe.directory` entry; port files are LF in the working tree.
-- Completion: `BaselineReport` with the commit list.
+- Per port, 2 commits (FR-B-2): format (`registry-format.ps1`, else `vcpkg format-manifest`) and commit `ports/<port>/`; update versions (`registry-add-version.ps1`, else `vcpkg x-add-version <port>` with `--x-builtin-ports-root` and `--x-builtin-registry-versions-dir`) and commit `versions/`.
+- Order (**Gap-fill G-16**): dependencies first; ties follow the order the team changed the ports.
+- `--overwrite-version` (**Gap-fill G-21**): only for an entry not yet on the base branch; otherwise report the port as blocked ("`port-version` not bumped"; see G-1).
+- Tree guard: recorded `git-tree` must equal `git rev-parse <port commit>:ports/<port>`; on mismatch revert the version commit and report a blocker (CRLF cause, Research §8.10). `x-ci-verify-versions` is not used (false errors for upstream ports).
 
 ## 8. Flows
 
-### 8.1 Port Cycle (US-2.2)
+Port cycle (US-2.2):
 
 ```mermaid
 sequenceDiagram
@@ -365,11 +807,11 @@ sequenceDiagram
     PD->>PE: PortGoals(b, goals, findings)
     Note over PE: scratch copy, patch, version update
     PE->>PI: RetryRequest(b)
-    Note over PI: install b, then resume the stack
+    Note over PI: remove b, install b, resume the stack
     PI->>P: InstallReport(done: a, b)
 ```
 
-### 8.2 Triplet Path (US-2.4)
+Triplet path (US-2.4):
 
 ```mermaid
 sequenceDiagram
@@ -382,114 +824,98 @@ sequenceDiagram
     PI->>PD: InstallFailure(b:arm64-android)
     PD->>TE: TripletGoals(arm64-android.cmake, VCPKG_CMAKE_SYSTEM_VERSION)
     TE->>ED: HostFactsRequest(NDK and API levels)
-    ED-->>TE: HostFacts
+    ED->>TE: HostFacts
     TE->>P: ReinstallRequest(arm64-android, all ports of the request)
     P->>PI: InstallRequest(arm64-android, reason: reinstall)
     Note over PI: remove all, install all (triplet ABI changed)
 ```
 
-### 8.3 Registry Finish
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant P as Planner
-    participant BU as Baseline Updater
-    P->>BU: BaselineRequest([x, a])
-    Note over BU: per port: format and commit ports, update versions and commit
-    BU->>P: BaselineReport(4 commits)
-```
-
-## 9. Permission Policy
-
-Deny by default. The handler and the hook read the active member.
-
-| Member | Read | Write | Shell policy | Network |
-|--------|------|-------|--------------|---------|
-| Planner | workspace, vcpkg roots | none | none | none |
-| Environment Detector | workspace, vcpkg roots, tool folders | one transient probe file per planned write folder (G-14) | probe allowlist: version and path commands, package manager search | GitHub and Learn reachability |
-| Port Installer | workspace, vcpkg roots | none (vcpkg writes its roots) | none; vcpkg only through custom tools | downloads by vcpkg |
-| Port Doctor | workspace, vcpkg roots | none | read-only: `git log`, `git show`, `git diff` | web, `gh_read`, MCP |
-| Port Editor | workspace, vcpkg roots | target port folder; manifest files (G-7); scratch folder (G-9) | `git diff`, `git status` | web, `gh_read` |
-| Triplet Editor | workspace, vcpkg roots | writable overlay triplet folders | none | web, MCP |
-| Baseline Updater | workspace | `ports/<port>/` (format only), `versions/`, git commits | registry scripts, `git add`, `git commit` scoped to the port | none |
-
-Default write scopes (**Gap-fill G-6**):
-
-| Scenario | Default `--write` |
-|----------|-------------------|
-| registry | `ports`, `triplets`, `versions`, `commit` |
-| manifest | `manifest`, `overlays` (existing overlay folders only) |
-
-`create-overlays` (new `ports/` or `triplets/` in the manifest scenario) is never a default.
-
-Enforcement inputs (Research §5.5): `Read.Path`, `Write.FileName` and `Write.Diff`, `URL.URL`, `CustomTool.ToolName` and `Args`, and for shell commands `FullCommandText`, `Commands[].ReadOnly`, `HasWriteFileRedirection`, and `PossiblePaths`. A shell command passes only if every command is in the member's policy, no write redirection targets a path outside the write scope, and every possible path is inside the read or write roots.
-
-## 10. Environment Variables and Secrets
-
-**Gap-fill G-13.**
-
-- `init` and the Environment Detector record each `VCPKG_*` and `X_VCPKG_*` variable by name, with a status: set, path exists, path writable, parse result.
-- Values are shown only for variables that hold no credentials: roots, triplets, overlay folders, flags.
-- Values of `VCPKG_BINARY_SOURCES`, `X_VCPKG_ASSET_SOURCES`, NuGet settings, `X_VCPKG_RECURSIVE_DATA`, proxy credentials, and any variable whose name or value suggests a secret (`TOKEN`, `KEY`, `SECRET`, `sig=`, `AccessKey`) are never logged or sent to the session. Secret-bearing sources are reported as structure only: provider, host, read/write mode, SAS expiry and permissions (Research §4.7).
-- The team lints binary and asset sources before vcpkg sees them, because a vcpkg parse error prints the whole value (Research §4.6).
-- No member passes `--debug` or `--debug-env` to vcpkg. Probes pass `--disable-metrics`.
-- vcpkg child processes keep what vcpkg and the builds need: system variables, every variable vcpkg reads (Research §4.2), proxies, and names in `VCPKG_KEEP_ENV_VARS`. Secrets that vcpkg does not read (for example `GITHUB_TOKEN`, or custom `VCPKG_`-prefixed credentials) are removed. On Linux and macOS this matters most: vcpkg passes the full environment into port builds (Research §4.3).
-- Tool output passes a redactor before it reaches the model.
-
-Behavior the Environment Detector reports (Research §8.6):
-
-| Condition | Effect | Report as |
-|-----------|--------|-----------|
-| `VCPKG_DEFAULT_TRIPLET` or `VCPKG_DOWNLOADS` set but empty | Every vcpkg command fails | Blocker |
-| `VCPKG_ROOT` differs from the root next to `vcpkg.exe` | vcpkg ignores it with a warning | Warning |
-| `VCPKG_OVERLAY_PORTS` set | Used after `--overlay-ports`; first folder wins | Fact (overlay order) |
-| `VCPKG_KEEP_ENV_VARS` set | Passes variables into Windows builds without changing the ABI hash | Warning: untracked build input |
-| `VCPKG_BINARY_SOURCES` or `VCPKG_DEFAULT_BINARY_CACHE` points to a missing folder | Dry runs stay silent; a missing `VCPKG_DEFAULT_BINARY_CACHE` folder is fatal at first real use | Warning, or blocker for `VCPKG_DEFAULT_BINARY_CACHE` |
-| `VCPKG_MAX_CONCURRENCY` not a positive integer, or `X_VCPKG_REGISTRIES_CACHE` not an existing absolute folder | Fatal at first use | Blocker |
-| Legacy `VCPKG_FEATURE_FLAGS` values (`registries`, `binarycaching`, `manifests`, `versions`) | No-ops; all are on by default | Fact |
-| `x-gha` in binary sources | Removed provider; vcpkg only warns | Warning |
-
-The full variable table is in the research document.
-
-## 11. Failure Paths
+Failure paths:
 
 | Failure | Detected by | Next | Limit |
 |---------|-------------|------|-------|
 | Unknown port, version conflict | dry run | Port Doctor | port cycle |
-| Download or hash mismatch | `--only-downloads` | Port Doctor, then Port Editor (URL, `SHA512`) | port cycle |
-| Configure, build, or install error | full install | Port Doctor | port cycle |
-| Triplet cause | Port Doctor | Triplet Editor, then Planner | `--max-triplet-edits` |
-| Unsupported host or target, missing SDK | `--only-downloads` (compiler detection), Environment Detector, or Port Doctor | Planner, as a blocker | none |
-| Binary cache warning | Port Installer | logged, continue | none |
-| Lock held by another vcpkg process | Port Installer (`failed to take lock`) | wait with `--x-wait-for-lock` (G-19), then Planner as a blocker | `--lock-wait` |
-| SDK or tool error | any member | error channel | none |
+| Download or hash mismatch | `--only-downloads` | Port Doctor → Port Editor | port cycle |
+| Configure, build, install error | install | Port Doctor | port cycle |
+| Triplet cause | Port Doctor | Triplet Editor → Planner | `--max-triplet-edits` |
+| Unsupported host or target, missing SDK | `--only-downloads`, Environment Detector, Port Doctor | Planner (`Blocker`) | none |
+| Binary cache warning | Port Installer | log, continue (FR-T-11) | none |
+| Lock held by another vcpkg | Port Installer | wait (`--x-wait-for-lock`), then `Blocker` | `--lock-wait` |
+| Turn without handoff, deadline, SDK error | `turn` | `Errors`, process exits | none |
 
-## 12. Logging
+## 9. Environment Variables and Secrets
 
-- `log/slog` text handler. INFO by default; DEBUG with `--verbose`.
-- Keys: `agent`, `session`, `message`, `tool`, `args` (redacted), `path`, `exit`, `duration`.
-- INFO: scenario decision, every handoff (from, to, message type), every write approval, every vcpkg call (command, exit, duration), compaction start and end, usage per member.
-- DEBUG: tool arguments, hook decisions, read approvals.
+**Gap-fill G-13.** Facts and the full table: Research §4, §8.6.
 
-## 13. Coding Style
+- `init` and the Environment Detector record each `VCPKG_*` and `X_VCPKG_*` name with a status (set, path exists, writable, parse result). Values are shown only for roots, triplets, overlays, flags.
+- Never logged or sent to the session: `VCPKG_BINARY_SOURCES`, `X_VCPKG_ASSET_SOURCES`, NuGet settings, `X_VCPKG_RECURSIVE_DATA`, proxy credentials, any name or value matching `TOKEN`, `KEY`, `SECRET`, `sig=`, `AccessKey`. Report structure only (provider, host, mode, SAS expiry).
+- Lint binary and asset sources before vcpkg sees them: a vcpkg parse error echoes the whole value (Research §4.6).
+- `scrubbedEnv()` keeps system variables, every variable vcpkg reads, proxies, and `VCPKG_KEEP_ENV_VARS` names; drops secrets vcpkg does not read (`GITHUB_TOKEN`, custom `VCPKG_`-prefixed credentials). Linux and macOS pass the full environment into builds, so this matters most there (Research §4.3).
+- Fatal conditions reported as blockers: empty `VCPKG_DEFAULT_TRIPLET` or `VCPKG_DOWNLOADS`; missing `VCPKG_DEFAULT_BINARY_CACHE` folder; invalid `VCPKG_MAX_CONCURRENCY` or `X_VCPKG_REGISTRIES_CACHE`. Warnings: mismatched `VCPKG_ROOT`, `VCPKG_KEEP_ENV_VARS` (untracked build input), `x-gha` provider, missing binary cache folders.
+- `OnPostToolUse` redacts tool results (L5).
 
-Taken from the draft:
+## 10. Logging
 
-- One file, `package main`. Doc comments start with the identifier and link the official document they rely on.
-- System and member prompts are constants. A prompt that embeds the user request takes it through `%s`.
-- `init` parses flags, sets logging, runs checks, and logs each result. Check functions are exported and named `Check...`.
-- A member type has `New<Member>(...)`, `Run(ctx, inputs..., outputs...)`, a permission method, and a pre-tool-use method.
-- `Run` uses `defer` to close its outputs and logs every reply at INFO with the `agent` key.
-- Tool parameters are structs with `json` and `jsonschema` tags. Tool handlers return `"error: %v\n%s"` text instead of Go errors, so the model can read failures.
-- Path checks use one helper (`insideAny`).
-- Timeouts use `context.WithTimeout` per call.
-- SDK v2 groups session options (`CreateSessionOptions{Tools, Agents, Permissions, Hooks, ...}`) where the draft's v1 used a flat `SessionConfig`. The draft's style carries over unchanged otherwise.
+`log/slog` text handler; INFO default, DEBUG with `--verbose`. Keys: `agent`, `session`, `message`, `tool`, `args` (redacted), `path`, `exit`, `duration`. INFO: scenario decision, every handoff (edge, type), every write approval, every vcpkg call, compaction start and end, usage per member. DEBUG: tool arguments, hook decisions, read approvals. Audit correlation by `(SessionID, ToolCallID)` as the SDK hook docs recommend.
 
-## 14. Open Items
+## 11. Coding Style
 
-- G-1 (critical, needs user decision): how update requests reach the Port Editor. Recommended: Planner to Port Doctor. Not adopted, because it adds an edge.
-- Open: G-20, G-23.
-- Pending confirmation: G-6 to G-11, G-14 to G-17, G-19, G-21, G-22, G-24, G-26.
+From the draft, unchanged: one file, `package main`; prompts as constants; `init` runs `Check...` functions and logs each; `New<Member>` + `Run(ctx, team, edges)`; tool parameters are structs with `json` and `jsonschema` tags; tool handlers return `"error: %v\n%s"` text so the model can read failures; path checks through `insideAny`; `context.WithTimeout` per call. SDK v2 groups session options (`CreateSessionOptions{Tools, Agents, Permissions, Hooks, WorkingDirectory}`) where v1 used a flat config.
 
-See requirements section 9.
+## 12. Traceability
+
+IDs map to the requirements document: `FR_T_2` is FR-T-2, `NFR_6` is NFR-6, `FR_I_1` is FR-I-1 (the diagram grammar rejects hyphens and commas).
+
+```mermaid
+requirementDiagram
+    requirement shared_session {
+        id: FR_T_2
+        text: one session and one baton holder per turn
+        risk: high
+        verifymethod: test
+    }
+    requirement compact_before_send {
+        id: FR_T_3
+        text: compact before every channel send
+        risk: medium
+        verifymethod: test
+    }
+    requirement write_scopes {
+        id: NFR_6
+        text: writes only inside the member scope
+        risk: high
+        verifymethod: test
+    }
+    requirement serial_vcpkg {
+        id: FR_I_1
+        text: one vcpkg process at a time
+        risk: high
+        verifymethod: inspection
+    }
+    element Handoff_Session {
+        type: Go_field
+        docref: section_5
+    }
+    element turn {
+        type: Go_func
+        docref: section_4_3
+    }
+    element permission_and_preToolUse {
+        type: Go_funcs
+        docref: section_6_2
+    }
+    element select_loop {
+        type: Go_pattern
+        docref: section_4_2
+    }
+    Handoff_Session - satisfies -> shared_session
+    turn - satisfies -> compact_before_send
+    permission_and_preToolUse - satisfies -> write_scopes
+    select_loop - satisfies -> serial_vcpkg
+```
+
+## 13. Open Items
+
+- G-1 (critical, user decision): how update requests reach the Port Editor. Recommended Planner → Port Doctor; not adopted (adds an edge).
+- Open: G-20, G-23. Pending confirmation: G-6 to G-11, G-14 to G-17, G-19, G-21, G-22, G-24, G-26 (requirements §9).
+- To verify in the first live run: built-in shell tool names in `PreToolUseHookInput.ToolName`; whether `WorkingDirectory` is filled for custom tools; `rpc.SandboxConfig` on Windows (AppContainer) with vcpkg child processes.

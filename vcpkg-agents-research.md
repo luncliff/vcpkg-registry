@@ -289,6 +289,7 @@ Live probe, 2026-11-28, SDK2 v2.0.4 with CLI 1.0.114, default model, 20 s, 3 pre
 - A handler error or nil decision becomes `user-not-available`. Runtime rules can also be set live: `RPC.Permissions.Configure`, `ModifyRules`, `SetMode`.
 - Hooks: `OnPreToolUse` (output `PermissionDecision` allow, deny, or ask; `PermissionDecisionReason`; `ModifiedArgs`; `AdditionalContext`), `OnPostToolUse` (`ModifiedResult`), `OnPostToolUseFailure`, `OnUserPromptSubmitted`, `OnSessionStart`, `OnSessionEnd`, `OnErrorOccurred` (`ErrorHandling` retry, skip, abort), `OnAgentStop`, `OnSubagentStart`, `OnSubagentStop`. Agent fields are set for sub-agents only (§5.1).
 - Hooks bind at session creation; one closure over the active member serves all members.
+- Added in session 2 (source, v2.0.4): `PreToolUseHookInput.WorkingDirectory` (`cwd`) and `ToolName` let a hook pin the working directory per member. `PermissionRequestShell.Commands[].Identifier` is the executable name the runtime parsed; Go never re-parses shell text. `SessionPermissionOptions.Sandbox *rpc.SandboxConfig` (experimental) carries `UserPolicy.Filesystem{ReadonlyPaths, ReadwritePaths, DeniedPaths}` and `UserPolicy.Network{AllowedHosts}`; Windows uses an AppContainer. `CustomAgentConfig.Hooks map[string][]map[string]any` is declarative and per agent, shape undocumented. `Tool.Idempotent` and `Tool.Exposure: explicit` exist. The spec's Go patterns compiled against these types (`go vet`, `go run`).
 
 ### 5.6 Events and Usage (Verified)
 
