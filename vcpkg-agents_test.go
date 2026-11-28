@@ -1,21 +1,21 @@
 package main
 
 import (
+	"bytes"
 	"context"
-	"crypto/sha512"
-	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -24,7 +24,8 @@ import (
 )
 
 func TestParseOptionsDefaultModelAndScopes(t *testing.T) {
-	options, err := ParseOptions([]string{"--prompt", "Dry run zlib-ng"})
+	options, err := ParseOptions([]string{
+		"--prompt", "Dry run zlib-ng"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,18 +37,12 @@ func TestParseOptionsDefaultModelAndScopes(t *testing.T) {
 		t.Fatalf("unknown write scope error = %v", err)
 	}
 }
-
 func TestLoadRuntimeConfigDetectsRegistryAndManifest(t *testing.T) {
 	t.Run("registry", func(t *testing.T) {
 		root := createRegistryFixture(t, "agent-config-ok", successfulPortfile())
+		logRoot := t.TempDir()
 		withWorkingDirectory(t, root, func() {
-			options, err := ParseOptions([]string{
-				"--prompt", "Dry run agent-config-ok",
-				"--overlay-ports", filepath.Join(root, "ports"),
-				"--x-buildtrees-root", filepath.Join(root, "buildtrees"),
-				"--x-packages-root", filepath.Join(root, "packages"),
-				"--x-install-root", filepath.Join(root, "installed"),
-			})
+			options, err := ParseOptions([]string{"--prompt", "Dry run agent-config-ok", "--log-dir", logRoot, "--overlay-ports", filepath.Join(root, "ports"), "--x-buildtrees-root", filepath.Join(root, "buildtrees"), "--x-packages-root", filepath.Join(root, "packages"), "--x-install-root", filepath.Join(root, "installed")})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -55,16 +50,25 @@ func TestLoadRuntimeConfigDetectsRegistryAndManifest(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			t.Cleanup(func() { _ = config.Cleanup() })
+			t.Cleanup(func() {
+				_ = config.Cleanup()
+			})
 			if config.Scenario != "registry" {
 				t.Fatalf("scenario = %q", config.Scenario)
 			}
 			if !containsPath(config.OverlayPorts, filepath.Join(root, "ports")) {
 				t.Fatalf("registry ports overlay missing: %v", config.OverlayPorts)
 			}
+			if !insideAny(config.LogDirectory, []string{logRoot}) || !containsPath(configReadRoots(config), config.LogDirectory) {
+				t.Fatalf("retained log directory outside configured roots: %s", config.LogDirectory)
+			}
+			logFile := filepath.Join(config.LogDirectory, "command-test.log")
+			writeFile(t, logFile, "command output")
+			if err := config.Cleanup(); err != nil || isDir(config.Scratch) || !fileExists(logFile) {
+				t.Fatalf("cleanup = %v; want scratch removed and command log retained", err)
+			}
 		})
 	})
-
 	t.Run("manifest", func(t *testing.T) {
 		root := t.TempDir()
 		writeFile(t, filepath.Join(root, "vcpkg.json"), `{"dependencies":["zlib"]}`)
@@ -77,13 +81,33 @@ func TestLoadRuntimeConfigDetectsRegistryAndManifest(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			t.Cleanup(func() { _ = config.Cleanup() })
+			t.Cleanup(func() {
+				_ = config.Cleanup()
+			})
 			if config.Scenario != "manifest" || !samePath(config.ManifestRoot, root) {
 				t.Fatalf("manifest detection = %q, %q", config.Scenario, config.ManifestRoot)
 			}
 		})
 	})
-
+	t.Run("empty default triplet", func(t *testing.T) {
+		t.Setenv("VCPKG_DEFAULT_TRIPLET", "")
+		root := createRegistryFixture(t, "agent-config-ok", successfulPortfile())
+		withWorkingDirectory(t, root, func() {
+			options, err := ParseOptions([]string{"--prompt", "dry run install agent-config-ok"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			config, err := LoadRuntimeConfig(options)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer config.Cleanup()
+			blockers := strings.Join(config.Blockers, "\n")
+			if !strings.Contains(blockers, "VCPKG_DEFAULT_TRIPLET is set but empty") || !strings.Contains(config.DetectionError, "Invalid triplet:") || !strings.Contains(config.DetectionError, "Built-in Triplets:") {
+				t.Fatalf("default triplet blockers = %q", blockers)
+			}
+		})
+	})
 	t.Run("registry version preconditions", func(t *testing.T) {
 		root := createRegistryFixture(t, "agent-crlf", successfulPortfile())
 		initGitRepository(t, root)
@@ -99,7 +123,9 @@ func TestLoadRuntimeConfigDetectsRegistryAndManifest(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			t.Cleanup(func() { _ = config.Cleanup() })
+			t.Cleanup(func() {
+				_ = config.Cleanup()
+			})
 			joined := strings.Join(config.Blockers, "\n")
 			if !strings.Contains(joined, "core.autocrlf") || !strings.Contains(joined, "CRLF") {
 				t.Fatalf("version precondition blockers = %v", config.Blockers)
@@ -107,68 +133,6 @@ func TestLoadRuntimeConfigDetectsRegistryAndManifest(t *testing.T) {
 		})
 	})
 }
-
-func TestSevenMemberDefinitionsAndSingleModel(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	team := NewTeam(config)
-	options := team.sessionOptions()
-	if options.Model != defaultModel {
-		t.Fatalf("session model = %q", options.Model)
-	}
-	if len(options.Agents.Definitions) != 7 {
-		t.Fatalf("agents = %d, want 7", len(options.Agents.Definitions))
-	}
-	names := make([]string, 0, 7)
-	for _, agent := range options.Agents.Definitions {
-		names = append(names, agent.Name)
-		if agent.Infer == nil || *agent.Infer {
-			t.Errorf("%s may be model-inferred", agent.Name)
-		}
-	}
-	want := []string{plannerName, environmentDetectorName, portInstallerName, portDoctorName, portEditorName, tripletEditorName, baselineUpdaterName}
-	if !slices.Equal(names, want) {
-		t.Fatalf("agent order = %v, want %v", names, want)
-	}
-	for _, tool := range team.tools {
-		if tool.SkipPermission {
-			t.Fatalf("tool %s skips permission", tool.Name)
-		}
-	}
-	if len(team.planner.Scope().Write) != 0 || len(team.installer.Scope().Write) != 0 ||
-		len(team.doctor.Scope().Write) != 0 {
-		t.Fatal("read-only members received write scope")
-	}
-	if len(team.editor.Scope().Write) == 0 || len(team.baseline.Scope().Write) == 0 {
-		t.Fatal("writer member has no write scope")
-	}
-}
-
-func TestPlannerBuildsOrderedRegistryRequests(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	createPortFixture(t, filepath.Join(config.Workspace, "ports"), "agent-plan-ok")
-	config.OverlayPorts = append([]string{filepath.Join(config.Workspace, "ports")}, config.OverlayPorts...)
-	team := NewTeam(config)
-	team.planner.userPrompt = "Dry run agent-plan-ok for x64-windows and arm64-windows."
-	environment := EnvReport{
-		Scenario: "registry", ScenarioEvidence: []string{filepath.Join(config.Workspace, "ports")},
-		Triplets:  []TripletFile{{Name: "x64-windows"}, {Name: "arm64-windows"}},
-		PortsHint: []string{"agent-plan-ok"}, DryRunOnly: true,
-	}
-	requests := team.planner.buildInstallRequests(environment)
-	if len(requests) != 2 {
-		t.Fatalf("requests = %d", len(requests))
-	}
-	if requests[0].Triplet != "x64-windows" || requests[1].Triplet != "arm64-windows" {
-		t.Fatalf("order = %v, %v", requests[0].Triplet, requests[1].Triplet)
-	}
-	if !requests[0].DryRunOnly || requests[0].Final || !requests[1].Final {
-		t.Fatalf("dry-run/final flags = %+v, %+v", requests[0], requests[1])
-	}
-	if !slices.Equal(requests[0].Ports, []string{"agent-plan-ok"}) {
-		t.Fatalf("ports = %v", requests[0].Ports)
-	}
-}
-
 func TestEnvironmentDetectorVariableBlockersAndScrubbing(t *testing.T) {
 	t.Setenv("VCPKG_DEFAULT_TRIPLET", "")
 	t.Setenv("VCPKG_BINARY_SOURCES", "clear;files,/secret?sig=secret-value,rw")
@@ -201,8 +165,7 @@ func TestEnvironmentDetectorVariableBlockersAndScrubbing(t *testing.T) {
 	if !strings.Contains(joined, "VCPKG_BINARY_SOURCES=") {
 		t.Fatal("vcpkg binary source was incorrectly removed")
 	}
-	if !strings.Contains(joined, "VCPKG_FEATURE_FLAGS=-dependencygraph,registries") &&
-		!strings.Contains(joined, "VCPKG_FEATURE_FLAGS=registries,-dependencygraph") {
+	if !strings.Contains(joined, "VCPKG_FEATURE_FLAGS=-dependencygraph,registries") && !strings.Contains(joined, "VCPKG_FEATURE_FLAGS=registries,-dependencygraph") {
 		t.Fatalf("dependencygraph was not disabled: %s", joined)
 	}
 	redacted := redactText("on expression: files,/secret?sig=secret-value", collectSecretValues())
@@ -210,593 +173,18 @@ func TestEnvironmentDetectorVariableBlockersAndScrubbing(t *testing.T) {
 		t.Fatal("known secret remained after redaction")
 	}
 }
-
-func TestPortInstallerRealDryRunAndFailure(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	overlay := filepath.Join(config.Workspace, "ports")
-	createPortFixture(t, overlay, "agent-install-ok")
-	config.OverlayPorts = []string{overlay}
-	team := NewTeam(config)
-	t.Cleanup(func() { _ = config.Cleanup() })
-
-	request := InstallRequest{
-		Triplet: "x64-windows", Ports: []string{"agent-install-ok"}, Reason: "test", DryRunOnly: true,
-	}
-	failure, result, ok := team.performInstall(context.Background(), request)
-	if !ok {
-		t.Fatalf("dry run failed: %+v", failure)
-	}
-	if result.Stage != "dry-run" || !result.Installed {
-		t.Fatalf("result = %+v", result)
-	}
-	list, listErr := team.listStage(context.Background(), request)
-	if listErr != nil || list.Err != nil {
-		t.Fatalf("list after dry run: %v / %v", listErr, list.Err)
-	}
-	if anyPortInstalled(list.Summary, request.Ports) {
-		t.Fatalf("dry run installed the port:\n%s", list.Summary)
-	}
-
-	unknown := request
-	unknown.Ports = []string{"port-that-does-not-exist-agent-test"}
-	failure, _, ok = team.performInstall(context.Background(), unknown)
-	if ok || failure.Stage != "dry-run" || failure.ExitCode == 0 {
-		t.Fatalf("unknown port result = %+v, ok=%v", failure, ok)
-	}
-	if !fileExists(failure.OutputLog) {
-		t.Fatalf("failure log missing: %s", failure.OutputLog)
-	}
-}
-
-func TestPortInstallerSplitsBatchAndUnblocksTripletReinstall(t *testing.T) {
-	installer := NewPortInstaller(newTestRuntimeConfig(t, "registry"))
-	installer.stack = []InstallRequest{{Triplet: "x64-windows", Ports: []string{"failed"}}}
-	installer.waiting = true
-	installer.enqueue(InstallRequest{
-		Triplet: "x64-windows", Ports: []string{"first", "second"}, Reason: "reinstall", Final: true,
-	})
-	if installer.waiting {
-		t.Fatal("reinstall did not clear installer wait")
-	}
-	if len(installer.stack) != 2 || !slices.Equal(installer.stack[0].Ports, []string{"first"}) ||
-		!slices.Equal(installer.stack[1].Ports, []string{"second"}) {
-		t.Fatalf("reinstall stack = %+v", installer.stack)
-	}
-	if installer.stack[0].Final || !installer.stack[1].Final {
-		t.Fatalf("split final flags = %+v", installer.stack)
-	}
-}
-
-func TestPortInstallerRealInstallAndRemove(t *testing.T) {
-	if testing.Short() {
-		t.Skip("vcpkg full install")
-	}
-	config := newTestRuntimeConfig(t, "registry")
-	overlay := filepath.Join(config.Workspace, "ports")
-	createPortFixture(t, overlay, "agent-install-full")
-	config.OverlayPorts = []string{overlay}
-	team := NewTeam(config)
-
-	request := InstallRequest{Triplet: "x64-windows", Ports: []string{"agent-install-full"}, Reason: "test"}
-	failure, result, ok := team.performInstall(context.Background(), request)
-	if !ok {
-		t.Fatalf("install failed: %+v", failure)
-	}
-	if result.Stage != "build" || !result.Installed {
-		t.Fatalf("result = %+v", result)
-	}
-	installed := filepath.Join(config.Roots.Installed, "vcpkg", "status")
-	if !fileExists(installed) {
-		t.Fatalf("vcpkg status missing at %s", installed)
-	}
-	removed, err := team.removeStage(context.Background(), request)
-	if err != nil || removed.Err != nil {
-		t.Fatalf("remove failed: %s: %v", removed.modelText(err), removed.Err)
-	}
-}
-
-func TestPortInstallerManifestDryRunDoesNotRemove(t *testing.T) {
-	config := newTestRuntimeConfig(t, "manifest")
-	config.ManifestRoot = config.Workspace
-	writeFile(t, filepath.Join(config.Workspace, "vcpkg.json"),
-		`{"name":"agent-manifest-test","version-string":"1.0.0","dependencies":[]}`)
-	team := NewTeam(config)
-	request := InstallRequest{
-		Triplet: config.DefaultTriplet, ManifestRoot: config.ManifestRoot,
-		Reason: "manifest dry run", DryRunOnly: true,
-	}
-	failure, result, ok := team.performInstall(context.Background(), request)
-	if !ok {
-		t.Fatalf("manifest dry run failed: %+v", failure)
-	}
-	if result.Stage != "dry-run" || result.Spec != "manifest" {
-		t.Fatalf("manifest result = %+v", result)
-	}
-	team.active.Store(team.installer.Member)
-	_, err := invokeTool(team, "vcpkg_remove", vcpkgInstallParams{
-		Triplet: config.DefaultTriplet, Ports: []string{"agent-manifest-test"},
-	})
-	if err == nil || !strings.Contains(err.Error(), "forbidden in manifest") {
-		t.Fatalf("manifest remove error = %v", err)
-	}
-}
-
-func TestPortInstallerDetectsUnsupportedTargetAfterDryRun(t *testing.T) {
+func TestScrubbedVcpkgEnvironmentKeepsWindowsSystemVariables(t *testing.T) {
 	if runtime.GOOS != "windows" {
-		t.Skip("the fixture relies on the documented Windows-to-macOS compiler failure")
+		t.Skip("Windows environment names are case-insensitive")
 	}
-	config := newTestRuntimeConfig(t, "registry")
-	overlay := filepath.Join(config.Workspace, "ports")
-	createPortFixture(t, overlay, "agent-target-ok")
-	config.OverlayPorts = []string{overlay}
-	team := NewTeam(config)
-	failure, _, ok := team.performInstall(context.Background(), InstallRequest{
-		Triplet: "arm64-osx", Ports: []string{"agent-target-ok"}, Reason: "unsupported target",
-	})
-	if ok {
-		t.Fatal("arm64-osx unexpectedly installed on Windows")
-	}
-	if failure.Stage != "only-downloads" || !strings.Contains(failure.ResultCode, "COMPILER") {
-		t.Fatalf("unsupported-target failure = %+v", failure)
+	want := []string{`Path=C:\tools`, `SystemRoot=C:\Windows`, `ComSpec=C:\Windows\System32\cmd.exe`, `ProgramData=C:\ProgramData`, `SystemDrive=C:`}
+	if got := scrubbedVcpkgEnvironment(append(slices.Clone(want), "Gh_Token=discard"), nil); !slices.Equal(got, want) {
+		t.Fatalf("scrubbed environment = %v, want %v", got, want)
 	}
 }
-
-func TestPortDoctorClassifiesRealFailureEvidence(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	doctor := NewPortDoctor(config)
-	failure := InstallFailure{
-		Spec: "agent-patch", Triplet: "x64-windows", Stage: "build", ResultCode: "PATCH_FAILED",
-		OutputLog: filepath.Join(config.LogDirectory, "failure.log"),
-		ErrorLogs: []string{filepath.Join(config.Roots.Buildtrees, "agent-patch", "patch-x64-windows-0-err.log")},
-	}
-	if axis := diagnosisAxis(failure); axis != "source or port patch" {
-		t.Fatalf("axis = %q", axis)
-	}
-	prompt := doctor.prompt(failure)
-	for _, text := range []string{"send_port_goals", "send_triplet_goals", "send_blocker", "Deterministic axis hint"} {
-		if !strings.Contains(prompt, text) {
-			t.Fatalf("doctor prompt misses %q", text)
-		}
-	}
-	if len(doctor.Scope().Write) != 0 {
-		t.Fatal("Port Doctor is writable")
-	}
-}
-
-func TestPortEditorRealPatchWorkflow(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	team := NewTeam(config)
-	portRoot := createPortFixture(t, filepath.Join(config.Workspace, "ports"), "agent-patch-real")
-	source := filepath.Join(config.Roots.Buildtrees, "agent-patch-real", "src", "source.clean")
-	writeFile(t, filepath.Join(source, "hello.txt"), "before\n")
-	scope := team.editor.Scope()
-	scope.Write = append(scope.Write, portRoot)
-	team.editor.setScope(scope)
-	team.active.Store(team.editor.Member)
-	t.Cleanup(func() { team.active.Store(nil) })
-
-	prepare, err := invokeTool(team, "prepare_patch", preparePatchParams{Port: "agent-patch-real", SourceDir: source})
-	if err != nil {
-		t.Fatal(err)
-	}
-	scratch := strings.TrimSpace(prepare.TextResultForLLM)
-	writeFile(t, filepath.Join(scratch, "hello.txt"), "after\n")
-	result, err := invokeTool(team, "make_patch", makePatchParams{
-		Port: "agent-patch-real", Scratch: scratch, SourceDir: source, Name: "fix-greeting", Header: "Fix greeting from the verified source.",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	patch := strings.TrimSpace(result.TextResultForLLM)
-	if !fileExists(patch) {
-		t.Fatalf("patch missing: %s", patch)
-	}
-	content := readFile(t, patch)
-	for _, text := range []string{"Fix greeting from the verified source.", "-before", "+after"} {
-		if !strings.Contains(content, text) {
-			t.Fatalf("patch misses %q:\n%s", text, content)
-		}
-	}
-	if fileExists(filepath.Join(source, "hello.txt")) && readFile(t, filepath.Join(source, "hello.txt")) != "before\n" {
-		t.Fatal("source tree was modified")
-	}
-	if _, err := os.Stat(scratch); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("scratch not removed: %v", err)
-	}
-}
-
-func TestTripletEditorScopeUsesOverlayNotBuiltin(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	overlay := filepath.Join(config.Workspace, "triplets")
-	mustMkdir(t, overlay)
-	config.OverlayTriplets = []string{overlay}
-	team := NewTeam(config)
-	builtin := filepath.Join(config.Roots.Vcpkg, "triplets", config.DefaultTriplet+".cmake")
-	goals := TripletGoals{Triplet: config.DefaultTriplet, TripletFile: builtin, OverlayRoot: overlay}
-	scope := team.doctor.tripletScope(goals)
-	if insideAny(builtin, scope.Write) {
-		t.Fatal("built-in triplet entered Triplet Editor write scope")
-	}
-	overlayFile := filepath.Join(overlay, config.DefaultTriplet+".cmake")
-	if !insideAny(overlayFile, scope.Write) {
-		t.Fatal("overlay triplet is not writable")
-	}
-	team.triplet.setScope(scope)
-	team.active.Store(team.triplet.Member)
-	tool := findTool(t, team, "send_reinstall_request")
-	_, err := tool.Handler(copilot.ToolInvocation{
-		ToolName: tool.Name, Arguments: ReinstallRequest{
-			Handoff: validHandoff(), Triplet: config.DefaultTriplet, TripletFile: overlayFile, Ports: []string{"x"},
-		},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	<-team.triplet.out
-
-	team.triplet.edits[config.DefaultTriplet] = config.Options.MaxTripletEdits
-	blocked, exhausted := team.triplet.tripletEditLimit(TripletGoals{
-		Triplet: config.DefaultTriplet, TripletFile: overlayFile,
-	})
-	if !exhausted || !blocked.Blocked || !strings.Contains(blocked.Reason, "limit") {
-		t.Fatalf("triplet edit limit = %+v, %v", blocked, exhausted)
-	}
-}
-
-func TestBaselineUpdaterRealCommitsAndIndexGuard(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	team := NewTeam(config)
-	initGitRepository(t, config.Workspace)
-	port := filepath.Join(config.Workspace, "ports", "agent-commit-ok")
-	versions := filepath.Join(config.Workspace, "versions")
-	writeFile(t, filepath.Join(port, "vcpkg.json"), `{"name":"agent-commit-ok","version":"1.0.0"}`)
-	writeFile(t, filepath.Join(versions, "baseline.json"), "{\"default\":{}}\n")
-	runGitForTest(t, config.Workspace, "add", "-A")
-	runGitForTest(t, config.Workspace, "commit", "-m", "test baseline")
-
-	writeFile(t, filepath.Join(port, "new.txt"), "new\n")
-	scope := team.baseline.Scope()
-	scope.Write = append(scope.Write, port, versions)
-	team.baseline.setScope(scope)
-	team.active.Store(team.baseline.Member)
-	t.Cleanup(func() { team.active.Store(nil) })
-	result, err := invokeTool(team, "git_commit", gitCommitParams{
-		Paths: []string{filepath.Join("ports", "agent-commit-ok")}, Message: "agent: update port",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	hash := strings.Fields(result.TextResultForLLM)[0]
-	if len(hash) < 7 {
-		t.Fatalf("commit hash missing: %q", result.TextResultForLLM)
-	}
-	message := runGitForTest(t, config.Workspace, "show", "-s", "--format=%B", hash)
-	if !strings.Contains(message, coauthorTrailer) {
-		t.Fatalf("commit missing Co-authored-by:\n%s", message)
-	}
-
-	portTree := runGitForTest(t, config.Workspace, "rev-parse", hash+":"+filepath.ToSlash(filepath.Join("ports", "agent-commit-ok")))
-	writeFile(t, filepath.Join(versions, "a-", "agent-commit-ok.json"),
-		fmt.Sprintf(`{"versions":[{"git-tree":%q,"version":"1.0.0","port-version":0}]}`, portTree))
-	versionCommit, err := invokeTool(team, "git_commit", gitCommitParams{
-		Paths: []string{"versions"}, Message: "agent: update versions",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	versionHash := strings.Fields(versionCommit.TextResultForLLM)[0]
-	if err := team.validateBaselineReport(
-		BaselineRequest{Ports: []string{"agent-commit-ok"}},
-		BaselineReport{Commits: []Commit{
-			{Hash: hash, Paths: []string{filepath.Join("ports", "agent-commit-ok")}},
-			{Hash: versionHash, Paths: []string{"versions"}},
-		}},
-	); err != nil {
-		t.Fatal(err)
-	}
-
-	userEdit := filepath.Join(port, "user-existing.txt")
-	writeFile(t, userEdit, "user work\n")
-	config.InitialDirty = []string{userEdit}
-	_, err = invokeTool(team, "git_commit", gitCommitParams{
-		Paths: []string{filepath.Join("ports", "agent-commit-ok")}, Message: "must preserve initial user work",
-	})
-	if err == nil || !strings.Contains(err.Error(), "before this run") {
-		t.Fatalf("initial dirty work error = %v", err)
-	}
-	config.InitialDirty = nil
-	_ = os.Remove(userEdit)
-
-	writeFile(t, filepath.Join(port, "later.txt"), "later\n")
-	unrelated := filepath.Join(config.Workspace, "outside.txt")
-	writeFile(t, unrelated, "outside\n")
-	runGitForTest(t, config.Workspace, "add", "outside.txt")
-	_, err = invokeTool(team, "git_commit", gitCommitParams{
-		Paths: []string{filepath.Join("ports", "agent-commit-ok")}, Message: "must reject staged user work",
-	})
-	if err == nil || !strings.Contains(err.Error(), "staged changes") {
-		t.Fatalf("staged index error = %v", err)
-	}
-}
-
-func TestBaselineVersionUpdateRealVcpkg(t *testing.T) {
-	if testing.Short() {
-		t.Skip("vcpkg x-add-version")
-	}
-	config := newTestRuntimeConfig(t, "registry")
-	team := NewTeam(config)
-	port := createPortFixture(t, filepath.Join(config.Workspace, "ports"), "agent-version-real")
-	versions := filepath.Join(config.Workspace, "versions")
-	writeFile(t, filepath.Join(versions, "baseline.json"), "{\"default\":{}}\n")
-	initGitRepository(t, config.Workspace)
-	runGitForTest(t, config.Workspace, "add", "-A")
-	runGitForTest(t, config.Workspace, "commit", "-m", "registry baseline")
-
-	scope := team.baseline.Scope()
-	scope.Write = append(scope.Write, port, versions)
-	team.baseline.setScope(scope)
-	team.active.Store(team.baseline.Member)
-	t.Cleanup(func() { team.active.Store(nil) })
-	result, err := invokeTool(team, "version_update", versionUpdateParams{Port: "agent-version-real", Stage: "format"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if strings.Contains(result.TextResultForLLM, "exit=1") {
-		t.Fatalf("format failed:\n%s", result.TextResultForLLM)
-	}
-	commit, err := invokeTool(team, "git_commit", gitCommitParams{
-		Paths: []string{filepath.Join("ports", "agent-version-real")}, Message: "agent: format port",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if commit.TextResultForLLM == "" {
-		t.Fatal("port commit returned no result")
-	}
-	result, err = invokeTool(team, "version_update", versionUpdateParams{Port: "agent-version-real", Stage: "versions"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if strings.Contains(result.TextResultForLLM, "exit=1") {
-		t.Fatalf("version update failed:\n%s", result.TextResultForLLM)
-	}
-	baseline := readFile(t, filepath.Join(versions, "baseline.json"))
-	if !strings.Contains(baseline, `"agent-version-real"`) || !strings.Contains(baseline, `"baseline": "1.0.0"`) {
-		t.Fatalf("baseline was not updated:\n%s", baseline)
-	}
-	recordPath := versionRecordPath(config.Workspace, "agent-version-real")
-	record := readFile(t, recordPath)
-	if !strings.Contains(record, `"git-tree"`) {
-		t.Fatalf("version record lacks git-tree:\n%s", record)
-	}
-}
-
-func TestHooksDenyOutsideScopeAndApproveReadOnlyShell(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	team := NewTeam(config)
-	team.active.Store(team.doctor.Member)
-	t.Cleanup(func() { team.active.Store(nil) })
-
-	allowed, err := team.preToolUse(copilot.PreToolUseHookInput{
-		ToolName: "bash", WorkingDirectory: config.Workspace,
-	}, copilot.HookInvocation{})
-	if err != nil || allowed.PermissionDecision != "ask" {
-		t.Fatalf("pre-hook allow = %+v, %v", allowed, err)
-	}
-	denied, err := team.preToolUse(copilot.PreToolUseHookInput{
-		ToolName: "bash", WorkingDirectory: filepath.Join(t.TempDir(), "outside"),
-	}, copilot.HookInvocation{})
-	if err != nil || denied.PermissionDecision != "deny" {
-		t.Fatalf("outside cwd = %+v, %v", denied, err)
-	}
-
-	request := &rpc.PermissionRequestShell{
-		Commands:        []rpc.PermissionRequestShellCommand{{Identifier: "git", ReadOnly: true}},
-		CommandSegments: []rpc.PermissionRequestShellCommandSegment{{Identifier: "git", FullCommandText: "git log --oneline"}},
-		PossiblePaths:   []string{config.Workspace},
-	}
-	decision, err := team.permission(request, copilot.PermissionInvocation{})
-	assertApproved(t, decision, err)
-
-	request.Commands[0].ReadOnly = false
-	decision, err = team.permission(request, copilot.PermissionInvocation{})
-	assertRejected(t, decision, err, "read-only")
-
-	request.Commands[0].ReadOnly = true
-	request.CommandSegments[0].FullCommandText = "git push"
-	decision, err = team.permission(request, copilot.PermissionInvocation{})
-	assertRejected(t, decision, err, "not allowed")
-}
-
-func TestHooksEnforceReadWriteURLAndCustomToolPolicy(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	team := NewTeam(config)
-	editorScope := team.editor.Scope()
-	portRoot := filepath.Join(config.Workspace, "ports", "only-port")
-	mustMkdir(t, portRoot)
-	editorScope.Write = append(editorScope.Write, portRoot)
-	team.editor.setScope(editorScope)
-	team.active.Store(team.editor.Member)
-
-	decision, err := team.permission(&rpc.PermissionRequestRead{Path: filepath.Join(config.Workspace, "docs", "x.md")}, copilot.PermissionInvocation{})
-	assertApproved(t, decision, err)
-	decision, err = team.permission(&rpc.PermissionRequestRead{Path: filepath.Join(t.TempDir(), "outside")}, copilot.PermissionInvocation{})
-	assertRejected(t, decision, err, "read outside")
-	decision, err = team.permission(&rpc.PermissionRequestWrite{FileName: filepath.Join(portRoot, "portfile.cmake")}, copilot.PermissionInvocation{})
-	assertApproved(t, decision, err)
-	decision, err = team.permission(&rpc.PermissionRequestWrite{FileName: filepath.Join(config.Workspace, "ports", "other", "portfile.cmake")}, copilot.PermissionInvocation{})
-	assertRejected(t, decision, err, "write outside")
-	decision, err = team.permission(&rpc.PermissionRequestURL{URL: "http://example.invalid/secret"}, copilot.PermissionInvocation{})
-	assertRejected(t, decision, err, "URL outside")
-	decision, err = team.permission(&rpc.PermissionRequestCustomTool{ToolName: "send_retry_request"}, copilot.PermissionInvocation{})
-	assertApproved(t, decision, err)
-	decision, err = team.permission(rpc.PermissionRequestCustomTool{ToolName: "send_retry_request"}, copilot.PermissionInvocation{})
-	assertApproved(t, decision, err)
-	decision, err = team.permission(&rpc.PermissionRequestCustomTool{ToolName: "git_commit"}, copilot.PermissionInvocation{})
-	assertRejected(t, decision, err, "cannot use")
-}
-
-func TestPostHooksRedactSecretsAndGuideArgumentRepair(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	config.SecretValues = append(config.SecretValues, "token-never-print-this")
-	team := NewTeam(config)
-	output, err := team.postToolUse(copilot.PostToolUseHookInput{
-		ToolResult: map[string]any{"text": "token-never-print-this"},
-	}, copilot.HookInvocation{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	encoded, _ := json.Marshal(output.ModifiedResult)
-	if strings.Contains(string(encoded), "token-never-print-this") {
-		t.Fatalf("secret remains: %s", encoded)
-	}
-	failure, err := team.postToolUseFailure(copilot.PostToolUseFailureHookInput{
-		ToolName: "vcpkg_install", Error: "unexpected switch: --bad",
-	}, copilot.HookInvocation{})
-	if err != nil || failure == nil || !strings.Contains(failure.AdditionalContext, "vcpkg_help") {
-		t.Fatalf("failure hook = %+v, %v", failure, err)
-	}
-}
-
-func TestHandoffToolsCoverEveryMemberAndAreTerminal(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	team := NewTeam(config)
-	tripletFile := filepath.Join(config.Workspace, "triplets", config.DefaultTriplet+".cmake")
-	mustMkdir(t, filepath.Dir(tripletFile))
-	editorPort := filepath.Join(config.Workspace, "ports", "handoff-port")
-	mustMkdir(t, editorPort)
-	team.editor.setScope(Scope{CWD: config.Workspace, Read: configReadRoots(config), Write: []string{editorPort, config.Scratch}})
-	team.triplet.setScope(Scope{CWD: config.Workspace, Read: configReadRoots(config), Write: []string{filepath.Dir(tripletFile)}})
-
-	tests := []struct {
-		member  *Member
-		tool    string
-		payload any
-	}{
-		{team.planner.Member, "send_detect_request", DetectRequest{Handoff: validHandoff(), Triplets: []string{config.DefaultTriplet}}},
-		{team.planner.Member, "send_install_requests", InstallBatch{Handoff: validHandoff(), Requests: []InstallRequest{{Triplet: config.DefaultTriplet, Ports: []string{"x"}}}}},
-		{team.planner.Member, "send_baseline_request", BaselineRequest{Handoff: validHandoff(), Ports: []string{"x"}}},
-		{team.planner.Member, "send_final_report", FinalReport{Handoff: validHandoff(), Status: "finished"}},
-		{team.detector.Member, "send_env_report", EnvReport{Handoff: validHandoff(), Scenario: "registry"}},
-		{team.detector.Member, "send_host_facts", HostFacts{Handoff: validHandoff()}},
-		{team.installer.Member, "send_install_failure", InstallFailure{Handoff: validHandoff(), Spec: "x", Triplet: config.DefaultTriplet}},
-		{team.installer.Member, "send_install_report", InstallReport{Handoff: validHandoff()}},
-		{team.doctor.Member, "send_port_goals", PortGoals{Handoff: validHandoff(), Port: "x"}},
-		{team.doctor.Member, "send_triplet_goals", TripletGoals{Handoff: validHandoff(), Triplet: config.DefaultTriplet}},
-		{team.doctor.Member, "send_blocker", Blocker{Handoff: validHandoff(), Reason: "blocked"}},
-		{team.editor.Member, "send_retry_request", RetryRequest{Handoff: validHandoff(), Spec: "x", ChangedFiles: []string{filepath.Join(editorPort, "portfile.cmake")}}},
-		{team.triplet.Member, "send_reinstall_request", ReinstallRequest{Handoff: validHandoff(), Triplet: config.DefaultTriplet, TripletFile: tripletFile, Ports: []string{"x"}}},
-		{team.triplet.Member, "send_host_facts_request", HostFactsRequest{Handoff: validHandoff(), Question: "host?"}},
-		{team.baseline.Member, "send_baseline_report", BaselineReport{Handoff: validHandoff()}},
-	}
-	for _, test := range tests {
-		t.Run(test.tool, func(t *testing.T) {
-			team.active.Store(test.member)
-			tool := findTool(t, team, test.tool)
-			if !tool.IsTerminal {
-				t.Fatal("handoff tool is not terminal")
-			}
-			if _, err := tool.Handler(copilot.ToolInvocation{
-				ToolName: tool.Name, Arguments: test.payload, TraceContext: context.Background(),
-			}); err != nil {
-				t.Fatal(err)
-			}
-			select {
-			case <-test.member.out:
-			case <-time.After(time.Second):
-				t.Fatal("handoff was not delivered")
-			}
-		})
-	}
-}
-
-func TestCustomToolsUseRealExecutablesAndBoundedLogs(t *testing.T) {
-	config := newTestRuntimeConfig(t, "registry")
-	team := NewTeam(config)
-
-	team.active.Store(team.detector.Member)
-	version, err := invokeTool(team, "vcpkg_query", vcpkgQueryParams{Command: "version"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(version.TextResultForLLM, "version") || !strings.Contains(version.TextResultForLLM, "exit=0") {
-		t.Fatalf("vcpkg query = %s", version.TextResultForLLM)
-	}
-	probe, err := invokeTool(team, "probe_tool", probeToolParams{Tool: "git", Args: []string{"--version"}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(probe.TextResultForLLM, "git version") {
-		t.Fatalf("git probe = %s", probe.TextResultForLLM)
-	}
-	_, err = invokeTool(team, "probe_tool", probeToolParams{Tool: "python", Args: []string{"-c", "print('unsafe')"}})
-	if err == nil {
-		t.Fatal("probe_tool accepted an arbitrary interpreter command")
-	}
-
-	team.active.Store(team.doctor.Member)
-	logPath := filepath.Join(config.Roots.Buildtrees, "tool.log")
-	writeFile(t, logPath, strings.Repeat("line\n", 1000)+"needle\n")
-	log, err := invokeTool(team, "read_log", readLogParams{Path: logPath, Filter: "needle", Tail: 20})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if strings.TrimSpace(log.TextResultForLLM) != "needle" {
-		t.Fatalf("filtered log = %q", log.TextResultForLLM)
-	}
-}
-
-func TestDownloadSHA512UsesHTTPSAndRealHTTPTransport(t *testing.T) {
-	content := []byte("real HTTPS response")
-	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write(content)
-	}))
-	t.Cleanup(server.Close)
-	config := newTestRuntimeConfig(t, "registry")
-	team := NewTeam(config)
-	team.httpClient = server.Client()
-	team.active.Store(team.editor.Member)
-	result, err := invokeTool(team, "download_sha512", downloadSHA512Params{URL: server.URL})
-	if err != nil {
-		t.Fatal(err)
-	}
-	sum := sha512.Sum512(content)
-	if result.TextResultForLLM != hex.EncodeToString(sum[:]) {
-		t.Fatalf("sha512 = %s", result.TextResultForLLM)
-	}
-	_, err = invokeTool(team, "download_sha512", downloadSHA512Params{URL: "http://example.invalid/archive"})
-	if err == nil {
-		t.Fatal("HTTP URL was accepted")
-	}
-	insecureTarget := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write([]byte("insecure"))
-	}))
-	t.Cleanup(insecureTarget.Close)
-	redirector := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, insecureTarget.URL, http.StatusFound)
-	}))
-	t.Cleanup(redirector.Close)
-	team.httpClient = redirector.Client()
-	_, err = invokeTool(team, "download_sha512", downloadSHA512Params{URL: redirector.URL})
-	if err == nil || !strings.Contains(err.Error(), "left HTTPS") {
-		t.Fatalf("HTTPS downgrade redirect was accepted: %v", err)
-	}
-}
-
 func TestGHReadAllowlistRejectsWrites(t *testing.T) {
-	allowed := [][]string{
-		{"search", "issues", "port failure"},
-		{"api", "repos/microsoft/vcpkg/commits"},
-		{"api", "--method", "GET", "repos/microsoft/vcpkg/issues"},
-		{"pr", "diff", "1"},
-	}
-	denied := [][]string{
-		{"issue", "create"}, {"pr", "create"}, {"api", "--method", "POST", "repos/x/y/issues"},
-		{"api", "--method=POST", "repos/x/y/issues"}, {"api", "-XPOST", "repos/x/y/issues"},
-		{"api", "--method", "GET", "--method", "POST", "repos/x/y/issues"},
-		{"api", "graphql", "-f", "query=mutation { x }"},
-		{"api", "-X", "DELETE", "repos/x/y"}, {"api", "--field", "body=x", "repos/x/y"},
-	}
+	allowed := [][]string{{"search", "issues", "port failure"}, {"api", "repos/microsoft/vcpkg/commits"}, {"api", "--method", "GET", "repos/microsoft/vcpkg/issues"}, {"pr", "diff", "1"}}
+	denied := [][]string{{"issue", "create"}, {"pr", "create"}, {"api", "--method", "POST", "repos/x/y/issues"}, {"api", "--method=POST", "repos/x/y/issues"}, {"api", "-XPOST", "repos/x/y/issues"}, {"api", "--method", "GET", "--method", "POST", "repos/x/y/issues"}, {"api", "graphql", "-f", "query=mutation { x }"}, {"api", "-X", "DELETE", "repos/x/y"}, {"api", "--field", "body=x", "repos/x/y"}}
 	for _, args := range allowed {
 		if !isReadOnlyGH(args) {
 			t.Errorf("read command denied: %v", args)
@@ -808,20 +196,6 @@ func TestGHReadAllowlistRejectsWrites(t *testing.T) {
 		}
 	}
 }
-
-func TestVersionCommandsStripOverlayEnvironment(t *testing.T) {
-	result := withoutEnvironmentNames([]string{
-		"VCPKG_ROOT=D:\\vcpkg", "VCPKG_OVERLAY_PORTS=C:\\ports", "VCPKG_OVERLAY_TRIPLETS=C:\\triplets",
-	}, "VCPKG_OVERLAY_PORTS", "VCPKG_OVERLAY_TRIPLETS")
-	if slices.Equal(result, []string{"VCPKG_OVERLAY_PORTS=C:\\ports"}) ||
-		slices.ContainsFunc(result, func(pair string) bool { return strings.HasPrefix(pair, "VCPKG_OVERLAY_") }) {
-		t.Fatalf("overlay environment survived: %v", result)
-	}
-	if !slices.Equal(result, []string{"VCPKG_ROOT=D:\\vcpkg"}) {
-		t.Fatalf("environment = %v", result)
-	}
-}
-
 func TestPathGuardRejectsSiblingAndSymlinkEscape(t *testing.T) {
 	root := filepath.Join(t.TempDir(), "root")
 	mustMkdir(t, root)
@@ -846,64 +220,12 @@ func TestPathGuardRejectsSiblingAndSymlinkEscape(t *testing.T) {
 		t.Fatal("dangling symlink was allowed")
 	}
 }
-
-func TestLiveSDKSingleSessionSimpleDryRun(t *testing.T) {
-	if os.Getenv("VCPKG_AGENTS_LIVE_SDK") != "1" {
-		t.Skip("set VCPKG_AGENTS_LIVE_SDK=1 for the live Copilot SDK scenario")
-	}
-	root := createRegistryFixture(t, "agent-live-dry-run", successfulPortfile())
-	installRoot := filepath.Join(root, "installed")
-	options := Options{
-		Prompt: "Dry run agent-live-dry-run for x64-windows.", Model: defaultModel,
-		OverlayPorts: []string{filepath.Join(root, "ports")}, BuildtreesRoot: filepath.Join(root, "buildtrees"),
-		PackagesRoot: filepath.Join(root, "packages"), InstallRoot: installRoot,
-		MaxPortCycles: 2, MaxTripletEdits: 1, LockWait: 5 * time.Minute,
-	}
-	withWorkingDirectory(t, root, func() {
-		config, err := LoadRuntimeConfig(options)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer config.Cleanup()
-		team := NewTeam(config)
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
-		defer cancel()
-		if err := team.CreateSession(ctx); err != nil {
-			t.Fatal(err)
-		}
-		defer team.Close()
-		report, err := team.Run(ctx, options.Prompt)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if report.Status != "finished" || report.Scenario != "registry" {
-			t.Fatalf("report = %+v", report)
-		}
-		if len(report.Ledger) != 1 || report.Ledger[0].Status != "verified" {
-			t.Fatalf("ledger = %+v", report.Ledger)
-		}
-		list, listErr := team.listStage(context.Background(), InstallRequest{
-			Triplet: "x64-windows", Ports: []string{"agent-live-dry-run"},
-		})
-		if listErr != nil || list.Err != nil {
-			t.Fatalf("list after live dry run: %v / %v", listErr, list.Err)
-		}
-		if anyPortInstalled(list.Summary, []string{"agent-live-dry-run"}) {
-			t.Fatalf("live dry run installed the port:\n%s", list.Summary)
-		}
-	})
-}
-
 func newTestRuntimeConfig(t *testing.T, scenario string) *RuntimeConfig {
 	t.Helper()
 	workspace := t.TempDir()
 	scratch := filepath.Join(workspace, ".scratch")
 	logs := filepath.Join(scratch, "logs")
-	for _, path := range []string{
-		filepath.Join(workspace, "ports"), filepath.Join(workspace, "triplets"), filepath.Join(workspace, "versions"),
-		logs, filepath.Join(scratch, "buildtrees"), filepath.Join(scratch, "downloads"),
-		filepath.Join(scratch, "installed"), filepath.Join(scratch, "packages"),
-	} {
+	for _, path := range []string{filepath.Join(workspace, "ports"), filepath.Join(workspace, "triplets"), filepath.Join(workspace, "versions"), logs, filepath.Join(scratch, "buildtrees"), filepath.Join(scratch, "downloads"), filepath.Join(scratch, "installed"), filepath.Join(scratch, "packages")} {
 		mustMkdir(t, path)
 	}
 	tools := make(map[string]string)
@@ -915,13 +237,7 @@ func newTestRuntimeConfig(t *testing.T, scenario string) *RuntimeConfig {
 	if tools["vcpkg"] == "" {
 		t.Skip("vcpkg not found")
 	}
-	roots := VcpkgRoots{
-		Vcpkg:      currentVcpkgRoot(t, tools["vcpkg"]),
-		Buildtrees: filepath.Join(scratch, "buildtrees"),
-		Downloads:  filepath.Join(scratch, "downloads"),
-		Installed:  filepath.Join(scratch, "installed"),
-		Packages:   filepath.Join(scratch, "packages"),
-	}
+	roots := VcpkgRoots{Vcpkg: currentVcpkgRoot(t, tools["vcpkg"]), Buildtrees: filepath.Join(scratch, "buildtrees"), Downloads: filepath.Join(scratch, "downloads"), Installed: filepath.Join(scratch, "installed"), Packages: filepath.Join(scratch, "packages")}
 	triplet := "x64-linux"
 	if runtime.GOOS == "windows" {
 		triplet = "x64-windows"
@@ -929,18 +245,87 @@ func newTestRuntimeConfig(t *testing.T, scenario string) *RuntimeConfig {
 		triplet = "x64-osx"
 	}
 	writeScopes := defaultWriteScopes(scenario)
-	return &RuntimeConfig{
-		Options:          Options{Model: defaultModel, MaxPortCycles: 3, MaxTripletEdits: 1, LockWait: 2 * time.Minute},
-		WorkingDirectory: workspace, Workspace: workspace, Scenario: scenario,
-		ScenarioEvidence: []string{filepath.Join(workspace, "ports")},
-		Tools:            tools, Roots: roots, OverlayPorts: []string{filepath.Join(workspace, "ports")},
-		OverlayTriplets: []string{filepath.Join(workspace, "triplets")},
-		DefaultTriplet:  triplet, HostTriplet: triplet, VcpkgEnv: scrubbedVcpkgEnvironment(os.Environ(), nil),
-		Scratch: scratch, LogDirectory: logs, WriteScopes: writeScopes,
-		SecretValues: collectSecretValues(), RunID: "test",
+	return &RuntimeConfig{Options: Options{Model: defaultModel, MaxPortCycles: 3, MaxTripletEdits: 1, LockWait: 2 * time.Minute}, WorkingDirectory: workspace, Workspace: workspace, Scenario: scenario, ScenarioEvidence: []string{filepath.Join(workspace, "ports")}, Tools: tools, Roots: roots, OverlayPorts: []string{filepath.Join(workspace, "ports")}, OverlayTriplets: []string{filepath.Join(workspace, "triplets")}, DefaultTriplet: triplet, HostTriplet: triplet, VcpkgEnv: scrubbedVcpkgEnvironment(os.Environ(), nil), Scratch: scratch, LogDirectory: logs, WriteScopes: writeScopes, SecretValues: collectSecretValues(), RunID: "test"}
+}
+func createPortFixture(t *testing.T, portsRoot, name string) string {
+	t.Helper()
+	return createPortFixtureAt(t, portsRoot, name, successfulPortfile())
+}
+func createPortFixtureAt(t *testing.T, portsRoot, name, portfile string) string {
+	t.Helper()
+	root := filepath.Join(portsRoot, name)
+	manifest := fmt.Sprintf(`{
+  "name": %q,
+  "version": "1.0.0",
+  "description": "vcpkg agent team test fixture",
+  "license": "MIT"
+}`, name)
+	writeFile(t, filepath.Join(root, "vcpkg.json"), manifest)
+	writeFile(t, filepath.Join(root, "portfile.cmake"), portfile)
+	return root
+}
+func assertApproved(t *testing.T, decision rpc.PermissionDecision, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatal(err)
+	}
+	switch decision.(type) {
+	case *rpc.PermissionDecisionApproved, *rpc.PermissionDecisionApproveOnce, *rpc.PermissionDecisionApproveForSession:
+		return
+	default:
+		t.Fatalf("decision = %T, want approved", decision)
 	}
 }
-
+func assertRejected(t *testing.T, decision rpc.PermissionDecision, err error, contains string) {
+	t.Helper()
+	if err != nil {
+		t.Fatal(err)
+	}
+	rejected, ok := decision.(*rpc.PermissionDecisionReject)
+	if !ok {
+		t.Fatalf("decision = %T, want reject", decision)
+	}
+	if rejected.Feedback == nil || !strings.Contains(*rejected.Feedback, contains) {
+		t.Fatalf("feedback = %v, want %q", rejected.Feedback, contains)
+	}
+}
+func initGitRepository(t *testing.T, root string) {
+	t.Helper()
+	runGitForTest(t, root, "init")
+	runGitForTest(t, root, "config", "user.name", "vcpkg-agents-test")
+	runGitForTest(t, root, "config", "user.email", "vcpkg-agents-test@localhost")
+	runGitForTest(t, root, "config", "core.autocrlf", "false")
+}
+func runGitForTest(t *testing.T, root string, args ...string) string {
+	t.Helper()
+	command := exec.Command("git", append([]string{"-C", root}, args...)...)
+	output, err := command.CombinedOutput()
+	if err != nil {
+		t.Fatalf("git %v: %v\n%s", args, err, output)
+	}
+	return strings.TrimSpace(string(output))
+}
+func writeFile(t *testing.T, path, content string) {
+	t.Helper()
+	mustMkdir(t, filepath.Dir(path))
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+func readFile(t *testing.T, path string) string {
+	t.Helper()
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(data)
+}
+func mustMkdir(t *testing.T, path string) {
+	t.Helper()
+	if err := os.MkdirAll(path, 0o755); err != nil {
+		t.Fatal(err)
+	}
+}
 func currentVcpkgRoot(t *testing.T, vcpkg string) string {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -960,27 +345,8 @@ func createRegistryFixture(t *testing.T, portName, portfile string) string {
 	t.Helper()
 	root := t.TempDir()
 	mustMkdir(t, filepath.Join(root, "versions"))
-	writeFile(t, filepath.Join(root, "versions", "baseline.json"), `{"default":{}}`+"\n")
+	writeFile(t, filepath.Join(root, "versions", "baseline.json"), "{\"default\":{}}\n")
 	createPortFixtureAt(t, filepath.Join(root, "ports"), portName, portfile)
-	return root
-}
-
-func createPortFixture(t *testing.T, portsRoot, name string) string {
-	t.Helper()
-	return createPortFixtureAt(t, portsRoot, name, successfulPortfile())
-}
-
-func createPortFixtureAt(t *testing.T, portsRoot, name, portfile string) string {
-	t.Helper()
-	root := filepath.Join(portsRoot, name)
-	manifest := fmt.Sprintf(`{
-  "name": %q,
-  "version": "1.0.0",
-  "description": "vcpkg agent team test fixture",
-  "license": "MIT"
-}`, name)
-	writeFile(t, filepath.Join(root, "vcpkg.json"), manifest)
-	writeFile(t, filepath.Join(root, "portfile.cmake"), portfile)
 	return root
 }
 
@@ -988,107 +354,6 @@ func successfulPortfile() string {
 	return `file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/share/${PORT}")
 file(WRITE "${CURRENT_PACKAGES_DIR}/share/${PORT}/copyright" "MIT")
 `
-}
-
-func validHandoff() Handoff {
-	return Handoff{Goal: "test handoff", Evidence: []string{"unit test"}}
-}
-
-func invokeTool(team *Team, name string, arguments any) (copilot.ToolResult, error) {
-	tool := findToolNoTest(team, name)
-	if tool == nil {
-		return copilot.ToolResult{}, fmt.Errorf("tool %s not found", name)
-	}
-	return tool.Handler(copilot.ToolInvocation{
-		ToolName: name, ToolCallID: "test-call", Arguments: arguments, TraceContext: context.Background(),
-	})
-}
-
-func findToolNoTest(team *Team, name string) *copilot.Tool {
-	for index := range team.tools {
-		if team.tools[index].Name == name {
-			return &team.tools[index]
-		}
-	}
-	return nil
-}
-
-func findTool(t *testing.T, team *Team, name string) *copilot.Tool {
-	t.Helper()
-	tool := findToolNoTest(team, name)
-	if tool == nil {
-		t.Fatalf("tool %s not found", name)
-	}
-	return tool
-}
-
-func assertApproved(t *testing.T, decision rpc.PermissionDecision, err error) {
-	t.Helper()
-	if err != nil {
-		t.Fatal(err)
-	}
-	switch decision.(type) {
-	case *rpc.PermissionDecisionApproved, *rpc.PermissionDecisionApproveOnce, *rpc.PermissionDecisionApproveForSession:
-		return
-	default:
-		t.Fatalf("decision = %T, want approved", decision)
-	}
-}
-
-func assertRejected(t *testing.T, decision rpc.PermissionDecision, err error, contains string) {
-	t.Helper()
-	if err != nil {
-		t.Fatal(err)
-	}
-	rejected, ok := decision.(*rpc.PermissionDecisionReject)
-	if !ok {
-		t.Fatalf("decision = %T, want reject", decision)
-	}
-	if rejected.Feedback == nil || !strings.Contains(*rejected.Feedback, contains) {
-		t.Fatalf("feedback = %v, want %q", rejected.Feedback, contains)
-	}
-}
-
-func initGitRepository(t *testing.T, root string) {
-	t.Helper()
-	runGitForTest(t, root, "init")
-	runGitForTest(t, root, "config", "user.name", "vcpkg-agents-test")
-	runGitForTest(t, root, "config", "user.email", "vcpkg-agents-test@localhost")
-	runGitForTest(t, root, "config", "core.autocrlf", "false")
-}
-
-func runGitForTest(t *testing.T, root string, args ...string) string {
-	t.Helper()
-	command := exec.Command("git", append([]string{"-C", root}, args...)...)
-	output, err := command.CombinedOutput()
-	if err != nil {
-		t.Fatalf("git %v: %v\n%s", args, err, output)
-	}
-	return strings.TrimSpace(string(output))
-}
-
-func writeFile(t *testing.T, path, content string) {
-	t.Helper()
-	mustMkdir(t, filepath.Dir(path))
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func readFile(t *testing.T, path string) string {
-	t.Helper()
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(data)
-}
-
-func mustMkdir(t *testing.T, path string) {
-	t.Helper()
-	if err := os.MkdirAll(path, 0o755); err != nil {
-		t.Fatal(err)
-	}
 }
 
 func withWorkingDirectory(t *testing.T, path string, action func()) {
@@ -1108,4 +373,321 @@ func withWorkingDirectory(t *testing.T, path string, action func()) {
 	action()
 }
 
-var _ io.Reader = (*strings.Reader)(nil)
+func testConfig(t *testing.T) *RuntimeConfig {
+	t.Helper()
+	root := t.TempDir()
+	tools := make(map[string]string)
+	for _, name := range []string{"vcpkg", "git", "cmake", "gh"} {
+		if path, err := exec.LookPath(name); err == nil {
+			tools[name] = path
+		}
+	}
+	config := &RuntimeConfig{Options: Options{Model: defaultModel, MaxPortCycles: 3, MaxTripletEdits: 1}, Workspace: root, WorkingDirectory: root, Scenario: "registry", Tools: tools, Roots: VcpkgRoots{Vcpkg: os.Getenv("VCPKG_ROOT"), Buildtrees: filepath.Join(root, "b"), Installed: filepath.Join(root, "i"), Packages: filepath.Join(root, "p")}, Scratch: filepath.Join(root, "scratch"), LogDirectory: filepath.Join(root, "logs"), OverlayPorts: []string{filepath.Join(root, "ports")}, OverlayTriplets: []string{filepath.Join(root, "triplets")}, WriteScopes: defaultWriteScopes("registry"), VcpkgEnv: scrubbedVcpkgEnvironment(os.Environ(), nil)}
+	for _, directory := range []string{config.Scratch, config.LogDirectory, config.Roots.Buildtrees, config.Roots.Installed, config.Roots.Packages, config.OverlayPorts[0], config.OverlayTriplets[0]} {
+		if err := os.MkdirAll(directory, 0755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return config
+}
+
+func TestHandoffWaitsForSender(t *testing.T) {
+	name := plannerName
+	activeAgent.Store(&name)
+	t.Cleanup(func() {
+		activeAgent.Store(nil)
+	})
+	pending := make(chan copilot.ToolInvocation, 1)
+	output := make(chan Handoff, 1)
+	session := &copilot.Session{SessionID: "same-session"}
+	tool := goalTool("send_detect_request", session, pending)
+	message := Handoff{Goal: "Verify target availability", Evidence: []string{"user request"}}
+	if !tool.IsTerminal {
+		t.Fatal("handoff tool must be terminal")
+	}
+	if _, err := tool.Handler(copilot.ToolInvocation{Arguments: message}); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-output:
+		t.Fatal("tool sent before the goroutine could compact")
+	default:
+	}
+	if _, err := tool.Handler(copilot.ToolInvocation{Arguments: message}); err == nil {
+		t.Fatal("duplicate handoff accepted")
+	}
+	next := <-pending
+	if next.ToolName != "send_detect_request" {
+		t.Fatal("selected SDK tool changed")
+	}
+	if err := send(context.Background(), output, next.Arguments.(Handoff)); err != nil {
+		t.Fatal(err)
+	}
+	got := <-output
+	if got.Session != session || got.Goal != message.Goal {
+		t.Fatalf("handoff = %+v", got)
+	}
+}
+func TestPlannerFinalReportWaitsForSender(t *testing.T) {
+	output := make(chan FinalReport, 1)
+	planner := NewPlanner(&copilot.Session{SessionID: "shared-session"})
+	report := FinalReport{Status: "finished", Scenario: "registry"}
+	if _, err := planner.finish(report, copilot.ToolInvocation{}); err != nil {
+		t.Fatal(err)
+	}
+	if len(output) != 0 {
+		t.Fatal("final report sent before compaction")
+	}
+	if _, err := planner.finish(report, copilot.ToolInvocation{}); err == nil {
+		t.Fatal("duplicate final report accepted")
+	}
+	next := <-planner.pending
+	if next.ToolName != "send_final_report" {
+		t.Fatal("queued final report tool missing")
+	}
+	if err := send(context.Background(), output, next.Arguments.(FinalReport)); err != nil {
+		t.Fatal(err)
+	}
+	if got := <-output; got.Status != report.Status || got.Scenario != report.Scenario {
+		t.Fatalf("final report = %+v", got)
+	}
+}
+
+func TestAgentCommunicationRoutes(t *testing.T) {
+	session := &copilot.Session{SessionID: "shared-session"}
+	routes := make(map[string]chan Handoff)
+	for _, name := range []string{
+		"send_detect_request", "send_install_requests", "send_baseline_request",
+		"send_env_report", "send_host_facts", "send_install_failure", "send_install_report",
+		"send_port_goals", "send_triplet_goals", "send_blocker", "send_retry_request",
+		"send_host_facts_request", "send_reinstall_request", "send_baseline_report",
+	} {
+		routes[name] = make(chan Handoff, 1)
+	}
+	planner := NewPlanner(session)
+	detector := NewEnvironmentDetector(session)
+	installer := NewPortInstaller(session)
+	doctor := NewPortDoctor(session)
+	editor := NewPortEditor(session)
+	triplet := NewTripletEditor(session)
+	baseline := NewBaselineUpdater(session)
+	t.Cleanup(func() { activeAgent.Store(nil) })
+	for _, actor := range []struct {
+		name    string
+		tools   []copilot.Tool
+		pending <-chan copilot.ToolInvocation
+	}{
+		{plannerName, planner.tools, planner.pending},
+		{environmentDetectorName, detector.tools, detector.pending},
+		{portInstallerName, installer.tools, installer.pending},
+		{portDoctorName, doctor.tools, doctor.pending},
+		{portEditorName, editor.tools, editor.pending},
+		{tripletEditorName, triplet.tools, triplet.pending},
+		{baselineUpdaterName, baseline.tools, baseline.pending},
+	} {
+		activeAgent.Store(&actor.name)
+		for _, tool := range actor.tools {
+			if tool.Name == "send_final_report" {
+				continue
+			}
+			t.Run(actor.name+"/"+tool.Name, func(t *testing.T) {
+				message := Handoff{Goal: "achieve the received goal", Evidence: []string{"unchanged evidence"}}
+				if _, err := tool.Handler(copilot.ToolInvocation{Arguments: message}); err != nil {
+					t.Fatal(err)
+				}
+				next := <-actor.pending
+				handoff := next.Arguments.(Handoff)
+				if next.ToolName != tool.Name || handoff.Session != session || handoff.Goal != message.Goal {
+					t.Fatalf("incorrect handoff: %+v", next)
+				}
+				if len(routes[tool.Name]) != 0 {
+					t.Fatal("receiver notified before sender compaction")
+				}
+				if err := send(context.Background(), routes[next.ToolName], handoff); err != nil {
+					t.Fatal(err)
+				}
+				if got := <-routes[tool.Name]; !slices.Equal(got.Evidence, message.Evidence) {
+					t.Fatal("handoff evidence changed")
+				}
+			})
+		}
+	}
+}
+
+func TestAgentChannelShutdown(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	session := &copilot.Session{SessionID: "shared-session"}
+	userRequests := make(chan Handoff)
+	detectRequests := make(chan Handoff)
+	environmentReports := make(chan Handoff)
+	installRequests := make(chan Handoff)
+	installReports := make(chan Handoff)
+	installFailures := make(chan Handoff)
+	portGoals := make(chan Handoff)
+	tripletGoals := make(chan Handoff)
+	blockers := make(chan Handoff)
+	retries := make(chan Handoff)
+	reinstalls := make(chan Handoff)
+	hostRequests := make(chan Handoff)
+	hostFacts := make(chan Handoff)
+	baselineRequests := make(chan Handoff)
+	baselineReports := make(chan Handoff)
+	final := make(chan FinalReport)
+	errorsOut := make(chan error, 7)
+	var wait sync.WaitGroup
+	wait.Add(7)
+	go NewPlanner(session).Run(ctx, userRequests, environmentReports, installReports, blockers, reinstalls, baselineReports,
+		detectRequests, installRequests, baselineRequests, final, errorsOut, &wait)
+	go NewEnvironmentDetector(session).Run(ctx, detectRequests, hostRequests, environmentReports, hostFacts, errorsOut, &wait)
+	go NewPortInstaller(session).Run(ctx, installRequests, retries, installFailures, installReports, errorsOut, &wait)
+	go NewPortDoctor(session).Run(ctx, installFailures, portGoals, tripletGoals, blockers, errorsOut, &wait)
+	go NewPortEditor(session).Run(ctx, portGoals, retries, errorsOut, &wait)
+	go NewTripletEditor(session).Run(ctx, tripletGoals, hostFacts, hostRequests, reinstalls, errorsOut, &wait)
+	go NewBaselineUpdater(session).Run(ctx, baselineRequests, baselineReports, errorsOut, &wait)
+	cancel()
+	finished := make(chan struct{})
+	go func() { wait.Wait(); close(finished) }()
+	select {
+	case <-finished:
+	case <-time.After(time.Second):
+		t.Fatal("agents did not terminate after cancellation")
+	}
+	close(errorsOut)
+	for err := range errorsOut {
+		t.Errorf("unexpected error during shutdown: %v", err)
+	}
+}
+func TestRoleFilePermissions(t *testing.T) {
+	config := testConfig(t)
+	message := Handoff{Ports: []string{"zlib"}, Triplet: "x64-windows"}
+	portfile := filepath.Join(config.Workspace, "ports", "zlib", "portfile.cmake")
+	for _, role := range []string{plannerName, environmentDetectorName, portInstallerName, portDoctorName} {
+		if _, allowed := permission(config, role, message, &rpc.PermissionRequestWrite{FileName: portfile}).(*rpc.PermissionDecisionApproveOnce); allowed {
+			t.Errorf("%s gained write access", role)
+		}
+	}
+	if _, allowed := permission(config, portEditorName, message, &rpc.PermissionRequestWrite{FileName: portfile}).(*rpc.PermissionDecisionApproveOnce); !allowed {
+		t.Fatal("target port is not writable")
+	}
+	other := filepath.Join(config.Workspace, "ports", "other", "portfile.cmake")
+	if _, allowed := permission(config, portEditorName, message, &rpc.PermissionRequestWrite{FileName: other}).(*rpc.PermissionDecisionApproveOnce); allowed {
+		t.Fatal("another port is writable")
+	}
+	outside := filepath.Join(t.TempDir(), "secret.txt")
+	if _, allowed := permission(config, portDoctorName, message, &rpc.PermissionRequestRead{Path: outside}).(*rpc.PermissionDecisionApproveOnce); allowed {
+		t.Fatal("outside read allowed")
+	}
+	config.Options.Prompt = "dry run install zlib"
+	if len(writePaths(config, portEditorName, message)) != 0 {
+		t.Fatal("dry run grants file writes")
+	}
+}
+func TestAllowedHookUsesNormalPermission(t *testing.T) {
+	config := testConfig(t)
+	name := plannerName
+	message := Handoff{Goal: "Detect environment", Evidence: []string{"user"}}
+	activeAgent.Store(&name)
+	activeMessage.Store(&message)
+	t.Cleanup(func() { activeAgent.Store(nil); activeMessage.Store(nil) })
+	result, err := hooks(config).OnPreToolUse(copilot.PreToolUseHookInput{ToolName: "send_detect_request"}, copilot.HookInvocation{})
+	if err != nil || result != nil {
+		t.Fatalf("allowed hook must defer to normal permission: %+v %v", result, err)
+	}
+	if _, ok := permission(config, name, message, &rpc.PermissionRequestCustomTool{ToolName: "send_detect_request"}).(*rpc.PermissionDecisionApproveOnce); !ok {
+		t.Fatal("handoff denied by normal permission")
+	}
+	result, err = hooks(config).OnPreToolUse(copilot.PreToolUseHookInput{ToolName: "apply_patch"}, copilot.HookInvocation{})
+	if err != nil || result == nil || result.PermissionDecision != "deny" {
+		t.Fatalf("planner write hook = %+v %v", result, err)
+	}
+}
+
+func TestCommandHarness(t *testing.T) {
+	config := testConfig(t)
+	config.Tools["gh"] = "gh"
+	config.Tools["git"] = "git"
+	config.Tools["vcpkg"] = "vcpkg"
+	message := Handoff{Ports: []string{"zlib"}, Triplet: "x64-windows"}
+	for _, test := range []struct {
+		role    string
+		params  commandParams
+		allowed bool
+	}{{plannerName, commandParams{Tool: "vcpkg", Args: []string{"help", "install"}}, true}, {plannerName, commandParams{Tool: "vcpkg", Args: []string{"install", "zlib"}}, false}, {portInstallerName, commandParams{Tool: "vcpkg", Args: []string{"install", "zlib:x64-windows", "--dry-run"}}, true}, {portDoctorName, commandParams{Tool: "git", Args: []string{"push"}}, false}, {portDoctorName, commandParams{Tool: "gh", Args: []string{"issue", "create"}}, false}, {portDoctorName, commandParams{Tool: "gh", Args: []string{"search", "issues", "error"}}, true}, {portInstallerName, commandParams{Tool: "vcpkg", Args: []string{"install", "--debug-env"}}, false}, {portInstallerName, commandParams{Tool: "vcpkg", Args: []string{"install", "--binarysource=clear"}}, false}, {portInstallerName, commandParams{Tool: "vcpkg", Args: []string{"install", "--x-install-root=C:/outside"}}, false}, {portEditorName, commandParams{Tool: "git", Args: []string{"diff", "--output=" + filepath.Join(t.TempDir(), "outside.patch")}}, false}, {portEditorName, commandParams{Tool: "git", Args: []string{"diff", "--output=" + filepath.Join(config.Workspace, "ports", "zlib", "fix.patch")}}, true}} {
+		if err := checkCommand(config, test.role, message, test.params); (err == nil) != test.allowed {
+			t.Errorf("%s %v: %v, allowed=%t", test.role, test.params, err, test.allowed)
+		}
+	}
+	config.Options.Prompt = "dry run install zlib"
+	if err := checkCommand(config, portInstallerName, message, commandParams{Tool: "vcpkg", Args: []string{"install", "zlib"}}); err == nil {
+		t.Fatal("dry run permits real installation")
+	}
+	config.Options.Prompt = "install this manifest"
+	config.Scenario = "manifest"
+	if err := checkCommand(config, portInstallerName, message, commandParams{Tool: "vcpkg", Args: []string{"remove", "zlib"}}); err == nil {
+		t.Fatal("manifest removal allowed")
+	}
+}
+func TestVcpkgOutputPreserved(t *testing.T) {
+	config := testConfig(t)
+	if config.Tools["vcpkg"] == "" {
+		t.Skip("vcpkg executable required")
+	}
+	args := append([]string{"version"}, config.vcpkgArgs("", false)...)
+	command := exec.Command(config.Tools["vcpkg"], args...)
+	command.Dir = config.Workspace
+	command.Env = config.VcpkgEnv
+	want, err := command.CombinedOutput()
+	if err != nil {
+		t.Fatalf("vcpkg reference: %v\n%s", err, want)
+	}
+	result, err := executeTool(config, environmentDetectorName, Handoff{}, commandParams{Tool: "vcpkg", Args: []string{"version"}}, context.Background())
+	if err != nil || result.ExitCode != 0 {
+		t.Fatalf("command: %+v %v", result, err)
+	}
+	got, err := os.ReadFile(result.Log)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(got, want) {
+		t.Fatalf("vcpkg output changed:\ngot %q\nwant %q", got, want)
+	}
+}
+func TestCommandLogKeepsDiagnosticsAndRedactsSecrets(t *testing.T) {
+	file, err := os.CreateTemp(t.TempDir(), "log-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	writer := &safeLogWriter{file: file, secrets: []string{"sensitive-value"}}
+	text := "warning: original\r\nerror: original\nerror: original\ncredential=sensitive-value\n"
+	if _, err := io.WriteString(writer, text); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	got, err := os.ReadFile(file.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "warning: original\r\nerror: original\nerror: original\ncredential=***SECRET***\n"
+	if string(got) != want {
+		t.Fatalf("log = %q", got)
+	}
+}
+func TestCommitRequiresAuthority(t *testing.T) {
+	config := testConfig(t)
+	if config.Tools["git"] == "" {
+		t.Skip("git executable required")
+	}
+	config.WriteScopes = map[string]bool{"ports": true}
+	message := Handoff{Ports: []string{"zlib"}}
+	params := commandParams{Tool: "git", Args: []string{"commit", "-m", "port update\n\n" + coauthorTrailer}}
+	if err := checkCommand(config, baselineUpdaterName, message, params); err == nil {
+		t.Fatal("commit without authority allowed")
+	}
+	params.Args = []string{"add", "--", "ports/zlib"}
+	if err := checkCommand(config, baselineUpdaterName, message, params); err == nil {
+		t.Fatal("staging without commit authority allowed")
+	}
+}
