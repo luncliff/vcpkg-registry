@@ -64,17 +64,19 @@ There are fourteen inter-role edges, plus the initial user request and final use
 
 ### 2.1 Entry and Exit
 
-**`init`:** parse CLI arguments, establish logging, acquire basic paths and tool locations, inspect environment variables, resolve vcpkg configuration, and prepare initialization facts. Retain reusable initialized facts rather than rediscovering them in every role. Keep unit tests isolated from production flag parsing and startup side effects.
+**`init`:** parse CLI arguments, establish logging, acquire basic paths and tool locations, inspect environment variables, resolve vcpkg configuration, and prepare initialization facts. Startup failures terminate here with the corresponding process status. Retain reusable initialized facts rather than rediscovering them in every role. Keep unit tests isolated from production flag parsing and startup side effects.
 
-**`main`:** handle initialization errors; create the SDK client and the one session; construct role tools; create the named channels; register tools; start each role directly with `go role.Run(...)`; send the initial goal; receive the final report or error; cancel; wait; collect errors; report usage; release resources.
+Workspace resolution starts at `os.Getwd()` and promotes that directory to its Git top level when available. The spawned Copilot runtime and SDK session both receive this resolved workspace. A separately compiled executable therefore operates on the caller's current codebase, independently of the executable file's location.
 
-Constructors receive the dependencies needed to register the role's tools. `Run` receives its explicit directional communication channels, the error channel, and the shared `WaitGroup`. There is no aggregate orchestration object passed to every role.
+**`main`:** exit with the status returned by `run`. **`run`:** create the SDK client and the one session; create the named channels; register the command tool; start each role directly with `go role.Run(...)`; send the initial goal; receive the final report or error; cancel; wait; collect errors; report usage; release resources; return the runtime status after cleanup.
+
+`Run` receives its explicit directional communication channels, the error channel, and the shared `WaitGroup`. The role types retain no mutable state, and no aggregate orchestration object is passed to every role.
 
 ### 2.2 Channel Lifetime
 
 - `main` creates all inter-role channels before launching goroutines. They are initialized and remain open throughout execution.
 - Inter-role channels are unbuffered. A role completes its work and compaction before transferring the baton. The next role receives a ready message; the sender resumes waiting.
-- A role-local capacity-one channel holds the SDK's selected terminal tool invocation until its sender completes compaction. This is a result buffer, not a second scheduler or application work queue.
+- The SDK structured response remains local to the active role until compaction completes. Inter-role channels carry only `Handoff` values.
 - Each `Run` defers `wait.Done()`. `main` calls `wait.Add(7)` before launching roles.
 - Cancellation is the shutdown signal. The order is `cancel()` -> `wait.Wait()` -> `close(errorsOut)` -> drain errors.
 - Normal execution does not close message channels. Receive loops therefore do not inspect `ok`, assign channels to `nil`, or poll combinations of non-nil inputs.
@@ -86,7 +88,7 @@ The error channel has room for one terminal error per role. It stays open until 
 
 Public `Run` methods return no value. On a processing or forwarding failure, the role sends an error, annotated with the role name, through `chan<- error` and returns immediately. `main` receives and collects those errors. A model diagnosis or domain blocker travels to Planner on the appropriate work channel; it is distinct from a Go/SDK operational error.
 
-Context cancellation ends idle receivers and blocked sends. Private processing methods may return `(copilot.ToolInvocation, error)` to their own `Run`; that internal return is not inter-role communication. Use `sync.WaitGroup` for goroutine completion, not a custom `stopped` channel protocol.
+Context cancellation ends idle receivers and blocked sends. Private processing methods return an allowed target name, the decoded domain value, and an error to their own `Run`; that internal return is separate from inter-role communication. Use `sync.WaitGroup` for goroutine completion.
 
 ## 3. Messages and Session Baton
 
@@ -111,12 +113,12 @@ type Handoff struct {
 1. The role receives a goal and the session baton.
 2. Its private processing method selects that role in the shared SDK session and supplies the received goal and evidence.
 3. The model performs work with the role's tools and instructions.
-4. Exactly one terminal `send_*` tool validates its payload and queues the SDK `ToolInvocation` locally. `IsTerminal` ends the model invocation.
-5. After `SendAndWait` completes, the sender compacts the session. A compaction error is reported as an error; it does not authorize forwarding a partially handled baton.
-6. The private method returns the queued SDK invocation. `Run` switches on its tool name and sends the typed payload on its explicit output channel.
+4. `MessageOptions.ResponseSchema` requires one allowed target property with a typed `Handoff` or final report. The role receives that structured result from the final root `AssistantMessageData` event.
+5. After the session completion event, the sender compacts the session. User cancellation controls the wait and command lifetime. A compaction error is reported through the error channel before baton transfer.
+6. The private method decodes the selected target and domain value. `Run` switches on that target and sends the value on its explicit output channel.
 7. The receiving role continues using the accumulated session context.
 
-The SDK invocation records which allowed handoff the model selected. It stays local to the sender; the inter-role message remains domain data. No function is sent through a channel. No separate `turn` framework owns this sequence.
+The structured response records one allowed target and carries its typed payload. It stays local to the sender; the inter-role message remains domain data. No function or SDK invocation metadata is sent through a channel. No separate `turn` framework owns this sequence.
 
 ### 3.2 Serialization Boundary
 
@@ -146,7 +148,7 @@ Each `Run` should read as three operations: **receive -> role-specific processin
 
 ### 4.2 State and Dependencies
 
-The current role types each have two fields: their SDK tool definitions and their local pending SDK result channel. They do not retain other roles, destination channels, a `finished` flag, shared work ledgers, or copies of the session's history.
+The current role types are stateless. Session baton, domain work, and routing stay in method arguments, local structured results, and explicit channels.
 
 Use messages, local variables, and initialized facts before adding a field. Additional mutable fields require a concrete need that those existing mechanisms cannot represent and explicit review against the user's no-state-growth constraint. Renaming a God object, embedding it, or distributing references to it does not satisfy this rule.
 
@@ -156,7 +158,7 @@ One actor never reads or mutates another actor's state. In particular, Doctor se
 
 - One implementation file, `package main`, standard Go formatting, descriptive identifiers, and context as an explicit dependency.
 - Keep the seven role prompts as named `const` values. Agent registration lists names, prompt constants, and tools; it does not contain a wall of inline prompt text.
-- Prefer named methods and direct method values over forwarding lambdas. SDK-required callbacks are appropriate; nested callbacks, function-valued channels, and anonymous wrappers around every `Run` are not.
+- Use named methods for role behavior. SDK and standard-library callbacks may capture the minimal local values required by their callback APIs. Role aliases that only forward identical arguments are removed.
 - Use SDK types instead of new tool, session, permission, or hook interfaces. Ordinary small helpers for actual repeated work are acceptable; a new general-purpose execution layer is not.
 - Keep command examples short. The ordinary entry is `vcpkg-agents --prompt ...`; add flags for real configuration or trial isolation only. Reuse PowerShell argument splatting for repeated trials instead of adding a new CLI abstraction.
 
@@ -164,7 +166,9 @@ One actor never reads or mutates another actor's state. In particular, Doctor se
 
 ### 5.1 Existing SDK Facilities
 
-Use `copilot.CustomAgentConfig`, `copilot.DefineTool`, `copilot.ToolInvocation`, `SessionHooks`, native permission request/decision types, `Agent.Select`, `SendAndWait`, `History.Compact`, and usage APIs. Keep `Infer: false` so the runtime does not create an unplanned agent graph.
+Use `copilot.CustomAgentConfig`, `copilot.DefineTool`, `SessionHooks`, native permission request/decision types, `Agent.Select`, `Send`, `MessageOptions.ResponseSchema`, completion events, `History.Compact`, and usage APIs. `copilot.ToolInvocation` appears only where `DefineTool` requires it for the command-tool handler. Keep `Infer: false` so the runtime uses the declared agent graph.
+
+Structured output selects the next allowed target and carries the typed domain result. Handoff tools, local result buffers, and application result wrapper types duplicate this SDK response boundary and are outside the design.
 
 Register each role's actual capabilities before work starts. Models must be able to execute the tools needed for their goals, rather than receiving only a tool that copies a Go-produced answer. All roles can consult `vcpkg help`; Installer owns install execution, including requested dry runs. Detector owns environment and compiler probes.
 
@@ -174,9 +178,9 @@ Use built-in file/search/edit/web tools where their role permissions allow them.
 
 ### 5.2 Hooks and Permissions
 
-- Validate role tool visibility and command restrictions in the pre-tool hook and the executable tool boundary. File, network, and custom-tool access goes through the SDK permission handler.
-- A permitted pre-tool call returns `nil, nil` to continue with normal SDK permission handling. Do not return `ask` for every valid call: that requests a separate interactive hook approval and caused valid handoffs and file reads to be denied in the live non-interactive run.
-- Reject prohibited calls with a precise reason. An unknown permission kind stays denied; broad approval of hook requests is not the fix for the `ask` defect.
+- `CustomAgentConfig.Tools` defines role tool visibility. `checkCommand` enforces command restrictions at the executable tool boundary. File, network, MCP, and custom-tool access goes through the named manual authorization callback.
+- The post-tool hook has one responsibility: redact secrets from results before they return to the model.
+- The authorization callback approves initialized read/write/URL/MCP/custom-tool boundaries and rejects every request outside them. A missing callback leaves SDK permission requests pending in a non-interactive run.
 - The SDK permission request can lack member identity. The minimal active-role/message reference exists only for these callbacks (Research sections 5.1 and 5.5); it is not an orchestration object or alternative task state.
 - Keep the shared session's workspace distinct from an external manifest's subprocess directory. A duplicate per-role CWD restriction previously blocked a valid Installer handoff.
 - Resolve configured paths and symlinks before containment checks. Validate the actual target, not a string-prefix approximation.
@@ -249,9 +253,9 @@ This ledger records the implementation mistakes the user repeatedly corrected. T
 | C08 | Nil-channel loops, `ok` branches, or close-draining logic for channels kept open by `main` | Follow the actual lifetime; use context cancellation |
 | C09 | Nil session/channel fixtures created solely to justify impossible internal cases | Test initialized channels and the actual baton contract; validate external inputs at their boundaries |
 | C10 | `Handoff.destination`, embedded reply channels, callbacks, or hidden final-report state | Keep work data in `Handoff` and routing in `Run` |
-| C11 | `chan func(...)`, closures containing future sends, or a generic turn scheduler | Queue the native SDK result locally; explicitly send after compaction |
+| C11 | `chan func(...)`, closures containing future sends, or a generic turn scheduler | Receive the structured SDK result locally; explicitly send its domain payload after compaction |
 | C12 | Large `Run` bodies combining receive logic, SDK calls, serialization, compaction, and forwarding | Split processing into role-specific private methods; keep receive/process/send visible |
-| C13 | Inline role prompt blocks inside `agentDefinitions` | Restore separate named prompt constants and readable registrations |
+| C13 | Inline role prompt blocks inside agent registration | Keep separate named prompt constants and a global `agentDefinitions` registration value |
 | C14 | Forwarding lambdas around every agent or repeated wrapper-heavy CLI invocations | Direct goroutine method calls, explicit arguments, and short commands |
 | C15 | Go executing and diagnosing everything, then instructing the model to copy its payload | The model uses its tools for the received goal; Go enforces harness policy |
 | C16 | Moving communication, file safety, or error handling entirely into prompt prose | Express real edges and lifecycle in Go; enforce safety through hooks and tools |
@@ -283,11 +287,11 @@ This ledger records the implementation mistakes the user repeatedly corrected. T
 
 ### 8.1 Checks in the Current Test File
 
-- `TestCSPArchitecture`: forbidden orchestration types, field growth, routing channels in `Handoff`, value-returning `Run`, SDK work inside `Run`, optional-channel checks, and function-valued channels; seven explicitly selected SDK roles.
-- `TestHandoffWaitsForSender` and `TestPlannerFinalReportWaitsForSender`: terminal handoff payloads wait locally, duplicates are rejected, and session/final-result data survives delivery.
-- `TestAgentCommunicationRoutes`: fourteen SDK handoff choices preserve their name, session, goal, and evidence. This is a local tool/payload check, not proof of a complete live actor cycle.
+- `TestAgentDefinitionsContainWorkToolsOnly` and `TestAgentCommunicationRoutes`: the seven configured SDK members remain explicit and ordered, with work tools separated from channel routing.
+- `TestStructuredHandoffExcludesSession` and `TestStructuredResponseSchemaSelectsOneRoute`: structured response schemas describe the allowed targets, and the session pointer stays in the Go baton.
 - `TestAgentChannelShutdown`: all roles receive initialized channels and exit through cancellation with `WaitGroup`; the error channel remains clear for this shutdown path.
-- `TestAllowedHookUsesNormalPermission`, `TestRoleFilePermissions`, `TestCommandHarness`, and `TestCommitRequiresAuthority`: permit the intended role/tool paths and reject representative unsafe ones.
+- `TestSessionPermissionPolicyUsesAgentTools`, `TestRoleFilePermissions`, `TestCommandHarness`, and `TestCommitRequiresAuthority`: permit the intended role/tool paths and reject representative unsafe ones.
+- `TestProductionSourcePolicies` and `TestRolesRemainStateless`: keep application deadlines, SDK `ToolInvocation` result plumbing, deferred process exit, custom result wrappers, and role state outside production code.
 - `TestVcpkgOutputPreserved` and `TestCommandLogKeepsDiagnosticsAndRedactsSecrets`: real vcpkg output comparison and exact non-secret log preservation.
 - Existing startup, environment, path-escape, and GitHub read-only checks remain relevant and reusable.
 
@@ -308,13 +312,15 @@ Tests and reviews scale with the changed behavior. Reuse fixtures and the compat
 
 ## 9. Current Acceptance and Open Items
 
-The 2026-11-29 corrections establish the code structure and local regression contract above. Focused tests have passed on the Windows workspace. The latest broad test/diagnostic record must accompany the maintenance commit; this document does not label unexecuted work as passed.
+The 2026-11-29 corrections establish the code structure and local regression contract above. The full Go test package passes on the Windows workspace.
 
-The user cancelled subsequent live and broad trial work during refactoring. The earlier live retry ended blocked on incorrect Detector delegation. The prompt correction and later structural changes require a newly authorized live replay before claiming current end-to-end success. Historical scenario records are in the campaign worknote when retained locally.
+Live session `1799783a-3776-491e-90fc-193af6d2cbce` verified the structured-response path with `zlib:x64-windows --dry-run`: Planner delegated through the shared session, Port Installer ran `vcpkg list` and `vcpkg install ... --dry-run`, Planner returned a typed final report, and the process exited 0. The run installed no packages and retained its command logs under the isolated smoke directory.
+
+Final-binary session `279e30dd-4470-4b7a-ad06-42d83108271d` recorded `Planner -> Environment Detector -> Planner -> Port Installer` through structured targets. A later Installer/Doctor retry cycle continued until caller cancellation, providing live evidence for the existing cycle-limit acceptance item below.
 
 Remaining acceptance includes a full Doctor/Editor repair cycle, triplet/host-facts rescheduling, verified baseline commit pairs in the current tool-led path, concurrent SDK-tool behavior, cross-platform builds, S11's live induced ONNX fault, and the documented S28/S29 security/host variants. A local test or prerequisite-negative run does not replace these.
 
-`--max-port-cycles` and `--max-triplet-edits` are supplied as initialized facts; hard enforcement in the current model-led path is not established by the local architecture tests. Likewise, accepting `--lock-wait` or `--sandbox` in option parsing does not establish a working lock watchdog or OS sandbox. Keep those capability gaps explicit rather than inventing successful behavior or adding machinery without evidence and approval.
+`--max-port-cycles` and `--max-triplet-edits` are supplied as initialized facts; hard enforcement in the current model-led path remains an acceptance item. The user's execution-lifetime correction removes application deadlines and `--lock-wait`; SDK `Send` plus completion events also keeps its default `SendAndWait` deadline outside this path. User cancellation controls execution lifetime. `--sandbox` remains a parsed option whose OS enforcement requires separate verification.
 
 G-1 remains open: the ideation has update user stories but no explicit initial update edge to Port Editor. G-8 and other unresolved behavioral gap-fills remain governed by the requirements and user decisions. Preserve the existing graph; report a concrete blocker until an authorized route exists.
 

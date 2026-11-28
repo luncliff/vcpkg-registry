@@ -5,13 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"go/ast"
-	"go/parser"
-	"go/token"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"slices"
 	"strings"
@@ -40,6 +38,7 @@ func TestParseOptionsDefaultModelAndScopes(t *testing.T) {
 func TestLoadRuntimeConfigDetectsRegistryAndManifest(t *testing.T) {
 	t.Run("registry", func(t *testing.T) {
 		root := createRegistryFixture(t, "agent-config-ok", successfulPortfile())
+		initGitRepository(t, root)
 		logRoot := t.TempDir()
 		withWorkingDirectory(t, root, func() {
 			options, err := ParseOptions([]string{"--prompt", "Dry run agent-config-ok", "--log-dir", logRoot, "--overlay-ports", filepath.Join(root, "ports"), "--x-buildtrees-root", filepath.Join(root, "buildtrees"), "--x-packages-root", filepath.Join(root, "packages"), "--x-install-root", filepath.Join(root, "installed")})
@@ -55,6 +54,9 @@ func TestLoadRuntimeConfigDetectsRegistryAndManifest(t *testing.T) {
 			})
 			if config.Scenario != "registry" {
 				t.Fatalf("scenario = %q", config.Scenario)
+			}
+			if !samePath(config.WorkingDirectory, root) || !samePath(config.Workspace, root) || !samePath(sessionOptions(config).WorkingDirectory, root) {
+				t.Fatalf("invocation workspace = %q, %q", config.WorkingDirectory, config.Workspace)
 			}
 			if !containsPath(config.OverlayPorts, filepath.Join(root, "ports")) {
 				t.Fatalf("registry ports overlay missing: %v", config.OverlayPorts)
@@ -245,7 +247,7 @@ func newTestRuntimeConfig(t *testing.T, scenario string) *RuntimeConfig {
 		triplet = "x64-osx"
 	}
 	writeScopes := defaultWriteScopes(scenario)
-	return &RuntimeConfig{Options: Options{Model: defaultModel, MaxPortCycles: 3, MaxTripletEdits: 1, LockWait: 2 * time.Minute}, WorkingDirectory: workspace, Workspace: workspace, Scenario: scenario, ScenarioEvidence: []string{filepath.Join(workspace, "ports")}, Tools: tools, Roots: roots, OverlayPorts: []string{filepath.Join(workspace, "ports")}, OverlayTriplets: []string{filepath.Join(workspace, "triplets")}, DefaultTriplet: triplet, HostTriplet: triplet, VcpkgEnv: scrubbedVcpkgEnvironment(os.Environ(), nil), Scratch: scratch, LogDirectory: logs, WriteScopes: writeScopes, SecretValues: collectSecretValues(), RunID: "test"}
+	return &RuntimeConfig{Options: Options{Model: defaultModel, MaxPortCycles: 3, MaxTripletEdits: 1}, WorkingDirectory: workspace, Workspace: workspace, Scenario: scenario, ScenarioEvidence: []string{filepath.Join(workspace, "ports")}, Tools: tools, Roots: roots, OverlayPorts: []string{filepath.Join(workspace, "ports")}, OverlayTriplets: []string{filepath.Join(workspace, "triplets")}, DefaultTriplet: triplet, HostTriplet: triplet, VcpkgEnv: scrubbedVcpkgEnvironment(os.Environ(), nil), Scratch: scratch, LogDirectory: logs, WriteScopes: writeScopes, SecretValues: collectSecretValues(), RunID: "test"}
 }
 func createPortFixture(t *testing.T, portsRoot, name string) string {
 	t.Helper()
@@ -328,8 +330,7 @@ func mustMkdir(t *testing.T, path string) {
 }
 func currentVcpkgRoot(t *testing.T, vcpkg string) string {
 	t.Helper()
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	ctx := context.Background()
 	output, err := exec.CommandContext(ctx, vcpkg, "z-print-config", "--disable-metrics").Output()
 	if err != nil {
 		t.Fatalf("vcpkg z-print-config: %v", err)
@@ -391,133 +392,59 @@ func testConfig(t *testing.T) *RuntimeConfig {
 	return config
 }
 
-func TestHandoffWaitsForSender(t *testing.T) {
-	name := plannerName
-	activeAgent.Store(&name)
-	t.Cleanup(func() {
-		activeAgent.Store(nil)
-	})
-	pending := make(chan copilot.ToolInvocation, 1)
-	output := make(chan Handoff, 1)
-	session := &copilot.Session{SessionID: "same-session"}
-	tool := goalTool("send_detect_request", session, pending)
-	message := Handoff{Goal: "Verify target availability", Evidence: []string{"user request"}}
-	if !tool.IsTerminal {
-		t.Fatal("handoff tool must be terminal")
-	}
-	if _, err := tool.Handler(copilot.ToolInvocation{Arguments: message}); err != nil {
-		t.Fatal(err)
-	}
-	select {
-	case <-output:
-		t.Fatal("tool sent before the goroutine could compact")
-	default:
-	}
-	if _, err := tool.Handler(copilot.ToolInvocation{Arguments: message}); err == nil {
-		t.Fatal("duplicate handoff accepted")
-	}
-	next := <-pending
-	if next.ToolName != "send_detect_request" {
-		t.Fatal("selected SDK tool changed")
-	}
-	if err := send(context.Background(), output, next.Arguments.(Handoff)); err != nil {
-		t.Fatal(err)
-	}
-	got := <-output
-	if got.Session != session || got.Goal != message.Goal {
-		t.Fatalf("handoff = %+v", got)
+func TestAgentDefinitionsContainWorkToolsOnly(t *testing.T) {
+	for _, agent := range agentDefinitions {
+		for _, tool := range agent.Tools {
+			if strings.Contains(tool, "_to_") {
+				t.Errorf("%s exposes routing tool %q", agent.Name, tool)
+			}
+		}
 	}
 }
-func TestPlannerFinalReportWaitsForSender(t *testing.T) {
-	output := make(chan FinalReport, 1)
-	planner := NewPlanner(&copilot.Session{SessionID: "shared-session"})
-	report := FinalReport{Status: "finished", Scenario: "registry"}
-	if _, err := planner.finish(report, copilot.ToolInvocation{}); err != nil {
+func TestStructuredHandoffExcludesSession(t *testing.T) {
+	encoded, err := json.Marshal(Handoff{Session: &copilot.Session{SessionID: "shared-session"}, Goal: "continue", Evidence: []string{"verified"}})
+	if err != nil {
 		t.Fatal(err)
 	}
-	if len(output) != 0 {
-		t.Fatal("final report sent before compaction")
+	if bytes.Contains(encoded, []byte("shared-session")) {
+		t.Fatalf("session leaked into structured result: %s", encoded)
 	}
-	if _, err := planner.finish(report, copilot.ToolInvocation{}); err == nil {
-		t.Fatal("duplicate final report accepted")
-	}
-	next := <-planner.pending
-	if next.ToolName != "send_final_report" {
-		t.Fatal("queued final report tool missing")
-	}
-	if err := send(context.Background(), output, next.Arguments.(FinalReport)); err != nil {
+}
+
+func TestStructuredResponseSchemaSelectsOneRoute(t *testing.T) {
+	schema, err := structuredResponseSchema(map[string]any{plannerName: Handoff{}, tripletEditorName: Handoff{}})
+	if err != nil {
 		t.Fatal(err)
 	}
-	if got := <-output; got.Status != report.Status || got.Scenario != report.Scenario {
-		t.Fatalf("final report = %+v", got)
+	encoded, err := json.Marshal(schema)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, expected := range []string{`"additionalProperties":false`, `"planner"`, `"triplet-editor"`, `"type":"null"`} {
+		if !bytes.Contains(encoded, []byte(expected)) {
+			t.Fatalf("schema lacks %s: %s", expected, encoded)
+		}
+	}
+	if bytes.Contains(encoded, []byte(`"Session"`)) || bytes.Contains(encoded, []byte(`"session"`)) {
+		t.Fatalf("session leaked into response schema: %s", encoded)
 	}
 }
 
 func TestAgentCommunicationRoutes(t *testing.T) {
-	session := &copilot.Session{SessionID: "shared-session"}
-	routes := make(map[string]chan Handoff)
-	for _, name := range []string{
-		"send_detect_request", "send_install_requests", "send_baseline_request",
-		"send_env_report", "send_host_facts", "send_install_failure", "send_install_report",
-		"send_port_goals", "send_triplet_goals", "send_blocker", "send_retry_request",
-		"send_host_facts_request", "send_reinstall_request", "send_baseline_report",
-	} {
-		routes[name] = make(chan Handoff, 1)
-	}
-	planner := NewPlanner(session)
-	detector := NewEnvironmentDetector(session)
-	installer := NewPortInstaller(session)
-	doctor := NewPortDoctor(session)
-	editor := NewPortEditor(session)
-	triplet := NewTripletEditor(session)
-	baseline := NewBaselineUpdater(session)
-	t.Cleanup(func() { activeAgent.Store(nil) })
-	for _, actor := range []struct {
-		name    string
-		tools   []copilot.Tool
-		pending <-chan copilot.ToolInvocation
-	}{
-		{plannerName, planner.tools, planner.pending},
-		{environmentDetectorName, detector.tools, detector.pending},
-		{portInstallerName, installer.tools, installer.pending},
-		{portDoctorName, doctor.tools, doctor.pending},
-		{portEditorName, editor.tools, editor.pending},
-		{tripletEditorName, triplet.tools, triplet.pending},
-		{baselineUpdaterName, baseline.tools, baseline.pending},
-	} {
-		activeAgent.Store(&actor.name)
-		for _, tool := range actor.tools {
-			if tool.Name == "send_final_report" {
-				continue
-			}
-			t.Run(actor.name+"/"+tool.Name, func(t *testing.T) {
-				message := Handoff{Goal: "achieve the received goal", Evidence: []string{"unchanged evidence"}}
-				if _, err := tool.Handler(copilot.ToolInvocation{Arguments: message}); err != nil {
-					t.Fatal(err)
-				}
-				next := <-actor.pending
-				handoff := next.Arguments.(Handoff)
-				if next.ToolName != tool.Name || handoff.Session != session || handoff.Goal != message.Goal {
-					t.Fatalf("incorrect handoff: %+v", next)
-				}
-				if len(routes[tool.Name]) != 0 {
-					t.Fatal("receiver notified before sender compaction")
-				}
-				if err := send(context.Background(), routes[next.ToolName], handoff); err != nil {
-					t.Fatal(err)
-				}
-				if got := <-routes[tool.Name]; !slices.Equal(got.Evidence, message.Evidence) {
-					t.Fatal("handoff evidence changed")
-				}
-			})
+	want := []string{plannerName, environmentDetectorName, portInstallerName, portDoctorName, portEditorName, tripletEditorName, baselineUpdaterName}
+	for index, agent := range agentDefinitions {
+		if index >= len(want) || agent.Name != want[index] {
+			t.Fatalf("agent %d = %q", index, agent.Name)
 		}
+	}
+	if len(agentDefinitions) != len(want) {
+		t.Fatalf("agent count = %d", len(agentDefinitions))
 	}
 }
 
 func TestAgentChannelShutdown(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	session := &copilot.Session{SessionID: "shared-session"}
 	userRequests := make(chan Handoff)
 	detectRequests := make(chan Handoff)
 	environmentReports := make(chan Handoff)
@@ -537,14 +464,14 @@ func TestAgentChannelShutdown(t *testing.T) {
 	errorsOut := make(chan error, 7)
 	var wait sync.WaitGroup
 	wait.Add(7)
-	go NewPlanner(session).Run(ctx, userRequests, environmentReports, installReports, blockers, reinstalls, baselineReports,
+	go (&Planner{}).Run(ctx, userRequests, environmentReports, installReports, blockers, reinstalls, baselineReports,
 		detectRequests, installRequests, baselineRequests, final, errorsOut, &wait)
-	go NewEnvironmentDetector(session).Run(ctx, detectRequests, hostRequests, environmentReports, hostFacts, errorsOut, &wait)
-	go NewPortInstaller(session).Run(ctx, installRequests, retries, installFailures, installReports, errorsOut, &wait)
-	go NewPortDoctor(session).Run(ctx, installFailures, portGoals, tripletGoals, blockers, errorsOut, &wait)
-	go NewPortEditor(session).Run(ctx, portGoals, retries, errorsOut, &wait)
-	go NewTripletEditor(session).Run(ctx, tripletGoals, hostFacts, hostRequests, reinstalls, errorsOut, &wait)
-	go NewBaselineUpdater(session).Run(ctx, baselineRequests, baselineReports, errorsOut, &wait)
+	go (&EnvironmentDetector{}).Run(ctx, detectRequests, hostRequests, environmentReports, hostFacts, errorsOut, &wait)
+	go (&PortInstaller{}).Run(ctx, installRequests, retries, installFailures, installReports, errorsOut, &wait)
+	go (&PortDoctor{}).Run(ctx, installFailures, portGoals, tripletGoals, blockers, errorsOut, &wait)
+	go (&PortEditor{}).Run(ctx, portGoals, retries, errorsOut, &wait)
+	go (&TripletEditor{}).Run(ctx, tripletGoals, hostFacts, hostRequests, reinstalls, errorsOut, &wait)
+	go (&BaselineUpdater{}).Run(ctx, baselineRequests, baselineReports, errorsOut, &wait)
 	cancel()
 	finished := make(chan struct{})
 	go func() { wait.Wait(); close(finished) }()
@@ -563,19 +490,19 @@ func TestRoleFilePermissions(t *testing.T) {
 	message := Handoff{Ports: []string{"zlib"}, Triplet: "x64-windows"}
 	portfile := filepath.Join(config.Workspace, "ports", "zlib", "portfile.cmake")
 	for _, role := range []string{plannerName, environmentDetectorName, portInstallerName, portDoctorName} {
-		if _, allowed := permission(config, role, message, &rpc.PermissionRequestWrite{FileName: portfile}).(*rpc.PermissionDecisionApproveOnce); allowed {
+		if _, allowed := config.authorizeRequest(role, message, &rpc.PermissionRequestWrite{FileName: portfile}).(*rpc.PermissionDecisionApproveOnce); allowed {
 			t.Errorf("%s gained write access", role)
 		}
 	}
-	if _, allowed := permission(config, portEditorName, message, &rpc.PermissionRequestWrite{FileName: portfile}).(*rpc.PermissionDecisionApproveOnce); !allowed {
+	if _, allowed := config.authorizeRequest(portEditorName, message, &rpc.PermissionRequestWrite{FileName: portfile}).(*rpc.PermissionDecisionApproveOnce); !allowed {
 		t.Fatal("target port is not writable")
 	}
 	other := filepath.Join(config.Workspace, "ports", "other", "portfile.cmake")
-	if _, allowed := permission(config, portEditorName, message, &rpc.PermissionRequestWrite{FileName: other}).(*rpc.PermissionDecisionApproveOnce); allowed {
+	if _, allowed := config.authorizeRequest(portEditorName, message, &rpc.PermissionRequestWrite{FileName: other}).(*rpc.PermissionDecisionApproveOnce); allowed {
 		t.Fatal("another port is writable")
 	}
 	outside := filepath.Join(t.TempDir(), "secret.txt")
-	if _, allowed := permission(config, portDoctorName, message, &rpc.PermissionRequestRead{Path: outside}).(*rpc.PermissionDecisionApproveOnce); allowed {
+	if _, allowed := config.authorizeRequest(portDoctorName, message, &rpc.PermissionRequestRead{Path: outside}).(*rpc.PermissionDecisionApproveOnce); allowed {
 		t.Fatal("outside read allowed")
 	}
 	config.Options.Prompt = "dry run install zlib"
@@ -583,23 +510,21 @@ func TestRoleFilePermissions(t *testing.T) {
 		t.Fatal("dry run grants file writes")
 	}
 }
-func TestAllowedHookUsesNormalPermission(t *testing.T) {
+func TestSessionPermissionPolicyUsesAgentTools(t *testing.T) {
 	config := testConfig(t)
-	name := plannerName
 	message := Handoff{Goal: "Detect environment", Evidence: []string{"user"}}
-	activeAgent.Store(&name)
-	activeMessage.Store(&message)
-	t.Cleanup(func() { activeAgent.Store(nil); activeMessage.Store(nil) })
-	result, err := hooks(config).OnPreToolUse(copilot.PreToolUseHookInput{ToolName: "send_detect_request"}, copilot.HookInvocation{})
-	if err != nil || result != nil {
-		t.Fatalf("allowed hook must defer to normal permission: %+v %v", result, err)
+	if _, ok := config.authorizeRequest(plannerName, message, &rpc.PermissionRequestCustomTool{ToolName: "execute_tool"}).(*rpc.PermissionDecisionApproveOnce); !ok {
+		t.Fatal("planner command tool denied")
 	}
-	if _, ok := permission(config, name, message, &rpc.PermissionRequestCustomTool{ToolName: "send_detect_request"}).(*rpc.PermissionDecisionApproveOnce); !ok {
-		t.Fatal("handoff denied by normal permission")
+	if _, ok := config.authorizeRequest(plannerName, message, &rpc.PermissionRequestCustomTool{ToolName: "apply_patch"}).(*rpc.PermissionDecisionReject); !ok {
+		t.Fatal("planner gained an editor tool")
 	}
-	result, err = hooks(config).OnPreToolUse(copilot.PreToolUseHookInput{ToolName: "apply_patch"}, copilot.HookInvocation{})
-	if err != nil || result == nil || result.PermissionDecision != "deny" {
-		t.Fatalf("planner write hook = %+v %v", result, err)
+	options := sessionOptions(config)
+	if options.Hooks.Handlers == nil || options.Hooks.Handlers.OnPostToolUse == nil || options.Hooks.Handlers.OnPreToolUse != nil {
+		t.Fatal("session hooks must only redact tool results")
+	}
+	if options.Permissions.OnRequest == nil {
+		t.Fatal("manual permission policy missing")
 	}
 }
 
@@ -689,5 +614,41 @@ func TestCommitRequiresAuthority(t *testing.T) {
 	params.Args = []string{"add", "--", "ports/zlib"}
 	if err := checkCommand(config, baselineUpdaterName, message, params); err == nil {
 		t.Fatal("staging without commit authority allowed")
+	}
+}
+
+func TestProductionSourcePolicies(t *testing.T) {
+	data, err := os.ReadFile("vcpkg-agents.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, forbidden := range []string{
+		"context.WithTimeout(", "context.WithTimeoutCause(", "context.WithDeadline(", "context.WithDeadlineCause(", ".SendAndWait(",
+		"chan copilot.ToolInvocation", "(copilot.ToolInvocation, error)", "defer os.Exit", "type agentResult", "type responseWaiter", "type handoffTool", "type commandTool", "type crlfPortScanner",
+	} {
+		if bytes.Contains(data, []byte(forbidden)) {
+			t.Errorf("production source contains %q", forbidden)
+		}
+	}
+	for _, agent := range agentDefinitions {
+		if strings.Contains(agent.Prompt, "You are ") {
+			t.Errorf("%s prompt repeats its role name", agent.Name)
+		}
+	}
+}
+
+func TestRolesRemainStateless(t *testing.T) {
+	for name, role := range map[string]any{
+		plannerName:             Planner{},
+		environmentDetectorName: EnvironmentDetector{},
+		portInstallerName:       PortInstaller{},
+		portDoctorName:          PortDoctor{},
+		portEditorName:          PortEditor{},
+		tripletEditorName:       TripletEditor{},
+		baselineUpdaterName:     BaselineUpdater{},
+	} {
+		if fields := reflect.TypeOf(role).NumField(); fields != 0 {
+			t.Errorf("%s has %d fields, want 0", name, fields)
+		}
 	}
 }

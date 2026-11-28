@@ -338,6 +338,7 @@ As any user, I want clear reports of conditions the team cannot fix, so that I k
 | FR-T-11 | Binary caching problems MUST be warnings, never errors. | §Port Doctor |
 | FR-T-12 | **Gap-fill G-13.** No member MAY write a secret value into logs, messages, or model context. | Research §4.6 |
 | FR-T-13 | **Gap-fill G-25.** No member MAY write to remote services: no push, no pull request, no issue, no comment. vcpkg prints a `gh issue create` command on failure; no member runs it. | Research §8.2 |
+| FR-T-14 | Each model turn MUST return a structured result selecting one allowed outbound relationship and carrying its `Handoff` or final report. Go MUST compact the shared session before routing that value through the existing channel. Tools remain work capabilities. | Ideation §Agent Relationships; Research §5.4 |
 
 ### 6.2 Planner
 

@@ -275,6 +275,8 @@ Live probe, 2026-11-28, SDK2 v2.0.4 with CLI 1.0.114, default model, 20 s, 3 pre
 
 - `SendAndWait` adds a 60-second deadline when the context has none. A timeout ends the wait, not the turn. Long turns need a context with a long deadline, or `Send` plus a wait for `session.idle`.
 - `SendAndWait` returns the final root assistant message.
+- `MessageOptions.ResponseSchema` sends a strict provider-native `json_schema` for one run. The final root `AssistantMessageData.Content` contains the JSON result. SDK v2.0.4 E2E coverage verifies structured output after custom tool execution and verifies `Session.Send` correlation through the final assistant message and `session.idle`.
+- Package-level `copilot.SendAndWait[T]` infers the schema and decodes `T`, then follows the same 60-second default when its context has no deadline. `Session.Send` with `ResponseSchema` plus completion events preserves caller-controlled lifetime.
 - Tool handlers run in their own goroutine with **no SDK timeout**. `Abort` does not stop a running handler. `ToolInvocation.TraceContext` is cancelled when the call completes or the session disconnects. No runtime limit on external tool calls was found.
 - A tool with a nil handler is declaration-only; the host answers later with `RPC.Tools.HandlePendingToolCall`. Option for hours-long installs.
 - `Tool` fields: `OverridesBuiltInTool`, `SkipPermission`, `IsTerminal` (a successful call ends the agent turn), `Defer`, `Namespace`. **A `SkipPermission` tool never reaches the permission handler**; only a pre-tool-use deny stops it.
@@ -712,8 +714,9 @@ Consequences:
 | SDK v1.0.28 cannot talk to CLI 1.0.114 (protocol 3 vs 4); v2.0.4 can (§5.1) | Implementation targets `github.com/microsoft/copilot-sdk/go/v2` with a spawned CLI runtime |
 | `Agent.Select` enforces each member's tool allowlist; selection and shared history survive compaction (§5.1, live) | Members map to custom agents in one session, as the ideation's shared session requires |
 | Hook and permission inputs carry no member identity (§5.1, §5.5) | One permission handler and one hook read the Go-side active member |
-| `SkipPermission` tools bypass the permission handler (§5.4) | No member tool uses `SkipPermission`; the pre-tool-use hook guards every tool |
-| `IsTerminal` tools end the turn on success (§5.4) | Handoff tools are terminal |
-| `SendAndWait` defaults to a 60 s wait; tool handlers have no timeout (§5.4) | Each turn gets an explicit long deadline; vcpkg tools carry their own budgets |
+| `SkipPermission` tools bypass the permission handler (§5.4) | Member tools use ordinary permission handling; `execute_tool` also enforces its command boundary |
+| `ResponseSchema` returns strict structured JSON after the model completes its tool work (§5.4) | Each member returns one allowed target and its typed domain payload; Go compacts and forwards it through the explicit channel |
+| `IsTerminal` tools end the turn on success (§5.4) | Reserve tools for work capabilities; channel routing uses the structured response |
+| `SendAndWait` defaults to a 60 s wait; tool handlers have no timeout (§5.4) | `Send` plus completion events follows caller cancellation; vcpkg commands inherit that lifetime |
 | Usage lands under `main` (§5.1) | Per-member usage comes from metric deltas at each handoff |
 | vcpkg's internal git ignores the global `safe.directory`; this registry is on exFAT with CRLF port files (§8.10) | The Environment Detector checks the git environment; the Baseline Updater guards the recorded tree against the port commit; `x-ci-verify-versions` is not used |
