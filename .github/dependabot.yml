@@ -11,14 +11,3 @@ updates:
       - "luncliff"
     commit-message:
       prefix: "[skip ci] "
-
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-    labels:
-      - "documentation"
-    assignees:
-      - "luncliff"
-    commit-message:
-      prefix: "[skip ci] "
